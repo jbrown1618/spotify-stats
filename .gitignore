@@ -1,0 +1,5 @@
+spotify-client-id
+spotify-client-secret
+.cache
+output/
+__pycache__/
