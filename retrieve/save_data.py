@@ -36,16 +36,16 @@ def save_data(output_dir, client_id, client_secret):
     save_liked_tracks_data(sp)
     save_audio_features_data(sp)
 
-    pd.DataFrame(playlists_data).to_csv(f"{output_dir}/data/playlists.csv")
-    pd.DataFrame(tracks_data).to_csv(f"{output_dir}/data/tracks.csv")
-    pd.DataFrame(artists_data).to_csv(f"{output_dir}/data/artists.csv")
-    pd.DataFrame(albums_data).to_csv(f"{output_dir}/data/albums.csv")
-    pd.DataFrame(liked_tracks).to_csv(f"{output_dir}/data/liked_tracks.csv")
-    pd.DataFrame(playlist_track).to_csv(f"{output_dir}/data/playlist_track.csv")
-    pd.DataFrame(track_artist).to_csv(f"{output_dir}/data/track_artist.csv")
-    pd.DataFrame(album_artist).to_csv(f"{output_dir}/data/album_artist.csv")
-    pd.DataFrame(album_track).to_csv(f"{output_dir}/data/album_track.csv")
-    pd.DataFrame(audio_features).to_csv(f"{output_dir}/data/audio_features.csv")
+    pd.DataFrame(playlists_data).to_csv(f"{output_dir}/data/playlists.csv", index=False)
+    pd.DataFrame(tracks_data).to_csv(f"{output_dir}/data/tracks.csv", index=False)
+    pd.DataFrame(artists_data).to_csv(f"{output_dir}/data/artists.csv", index=False)
+    pd.DataFrame(albums_data).to_csv(f"{output_dir}/data/albums.csv", index=False)
+    pd.DataFrame(liked_tracks).to_csv(f"{output_dir}/data/liked_tracks.csv", index=False)
+    pd.DataFrame(playlist_track).to_csv(f"{output_dir}/data/playlist_track.csv", index=False)
+    pd.DataFrame(track_artist).to_csv(f"{output_dir}/data/track_artist.csv", index=False)
+    pd.DataFrame(album_artist).to_csv(f"{output_dir}/data/album_artist.csv", index=False)
+    pd.DataFrame(album_track).to_csv(f"{output_dir}/data/album_track.csv", index=False)
+    pd.DataFrame(audio_features).to_csv(f"{output_dir}/data/audio_features.csv", index=False)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
