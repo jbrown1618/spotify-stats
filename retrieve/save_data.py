@@ -22,17 +22,10 @@ track_artist = []
 album_artist = []
 album_track = []
 
-def save_data():
-    if os.path.isdir("./output/data"):
+def save_data(output_dir, client_id, client_secret):
+    if os.path.isdir(f"{output_dir}/data"):
         return
-        
-    os.makedirs("./output/data")
-
-    with open('./spotify-client-id') as f:
-        client_id = f.read()
-
-    with open('./spotify-client-secret') as f:
-        client_secret = f.read()
+    os.makedirs(f"{output_dir}/data")
 
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id, 
                                                    client_secret=client_secret, 
@@ -43,16 +36,16 @@ def save_data():
     save_liked_tracks_data(sp)
     save_audio_features_data(sp)
 
-    pd.DataFrame(playlists_data).to_csv("./output/data/playlists.csv")
-    pd.DataFrame(tracks_data).to_csv("./output/data/tracks.csv")
-    pd.DataFrame(artists_data).to_csv("./output/data/artists.csv")
-    pd.DataFrame(albums_data).to_csv("./output/data/albums.csv")
-    pd.DataFrame(liked_tracks).to_csv("./output/data/liked_tracks.csv")
-    pd.DataFrame(playlist_track).to_csv("./output/data/playlist_track.csv")
-    pd.DataFrame(track_artist).to_csv("./output/data/track_artist.csv")
-    pd.DataFrame(album_artist).to_csv("./output/data/album_artist.csv")
-    pd.DataFrame(album_track).to_csv("./output/data/album_track.csv")
-    pd.DataFrame(audio_features).to_csv("./output/data/audio_features.csv")
+    pd.DataFrame(playlists_data).to_csv(f"{output_dir}/data/playlists.csv")
+    pd.DataFrame(tracks_data).to_csv(f"{output_dir}/data/tracks.csv")
+    pd.DataFrame(artists_data).to_csv(f"{output_dir}/data/artists.csv")
+    pd.DataFrame(albums_data).to_csv(f"{output_dir}/data/albums.csv")
+    pd.DataFrame(liked_tracks).to_csv(f"{output_dir}/data/liked_tracks.csv")
+    pd.DataFrame(playlist_track).to_csv(f"{output_dir}/data/playlist_track.csv")
+    pd.DataFrame(track_artist).to_csv(f"{output_dir}/data/track_artist.csv")
+    pd.DataFrame(album_artist).to_csv(f"{output_dir}/data/album_artist.csv")
+    pd.DataFrame(album_track).to_csv(f"{output_dir}/data/album_track.csv")
+    pd.DataFrame(audio_features).to_csv(f"{output_dir}/data/audio_features.csv")
 
 
 def save_playlists_data(sp: spotipy.Spotify):

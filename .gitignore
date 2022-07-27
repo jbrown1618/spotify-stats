@@ -4,3 +4,4 @@ spotify-client-secret
 venv/
 __pycache__/
 output/
+.env
