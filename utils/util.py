@@ -1,4 +1,5 @@
 import re
+import pandas as pd
 
 
 def get_id(uri: str):
@@ -12,3 +13,13 @@ def md_link(text: str, url: str):
 
 def file_name_friendly(text: str):
     return re.sub(r"[^a-z0-9]", "_", text.lower())
+
+
+def prefix_df(df: pd.DataFrame, prefix: str, prefixes: list[str]):
+    df.columns = [prefix_col(col, prefix, prefixes) for col in df.columns]
+
+def prefix_col(col: str, prefix: str, prefixes: list[str]):
+    for other_prefix in prefixes:
+        if col.startswith(other_prefix):
+            return col
+    return prefix + col

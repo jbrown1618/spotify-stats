@@ -21,23 +21,22 @@ def title(user: str):
 
 def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     track_counts = pd\
-        .merge(left=playlists, right=playlist_track, left_index=True, right_on="playlist_uri", how="inner")\
+        .merge(left=playlists, right=playlist_track, left_on="playlist_uri", right_on="playlist_uri", how="inner")\
         .groupby("playlist_uri")["track_uri"]\
         .count()
 
     display_playlists = pd\
-        .merge(left=playlists, right=track_counts, left_index=True, right_on="playlist_uri", how="inner")\
-        [["name", "track_uri"]]
+        .merge(left=playlists, right=track_counts, left_on="playlist_uri", right_on="playlist_uri", how="inner")
 
     display_playlists["Open"] = ""
-    for playlist_uri, row in display_playlists.iterrows():
-        link = md_link("Open in Spotify", f"https://open.spotify.com/playlist/{get_id(playlist_uri)}")
-        display_playlists["Open"][playlist_uri] = link
+    for i, row in display_playlists.iterrows():
+        link = md_link("Open in Spotify", f"https://open.spotify.com/playlist/{get_id(row['playlist_uri'])}")
+        display_playlists["Open"][i] = link
 
-    display_playlists["name"] = display_playlists["name"].apply(lambda name: md_link(name, f"./playlists/{file_name_friendly(name)}.md"))
+    display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, f"./playlists/{file_name_friendly(name)}.md"))
+    display_playlists["Number of Songs"] = display_playlists["track_uri"]
 
-    display_playlists = display_playlists[["name", "Open", "track_uri"]]
-    display_playlists.columns = ["Name", "Open", "Number of Songs"]
+    display_playlists = display_playlists[["Name", "Open", "Number of Songs"]]
 
     display_playlists.sort_values(by="Name", inplace=True)
 
