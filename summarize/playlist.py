@@ -26,8 +26,9 @@ def make_tracks_section(output_dir: str, playlist_full: pd.DataFrame, track_arti
     display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full, output_dir))
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["Album"] = display_tracks["album_name"]
+    display_tracks["Liked"] = display_tracks["track_liked"]
     display_tracks = display_tracks.sort_values(by=["artist_names_sorting", "Album", "Track"])
-    display_tracks = display_tracks[["Track", "Album", "Artists"]]
+    display_tracks = display_tracks[["Track", "Album", "Artists", "Liked"]]
     table = display_tracks.to_markdown(index=False)
     return ["## Tracks", "", table]
 

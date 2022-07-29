@@ -33,6 +33,8 @@ def summarize_results(output_dir):
 
     tracks_full = pd.merge(tracks, audio_features, on="track_uri")
     tracks_full = pd.merge(tracks_full, albums, on="album_uri")
+    liked_track_uris = { uri for uri in liked_tracks["track_uri"] }
+    tracks_full["track_liked"] = tracks_full["track_uri"].apply(lambda uri: uri in liked_track_uris)
 
     artists_full = pd.merge(artists, artist_track_counts, on="artist_uri")
 
