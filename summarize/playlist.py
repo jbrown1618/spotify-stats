@@ -22,11 +22,11 @@ def make_playlist_summary(output_dir: str, playlist_full: pd.DataFrame, track_ar
 
 def make_tracks_section(output_dir: str, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = playlist_full.copy()
-    display_tracks["artist_names"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
+    display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
     display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full, output_dir))
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["Album"] = display_tracks["album_name"]
-    display_tracks = display_tracks.sort_values(by=["artist_names", "Album", "Track"])
+    display_tracks = display_tracks.sort_values(by=["artist_names_sorting", "Album", "Track"])
     display_tracks = display_tracks[["Track", "Album", "Artists"]]
     table = display_tracks.to_markdown(index=False)
     return ["## Tracks", "", table]
@@ -34,8 +34,8 @@ def make_tracks_section(output_dir: str, playlist_full: pd.DataFrame, track_arti
 
 def get_artist_names(track_uri: str, track_artist_full: pd.DataFrame):
     artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
-    artist_links = [artist["artist_name"] for i, artist in artists.iterrows()]
-    return ", ".join(artist_links)
+    names = [artist["artist_name"].lower() for i, artist in artists.iterrows()]
+    return ", ".join(names)
 
 
 def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame, output_dir: str):

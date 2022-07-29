@@ -1,4 +1,5 @@
 import pandas as pd
+from summarize.artist import make_artist_summary
 from summarize.playlist import make_playlist_summary
 from summarize.readme import make_readme
 from utils.util import prefix_df
@@ -27,16 +28,20 @@ def summarize_results(output_dir):
     artist_track_counts["artist_has_page"] = artist_track_counts["artist_track_count"] >= 10
     artists_with_page = {artist_uri for artist_uri in artist_track_counts[artist_track_counts["artist_has_page"]]["artist_uri"] }
 
-    tracks_full = pd.merge(tracks, audio_features, left_on="track_uri", right_on="track_uri")
-    tracks_full = pd.merge(tracks_full, albums, left_on="album_uri", right_on="album_uri")
+    artist_playlist = pd.merge(track_artist, playlist_track, on="track_uri").groupby(["artist_uri", "playlist_uri"]).count().reset_index()
+    artist_playlist.rename(columns={"track_uri": "playlist_artist_track_count"}, inplace=True)
 
-    track_artist_full = pd.merge(track_artist, artists, left_on="artist_uri", right_on="artist_uri")
-    track_artist_full = pd.merge(track_artist_full, artist_track_counts, left_on="artist_uri", right_on="artist_uri")
+    tracks_full = pd.merge(tracks, audio_features, on="track_uri")
+    tracks_full = pd.merge(tracks_full, albums, on="album_uri")
+
+    artists_full = pd.merge(artists, artist_track_counts, on="artist_uri")
+
+    track_artist_full = pd.merge(track_artist, artists_full, on="artist_uri")
 
     make_readme(output_dir, playlists, playlist_track)
 
-    playlists_full = pd.merge(playlists, playlist_track, left_on="playlist_uri", right_on="playlist_uri")
-    playlists_full = pd.merge(playlists_full, tracks_full, left_on="track_uri", right_on="track_uri")
+    playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
+    playlists_full = pd.merge(playlists_full, tracks_full, on="track_uri")
 
     for playlist_uri in playlists["playlist_uri"]:
         playlist_full = playlists_full[playlists_full["playlist_uri"] == playlist_uri]
@@ -44,3 +49,9 @@ def summarize_results(output_dir):
             continue
 
         make_playlist_summary(output_dir, playlist_full, track_artist_full)
+
+    for artist_uri in artists_with_page:
+        artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        
+        tracks_for_artist = track_artist[track_artist["artist_uri"] == artist_uri]
+        tracks_for_artist = pd.merge(tracks_for_artist, tracks_full, on="track_uri")
+        make_artist_summary(output_dir, artist, tracks_for_artist)
