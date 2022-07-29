@@ -22,10 +22,16 @@ def summarize_results(output_dir):
     prefix_df(playlists, "playlist_", prefixes)
     prefix_df(artists, "artist_", prefixes)
 
+    artist_track_counts = track_artist.groupby("artist_uri").count().reset_index()
+    artist_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
+    artist_track_counts["artist_has_page"] = artist_track_counts["artist_track_count"] >= 10
+    artists_with_page = {artist_uri for artist_uri in artist_track_counts[artist_track_counts["artist_has_page"]]["artist_uri"] }
+
     tracks_full = pd.merge(tracks, audio_features, left_on="track_uri", right_on="track_uri")
     tracks_full = pd.merge(tracks_full, albums, left_on="album_uri", right_on="album_uri")
 
     track_artist_full = pd.merge(track_artist, artists, left_on="artist_uri", right_on="artist_uri")
+    track_artist_full = pd.merge(track_artist_full, artist_track_counts, left_on="artist_uri", right_on="artist_uri")
 
     make_readme(output_dir, playlists, playlist_track)
 
