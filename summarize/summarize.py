@@ -9,13 +9,13 @@ from utils.util import prefix_df
 def summarize_results():
     album_artist = pd.read_csv(data_path('album_artist'))
     albums = pd.read_csv(data_path("albums"))
-    artists = pd.read_csv(data_path("artists.csv"))
-    audio_features = pd.read_csv(data_path("audio_features.csv"))
-    liked_tracks = pd.read_csv(data_path("liked_tracks.csv"))
-    playlist_track = pd.read_csv(data_path("playlist_track.csv"))
-    playlists = pd.read_csv(data_path("playlists.csv"))
-    track_artist = pd.read_csv(data_path("track_artist.csv"))
-    tracks = pd.read_csv(data_path("tracks.csv"))
+    artists = pd.read_csv(data_path("artists"))
+    audio_features = pd.read_csv(data_path("audio_features"))
+    liked_tracks = pd.read_csv(data_path("liked_tracks"))
+    playlist_track = pd.read_csv(data_path("playlist_track"))
+    playlists = pd.read_csv(data_path("playlists"))
+    track_artist = pd.read_csv(data_path("track_artist"))
+    tracks = pd.read_csv(data_path("tracks"))
 
     prefixes = ["album_", "track_", "playlist_", "artist_"]
     prefix_df(albums, "album_", prefixes)
