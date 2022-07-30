@@ -38,7 +38,7 @@ def playlist_path(playlist_name, relative_to=None):
 def data_path(table_name, relative_to=None):
     return relative_to_path(
         os.path.join(
-            "artists",
+            "data",
             table_name + ".csv"
         ), 
         relative_to

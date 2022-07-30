@@ -2,20 +2,20 @@ import pandas as pd
 from summarize.artist import make_artist_summary
 from summarize.playlist import make_playlist_summary
 from summarize.readme import make_readme
-from utils.settings import output_dir
+from utils.path import data_path
 from utils.util import prefix_df
 
 
 def summarize_results():
-    album_artist = pd.read_csv(f"{output_dir()}/data/album_artist.csv")
-    albums = pd.read_csv(f"{output_dir()}/data/albums.csv")
-    artists = pd.read_csv(f"{output_dir()}/data/artists.csv")
-    audio_features = pd.read_csv(f"{output_dir()}/data/audio_features.csv")
-    liked_tracks = pd.read_csv(f"{output_dir()}/data/liked_tracks.csv")
-    playlist_track = pd.read_csv(f"{output_dir()}/data/playlist_track.csv")
-    playlists = pd.read_csv(f"{output_dir()}/data/playlists.csv")
-    track_artist = pd.read_csv(f"{output_dir()}/data/track_artist.csv")
-    tracks = pd.read_csv(f"{output_dir()}/data/tracks.csv")
+    album_artist = pd.read_csv(data_path('album_artist'))
+    albums = pd.read_csv(data_path("albums"))
+    artists = pd.read_csv(data_path("artists.csv"))
+    audio_features = pd.read_csv(data_path("audio_features.csv"))
+    liked_tracks = pd.read_csv(data_path("liked_tracks.csv"))
+    playlist_track = pd.read_csv(data_path("playlist_track.csv"))
+    playlists = pd.read_csv(data_path("playlists.csv"))
+    track_artist = pd.read_csv(data_path("track_artist.csv"))
+    tracks = pd.read_csv(data_path("tracks.csv"))
 
     prefixes = ["album_", "track_", "playlist_", "artist_"]
     prefix_df(albums, "album_", prefixes)
