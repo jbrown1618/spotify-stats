@@ -1,6 +1,5 @@
 spotify-client-id
 spotify-client-secret
-.cache
 venv/
 __pycache__/
 output/
