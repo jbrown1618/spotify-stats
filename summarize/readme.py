@@ -1,9 +1,11 @@
 import pandas as pd
 from utils.path import playlist_path, readme_path
 from utils.settings import output_dir
-from utils.util import file_name_friendly, get_id, md_link
+from utils.util import get_id, md_link
 
 def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
+    print("Generating README")
+
     readme = []
 
     readme.append(title("jbrown1618"))

@@ -25,9 +25,8 @@ album_artist = []
 album_track = []
 
 def save_data():
-    if os.path.isdir(f"{output_dir()}/data"):
-        return
-    os.makedirs(f"{output_dir()}/data")
+    if not os.path.isdir(f"{output_dir()}/data"):
+        os.makedirs(f"{output_dir()}/data")
 
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id(), 
                                                    client_secret=spotify_client_secret(), 
@@ -38,6 +37,7 @@ def save_data():
     save_liked_tracks_data(sp)
     save_audio_features_data(sp)
 
+    print('Saving data...')
     pd.DataFrame(playlists_data).to_csv(data_path("playlists"), index=False)
     pd.DataFrame(tracks_data).to_csv(data_path("tracks"), index=False)
     pd.DataFrame(artists_data).to_csv(data_path("artists"), index=False)
@@ -54,6 +54,7 @@ def save_playlists_data(sp: spotipy.Spotify):
     offset = 0
     has_more = True
     while has_more:
+        print(f'Fetching {page_size} playlists...')
         playlists = sp.current_user_playlists(limit=page_size, offset=offset)
         for playlist in playlists["items"]:
             process_playlist(playlist)
@@ -67,6 +68,7 @@ def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
     offset = 0
     has_more = True
     while has_more:
+        print(f'Fetching {page_size} tracks...')
         tracks = sp.playlist_tracks(playlist_uri, limit=page_size, offset=offset)
         for item in tracks["items"]:
             track = item["track"]
@@ -81,6 +83,7 @@ def save_liked_tracks_data(sp: spotipy.Spotify):
     offset = 0
     has_more = True
     while has_more:
+        print(f'Fetching {page_size} liked tracks...')
         saved_tracks = sp.current_user_saved_tracks(limit=page_size, offset=offset)
 
         for item in saved_tracks["items"]:
@@ -98,6 +101,7 @@ def save_audio_features_data(sp: spotipy.Spotify):
         next = queue[0:page_size]
         queue = queue[page_size:]
 
+        print(f'Fetching {page_size} audio features...')
         features = sp.audio_features(tracks=next)
         for track_features in features:
             process_audio_features(track_features)

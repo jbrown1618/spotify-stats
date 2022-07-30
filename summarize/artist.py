@@ -3,6 +3,7 @@ import pandas as pd
 from utils.path import artist_path, artists_path
 
 def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
+    print(f"Generating summary for artist {artist['artist_name']}")
     file_name = artist_path(artist["artist_name"])
     lines = []
 

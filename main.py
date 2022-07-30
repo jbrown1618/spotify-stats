@@ -1,11 +1,12 @@
 from retrieve.save_data import save_data
 from summarize.summarize import summarize_results
-from utils.settings import init_settings, output_dir, spotify_client_id, spotify_client_secret
+from utils.settings import init_settings, skip_data_fetching
 
 
 def main():
     init_settings()
-    save_data()
+    if not skip_data_fetching():
+        save_data()
     summarize_results()
 
 

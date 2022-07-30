@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 settings = {
     "output_dir": "./output",
     "spotify_client_id": "",
-    "spotify_client_secret": ""
+    "spotify_client_secret": "",
+    "skip_data_fetching": False
 }
 
 
@@ -13,6 +14,7 @@ def init_settings():
     set_output_dir(os.getenv("OUTPUT_DIR"))
     set_spotify_client_id(os.getenv("SPOTIFY_CLIENT_ID"))
     set_spotify_client_secret(os.getenv("SPOTIFY_CLIENT_SECRET"))
+    set_skip_data_fetching(os.getenv("SKIP_DATA_FETCHING") is not None and os.getenv("SKIP_DATA_FETCHING") != "False")
 
 
 def set_output_dir(output_dir):
@@ -37,3 +39,11 @@ def set_spotify_client_secret(secret):
 
 def spotify_client_secret():
     return settings["spotify_client_secret"]
+
+
+def set_skip_data_fetching(skip:bool):
+    settings["skip_data_fetching"] = skip
+
+
+def skip_data_fetching():
+    return settings["skip_data_fetching"]

@@ -6,6 +6,7 @@ from utils.util import md_link
 
 def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     playlist_name = playlist_full["playlist_name"].iloc[0]
+    print(f"Generating summary for playlist {playlist_name}")
     
     lines = []
     lines.append(f"# {playlist_name}")
