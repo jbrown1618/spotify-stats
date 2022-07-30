@@ -1,21 +1,18 @@
 import os
 import pandas as pd
+from utils.path import artist_path, artists_path
 
-from utils.util import file_name_friendly
-
-
-def make_artist_summary(output_dir, artist: pd.Series, tracks: pd.DataFrame):
+def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
+    file_name = artist_path(artist["artist_name"])
     lines = []
 
     lines.append(f"# {artist['artist_name']}")
     lines.append("")
     lines += make_tracks_section(tracks)
 
-    artists_dir = os.path.join(output_dir, "artists")
-    if not os.path.isdir(artists_dir):
-        os.makedirs(artists_dir)
+    if not os.path.isdir(artists_path()):
+        os.makedirs(artists_path())
 
-    file_name = os.path.join(artists_dir, file_name_friendly(artist['artist_name']) + ".md")
     with open(file_name, "w") as f:
         f.write("\n".join(lines))
 

@@ -1,18 +1,12 @@
-import os
 from retrieve.save_data import save_data
 from summarize.summarize import summarize_results
-from dotenv import load_dotenv
+from utils.settings import init_settings, output_dir, spotify_client_id, spotify_client_secret
 
 
 def main():
-    load_dotenv()
-
-    output_dir = os.getenv("OUTPUT_DIR")
-    spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
-    spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-
-    save_data(output_dir, spotify_client_id, spotify_client_secret)
-    summarize_results(output_dir)
+    init_settings()
+    save_data()
+    summarize_results()
 
 
 if __name__ == '__main__':

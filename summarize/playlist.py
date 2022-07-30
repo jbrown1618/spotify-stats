@@ -1,29 +1,28 @@
 import os
 import pandas as pd
+from utils.path import artist_path, playlist_path, playlists_path
+from utils.util import md_link
 
-from utils.util import file_name_friendly, md_link
 
-
-def make_playlist_summary(output_dir: str, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
-    lines = []
-
+def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     playlist_name = playlist_full["playlist_name"].iloc[0]
+    
+    lines = []
     lines.append(f"# {playlist_name}")
     lines.append("")
-    lines += make_tracks_section(output_dir, playlist_full, track_artist_full)
+    lines += make_tracks_section(playlist_full, track_artist_full)
 
-    playlists_dir = os.path.join(output_dir, "playlists")
-    if not os.path.isdir(playlists_dir):
-        os.makedirs(playlists_dir)
+    if not os.path.isdir(playlists_path()):
+        os.makedirs(playlists_path())
 
-    with open(f"{playlists_dir}/{file_name_friendly(playlist_name)}.md", "w") as f:
+    with open(playlist_path(playlist_name), "w") as f:
         f.write("\n".join(lines))
 
 
-def make_tracks_section(output_dir: str, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
+def make_tracks_section(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = playlist_full.copy()
     display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
-    display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full, output_dir))
+    display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full))
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["Album"] = display_tracks["album_name"]
     display_tracks["Liked"] = display_tracks["track_liked"]
@@ -39,14 +38,14 @@ def get_artist_names(track_uri: str, track_artist_full: pd.DataFrame):
     return ", ".join(names)
 
 
-def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame, output_dir: str):
+def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame):
     artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
-    artist_links = [get_artist_link(artist, output_dir) for i, artist in artists.iterrows()]
+    artist_links = [get_artist_link(artist) for i, artist in artists.iterrows()]
     return ", ".join(artist_links)
 
 
-def get_artist_link(artist, output_dir: str):
+def get_artist_link(artist):
     if artist["artist_has_page"]:
-        return md_link(artist["artist_name"], os.path.join(output_dir, "artists", file_name_friendly(artist["artist_name"]) + ".md"))
+        return md_link(artist["artist_name"], artist_path(artist["artist_name"], playlists_path()))
     else:
         return artist["artist_name"]

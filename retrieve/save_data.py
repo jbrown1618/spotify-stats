@@ -2,6 +2,8 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
+from utils.path import data_path
+from utils.settings import output_dir, spotify_client_id, spotify_client_secret
 
 page_size = 50
 
@@ -22,13 +24,13 @@ track_artist = []
 album_artist = []
 album_track = []
 
-def save_data(output_dir, client_id, client_secret):
-    if os.path.isdir(f"{output_dir}/data"):
+def save_data():
+    if os.path.isdir(f"{output_dir()}/data"):
         return
-    os.makedirs(f"{output_dir}/data")
+    os.makedirs(f"{output_dir()}/data")
 
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id, 
-                                                   client_secret=client_secret, 
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id(), 
+                                                   client_secret=spotify_client_secret(), 
                                                    redirect_uri="http://localhost:3000/",
                                                    open_browser=False,
                                                    scope="user-library-read"))
@@ -36,16 +38,16 @@ def save_data(output_dir, client_id, client_secret):
     save_liked_tracks_data(sp)
     save_audio_features_data(sp)
 
-    pd.DataFrame(playlists_data).to_csv(f"{output_dir}/data/playlists.csv", index=False)
-    pd.DataFrame(tracks_data).to_csv(f"{output_dir}/data/tracks.csv", index=False)
-    pd.DataFrame(artists_data).to_csv(f"{output_dir}/data/artists.csv", index=False)
-    pd.DataFrame(albums_data).to_csv(f"{output_dir}/data/albums.csv", index=False)
-    pd.DataFrame(liked_tracks).to_csv(f"{output_dir}/data/liked_tracks.csv", index=False)
-    pd.DataFrame(playlist_track).to_csv(f"{output_dir}/data/playlist_track.csv", index=False)
-    pd.DataFrame(track_artist).to_csv(f"{output_dir}/data/track_artist.csv", index=False)
-    pd.DataFrame(album_artist).to_csv(f"{output_dir}/data/album_artist.csv", index=False)
-    pd.DataFrame(album_track).to_csv(f"{output_dir}/data/album_track.csv", index=False)
-    pd.DataFrame(audio_features).to_csv(f"{output_dir}/data/audio_features.csv", index=False)
+    pd.DataFrame(playlists_data).to_csv(data_path("playlists"), index=False)
+    pd.DataFrame(tracks_data).to_csv(data_path("tracks"), index=False)
+    pd.DataFrame(artists_data).to_csv(data_path("artists"), index=False)
+    pd.DataFrame(albums_data).to_csv(data_path("albums"), index=False)
+    pd.DataFrame(liked_tracks).to_csv(data_path("liked_tracks"), index=False)
+    pd.DataFrame(playlist_track).to_csv(data_path("playlist_track"), index=False)
+    pd.DataFrame(track_artist).to_csv(data_path("track_artist"), index=False)
+    pd.DataFrame(album_artist).to_csv(data_path("album_artist"), index=False)
+    pd.DataFrame(album_track).to_csv(data_path("album_track"), index=False)
+    pd.DataFrame(audio_features).to_csv(data_path("audio_features"), index=False)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
