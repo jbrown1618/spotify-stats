@@ -12,8 +12,8 @@ settings = {
 def init_settings():
     load_dotenv()
     set_output_dir(os.getenv("OUTPUT_DIR"))
-    set_spotify_client_id(os.getenv("SPOTIFY_CLIENT_ID"))
-    set_spotify_client_secret(os.getenv("SPOTIFY_CLIENT_SECRET"))
+    set_spotify_client_id(os.getenv("SPOTIPY_CLIENT_ID"))
+    set_spotify_client_secret(os.getenv("SPOTIPY_CLIENT_SECRET"))
     set_skip_data_fetching(os.getenv("SKIP_DATA_FETCHING") is not None and os.getenv("SKIP_DATA_FETCHING") != "False")
 
 
