@@ -1,7 +1,7 @@
 import pandas as pd
 from summarize.artist import make_artist_summary
 from summarize.playlist import make_playlist_summary
-from summarize.readme import make_readme
+from summarize.overview import make_readme
 from utils.path import data_path
 from utils.util import prefix_df
 

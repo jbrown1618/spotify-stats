@@ -3,14 +3,18 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 from utils.path import data_path
-from utils.settings import output_dir, spotify_client_id, spotify_client_secret
+from utils.settings import spotify_client_id, spotify_client_secret
 
 page_size = 50
+small_page_size = 20
+
+queued_artists = set()
+queued_albums = set()
 
 processed_playlists = set()
 processed_tracks = set()
-processed_artists = set()
 processed_albums = set()
+processed_artists = set()
 
 playlists_data = []
 tracks_data = []
@@ -23,6 +27,7 @@ playlist_track = []
 track_artist = []
 album_artist = []
 album_track = []
+artist_genre = []
 
 def save_data():
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id(), 
@@ -32,6 +37,8 @@ def save_data():
                                                    scope="user-library-read"))
     save_playlists_data(sp)
     save_liked_tracks_data(sp)
+    save_albums_data(sp)
+    save_artists_data(sp)
     save_audio_features_data(sp)
 
     print('Saving data...')
@@ -45,6 +52,7 @@ def save_data():
     pd.DataFrame(album_artist).to_csv(data_path("album_artist"), index=False)
     pd.DataFrame(album_track).to_csv(data_path("album_track"), index=False)
     pd.DataFrame(audio_features).to_csv(data_path("audio_features"), index=False)
+    pd.DataFrame(artist_genre).to_csv(data_path("artist_genre"), index=False)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
@@ -74,7 +82,22 @@ def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
 
         has_more = offset + page_size < tracks["total"]
         offset += page_size
-        
+
+
+def process_playlist(playlist):
+    if playlist["uri"] in processed_playlists:
+        return
+
+    playlists_data.append(playlist_data(playlist))
+
+
+def playlist_data(playlist):
+    fields = ["name", "collaborative", "public", "uri"]
+    data = {field: playlist[field] for field in fields}
+    if playlist["images"] is not None and len(playlist["images"]) > 0:
+        data["image_url"] = playlist["images"][0]["url"]
+    return data
+
 
 def save_liked_tracks_data(sp: spotipy.Spotify):
     offset = 0
@@ -92,25 +115,6 @@ def save_liked_tracks_data(sp: spotipy.Spotify):
         offset += page_size
 
 
-def save_audio_features_data(sp: spotipy.Spotify):
-    queue = [track_uri for track_uri in processed_tracks]
-    while len(queue) > 0:
-        next = queue[0:page_size]
-        queue = queue[page_size:]
-
-        print(f'Fetching {page_size} audio features...')
-        features = sp.audio_features(tracks=next)
-        for track_features in features:
-            process_audio_features(track_features)
-
-
-def process_playlist(playlist):
-    if playlist["uri"] in processed_playlists:
-        return
-
-    playlists_data.append(playlist_data(playlist))
-
-
 def process_track(track):
     if track["uri"] in processed_tracks:
         return
@@ -120,19 +124,37 @@ def process_track(track):
     
     for artist in track["artists"]:
         track_artist.append({ "track_uri": track["uri"], "artist_uri": artist["uri"] })
-        process_artist(artist)
+        queue_artist(artist)
     
     album = track["album"]
     album_track.append({ "album_uri": album["uri"], "track_uri": track["uri"] })
-    process_album(album)
+    queue_album(album)
 
-            
-def process_artist(artist):
-    if artist["uri"] in processed_artists:
+
+def track_data(track):
+    fields = ["name", "popularity", "explicit", "duration_ms", "uri"]
+    data = {field: track[field] for field in fields}
+    data["album_uri"] = track["album"]["uri"]
+    return data
+
+
+def save_albums_data(sp: spotipy.Spotify):
+    queue = [album_uri for album_uri in queued_albums]
+    while len(queue) > 0:
+        next = queue[0:small_page_size]
+        queue = queue[small_page_size:]
+
+        print(f'Fetching {len(next)} album details...')
+        albums = sp.albums(albums=next)
+        for album in albums["albums"]:
+            process_album(album)
+
+
+def queue_album(album):
+    if album["uri"] in queued_albums:
         return
 
-    artists_data.append(artist_data(artist))
-    processed_artists.add(artist["uri"])
+    queued_albums.add(album["uri"])
 
 
 def process_album(album):
@@ -144,36 +166,75 @@ def process_album(album):
 
     for artist in album["artists"]:
         album_artist.append({ "album_uri": album["uri"], "artist_uri": artist["uri"] })
-        process_artist(artist)
+        queue_artist(artist)
+
+
+def album_data(album):
+    fields = ["name", "album_type", "label", "popularity", "total_tracks", "release_date", "uri"]
+    data = {field: album[field] for field in fields}
+
+    if album["images"] is not None and len(album["images"]) > 0:
+        data["image_url"] = album["images"][0]["url"]
+
+    return data
+
+
+def save_artists_data(sp: spotipy.Spotify):
+    queue = [artist_uri for artist_uri in queued_artists]
+    while len(queue) > 0:
+        next = queue[0:page_size]
+        queue = queue[page_size:]
+
+        print(f'Fetching {len(next)} artist details...')
+        artists = sp.artists(artists=next)
+        for artist in artists["artists"]:
+            process_artist(artist)
+
+            
+def queue_artist(artist):
+    if artist["uri"] in queued_artists:
+        return
+
+    queued_artists.add(artist["uri"])
+
+
+def process_artist(artist):
+    if artist["uri"] in processed_artists:
+        return
+
+    for genre in artist["genres"]:
+        artist_genre.append({"artist_uri": artist["uri"], "genre": genre})
+
+    artists_data.append(artist_data(artist))
+    processed_artists.add(artist["uri"])
+
+
+def artist_data(artist):
+    fields = ["name", "uri", "popularity"]
+    data = {field: artist[field] for field in fields}
+
+    data["followers"] = artist["followers"]["total"]
+
+    if artist["images"] is not None and len(artist["images"]) > 0:
+        data["image_url"] = artist["images"][0]["url"]
+
+    return data
+
+
+def save_audio_features_data(sp: spotipy.Spotify):
+    queue = [track_uri for track_uri in processed_tracks]
+    while len(queue) > 0:
+        next = queue[0:page_size]
+        queue = queue[page_size:]
+
+        print(f'Fetching {len(next)} audio features...')
+        features = sp.audio_features(tracks=next)
+        for track_features in features:
+            process_audio_features(track_features)
 
 
 def process_audio_features(features):
     audio_features.append(audio_features_data(features))
-
-
-def track_data(track):
-    fields = ["name", "popularity", "explicit", "duration_ms", "uri"]
-    data = {field: track[field] for field in fields}
-    data["album_uri"] = track["album"]["uri"]
-    return data
-
-
-def artist_data(artist):
-    fields = ["name", "uri"]
-    data = {field: artist[field] for field in fields}
-    return data
-
-
-def album_data(album):
-    fields = ["name", "album_type", "release_date", "uri"]
-    data = {field: album[field] for field in fields}
-    return data
-
-
-def playlist_data(playlist):
-    fields = ["name", "collaborative", "public", "uri"]
-    data = {field: playlist[field] for field in fields}
-    return data
 
 
 def audio_features_data(features):

@@ -1,21 +1,29 @@
-import os
 import pandas as pd
 from utils.path import artist_path, artists_path
+from utils.util import md_image
 
 def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
     print(f"Generating summary for artist {artist['artist_name']}")
     file_name = artist_path(artist["artist_name"])
     lines = []
 
-    lines.append(f"# {artist['artist_name']}")
-    lines.append("")
-    lines += make_tracks_section(tracks)
+    lines += title(artist)
+    lines += image(artist)
+    lines += tracks_section(tracks)
 
     with open(file_name, "w") as f:
         f.write("\n".join(lines))
 
 
-def make_tracks_section(tracks: pd.DataFrame):
+def title(artist):
+    return ["", f"# {artist['artist_name']}", ""]
+
+
+def image(artist):
+    return ["", md_image(artist["artist_name"], artist["artist_image_url"], 100), ""]
+
+
+def tracks_section(tracks: pd.DataFrame):
     display_tracks = tracks.copy()
 
     display_tracks["Track"] = display_tracks["track_name"]
