@@ -51,7 +51,7 @@ def tracks_section(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame)
     display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full))
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["Album"] = display_tracks["album_name"]
-    display_tracks["Liked"] = display_tracks["track_liked"]
+    display_tracks["Liked"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
     display_tracks = display_tracks.sort_values(by=["artist_names_sorting", "Album", "Track"])
     display_tracks = display_tracks[["Track", "Album", "Artists", "Liked"]]
     table = display_tracks.to_markdown(index=False)
