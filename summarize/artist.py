@@ -11,9 +11,6 @@ def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
     lines.append("")
     lines += make_tracks_section(tracks)
 
-    if not os.path.isdir(artists_path()):
-        os.makedirs(artists_path())
-
     with open(file_name, "w") as f:
         f.write("\n".join(lines))
 

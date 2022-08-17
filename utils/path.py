@@ -35,6 +35,18 @@ def playlist_path(playlist_name, relative_to=None):
     )
 
 
+def playlist_artist_graph_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "artists.png"
+        ),
+        relative_to
+    )
+
+
 def data_path(table_name, relative_to=None):
     return relative_to_path(
         os.path.join(
@@ -49,6 +61,7 @@ def relative_to_path(destination, relative_to=None):
     path_from_cwd = os.path.join(output_dir(), destination)
 
     if relative_to is None:
+        ensure_directory(path_from_cwd)
         return path_from_cwd
     else:
         return os.path.relpath(
@@ -56,3 +69,10 @@ def relative_to_path(destination, relative_to=None):
             os.path.abspath(relative_to)
         )
 
+
+def ensure_directory(path: str):
+    dir = os.path.dirname(path)
+    if os.path.isdir(dir):
+        return
+
+    os.makedirs(dir)

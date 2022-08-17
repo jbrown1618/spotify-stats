@@ -25,9 +25,6 @@ album_artist = []
 album_track = []
 
 def save_data():
-    if not os.path.isdir(f"{output_dir()}/data"):
-        os.makedirs(f"{output_dir()}/data")
-
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id(), 
                                                    client_secret=spotify_client_secret(), 
                                                    redirect_uri="http://localhost:3000/",
