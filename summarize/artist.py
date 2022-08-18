@@ -1,5 +1,5 @@
 import pandas as pd
-from utils.path import artist_path, artists_path
+from utils.path import artist_path
 from utils.util import md_image
 
 def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):

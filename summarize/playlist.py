@@ -5,9 +5,9 @@ from utils.path import artist_path, playlist_path, playlists_path, playlist_arti
 from utils.util import md_image, md_link, md_summary_details
 
 
-def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
-    playlist_name = playlist_full["playlist_name"].iloc[0]
-    playlist_image_url = playlist_full["playlist_image_url"].iloc[0]
+def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, is_liked_songs=False):
+    playlist_name = "Liked Songs" if is_liked_songs else playlist_full["playlist_name"].iloc[0]
+    playlist_image_url = None if is_liked_songs else playlist_full["playlist_image_url"].iloc[0]
     print(f"Generating summary for playlist {playlist_name}")
     
     lines = []
@@ -25,6 +25,9 @@ def title(playlist_name):
 
 
 def image(playlist_name, playlist_image_url):
+    if playlist_image_url is None:
+        return []
+        
     return ["", md_image(playlist_name, playlist_image_url, 100), ""]
 
 

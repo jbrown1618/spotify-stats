@@ -53,6 +53,9 @@ def summarize_results():
 
         make_playlist_summary(playlist_full, track_artist_full)
 
+    liked_tracks_full = pd.merge(liked_tracks, tracks_full, on="track_uri")
+    make_playlist_summary(liked_tracks_full, track_artist_full, is_liked_songs=True)
+
     for artist_uri in artists_with_page:
         artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        
         tracks_for_artist = track_artist[track_artist["artist_uri"] == artist_uri]
