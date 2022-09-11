@@ -1,5 +1,5 @@
 import pandas as pd
-from utils.path import playlist_path, readme_path
+from utils.path import errors_path, playlist_path, readme_path
 from utils.settings import output_dir
 from utils.util import md_link, spotify_link
 
@@ -11,6 +11,7 @@ def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     readme += title("jbrown1618")
     readme += byline()
     readme += liked_songs()
+    readme += errors()
     readme += playlists_section(playlists, playlist_track)
 
     with open(readme_path(), "w") as f:
@@ -27,6 +28,10 @@ def byline():
 
 def liked_songs():
     return ["## Liked Songs", md_link("Liked Songs", playlist_path("Liked Songs", output_dir()))]
+
+
+def errors():
+    return ['## Possible organizational errors', md_link("Possible organizational errors", errors_path(output_dir()))]
 
 
 def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):

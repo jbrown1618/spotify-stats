@@ -2,6 +2,7 @@ import pandas as pd
 from summarize.artist import make_artist_summary
 from summarize.playlist import make_playlist_summary
 from summarize.overview import make_readme
+from summarize.errors import make_errors
 from utils.path import data_path
 from utils.util import prefix_df
 
@@ -37,14 +38,17 @@ def summarize_results():
     liked_track_uris = { uri for uri in liked_tracks["track_uri"] }
     tracks_full["track_liked"] = tracks_full["track_uri"].apply(lambda uri: uri in liked_track_uris)
 
+    liked_tracks_full = pd.merge(liked_tracks, tracks_full, on="track_uri")
+    
     artists_full = pd.merge(artists, artist_track_counts, on="artist_uri")
 
     track_artist_full = pd.merge(track_artist, artists_full, on="artist_uri")
 
-    make_readme(playlists, playlist_track)
-
     playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
     playlists_full = pd.merge(playlists_full, tracks_full, on="track_uri")
+
+    make_readme(playlists, playlist_track)
+    make_errors(tracks_full, playlists_full, track_artist_full)
 
     for playlist_uri in playlists["playlist_uri"]:
         playlist_full = playlists_full[playlists_full["playlist_uri"] == playlist_uri]
@@ -53,7 +57,6 @@ def summarize_results():
 
         make_playlist_summary(playlist_full, track_artist_full)
 
-    liked_tracks_full = pd.merge(liked_tracks, tracks_full, on="track_uri")
     make_playlist_summary(liked_tracks_full, track_artist_full, is_liked_songs=True)
 
     for artist_uri in artists_with_page:

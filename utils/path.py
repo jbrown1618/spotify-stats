@@ -7,6 +7,10 @@ def readme_path(relative_to=None):
     return relative_to_path("README.md", relative_to)
 
 
+def errors_path(relative_to=None):
+    return relative_to_path("errors.md", relative_to)
+
+
 def artists_path():
     return os.path.join(output_dir(), "artists")
 
