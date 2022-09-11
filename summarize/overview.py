@@ -1,7 +1,7 @@
 import pandas as pd
 from utils.path import playlist_path, readme_path
 from utils.settings import output_dir
-from utils.util import get_id, md_link
+from utils.util import md_link, spotify_link
 
 def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     print("Generating Overview")
@@ -38,15 +38,11 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     display_playlists = pd\
         .merge(left=playlists, right=track_counts, left_on="playlist_uri", right_on="playlist_uri", how="inner")
 
-    display_playlists["Open"] = ""
-    for i, row in display_playlists.iterrows():
-        link = md_link("Open in Spotify", f"https://open.spotify.com/playlist/{get_id(row['playlist_uri'])}")
-        display_playlists["Open"][i] = link
-
+    display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
     display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_path(name, output_dir())))
     display_playlists["Number of Songs"] = display_playlists["track_uri"]
 
-    display_playlists = display_playlists[["Name", "Open", "Number of Songs"]]
+    display_playlists = display_playlists[["Name", "Number of Songs", "🔗"]]
 
     display_playlists.sort_values(by="Name", inplace=True)
 

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from utils.path import artist_path, playlist_path, playlists_path, playlist_artist_graph_path
-from utils.util import md_image, md_link, md_summary_details
+from utils.util import md_image, md_link, md_summary_details, spotify_link
 
 
 def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, is_liked_songs=False):
@@ -37,7 +37,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     grouped = grouped.sort_values(by=["track_uri", "artist_uri"], ascending=False)
     grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "artist_name": "Artist"})
     
-    fig_data = grouped.drop(columns="artist_uri").head(30)
+    fig_data = grouped.drop(columns=["artist_uri"]).head(30)
     sns.set(rc = {"figure.figsize": (13,13) })
     ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Artist")
     ax.bar_label(ax.containers[0])
@@ -49,9 +49,10 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     plt.clf()
 
     table_data = grouped
-    table_data["Artist"] = table_data["artist_uri"].apply(lambda artist_uri: get_display_artist(artist_uri, track_artist_full))
-    table_data = table_data.drop(columns="artist_uri")
-    full_list = md_summary_details("See all artists", grouped.to_markdown(index=False))
+    table_data["Artist"] = table_data["artist_uri"].apply(lambda uri: get_display_artist(uri, track_artist_full))
+    table_data["🔗"] = table_data["artist_uri"].apply(lambda uri: spotify_link(uri))
+    table_data = table_data.drop(columns=["artist_uri"])
+    full_list = md_summary_details("See all artists", table_data.to_markdown(index=False))
 
     return ["## Top Artists", "", img, "", full_list, ""]
 
@@ -61,10 +62,11 @@ def tracks_section(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame)
     display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
     display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full))
     display_tracks["Track"] = display_tracks["track_name"]
+    display_tracks["🔗"] = display_tracks["track_uri"].apply(lambda uri: spotify_link(uri))
     display_tracks["Album"] = display_tracks["album_name"]
-    display_tracks["Liked"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
+    display_tracks["💚"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
     display_tracks = display_tracks.sort_values(by=["artist_names_sorting", "Album", "Track"])
-    display_tracks = display_tracks[["Track", "Album", "Artists", "Liked"]]
+    display_tracks = display_tracks[["Track", "Album", "Artists", "💚", "🔗"]]
     table = display_tracks.to_markdown(index=False)
     return ["## Tracks", "", table, ""]
 

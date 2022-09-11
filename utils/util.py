@@ -29,6 +29,13 @@ def md_image(alt_text: str, url: str, width=None):
     return f'<img src="{url}" alt="{alt_text}" width="{width}" />'
 
 
+def spotify_link(uri: str):
+    pieces = uri.split(":")
+    type = pieces[1]
+    id = pieces[2]
+    return md_link("🔗", f"https://open.spotify.com/{type}/{id}")
+
+
 def file_name_friendly(text: str):
     return re.sub(r"[^a-z0-9]", "_", text.lower())
 
