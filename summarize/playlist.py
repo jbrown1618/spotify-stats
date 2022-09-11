@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from utils.path import artist_path, playlist_path, playlists_path, playlist_artist_graph_path
+from utils.path import artist_path, playlist_label_graph_path, playlist_path, playlists_path, playlist_artist_graph_path
 from utils.util import md_image, md_link, md_summary_details, spotify_link
 
 
@@ -14,6 +14,7 @@ def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.Dat
     lines += title(playlist_name)
     lines += image(playlist_name, playlist_image_url)
     lines += artists_section(playlist_name, playlist_full, track_artist_full)
+    lines += labels_section(playlist_name, playlist_full)
     lines += tracks_section(playlist_full, track_artist_full)
 
     with open(playlist_path(playlist_name), "w") as f:
@@ -57,6 +58,28 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     return ["## Top Artists", "", img, "", full_list, ""]
 
 
+def labels_section(playlist_name, playlist_full: pd.DataFrame):
+    grouped = playlist_full.groupby("album_label").agg({"track_uri": "count"}).reset_index()
+    grouped = grouped.sort_values(by=["track_uri", "album_label"], ascending=False)
+    grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_label": "Label"})
+    
+    fig_data = grouped[["Number of Tracks", "Label"]].head(30)
+    sns.set(rc = {"figure.figsize": (13,13) })
+    ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Label")
+    ax.bar_label(ax.containers[0])
+    ax.get_figure().savefig(playlist_label_graph_path(playlist_name))
+    img = md_image(
+        f"Bar chart of top {len(fig_data)} record labels in {playlist_name}", 
+        playlist_label_graph_path(playlist_name, playlists_path())
+    )
+    plt.clf()
+
+    table_data = grouped[["Number of Tracks", "Label"]]
+    full_list = md_summary_details("See all labels", table_data.to_markdown(index=False))
+
+    return ["## Top Record Labels", "", img, "", full_list, ""]
+
+
 def tracks_section(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = playlist_full.copy()
     display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
@@ -64,9 +87,10 @@ def tracks_section(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame)
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["🔗"] = display_tracks["track_uri"].apply(lambda uri: spotify_link(uri))
     display_tracks["Album"] = display_tracks["album_name"]
+    display_tracks["Label"] = display_tracks["album_label"]
     display_tracks["💚"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
     display_tracks = display_tracks.sort_values(by=["artist_names_sorting", "Album", "Track"])
-    display_tracks = display_tracks[["Track", "Album", "Artists", "💚", "🔗"]]
+    display_tracks = display_tracks[["Track", "Album", "Artists", "Label", "💚", "🔗"]]
     table = display_tracks.to_markdown(index=False)
     return ["## Tracks", "", table, ""]
 

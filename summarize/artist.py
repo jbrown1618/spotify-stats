@@ -29,9 +29,10 @@ def tracks_section(tracks: pd.DataFrame):
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["🔗"] = display_tracks["track_uri"].apply(lambda uri: spotify_link(uri))
     display_tracks["Album"] = display_tracks["album_name"]
+    display_tracks["Label"] = display_tracks["album_label"]
     display_tracks["💚"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
     display_tracks.sort_values(by=["album_release_date", "Track"], inplace=True)
-    display_tracks = display_tracks[["Track", "Album", "💚", "🔗"]]
+    display_tracks = display_tracks[["Track", "Album", "Label", "💚", "🔗"]]
 
     table = display_tracks.to_markdown(index=False)
 
