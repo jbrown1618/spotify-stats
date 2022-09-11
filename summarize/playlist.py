@@ -14,6 +14,7 @@ def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.Dat
     lines = []
     lines += title(playlist_name)
     lines += image(playlist_name, playlist_image_url)
+    lines += [f"{len(playlist_full)} songs", ""]
     lines += artists_section(playlist_name, playlist_full, track_artist_full)
     lines += albums_section(playlist_name, playlist_full)
     lines += labels_section(playlist_name, playlist_full)
@@ -56,7 +57,13 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     table_data["Art"] = table_data["artist_image_url"].apply(lambda src: md_image("", src, 50))
     table_data["🔗"] = table_data["artist_uri"].apply(lambda uri: spotify_link(uri))
     table_data = table_data[["Number of Tracks", "Art", "Artist", "🔗"]]
-    full_list = md_summary_details("See all artists", table_data.to_markdown(index=False))
+
+    summary = f"See all {len(table_data)} artists"
+    if len(table_data) > 100:
+        summary = "See top 100 artists"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
 
     return ["## Top Artists", "", img, "", full_list, ""]
 
@@ -80,7 +87,13 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
     grouped["Art"] = grouped["album_image_url"].apply(lambda src: md_image("", src, 50))
     grouped["🔗"] = grouped["album_uri"].apply(lambda uri: spotify_link(uri))
     table_data = grouped[["Number of Tracks", "Art", "Album", "🔗"]]
-    full_list = md_summary_details("See all albums", table_data.to_markdown(index=False))
+
+    summary = f"See all {len(table_data)} albums"
+    if len(table_data) > 100:
+        summary = "See top 100 albums"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
 
     return ["## Top Albums", "", img, "", full_list, ""]
 
@@ -102,7 +115,13 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame):
     plt.clf()
 
     table_data = grouped[["Number of Tracks", "Label"]]
-    full_list = md_summary_details("See all labels", table_data.to_markdown(index=False))
+
+    summary = f"See all {len(table_data)} labels"
+    if len(table_data) > 100:
+        summary = "See top 100 labels"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
 
     return ["## Top Record Labels", "", img, "", full_list, ""]
 
