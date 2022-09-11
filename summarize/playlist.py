@@ -36,9 +36,8 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     grouped = joined.groupby("artist_uri").agg({"track_uri": "count", "artist_name": first}).reset_index()
     grouped = grouped.sort_values(by=["track_uri", "artist_uri"], ascending=False)
     grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "artist_name": "Artist"})
-    grouped = grouped.drop(columns="artist_uri")
     
-    fig_data = grouped.head(30)
+    fig_data = grouped.drop(columns="artist_uri").head(30)
     sns.set(rc = {"figure.figsize": (13,13) })
     ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Artist")
     ax.bar_label(ax.containers[0])
@@ -49,6 +48,9 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     )
     plt.clf()
 
+    table_data = grouped
+    table_data["Artist"] = table_data["artist_uri"].apply(lambda artist_uri: get_display_artist(artist_uri, track_artist_full))
+    table_data = table_data.drop(columns="artist_uri")
     full_list = md_summary_details("See all artists", grouped.to_markdown(index=False))
 
     return ["## Top Artists", "", img, "", full_list, ""]
@@ -77,6 +79,11 @@ def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame):
     artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
     artist_links = [get_artist_link(artist) for i, artist in artists.iterrows()]
     return ", ".join(artist_links)
+
+
+def get_display_artist(artist_uri: str, track_artist_full: pd.DataFrame):
+    artist = track_artist_full[track_artist_full["artist_uri"] == artist_uri].iloc[0]
+    return get_artist_link(artist)
 
 
 def get_artist_link(artist):
