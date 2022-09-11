@@ -49,3 +49,7 @@ def prefix_col(col: str, prefix: str, prefixes: list[str]):
         if col.startswith(other_prefix):
             return col
     return prefix + col
+
+
+def first(series: pd.Series):
+    return None if len(series) == 0 else series.iloc[0]

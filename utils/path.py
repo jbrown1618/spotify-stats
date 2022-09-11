@@ -63,6 +63,17 @@ def playlist_label_graph_path(playlist_name, relative_to=None):
     )
 
 
+def playlist_album_graph_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "albums.png"
+        ),
+        relative_to
+    )
+
 def data_path(table_name, relative_to=None):
     return relative_to_path(
         os.path.join(
