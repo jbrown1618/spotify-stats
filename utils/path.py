@@ -39,6 +39,16 @@ def playlist_path(playlist_name, relative_to=None):
     )
 
 
+def playlist_tracks_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "playlists",
+            file_name_friendly(playlist_name) + "_tracks.md"
+        ), 
+        relative_to
+    )
+
+
 def playlist_artist_graph_path(playlist_name, relative_to=None):
     return relative_to_path(
         os.path.join(
