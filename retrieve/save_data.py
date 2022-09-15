@@ -42,17 +42,17 @@ def save_data():
     save_audio_features_data(sp)
 
     print('Saving data...')
-    pd.DataFrame(playlists_data).to_csv(data_path("playlists"), index=False)
-    pd.DataFrame(tracks_data).to_csv(data_path("tracks"), index=False)
-    pd.DataFrame(artists_data).to_csv(data_path("artists"), index=False)
-    pd.DataFrame(albums_data).to_csv(data_path("albums"), index=False)
-    pd.DataFrame(liked_tracks).to_csv(data_path("liked_tracks"), index=False)
-    pd.DataFrame(playlist_track).to_csv(data_path("playlist_track"), index=False)
-    pd.DataFrame(track_artist).to_csv(data_path("track_artist"), index=False)
-    pd.DataFrame(album_artist).to_csv(data_path("album_artist"), index=False)
-    pd.DataFrame(album_track).to_csv(data_path("album_track"), index=False)
-    pd.DataFrame(audio_features).to_csv(data_path("audio_features"), index=False)
-    pd.DataFrame(artist_genre).to_csv(data_path("artist_genre"), index=False)
+    pd.DataFrame(playlists_data).sort_values(by="uri").to_csv(data_path("playlists"), index=False)
+    pd.DataFrame(tracks_data).sort_values(by="uri").to_csv(data_path("tracks"), index=False)
+    pd.DataFrame(artists_data).sort_values(by="uri").to_csv(data_path("artists"), index=False)
+    pd.DataFrame(albums_data).sort_values(by="uri").to_csv(data_path("albums"), index=False)
+    pd.DataFrame(liked_tracks).sort_values(by="track_uri").to_csv(data_path("liked_tracks"), index=False)
+    pd.DataFrame(playlist_track).sort_values(by=["playlist_uri", "track_uri"]).to_csv(data_path("playlist_track"), index=False)
+    pd.DataFrame(track_artist).sort_values(by=["artist_uri", "track_uri"]).to_csv(data_path("track_artist"), index=False)
+    pd.DataFrame(album_artist).sort_values(by=["artist_uri", "album_uri"]).to_csv(data_path("album_artist"), index=False)
+    pd.DataFrame(album_track).sort_values(by=["album_uri", "track_uri"]).to_csv(data_path("album_track"), index=False)
+    pd.DataFrame(audio_features).sort_values(by="track_uri").to_csv(data_path("audio_features"), index=False)
+    pd.DataFrame(artist_genre).sort_values(by="artist_uri").to_csv(data_path("artist_genre"), index=False)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
@@ -122,8 +122,8 @@ def process_track(track):
     tracks_data.append(track_data(track))
     processed_tracks.add(track["uri"])
     
-    for artist in track["artists"]:
-        track_artist.append({ "track_uri": track["uri"], "artist_uri": artist["uri"] })
+    for i, artist in enumerate(track["artists"]):
+        track_artist.append({ "track_uri": track["uri"], "artist_uri": artist["uri"], "artist_index": i })
         queue_artist(artist)
     
     album = track["album"]
@@ -135,6 +135,7 @@ def track_data(track):
     fields = ["name", "popularity", "explicit", "duration_ms", "uri"]
     data = {field: track[field] for field in fields}
     data["album_uri"] = track["album"]["uri"]
+
     return data
 
 

@@ -132,7 +132,7 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_labe
 
 def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = playlist_full.copy()
-    display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_artist_names(track_uri, track_artist_full))
+    display_tracks["artist_names_sorting"] = display_tracks["track_uri"].apply(lambda track_uri: get_primary_artist_name(track_uri, track_artist_full))
     display_tracks["Art"] = display_tracks["album_image_url"].apply(lambda src: md_image("", src, 50))
     display_tracks["Artists"] = display_tracks["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full))
     display_tracks["Track"] = display_tracks["track_name"]
@@ -146,14 +146,13 @@ def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist
     return [f"# Tracks in {playlist_name}", "", table, ""]
 
 
-def get_artist_names(track_uri: str, track_artist_full: pd.DataFrame):
-    artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
-    names = [artist["artist_name"].lower() for i, artist in artists.iterrows()]
-    return ", ".join(names)
+def get_primary_artist_name(track_uri: str, track_artist_full: pd.DataFrame):
+    artists = track_artist_full[(track_artist_full["track_uri"] == track_uri) & (track_artist_full["artist_index"] == 0)]
+    return artists["artist_name"].iloc[0].upper()
 
 
 def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame):
-    artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
+    artists = track_artist_full[track_artist_full["track_uri"] == track_uri].sort_values(by="artist_index")
     artist_links = [get_artist_link(artist) for i, artist in artists.iterrows()]
     return ", ".join(artist_links)
 

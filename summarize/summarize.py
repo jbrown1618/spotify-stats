@@ -26,7 +26,7 @@ def summarize_results():
     prefix_df(playlists, "playlist_", prefixes)
     prefix_df(artists, "artist_", prefixes)
 
-    artist_track_counts = track_artist.groupby("artist_uri").count().reset_index()
+    artist_track_counts = track_artist[["artist_uri", "track_uri"]].groupby("artist_uri").count().reset_index()
     artist_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
     artist_track_counts["artist_has_page"] = artist_track_counts["artist_track_count"] >= 10
     artists_with_page = {artist_uri for artist_uri in artist_track_counts[artist_track_counts["artist_has_page"]]["artist_uri"] }
