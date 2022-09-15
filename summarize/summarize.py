@@ -4,6 +4,7 @@ from summarize.playlist import make_playlist_summary
 from summarize.overview import make_readme
 from summarize.errors import make_errors
 from utils.path import data_path
+from utils.record_label import standardize_record_labels
 from utils.util import prefix_df
 
 
@@ -47,16 +48,18 @@ def summarize_results():
     playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
     playlists_full = pd.merge(playlists_full, tracks_full, on="track_uri")
 
+    album_record_label = standardize_record_labels(albums)
+
     make_readme(playlists, playlist_track)
     make_errors(tracks_full, playlists_full, track_artist_full)
-    make_playlist_summary(liked_tracks_full, track_artist_full, is_liked_songs=True)
+    make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, is_liked_songs=True)
 
     for playlist_uri in playlists["playlist_uri"]:
         playlist_full = playlists_full[playlists_full["playlist_uri"] == playlist_uri]
         if len(playlist_full) == 0:
             continue
 
-        make_playlist_summary(playlist_full, track_artist_full)
+        make_playlist_summary(playlist_full, track_artist_full, album_record_label)
 
 
     for artist_uri in artists_with_page:

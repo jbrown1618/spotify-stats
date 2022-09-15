@@ -6,7 +6,7 @@ from utils.path import artist_path, playlist_album_graph_path, playlist_label_gr
 from utils.util import first, md_image, md_link, md_summary_details, spotify_link
 
 
-def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, is_liked_songs=False):
+def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, is_liked_songs=False):
     playlist_name = "Liked Songs" if is_liked_songs else playlist_full["playlist_name"].iloc[0]
     playlist_image_url = None if is_liked_songs else playlist_full["playlist_image_url"].iloc[0]
     print(f"Generating summary for playlist {playlist_name}")
@@ -17,7 +17,7 @@ def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.Dat
     content += [md_link(f"{len(playlist_full)} songs", playlist_tracks_path(playlist_name, playlists_path())), ""]
     content += artists_section(playlist_name, playlist_full, track_artist_full)
     content += albums_section(playlist_name, playlist_full)
-    content += labels_section(playlist_name, playlist_full)
+    content += labels_section(playlist_name, playlist_full, album_record_label)
 
     tracks_content = tracks_section(playlist_name, playlist_full, track_artist_full)
 
@@ -102,10 +102,10 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
     return ["## Top Albums", "", img, "", full_list, ""]
 
 
-def labels_section(playlist_name, playlist_full: pd.DataFrame):
-    grouped = playlist_full.groupby("album_label").agg({"track_uri": "count"}).reset_index()
-    grouped = grouped.sort_values(by=["track_uri", "album_label"], ascending=False)
-    grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_label": "Label"})
+def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_label: pd.DataFrame):
+    grouped = pd.merge(playlist_full, album_record_label, on="album_uri").groupby("album_standardized_label").agg({"track_uri": "count"}).reset_index()
+    grouped = grouped.sort_values(by=["track_uri", "album_standardized_label"], ascending=False)
+    grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_standardized_label": "Label"})
     
     fig_data = grouped[["Number of Tracks", "Label"]].head(30)
     sns.set(rc = {"figure.figsize": (13,13) })
