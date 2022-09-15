@@ -1,7 +1,7 @@
 import pandas as pd
 from utils.path import errors_path, playlist_path, readme_path
 from utils.settings import output_dir
-from utils.util import md_link, spotify_link
+from utils.util import md_image, md_link, spotify_link
 
 def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     print("Generating Overview")
@@ -46,8 +46,9 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
     display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_path(name, output_dir())))
     display_playlists["Number of Songs"] = display_playlists["track_uri"]
+    display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda src: md_image("", src, 50))
 
-    display_playlists = display_playlists[["Name", "Number of Songs", "🔗"]]
+    display_playlists = display_playlists[["Art", "Name", "Number of Songs", "🔗"]]
 
     display_playlists.sort_values(by="Name", inplace=True)
 
