@@ -66,4 +66,4 @@ def summarize_results():
         artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        
         tracks_for_artist = track_artist[track_artist["artist_uri"] == artist_uri]
         tracks_for_artist = pd.merge(tracks_for_artist, tracks_full, on="track_uri")
-        make_artist_summary(artist, tracks_for_artist)
+        make_artist_summary(artist, tracks_for_artist, album_record_label)

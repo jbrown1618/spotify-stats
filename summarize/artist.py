@@ -3,7 +3,7 @@ import pandas as pd
 from utils.path import artist_path
 from utils.util import first, md_image, spotify_link
 
-def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
+def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame, album_record_label: pd.DataFrame):
     print(f"Generating summary for artist {artist['artist_name']}")
     file_name = artist_path(artist["artist_name"])
     lines = []
@@ -11,7 +11,7 @@ def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame):
     lines += title(artist)
     lines += image(artist)
     lines += albums_section(tracks)
-    lines += labels_section(tracks)
+    lines += labels_section(tracks, album_record_label)
     lines += tracks_section(tracks)
 
     with open(file_name, "w") as f:
@@ -37,10 +37,10 @@ def albums_section(artist_tracks: pd.DataFrame):
     return ["## Top Albums", "", table_data.to_markdown(index=False), ""]
 
 
-def labels_section(artist_tracks: pd.DataFrame):
-    grouped = artist_tracks.groupby("album_label").agg({"track_uri": "count"}).reset_index()
-    grouped = grouped.sort_values(by=["track_uri", "album_label"], ascending=False)
-    grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_label": "Label"})
+def labels_section(artist_tracks: pd.DataFrame, album_record_label: pd.DataFrame):
+    grouped = pd.merge(artist_tracks, album_record_label, on="album_uri").groupby("album_standardized_label").agg({"track_uri": "count"}).reset_index()
+    grouped = grouped.sort_values(by=["track_uri", "album_standardized_label"], ascending=False)
+    grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_standardized_label": "Label"})
 
     table_data = grouped[["Number of Tracks", "Label"]]
 
