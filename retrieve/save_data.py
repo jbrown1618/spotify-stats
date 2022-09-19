@@ -52,7 +52,7 @@ def save_data():
     pd.DataFrame(album_artist).sort_values(by=["artist_uri", "album_uri"]).to_csv(data_path("album_artist"), index=False)
     pd.DataFrame(album_track).sort_values(by=["album_uri", "track_uri"]).to_csv(data_path("album_track"), index=False)
     pd.DataFrame(audio_features).sort_values(by="track_uri").to_csv(data_path("audio_features"), index=False)
-    pd.DataFrame(artist_genre).sort_values(by="artist_uri").to_csv(data_path("artist_genre"), index=False)
+    pd.DataFrame(artist_genre).sort_values(by=["artist_uri", "genre"]).to_csv(data_path("artist_genre"), index=False)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
