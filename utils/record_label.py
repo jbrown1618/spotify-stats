@@ -11,6 +11,7 @@ suffixes = [
     "LIMITED",
     "*",
     ",",
+    ";",
     ".",
     "LLC", 
     "INC",
