@@ -1,6 +1,7 @@
 import pandas as pd
 
-from utils.path import artist_path
+from utils.path import artist_path, artists_path
+from utils.record_label import get_display_labels
 from utils.util import first, md_image, spotify_link
 
 def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -54,7 +55,7 @@ def tracks_section(tracks: pd.DataFrame):
     display_tracks["Track"] = display_tracks["track_name"]
     display_tracks["🔗"] = display_tracks["track_uri"].apply(lambda uri: spotify_link(uri))
     display_tracks["Album"] = display_tracks["album_name"]
-    display_tracks["Label"] = display_tracks["album_label"]
+    display_tracks["Label"] = display_tracks["album_label"].apply(lambda label: get_display_labels(label, artists_path()))
     display_tracks["💚"] = display_tracks["track_liked"].apply(lambda liked: "💚" if liked else "")
     display_tracks.sort_values(by=["album_release_date", "Track"], inplace=True)
     display_tracks = display_tracks[["Art", "Track", "Album", "Label", "💚", "🔗"]]

@@ -1,5 +1,7 @@
 import pandas as pd
 import re
+from utils.util import md_link
+from utils.path import label_path, playlists_path
 
 suffixes = [
     "RECORDS",
@@ -17,14 +19,21 @@ suffixes = [
 
 prefixes = [
     "DISTRIBUTED BY",
+    "DISTRIBUTED THROUGH",
     "UNDER EXCLUSIVE LICENCE TO"
 ]
 
-def standardize_record_labels(albums: pd.DataFrame):
+all_standardized_by_all_labels = {}
+most_common_by_standardized = {}
+labels_with_page = set()
+
+def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
+    global all_standardized_by_all_labels
+    global most_common_by_standardized
+    global labels_with_page
     labels_by_standardized = {}
     standardized_by_label = {}
     count_by_label = {}
-    all_standardized_by_all_labels = {}
 
     for record_labels_str in albums["album_label"]:
         if record_labels_str.startswith('Republic Records - '):
@@ -54,7 +63,6 @@ def standardize_record_labels(albums: pd.DataFrame):
             else:
                 all_standardized_by_all_labels[record_labels_str] = {standardized}
 
-    most_common_by_standardized = {}
 
     for standardized, labels in labels_by_standardized.items():
         largest_count = 0
@@ -81,7 +89,20 @@ def standardize_record_labels(albums: pd.DataFrame):
                 "album_standardized_label": label
             })
         
-    return pd.DataFrame(standardized_labels_data)
+    album_record_label = pd.DataFrame(standardized_labels_data)
+
+    label_counts = pd.merge(album_record_label, tracks, on="album_uri")\
+        .groupby("album_standardized_label")\
+        .agg({"track_uri": "count"})\
+        .reset_index()
+    label_counts.rename(columns={"track_uri": "track_count"}, inplace=True)
+
+    for label in label_counts[label_counts["track_count"] >= 10]["album_standardized_label"]:
+        labels_with_page.add(label)
+
+    album_record_label["label_has_page"] = album_record_label["album_standardized_label"].apply(lambda label: label in labels_with_page)
+
+    return album_record_label
 
 
 def split(record_labels_str: str):
@@ -109,3 +130,33 @@ def strip_suffixes(record_label: str):
         if record_label.endswith(suffix):
             return strip_suffixes(record_label[0:len(record_label) - len(suffix)].strip())
     return record_label
+
+
+def get_display_labels(labels: str, relative_to: str):
+    if labels.startswith('Republic Records - '):
+        # Special case - this label seems to create special sublabels for various artists
+        labels = "Republic Records"
+
+    standardized_labels = all_standardized_by_all_labels[labels]
+    all_labels = []
+    with_page = []
+    for std in standardized_labels:
+        label = most_common_by_standardized[std]
+        all_labels.append(label)
+        if label in labels_with_page:
+            with_page.append(label)
+
+    if len(with_page) == 0:
+        return labels
+    
+    if len(with_page) == 1:
+        return md_link(labels, label_path(all_labels[0], relative_to))
+
+    segments = []
+    for label in all_labels:
+        if label in labels_with_page:
+            segments.append(md_link(label, label_path(label, relative_to)))
+        else:
+            segments.append(label)
+
+    return ", ".join(segments)

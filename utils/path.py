@@ -1,6 +1,32 @@
+from genericpath import isfile
 import os
+import glob
 from utils.settings import output_dir
 from utils.util import file_name_friendly
+
+
+def clear_data():
+    clear_contents(data_path())
+
+
+def clear_markdown():
+    clear_contents(artists_path())
+    clear_contents(playlists_path())
+    clear_contents(labels_path())
+    clear_contents(images_path())
+
+
+def clear_contents(path: str):
+    files = glob.glob(f'{path}/*')
+    for f in files:
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            clear_contents(f)
+
+
+def images_path(relative_to=None):
+    return relative_to_path("images", relative_to)
 
 
 def readme_path(relative_to=None):
@@ -84,15 +110,57 @@ def playlist_album_graph_path(playlist_name, relative_to=None):
         relative_to
     )
 
-def data_path(table_name, relative_to=None):
+
+def labels_path():
+    return os.path.join(output_dir(), "labels")
+
+
+def label_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "labels",
+            file_name_friendly(label_name) + ".md"
+        ), 
+        relative_to
+    )
+
+
+def label_artist_graph_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "labels",
+            file_name_friendly(label_name),
+            "artists.png"
+        ),
+        relative_to
+    )
+
+
+def label_album_graph_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "labels",
+            file_name_friendly(label_name),
+            "albums.png"
+        ),
+        relative_to
+    )
+
+
+def data_path(table_name=None, relative_to=None):
+    if table_name is  None:
+        return relative_to_path("data", relative_to)
+
     return relative_to_path(
         os.path.join(
             "data",
             table_name + ".csv"
         ), 
         relative_to
-    ) 
-
+    )
+        
 
 def relative_to_path(destination, relative_to=None):
     path_from_cwd = os.path.join(output_dir(), destination)

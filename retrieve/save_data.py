@@ -2,7 +2,7 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
-from utils.path import data_path
+from utils.path import clear_data, data_path
 from utils.settings import spotify_client_id, spotify_client_secret
 
 page_size = 50
@@ -42,6 +42,7 @@ def save_data():
     save_audio_features_data(sp)
 
     print('Saving data...')
+    clear_data()
     pd.DataFrame(playlists_data).sort_values(by="uri").to_csv(data_path("playlists"), index=False)
     pd.DataFrame(tracks_data).sort_values(by="uri").to_csv(data_path("tracks"), index=False)
     pd.DataFrame(artists_data).sort_values(by="uri").to_csv(data_path("artists"), index=False)
