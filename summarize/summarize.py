@@ -1,9 +1,9 @@
 import pandas as pd
-from summarize.artist import make_artist_summary
-from summarize.label import make_label_summary
-from summarize.playlist import make_playlist_summary
-from summarize.overview import make_readme
-from summarize.errors import make_errors
+from summarize.pages.artist import make_artist_summary
+from summarize.pages.label import make_label_summary
+from summarize.pages.playlist import make_playlist_summary
+from summarize.pages.overview import make_readme
+from summarize.pages.errors import make_errors
 from utils.path import clear_markdown, data_path
 from utils.record_label import standardize_record_labels
 from utils.util import first, prefix_df
@@ -68,7 +68,7 @@ def summarize_results():
         artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        
         tracks_for_artist = track_artist[track_artist["artist_uri"] == artist_uri]
         tracks_for_artist = pd.merge(tracks_for_artist, tracks_full, on="track_uri")
-        make_artist_summary(artist, tracks_for_artist, album_record_label)
+        make_artist_summary(artist, tracks_for_artist, track_artist_full, album_record_label)
 
 
     labels_by_page = album_record_label.groupby("album_standardized_label").agg({"label_has_page": first}).reset_index()

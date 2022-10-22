@@ -71,7 +71,7 @@ def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
 
         for label in labels:
             count = count_by_label[label]
-            if count > largest_count:
+            if count > largest_count or (count == largest_count and label < most_common):
                 largest_count = count
                 most_common = label
 
