@@ -90,6 +90,3 @@ def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist
     display_tracks = tracks_table(playlist_full, track_artist_full, playlists_path())
     table = display_tracks.to_markdown(index=False)
     return [f"# Tracks in {playlist_name}", "", table, ""]
-
-
-

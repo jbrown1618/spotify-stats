@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 from utils.util import md_link
-from utils.path import label_path, playlists_path
+from utils.path import label_path
 
 suffixes = [
     "RECORDS",

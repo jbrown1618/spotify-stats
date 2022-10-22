@@ -1,4 +1,5 @@
 import pandas as pd
+
 from utils.util import md_image, spotify_link, first
 
 def albums_table(tracks: pd.DataFrame):

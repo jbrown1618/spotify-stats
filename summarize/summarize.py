@@ -1,4 +1,5 @@
 import pandas as pd
+
 from summarize.pages.artist import make_artist_summary
 from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
