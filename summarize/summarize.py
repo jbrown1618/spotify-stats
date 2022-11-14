@@ -35,6 +35,7 @@ def summarize_results():
 
     artist_playlist = pd.merge(track_artist, playlist_track, on="track_uri").groupby(["artist_uri", "playlist_uri"]).count().reset_index()
     artist_playlist.rename(columns={"track_uri": "playlist_artist_track_count"}, inplace=True)
+    artist_playlist_full = pd.merge(artist_playlist, playlists, on="playlist_uri")
 
     tracks_full = pd.merge(tracks, audio_features, on="track_uri")
     tracks_full = pd.merge(tracks_full, albums, on="album_uri")
@@ -70,7 +71,9 @@ def summarize_results():
         artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        
         tracks_for_artist = track_artist[track_artist["artist_uri"] == artist_uri]
         tracks_for_artist = pd.merge(tracks_for_artist, tracks_full, on="track_uri")
-        make_artist_summary(artist, tracks_for_artist, track_artist_full, album_record_label)
+
+        playlists_for_artist = artist_playlist_full[artist_playlist_full["artist_uri"] == artist_uri]
+        make_artist_summary(artist, tracks_for_artist, track_artist_full, album_record_label, playlists_for_artist)
 
 
     labels_by_page = album_record_label.groupby("album_standardized_label").agg({"label_has_page": first}).reset_index()
