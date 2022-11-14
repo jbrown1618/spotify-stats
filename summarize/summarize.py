@@ -55,7 +55,7 @@ def summarize_results():
     clear_markdown()
     make_readme(playlists, playlist_track)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
-    return
+
     make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, is_liked_songs=True)
 
     for playlist_uri in playlists["playlist_uri"]:
