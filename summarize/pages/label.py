@@ -15,6 +15,7 @@ def make_label_summary(label_name: str, label_full: pd.DataFrame, track_artist_f
     content = []
     content += title(label_name)
     content += [f"{len(label_full)} songs", ""]
+    content += aliases(label_full)
     content += artists_section(label_name, label_full, track_artist_full)
     content += albums_section(label_name, label_full)
     content += tracks_section(label_name, label_full, track_artist_full)
@@ -25,6 +26,18 @@ def make_label_summary(label_name: str, label_full: pd.DataFrame, track_artist_f
 
 def title(label_name):
     return [f"# {label_name}", ""]
+
+
+def aliases(label_full: pd.DataFrame):
+    label_aliases = label_full.groupby("album_label").agg({"track_uri": "count"}).reset_index()
+    label_aliases = label_aliases.sort_values(by="track_uri", ascending=False)
+
+    if label_aliases.size < 2: return []
+
+    return ["Appears as:"] + [
+        f"- {alias['album_label']} ({alias['track_uri']} tracks)"
+        for i, alias in label_aliases.iterrows()
+    ] + [""]
 
 
 def artists_section(label_name, label_full: pd.DataFrame, track_artist_full: pd.DataFrame):
