@@ -149,6 +149,20 @@ def label_album_graph_path(label_name, relative_to=None):
     )
 
 
+def pairplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "audio", "audio_pairplot.png"), 
+        relative_to
+    )
+
+
+def playlists_comparison_scatterplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "audio", "playlist_comparison.png"),
+        relative_to
+    )
+
+
 def data_path(table_name=None, relative_to=None):
     if table_name is  None:
         return relative_to_path("data", relative_to)

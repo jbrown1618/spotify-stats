@@ -5,6 +5,7 @@ from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
 from summarize.pages.overview import make_readme
 from summarize.pages.errors import make_errors
+from utils.audio_features import set_tracks_full
 from utils.path import clear_markdown, data_path
 from utils.record_label import standardize_record_labels
 from utils.util import first, prefix_df
@@ -51,10 +52,12 @@ def summarize_results():
     playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
     playlists_full = pd.merge(playlists_full, tracks_full, on="track_uri")
 
+    set_tracks_full(tracks_full)
+
     album_record_label = standardize_record_labels(albums, tracks)
 
     clear_markdown()
-    make_readme(playlists, playlist_track)
+    make_readme(playlists, playlist_track, tracks_full)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
 
     make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, is_liked_songs=True)

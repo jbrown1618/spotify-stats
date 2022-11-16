@@ -1,9 +1,10 @@
 import pandas as pd
-from utils.path import errors_path, playlist_path, readme_path
+from utils.audio_features import audio_pairplot, comparison_scatter_plot, top_and_bottom_lists
+from utils.path import errors_path, pairplot_path, playlist_path, playlists_comparison_scatterplot_path, readme_path
 from utils.settings import output_dir
 from utils.util import md_image, md_link, spotify_link
 
-def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
+def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame):
     print("Generating Overview")
 
     readme = []
@@ -12,7 +13,8 @@ def make_readme(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
     readme += byline()
     readme += liked_songs()
     readme += errors()
-    readme += playlists_section(playlists, playlist_track)
+    readme += playlists_section(playlists, playlist_track, tracks_full)
+    readme += audio_features_section(tracks_full)
 
     with open(readme_path(), "w") as f:
         f.write("\n".join(readme))
@@ -34,11 +36,12 @@ def errors():
     return ['## Possible organizational errors', md_link("Possible organizational errors", errors_path(output_dir()))]
 
 
-def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
+def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame):
     track_counts = pd\
         .merge(left=playlists, right=playlist_track, left_on="playlist_uri", right_on="playlist_uri", how="inner")\
-        .groupby("playlist_uri")["track_uri"]\
-        .count()
+        .groupby("playlist_uri")\
+        .agg({"track_uri": "count"})\
+        .reset_index()
 
     display_playlists = pd\
         .merge(left=playlists, right=track_counts, left_on="playlist_uri", right_on="playlist_uri", how="inner")
@@ -54,4 +57,32 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame):
 
     table = display_playlists.to_markdown(index=False)
 
-    return ["## Playlists", "", table, ""]
+    playlists_sorted_by_track_count = track_counts.sort_values(by="track_uri", ascending=False)["playlist_uri"]
+    main_playlist_col = tracks_full["track_uri"].apply(lambda track_uri: get_main_playlist(track_uri, playlist_track, playlists, playlists_sorted_by_track_count))
+
+    return [
+        "## Playlists", 
+        "", 
+        table, 
+        "", 
+        comparison_scatter_plot(tracks_full, main_playlist_col, "Playlist", playlists_comparison_scatterplot_path(), playlists_comparison_scatterplot_path(output_dir())),
+        ""
+    ]
+
+
+def get_main_playlist(track_uri: str, playlist_track: pd.DataFrame, playlists: pd.DataFrame, playlists_sorted_by_track_count):
+    playlist_uris = set(playlist_track[playlist_track["track_uri"] == track_uri]["playlist_uri"])
+    for playlist_uri in playlists_sorted_by_track_count:
+        if playlist_uri in playlist_uris:
+            return playlists[playlists["playlist_uri"] == playlist_uri].iloc[0]["playlist_name"]
+    return "None"
+
+
+
+def audio_features_section(tracks_full):
+    return [
+        "## Audio Features", 
+        "", 
+        audio_pairplot(tracks_full, pairplot_path(), pairplot_path(output_dir())), 
+        ""
+    ] + top_and_bottom_lists(tracks_full)
