@@ -163,6 +163,17 @@ def playlists_comparison_scatterplot_path(relative_to=None):
     )
 
 
+def playlists_artist_comparison_scatterploy_path(playlist_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            file_name_friendly(playlist_name),
+            "artists_comparison.png"
+        ), 
+        relative_to
+    )
+
+
 def data_path(table_name=None, relative_to=None):
     if table_name is  None:
         return relative_to_path("data", relative_to)
