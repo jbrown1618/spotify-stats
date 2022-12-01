@@ -7,7 +7,7 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.audio_features import comparison_scatter_plot
+from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
 from utils.path import playlist_album_graph_path, playlist_label_graph_path, playlist_path, playlist_tracks_path, playlists_artist_comparison_scatterploy_path, playlists_path, playlist_artist_graph_path
 from utils.util import md_image, md_link, md_summary_details
 
@@ -24,6 +24,7 @@ def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.Dat
     content += artists_section(playlist_name, playlist_full, track_artist_full)
     content += albums_section(playlist_name, playlist_full)
     content += labels_section(playlist_name, playlist_full, album_record_label)
+    content += audio_features_section(playlist_full)
 
     tracks_content = tracks_section(playlist_name, playlist_full, track_artist_full)
 
@@ -104,3 +105,7 @@ def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist
     display_tracks = tracks_table(playlist_full, track_artist_full, playlists_path())
     table = display_tracks.to_markdown(index=False)
     return [f"# Tracks in {playlist_name}", "", table, ""]
+
+
+def audio_features_section(playlist_full: pd.DataFrame):
+    return ["## Audio Features", ""] + top_and_bottom_lists(playlist_full)

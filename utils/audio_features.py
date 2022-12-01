@@ -70,6 +70,8 @@ def comparison_scatter_plot(tracks, comparison_column, category_label, absolute_
     data[y_label] = y
     data = pd.DataFrame(data)
 
+    data = data[data[category_label] != "Other"]
+
     sns.set(rc = {"figure.figsize": (15,15) })
     ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=category_label)
     plt.xlabel(x_label)
