@@ -56,7 +56,7 @@ def artists_section(genre_name, tracks: pd.DataFrame, track_artist_full: pd.Data
         genre_artist_comparison_scatterplot_path(genre_name, genres_path())
     )
 
-    return ["## Top Artists", "", img, "", full_list, "", scatterplot ,""]
+    return ["## Top Artists", "", img, "", scatterplot , "", full_list]
 
 
 def primary_artist_name(track_uri: str, track_artist_full: pd.DataFrame):

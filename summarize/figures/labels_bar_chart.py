@@ -10,6 +10,9 @@ def labels_bar_chart(tracks: pd.DataFrame, album_record_label: pd.DataFrame, abs
     grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_standardized_label": "Label"})
     
     fig_data = grouped[["Number of Tracks", "Label"]].head(30)
+    if len(fig_data) == 0:
+        return ""
+
     sns.set(rc = {"figure.figsize": (13,13) })
     ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Label")
     ax.bar_label(ax.containers[0])

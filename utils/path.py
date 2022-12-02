@@ -29,8 +29,29 @@ def images_path(relative_to=None):
     return relative_to_path("images", relative_to)
 
 
-def readme_path(relative_to=None):
+def overview_path(relative_to=None):
     return relative_to_path("README.md", relative_to)
+
+
+def overview_playlists_scatterplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "playlists_comparison.png"),
+        relative_to
+    )
+
+
+def overview_genre_graph_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "genres.png"), 
+        relative_to
+    )
+
+
+def overview_genres_scatterplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "genres_comparison.png"),
+        relative_to
+    )
 
 
 def errors_path(relative_to=None):
@@ -111,9 +132,14 @@ def playlist_album_graph_path(playlist_name, relative_to=None):
     )
 
 
-def playlists_comparison_scatterplot_path(relative_to=None):
+def playlist_genre_graph_path(playlist_name, relative_to=None):
     return relative_to_path(
-        os.path.join("images", "audio", "playlist_comparison.png"),
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "genres.png"
+        ),
         relative_to
     )
 
@@ -163,6 +189,18 @@ def label_album_graph_path(label_name, relative_to=None):
             "labels",
             file_name_friendly(label_name),
             "albums.png"
+        ),
+        relative_to
+    )
+
+
+def label_genre_graph_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "labels",
+            file_name_friendly(label_name),
+            "genres.png"
         ),
         relative_to
     )

@@ -4,7 +4,7 @@ from summarize.pages.artist import make_artist_summary
 from summarize.pages.genre import make_genre_summary
 from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
-from summarize.pages.overview import make_readme
+from summarize.pages.overview import make_overview
 from summarize.pages.errors import make_errors
 from utils.audio_features import set_tracks_full
 from utils.path import clear_markdown, data_path
@@ -59,6 +59,7 @@ def summarize_results():
     track_genre.drop(columns=["artist_uri"], inplace=True)
     genre_track_counts = track_genre.groupby("genre").agg({"track_uri": "count"}).reset_index()
     genres_with_page = set(genre_track_counts[genre_track_counts["track_uri"] >= 40]["genre"])
+    artist_genre["genre_has_page"] = artist_genre["genre"].apply(lambda genre: genre in genres_with_page)
     track_genre["genre_has_page"] = track_genre["genre"].apply(lambda genre: genre in genres_with_page)
 
 
@@ -68,21 +69,17 @@ def summarize_results():
 
     clear_markdown()
 
-    for genre in genres_with_page:
-        tracks_in_genre = track_genre[track_genre["genre"] == genre]
-        make_genre_summary(tracks_in_genre, track_artist_full, album_record_label)
-
-    make_readme(playlists, playlist_track, tracks_full)
+    make_overview(playlists, playlist_track, tracks_full, track_genre)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
 
-    make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, is_liked_songs=True)
+    make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, track_genre, is_liked_songs=True)
 
     for playlist_uri in playlists["playlist_uri"]:
         playlist_full = playlists_full[playlists_full["playlist_uri"] == playlist_uri]
         if len(playlist_full) == 0:
             continue
 
-        make_playlist_summary(playlist_full, track_artist_full, album_record_label)
+        make_playlist_summary(playlist_full, track_artist_full, album_record_label, track_genre)
 
 
     for artist_uri in artists_with_page:
@@ -91,7 +88,7 @@ def summarize_results():
         tracks_for_artist = pd.merge(tracks_for_artist, tracks_full, on="track_uri")
 
         playlists_for_artist = artist_playlist_full[artist_playlist_full["artist_uri"] == artist_uri]
-        make_artist_summary(artist, tracks_for_artist, track_artist_full, album_record_label, playlists_for_artist)
+        make_artist_summary(artist, tracks_for_artist, track_artist_full, album_record_label, playlists_for_artist, artist_genre)
 
 
     labels_by_page = album_record_label.groupby("album_standardized_label").agg({"label_has_page": first}).reset_index()
@@ -99,5 +96,9 @@ def summarize_results():
     for standardized_label in labels_to_summarize:
         albums_under_label = album_record_label[album_record_label["album_standardized_label"] == standardized_label][["album_uri"]]
         label_full = pd.merge(tracks_full, albums_under_label, on="album_uri")
+        make_label_summary(standardized_label, label_full, track_artist_full, track_genre)
 
-        make_label_summary(standardized_label, label_full, track_artist_full)
+
+    for genre in genres_with_page:
+        tracks_in_genre = track_genre[track_genre["genre"] == genre]
+        make_genre_summary(tracks_in_genre, track_artist_full, album_record_label)

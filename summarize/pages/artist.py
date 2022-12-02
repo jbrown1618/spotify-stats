@@ -3,10 +3,15 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.path import artist_path, artists_path, playlist_path
+from utils.path import artist_path, artists_path, genre_path, playlist_path
 from utils.util import md_image, md_link
 
-def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, playlists: pd.DataFrame):
+def make_artist_summary(artist: pd.Series, \
+                        tracks: pd.DataFrame, \
+                        track_artist_full: pd.DataFrame, \
+                        album_record_label: pd.DataFrame, \
+                        playlists: pd.DataFrame, \
+                        artist_genre: pd.DataFrame):
     print(f"Generating summary for artist {artist['artist_name']}")
     file_name = artist_path(artist["artist_name"])
     lines = []
@@ -16,6 +21,7 @@ def make_artist_summary(artist: pd.Series, tracks: pd.DataFrame, track_artist_fu
     lines += playlists_section(playlists)
     lines += albums_section(tracks)
     lines += labels_section(tracks, album_record_label)
+    lines += genres_section(tracks, artist_genre)
     lines += tracks_section(tracks, track_artist_full)
 
     with open(file_name, "w") as f:
@@ -51,6 +57,21 @@ def albums_section(artist_tracks: pd.DataFrame):
 def labels_section(artist_tracks: pd.DataFrame, album_record_label: pd.DataFrame):
     table_data = labels_table(artist_tracks, album_record_label, artists_path())
     return ["## Top Record Labels", "", table_data.to_markdown(index=False), ""]
+
+
+def genres_section(artist_tracks: pd.DataFrame, artist_genre: pd.DataFrame):
+    artist_uri = artist_tracks.iloc[0]["artist_uri"]
+    genres_for_artist = artist_genre[artist_genre["artist_uri"] == artist_uri]
+
+    section = ["## Genres", ""]
+    for i, g in genres_for_artist.iterrows():
+        if g["genre_has_page"]:
+            section.append(f"- {md_link(g['genre'], genre_path(g['genre'], artists_path()))}")
+        else:
+            section.append(f"- {g['genre']}")
+
+    section.append("")
+    return section
 
 
 def tracks_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):

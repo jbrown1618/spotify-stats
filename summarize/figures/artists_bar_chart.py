@@ -11,6 +11,9 @@ def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, abs
     grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "artist_name": "Artist"})
     
     fig_data = grouped[["Number of Tracks", "Artist"]].head(30)
+    if len(fig_data) == 0:
+        return ""
+
     sns.set(rc = {"figure.figsize": (13,13) })
     ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Artist")
     ax.bar_label(ax.containers[0])

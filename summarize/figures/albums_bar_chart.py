@@ -10,10 +10,13 @@ def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
     grouped = grouped.rename(columns={"track_uri": "Number of Tracks", "album_name": "Album"})
     
     fig_data = grouped[["Number of Tracks", "Album"]].head(30)
+    if len(fig_data) == 0:
+        return ""
+
     sns.set(rc = {"figure.figsize": (13,13) })
     ax = sns.barplot(data=fig_data, x="Number of Tracks", y="Album")
     ax.bar_label(ax.containers[0])
     ax.get_figure().savefig(absolute_path)
     plt.clf()
     
-    return md_image(f"Bar chart of top {len(fig_data)} albums in", relative_path)
+    return md_image(f"Bar chart of top {len(fig_data)} albums", relative_path)
