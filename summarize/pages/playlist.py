@@ -8,7 +8,7 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
-from utils.path import playlist_album_graph_path, playlist_label_graph_path, playlist_path, playlist_tracks_path, playlists_artist_comparison_scatterploy_path, playlists_path, playlist_artist_graph_path
+from utils.path import playlist_album_graph_path, playlist_label_graph_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlists_path, playlist_artist_graph_path
 from utils.util import md_image, md_link, md_summary_details
 
 
@@ -61,8 +61,8 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
         playlist_full, 
         playlist_full["track_uri"].apply(lambda uri: primary_artist_name(uri, track_artist_full)), 
         "Artist", 
-        playlists_artist_comparison_scatterploy_path(playlist_name), 
-        playlists_artist_comparison_scatterploy_path(playlist_name, playlists_path())
+        playlist_artist_comparison_scatterplot_path(playlist_name), 
+        playlist_artist_comparison_scatterplot_path(playlist_name, playlists_path())
     )
 
     return ["## Top Artists", "", img, "", full_list, "", scatterplot ,""]

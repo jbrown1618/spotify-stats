@@ -1,6 +1,7 @@
 import pandas as pd
 
 from summarize.pages.artist import make_artist_summary
+from summarize.pages.genre import make_genre_summary
 from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
 from summarize.pages.overview import make_readme
@@ -21,6 +22,7 @@ def summarize_results():
     playlists = pd.read_csv(data_path("playlists"))
     track_artist = pd.read_csv(data_path("track_artist"))
     tracks = pd.read_csv(data_path("tracks"))
+    artist_genre = pd.read_csv(data_path("artist_genre"))
 
     prefixes = ["album_", "track_", "playlist_", "artist_"]
     prefix_df(albums, "album_", prefixes)
@@ -52,11 +54,24 @@ def summarize_results():
     playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
     playlists_full = pd.merge(playlists_full, tracks_full, on="track_uri")
 
+    track_primary_artist = pd.merge(tracks_full, track_artist[track_artist["artist_index"] == 0], on="track_uri")
+    track_genre = pd.merge(track_primary_artist, artist_genre, on="artist_uri")
+    track_genre.drop(columns=["artist_uri"], inplace=True)
+    genre_track_counts = track_genre.groupby("genre").agg({"track_uri": "count"}).reset_index()
+    genres_with_page = set(genre_track_counts[genre_track_counts["track_uri"] >= 40]["genre"])
+    track_genre["genre_has_page"] = track_genre["genre"].apply(lambda genre: genre in genres_with_page)
+
+
     set_tracks_full(tracks_full)
 
     album_record_label = standardize_record_labels(albums, tracks)
 
     clear_markdown()
+
+    for genre in genres_with_page:
+        tracks_in_genre = track_genre[track_genre["genre"] == genre]
+        make_genre_summary(tracks_in_genre, track_artist_full, album_record_label)
+
     make_readme(playlists, playlist_track, tracks_full)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
 

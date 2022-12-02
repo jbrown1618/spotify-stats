@@ -111,6 +111,25 @@ def playlist_album_graph_path(playlist_name, relative_to=None):
     )
 
 
+def playlists_comparison_scatterplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "audio", "playlist_comparison.png"),
+        relative_to
+    )
+
+
+def playlist_artist_comparison_scatterplot_path(playlist_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "artists_comparison.png"
+        ), 
+        relative_to
+    )
+
+
 def labels_path():
     return os.path.join(output_dir(), "labels")
 
@@ -149,29 +168,84 @@ def label_album_graph_path(label_name, relative_to=None):
     )
 
 
+def genres_path():
+    return os.path.join(output_dir(), "genres")
+
+
+def genre_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "genres",
+            file_name_friendly(genre_name) + ".md"
+        ), 
+        relative_to
+    )
+
+
+def genre_tracks_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "genres",
+            file_name_friendly(genre_name) + "_tracks.md"
+        ), 
+        relative_to
+    )
+
+
+def genre_artist_graph_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "artists.png"
+        ),
+        relative_to
+    )
+
+
+def genre_label_graph_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "labels.png"
+        ),
+        relative_to
+    )
+
+
+def genre_album_graph_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "albums.png"
+        ),
+        relative_to
+    ) 
+
+
+def genre_artist_comparison_scatterplot_path(genre_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "artists_comparison.png"
+        ), 
+        relative_to
+    )   
+
+
 def pairplot_path(relative_to=None):
     return relative_to_path(
         os.path.join("images", "audio", "audio_pairplot.png"), 
         relative_to
     )
 
-
-def playlists_comparison_scatterplot_path(relative_to=None):
-    return relative_to_path(
-        os.path.join("images", "audio", "playlist_comparison.png"),
-        relative_to
-    )
-
-
-def playlists_artist_comparison_scatterploy_path(playlist_name: str, relative_to=None):
-    return relative_to_path(
-        os.path.join(
-            "images",
-            file_name_friendly(playlist_name),
-            "artists_comparison.png"
-        ), 
-        relative_to
-    )
 
 
 def data_path(table_name=None, relative_to=None):
