@@ -3,7 +3,7 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.path import artist_path, artists_path, genre_path, playlist_path
+from utils.path import artist_path, artists_path, genre_path, playlist_overview_path
 from utils.util import md_image, md_link
 
 def make_artist_summary(artist: pd.Series, \
@@ -81,4 +81,4 @@ def tracks_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
 
 def display_playlist(playlist_uri: str, playlists: pd.DataFrame):
     playlist = playlists[playlists["playlist_uri"] == playlist_uri].iloc[0]
-    return md_link(playlist["playlist_name"], playlist_path(playlist["playlist_name"], artists_path()))
+    return md_link(playlist["playlist_name"], playlist_overview_path(playlist["playlist_name"], artists_path()))

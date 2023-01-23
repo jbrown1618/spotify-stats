@@ -80,7 +80,18 @@ def playlist_path(playlist_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "playlists",
-            file_name_friendly(playlist_name) + ".md"
+            file_name_friendly(playlist_name)
+        ), 
+        relative_to
+    )
+
+
+def playlist_overview_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "playlists",
+            file_name_friendly(playlist_name),
+            "overview.md"
         ), 
         relative_to
     )
@@ -90,7 +101,8 @@ def playlist_tracks_path(playlist_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "playlists",
-            file_name_friendly(playlist_name) + "_tracks.md"
+            file_name_friendly(playlist_name),
+            "tracks.md"
         ), 
         relative_to
     )

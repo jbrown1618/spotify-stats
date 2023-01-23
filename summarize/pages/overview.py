@@ -1,7 +1,7 @@
 import pandas as pd
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from utils.audio_features import audio_pairplot, comparison_scatter_plot, top_and_bottom_lists
-from utils.path import errors_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_playlists_scatterplot_path, pairplot_path, playlist_path, overview_path
+from utils.path import errors_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_playlists_scatterplot_path, pairplot_path, playlist_overview_path, overview_path
 from utils.settings import output_dir
 from utils.util import md_image, md_link, spotify_link
 
@@ -31,7 +31,7 @@ def byline():
 
 
 def liked_songs():
-    return ["## Liked Songs", md_link("Liked Songs", playlist_path("Liked Songs", output_dir()))]
+    return ["## Liked Songs", md_link("Liked Songs", playlist_overview_path("Liked Songs", output_dir()))]
 
 
 def errors():
@@ -49,7 +49,7 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
         .merge(left=playlists, right=track_counts, left_on="playlist_uri", right_on="playlist_uri", how="inner")
 
     display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
-    display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_path(name, output_dir())))
+    display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_overview_path(name, output_dir())))
     display_playlists["Number of Songs"] = display_playlists["track_uri"]
     display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda src: md_image("", src, 50))
 
