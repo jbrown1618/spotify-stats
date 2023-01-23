@@ -160,4 +160,6 @@ def get_display_labels(labels: str, relative_to: str):
         else:
             segments.append(label)
 
+    segments.sort()
+
     return ", ".join(segments)
