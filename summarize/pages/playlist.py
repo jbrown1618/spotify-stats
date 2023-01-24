@@ -130,6 +130,16 @@ def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: p
 
     years_with_page = set(years[years['Number of Tracks'] >= 20]["Year"])
 
+    if len(years) >= 4:
+        bar_chart = years_bar_chart(tracks, playlist_years_graph_path(playlist_name), playlist_years_graph_path(playlist_name, playlist_path(playlist_name)))
+    else:
+        bar_chart = ""
+
+    if len(years_with_page) > 0:
+        table = years.to_markdown(index=False)
+    else:
+        table = ""
+
     for year in years_with_page:
         page_content = year_page(playlist_name, year, tracks, track_artist_full)
         with open(playlist_year_path(playlist_name, year), "w") as f:
@@ -138,16 +148,6 @@ def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: p
     years = years.sort_values(by="Year", ascending=False)
     years = years[years["Year"].apply(lambda y: y in years_with_page)]
     years["Year"] = years["Year"].apply(lambda y: md_link(y, playlist_year_path(playlist_name, y, playlist_path(playlist_name))))
-
-    if len(years) >= 5:
-        bar_chart = years_bar_chart(tracks, playlist_years_graph_path(playlist_name), playlist_years_graph_path(playlist_name, playlist_path(playlist_name)))
-    else:
-        bar_chart = ""
-
-    if len(years_with_page) >= 1:
-        table = years.to_markdown(index=False)
-    else:
-        table = ""
 
     return [
         '## Years', 
