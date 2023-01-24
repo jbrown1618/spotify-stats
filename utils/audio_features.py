@@ -28,7 +28,6 @@ def top_and_bottom_lists(tracks: pd.DataFrame):
             ["track_name"]
         bottom_tracks = tracks.sort_values(by=col, ascending=True)\
             .head(top_count)\
-            .iloc[::-1]\
             .reset_index()\
             ["track_name"]
 

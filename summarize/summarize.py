@@ -7,6 +7,7 @@ from summarize.pages.playlist import make_playlist_summary
 from summarize.pages.overview import make_overview
 from summarize.pages.errors import make_errors
 from utils.audio_features import set_tracks_full
+from utils.date import release_year
 from utils.path import clear_markdown, data_path
 from utils.record_label import standardize_record_labels
 from utils.util import first, prefix_df
@@ -30,6 +31,8 @@ def summarize_results():
     prefix_df(audio_features, "audio_", prefixes)
     prefix_df(playlists, "playlist_", prefixes)
     prefix_df(artists, "artist_", prefixes)
+
+    albums['album_release_year'] = albums['album_release_date'].apply(release_year)
 
     artist_track_counts = track_artist[["artist_uri", "track_uri"]].groupby("artist_uri").count().reset_index()
     artist_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)

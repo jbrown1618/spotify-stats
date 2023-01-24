@@ -108,6 +108,17 @@ def playlist_tracks_path(playlist_name, relative_to=None):
     )
 
 
+def playlist_year_path(playlist_name, year: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "playlists",
+            file_name_friendly(playlist_name),
+            f"{year}.md"
+        ), 
+        relative_to
+    )
+
+
 def playlist_artist_graph_path(playlist_name, relative_to=None):
     return relative_to_path(
         os.path.join(
@@ -151,6 +162,18 @@ def playlist_genre_graph_path(playlist_name, relative_to=None):
             "playlists",
             file_name_friendly(playlist_name),
             "genres.png"
+        ),
+        relative_to
+    )
+
+
+def playlist_years_graph_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "years.png"
         ),
         relative_to
     )
