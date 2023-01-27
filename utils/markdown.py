@@ -1,4 +1,9 @@
+import re
 import pandas as pd
+
+
+more_than_three_hyphens = re.compile(r"-{3,}")
+more_than_one_space = re.compile(r" {1,}")
 
 def md_link(text: str, url: str):
     return f"[{text}]({url})"
@@ -23,4 +28,7 @@ def md_image(alt_text: str, url: str, width=None):
 
 
 def md_table(df: pd.DataFrame):
-    return df.to_markdown(index=False)
+    table = df.to_markdown(index=False)
+    table = more_than_one_space.sub(' ', table) # Consolidate spaces into two
+    table = more_than_three_hyphens.sub('---', table) # Consolidate dashes into three
+    return table
