@@ -1,8 +1,9 @@
 import pandas as pd
 
 from utils.artist import get_display_artists, get_primary_artist_name
+from utils.markdown import md_image
 from utils.record_label import get_display_labels
-from utils.util import md_image, spotify_link
+from utils.util import spotify_link
 
 def tracks_table(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, relative_to: str):
     table_data = tracks.copy()

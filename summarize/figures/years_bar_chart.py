@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import md_image
+from utils.markdown import md_image
 
 def years_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     grouped = tracks.groupby("album_release_year").agg({"track_uri": "count"}).reset_index()

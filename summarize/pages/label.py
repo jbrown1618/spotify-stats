@@ -6,9 +6,8 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.tracks_table import tracks_table
-
+from utils.markdown import md_table, md_summary_details
 from utils.path import label_album_graph_path, label_artist_graph_path, label_genre_graph_path, label_path, labels_path
-from utils.util import md_summary_details
 
 
 def make_label_summary(label_name: str, label_full: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame):
@@ -52,7 +51,7 @@ def artists_section(label_name, label_full: pd.DataFrame, track_artist_full: pd.
         summary = "See top 100 artists"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Artists", "", img, "", full_list, ""]
 
@@ -66,7 +65,7 @@ def albums_section(label_name, label_full: pd.DataFrame):
         summary = "See top 100 albums"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Albums", "", img, "", full_list, ""]
 
@@ -80,12 +79,12 @@ def genres_section(label_name: str, tracks: pd.DataFrame, track_genre: pd.DataFr
         summary = "See top 100 genres"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Genres", "", img, "", full_list, ""]
 
 
 def tracks_section(label_name: str, label_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = tracks_table(label_full, track_artist_full, labels_path())
-    table = display_tracks.to_markdown(index=False)
+    table = md_table(display_tracks)
     return [f"## Tracks released under {label_name}", "", table, ""]

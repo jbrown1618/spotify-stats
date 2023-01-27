@@ -12,8 +12,8 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
 from utils.date import newest_and_oldest_albums
+from utils.markdown import md_link, md_table, md_image, md_summary_details
 from utils.path import playlist_album_graph_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
-from utils.util import md_image, md_link, md_summary_details
 
 
 def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
@@ -61,7 +61,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
         summary = "See top 100 artists"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
@@ -91,7 +91,7 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
         summary = "See top 100 albums"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Albums", "", img, "", full_list, ""]
 
@@ -105,7 +105,7 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_labe
         summary = "See top 100 labels"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Record Labels", "", img, "", full_list, ""]
 
@@ -119,7 +119,7 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.Dat
         summary = "See top 100 genres"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Genres", "", img, "", full_list, ""]
 
@@ -136,7 +136,7 @@ def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: p
         bar_chart = ""
 
     if len(years_with_page) > 0:
-        table = years.to_markdown(index=False)
+        table = md_table(years)
     else:
         table = ""
 
@@ -167,22 +167,22 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame, track_artist_
         "",
         "## Artists",
         "",
-        artists_table(tracks_for_year, track_artist_full, playlist_path(playlist_name)).to_markdown(index=False),
+        md_table(artists_table(tracks_for_year, track_artist_full, playlist_path(playlist_name))),
         "",
         "## Albums",
         "",
-        albums_table(tracks_for_year).to_markdown(index=False),
+        md_table(albums_table(tracks_for_year)),
         "",
         "## Tracks",
         "",
-        tracks_table(tracks_for_year, track_artist_full, playlist_path(playlist_name)).to_markdown(index=False),
+        md_table(tracks_table(tracks_for_year, track_artist_full, playlist_path(playlist_name))),
         ""
     ]
 
 
 def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = tracks_table(playlist_full, track_artist_full, playlist_path(playlist_name))
-    table = display_tracks.to_markdown(index=False)
+    table = md_table(display_tracks)
     return [f"# Tracks in {playlist_name}", "", table, ""]
 
 

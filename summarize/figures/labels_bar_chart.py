@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import md_image
+from utils.markdown import md_image
 
 def labels_bar_chart(tracks: pd.DataFrame, album_record_label: pd.DataFrame, absolute_path: str, relative_path: str):
     grouped = pd.merge(tracks, album_record_label, on="album_uri").groupby("album_standardized_label").agg({"track_uri": "count"}).reset_index()

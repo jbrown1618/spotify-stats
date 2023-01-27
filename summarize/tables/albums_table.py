@@ -1,6 +1,7 @@
 import pandas as pd
 
-from utils.util import md_image, spotify_link, first
+from utils.markdown import md_image
+from utils.util import spotify_link, first
 
 def albums_table(tracks: pd.DataFrame):
     grouped = tracks.groupby("album_uri").agg({"track_uri": "count", "album_name": first, "album_image_url": first, "album_release_date": first}).reset_index()

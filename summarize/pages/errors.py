@@ -1,4 +1,5 @@
 import pandas as pd
+from utils.markdown import md_table
 from utils.path import errors_path
 from utils.util import spotify_link
 
@@ -37,7 +38,7 @@ def duplicate_tracks(tracks_full: pd.DataFrame, playlists_full: pd.DataFrame, tr
     display["Playlists"] = display["track_uri"].apply(lambda uri: display_playlists_for_track(uri, playlists_full))
     display["💚"] = display["track_liked"].apply(lambda liked: "💚" if liked else "")
     display = display[["Track", "Track Popularity", "Release Date", "Artists", "Album", "Album Popularity", "Playlists", "Label", "💚"]]
-    table = display.to_markdown(index=False)
+    table = md_table(display)
 
     return ["## Duplicate tracks", "", table, ""]
 
@@ -63,7 +64,7 @@ def duplicate_albums(albums: pd.DataFrame, album_artist: pd.DataFrame, artists: 
 
     display = display[["Album", "Artists", "Album Popularity", "Release Date", "Label", "Tracks", "Playlists"]]
 
-    table = display.to_markdown(index=False)
+    table = md_table(display)
 
     return ["## Duplicate albums", "", table, ""]
 

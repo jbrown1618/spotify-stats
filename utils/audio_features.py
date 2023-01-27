@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import md_image
+from utils.markdown import md_table, md_image
 
 
 audio_columns = ["audio_danceability", "audio_energy", "audio_speechiness", "audio_acousticness", "audio_instrumentalness", "audio_liveness", "audio_valence"]
@@ -36,7 +36,7 @@ def top_and_bottom_lists(tracks: pd.DataFrame):
             f"{top_count} least {label} tracks": bottom_tracks
         })
         
-        lines += [data.to_markdown(index=False), ""]
+        lines += [md_table(data), ""]
 
     return lines
 

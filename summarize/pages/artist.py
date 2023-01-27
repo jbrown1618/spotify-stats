@@ -3,8 +3,8 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
+from utils.markdown import md_table, md_image, md_link
 from utils.path import artist_path, artists_path, genre_path, playlist_overview_path
-from utils.util import md_image, md_link
 
 def make_artist_summary(artist: pd.Series, \
                         tracks: pd.DataFrame, \
@@ -45,18 +45,18 @@ def playlists_section(playlists: pd.DataFrame):
 
     return [
         '## Featured on Playlists',
-        display_playlists.to_markdown(index=False)
+        md_table(display_playlists)
     ]
 
 
 def albums_section(artist_tracks: pd.DataFrame):
     table_data = albums_table(artist_tracks)
-    return ["## Top Albums", "", table_data.to_markdown(index=False), ""]
+    return ["## Top Albums", "", md_table(table_data), ""]
 
 
 def labels_section(artist_tracks: pd.DataFrame, album_record_label: pd.DataFrame):
     table_data = labels_table(artist_tracks, album_record_label, artists_path())
-    return ["## Top Record Labels", "", table_data.to_markdown(index=False), ""]
+    return ["## Top Record Labels", "", md_table(table_data), ""]
 
 
 def genres_section(artist_tracks: pd.DataFrame, artist_genre: pd.DataFrame):
@@ -76,7 +76,7 @@ def genres_section(artist_tracks: pd.DataFrame, artist_genre: pd.DataFrame):
 
 def tracks_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = tracks_table(tracks, track_artist_full, artists_path())
-    return ["## Tracks", "", display_tracks.to_markdown(index=False)]
+    return ["## Tracks", "", md_table(display_tracks)]
 
 
 def display_playlist(playlist_uri: str, playlists: pd.DataFrame):

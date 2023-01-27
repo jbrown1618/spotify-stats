@@ -1,7 +1,8 @@
 import math
 import pandas as pd
+from utils.markdown import md_table, md_image
 
-from utils.util import first, md_image
+from utils.util import first
 
 def release_year(release_date:str):
     first_four = release_date[0:4]
@@ -27,7 +28,7 @@ def newest_and_oldest_albums(tracks: pd.DataFrame):
         f"{top_count} oldest albums": oldest_albums
     })
     
-    return data.to_markdown(index=False)
+    return md_table(data)
 
 
 def album_row(row: pd.Series):

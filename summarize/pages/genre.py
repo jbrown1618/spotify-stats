@@ -8,8 +8,8 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
+from utils.markdown import md_table, md_link, md_summary_details
 from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_label_graph_path, genre_path, genre_tracks_path, genres_path
-from utils.util import md_link, md_summary_details
 
 
 def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -46,7 +46,7 @@ def artists_section(genre_name, tracks: pd.DataFrame, track_artist_full: pd.Data
         summary = "See top 100 artists"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     scatterplot = comparison_scatter_plot(
         tracks, 
@@ -73,7 +73,7 @@ def albums_section(genre_name, tracks: pd.DataFrame):
         summary = "See top 100 albums"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Albums", "", img, "", full_list, ""]
 
@@ -87,14 +87,14 @@ def labels_section(genre_name, tracks: pd.DataFrame, album_record_label: pd.Data
         summary = "See top 100 labels"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, table_data.to_markdown(index=False))
+    full_list = md_summary_details(summary, md_table(table_data))
 
     return ["## Top Record Labels", "", img, "", full_list, ""]
 
 
 def tracks_section(genre_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = tracks_table(tracks, track_artist_full, genres_path())
-    table = display_tracks.to_markdown(index=False)
+    table = md_table(display_tracks)
     return [f"# Tracks in {genre_name}", "", table, ""]
 
 

@@ -1,6 +1,7 @@
 import pandas as pd
+from utils.markdown import md_image
 
-from utils.util import first, md_image, spotify_link
+from utils.util import first, spotify_link
 from utils.artist import get_display_artist
 
 def artists_table(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, relative_to: str):

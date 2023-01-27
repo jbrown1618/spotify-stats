@@ -2,7 +2,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import first, md_image
+from utils.markdown import md_image
+from utils.util import first
 
 def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, absolute_path: str, relative_path: str):
     joined = pd.merge(track_artist_full, tracks, on="track_uri")

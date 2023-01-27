@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import md_image
+from utils.markdown import md_image
 
 def genres_bar_chart(tracks: pd.DataFrame, track_genre: pd.DataFrame, absolute_path: str, relative_path: str):
     track_genre_subset = pd.merge(tracks, track_genre, on="track_uri")[["genre", "track_uri", "genre_has_page"]]

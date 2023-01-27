@@ -2,7 +2,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.util import first, md_image
+from utils.markdown import md_image
+from utils.util import first
 
 def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     grouped = tracks.groupby("album_uri").agg({"track_uri": "count", "album_name": first, "album_image_url": first}).reset_index()
