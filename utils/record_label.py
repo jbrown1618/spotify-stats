@@ -151,7 +151,7 @@ def get_display_labels(labels: str, relative_to: str):
         return labels
     
     if len(with_page) == 1:
-        return md_link(labels, label_path(all_labels[0], relative_to))
+        return md_link(labels, label_path(with_page[0], relative_to))
 
     segments = []
     for label in all_labels:

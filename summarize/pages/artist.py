@@ -63,6 +63,9 @@ def genres_section(artist_tracks: pd.DataFrame, artist_genre: pd.DataFrame):
     artist_uri = artist_tracks.iloc[0]["artist_uri"]
     genres_for_artist = artist_genre[artist_genre["artist_uri"] == artist_uri]
 
+    if len(genres_for_artist) == 0:
+        return []
+
     section = ["## Genres", ""]
     for i, g in genres_for_artist.iterrows():
         if g["genre_has_page"]:
