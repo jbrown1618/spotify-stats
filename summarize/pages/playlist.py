@@ -125,36 +125,35 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.Dat
 
 
 def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
-    years = tracks.groupby('album_release_year').agg({'track_uri': 'count'}).reset_index()
-    years = years.rename(columns={'album_release_year': 'Year', 'track_uri': 'Number of Tracks'})
+    all_years = tracks.groupby('album_release_year').agg({'track_uri': 'count'}).reset_index()
+    all_years = all_years.rename(columns={'album_release_year': 'Year', 'track_uri': 'Number of Tracks'})
 
-    years_with_page = set(years[years['Number of Tracks'] >= 20]["Year"])
+    years_with_page = set(all_years[all_years['Number of Tracks'] >= 20]["Year"])
 
-    if len(years) >= 4:
+    all_years = all_years.sort_values(by="Year", ascending=False)
+    all_years["Year"] = all_years["Year"].apply(lambda y: y if y not in years_with_page else md_link(y, playlist_year_path(playlist_name, y, playlist_path(playlist_name))))
+    
+    if len(all_years) >= 4:
         bar_chart = years_bar_chart(tracks, playlist_years_graph_path(playlist_name), playlist_years_graph_path(playlist_name, playlist_path(playlist_name)))
     else:
         bar_chart = ""
 
     if len(years_with_page) > 0:
-        table = md_table(years)
+        table_section = md_summary_details('View all years', md_table(all_years))
     else:
-        table = ""
+        table_section = ""
 
     for year in years_with_page:
         page_content = year_page(playlist_name, year, tracks, track_artist_full)
         with open(playlist_year_path(playlist_name, year), "w") as f:
             f.write("\n".join(page_content))
 
-    years = years.sort_values(by="Year", ascending=False)
-    years = years[years["Year"].apply(lambda y: y in years_with_page)]
-    years["Year"] = years["Year"].apply(lambda y: md_link(y, playlist_year_path(playlist_name, y, playlist_path(playlist_name))))
-
     return [
         '## Years', 
         "",
         bar_chart,
         "",
-        table,
+        table_section,
         "",
         newest_and_oldest_albums(tracks)
     ]
