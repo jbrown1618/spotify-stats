@@ -24,6 +24,10 @@ prefixes = [
     "UNDER EXCLUSIVE LICENCE TO"
 ]
 
+prefix_regexes = [
+    re.compile(r"^\d{4}\s") # Year
+]
+
 all_standardized_by_all_labels = {}
 most_common_by_standardized = {}
 labels_with_page = set()
@@ -118,12 +122,22 @@ def standardize(record_label: str):
     return record_label
 
 
-
 def strip_prefixes(record_label: str):
+    changed = False
+
+    for prefix_re in prefix_regexes:
+        subbed = prefix_re.sub('', record_label)
+        if subbed != record_label:
+            record_label = subbed
+            changed = True
+
     for prefix in prefixes:
         if record_label.startswith(prefix):
-            return strip_prefixes(record_label[len(prefix):].strip())
-    return record_label
+            record_label = record_label[len(prefix):].strip()
+            changed = True
+
+    # Recurse if we have made changes
+    return strip_prefixes(record_label) if changed else record_label
 
 
 def strip_suffixes(record_label: str):
