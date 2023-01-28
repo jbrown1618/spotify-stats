@@ -3,6 +3,8 @@ import re
 from utils.util import md_link
 from utils.path import label_path
 
+label_delimeter = re.compile(r'[,\/;]')
+
 suffixes = [
     "RECORDS",
     "LABEL",
@@ -11,7 +13,6 @@ suffixes = [
     "LIMITED",
     "*",
     ",",
-    ";",
     ".",
     "LLC", 
     "INC",
@@ -111,8 +112,7 @@ def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
 
 
 def split(record_labels_str: str):
-    delimeter = r'[,\/]'
-    return [rl.strip() for rl in re.split(delimeter, record_labels_str)]
+    return [rl.strip() for rl in label_delimeter.split(record_labels_str)]
 
 
 def standardize(record_label: str):
