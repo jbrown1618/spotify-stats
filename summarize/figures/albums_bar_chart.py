@@ -13,7 +13,7 @@ def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
         "album_image_url": first
     }).reset_index()
 
-    if len(grouped) == 0:
+    if len(grouped) < 3:
         return ""
     
     grouped = grouped.sort_values(by=["track_uri", "album_name"], ascending=False).head(30)

@@ -12,7 +12,7 @@ def genres_bar_chart(tracks: pd.DataFrame, track_genre: pd.DataFrame, absolute_p
         "track_liked": "sum"
     }).reset_index()
     
-    if len(grouped) == 0:
+    if len(grouped) < 3:
         return ""
 
     grouped = grouped.sort_values(by=["track_uri", "genre"], ascending=False).head(30)

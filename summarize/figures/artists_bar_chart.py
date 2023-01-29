@@ -14,7 +14,7 @@ def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, abs
         "artist_image_url": first
     }).reset_index()
 
-    if len(grouped) == 0:
+    if len(grouped) < 3:
         return ""
     
     grouped = grouped.sort_values(by=["track_uri", "artist_uri"], ascending=False).head(30)
