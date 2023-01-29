@@ -22,14 +22,14 @@ def top_and_bottom_lists(tracks: pd.DataFrame):
     top_count = min(10, tracks.size / 2)
 
     for col, label in zip(audio_columns, labels):
-        top_tracks = tracks.sort_values(by=col, ascending=False)\
+        top_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=False)\
             .head(top_count)\
             .reset_index()\
-            ["track_name"]
-        bottom_tracks = tracks.sort_values(by=col, ascending=True)\
+            .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
+        bottom_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=True)\
             .head(top_count)\
             .reset_index()\
-            ["track_name"]
+            .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
 
         data = pd.DataFrame({
             f"{top_count} most {label} tracks": top_tracks,
@@ -41,14 +41,15 @@ def top_and_bottom_lists(tracks: pd.DataFrame):
     return lines
 
 
-def audio_pairplot(tracks, absolute_path, relative_path):
-    sns.pairplot(tracks[audio_columns]).savefig(absolute_path)
+def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
+    data = tracks[audio_columns].sample(n=500, random_state=0)
+    sns.pairplot(data).savefig(absolute_path)
     plt.close("all")
 
     return md_image("Pairplot of audio features", relative_path)
 
 
-def comparison_scatter_plot(tracks, comparison_column, category_label, absolute_path, relative_path):
+def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_label: str, absolute_path: str, relative_path: str):
     projected, first_component, second_component = principal_component_analysis(tracks)
 
     x = projected[:,0]
