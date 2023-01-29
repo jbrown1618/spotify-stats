@@ -174,7 +174,7 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame, track_artist_
         "",
         "## Tracks",
         "",
-        md_table(tracks_table(tracks_for_year, track_artist_full, playlist_path(playlist_name))),
+        md_table(tracks_table(tracks_for_year, track_artist_full, playlist_path(playlist_name), chronological=True)),
         ""
     ]
 
