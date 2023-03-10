@@ -13,7 +13,7 @@ def labels_bar_chart(tracks: pd.DataFrame, album_record_label: pd.DataFrame, abs
     if len(grouped) < 3:
         return ""
 
-    grouped = grouped.sort_values(by=["track_uri", "album_standardized_label"], ascending=False).head(30)
+    grouped = grouped.sort_values(by=["track_uri", "track_liked", "album_standardized_label"], ascending=False).head(30)
     
     all = grouped.rename(columns={"track_uri": "Number of Tracks", "album_standardized_label": "Label"})
     liked = grouped.rename(columns={"track_liked": "Number of Tracks", "album_standardized_label": "Label"})
