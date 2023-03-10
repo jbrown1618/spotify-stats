@@ -16,7 +16,7 @@ def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
     if len(grouped) < 3:
         return ""
     
-    grouped = grouped.sort_values(by=["track_uri", "album_short_name"], ascending=False).head(30)
+    grouped = grouped.sort_values(by=["track_uri", "track_liked", "album_short_name"], ascending=False).head(30)
 
     all = grouped.rename(columns={"track_uri": "Number of Tracks", "album_short_name": "Album"})
     liked = grouped.rename(columns={"track_liked": "Number of Tracks", "album_short_name": "Album"})
