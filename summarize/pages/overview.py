@@ -35,10 +35,11 @@ def errors():
 
 
 def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame):
-    track_counts = pd\
-        .merge(left=playlists, right=playlist_track, left_on="playlist_uri", right_on="playlist_uri", how="inner")\
+    playlist_display_data = pd.merge(playlists, playlist_track, on="playlist_uri")
+    playlist_display_data = pd.merge(playlist_display_data, tracks_full, on="track_uri")
+    track_counts = playlist_display_data\
         .groupby("playlist_uri")\
-        .agg({"track_uri": "count"})\
+        .agg({"track_uri": "count", "track_liked": "sum"})\
         .reset_index()
 
     display_playlists = pd\
@@ -47,9 +48,11 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
     display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
     display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_overview_path(name, output_dir())))
     display_playlists["Number of Songs"] = display_playlists["track_uri"]
+    display_playlists["Liked Songs"] = display_playlists["track_liked"]
+
     display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda src: md_image("", src, 50))
 
-    display_playlists = display_playlists[["Art", "Name", "Number of Songs", "🔗"]]
+    display_playlists = display_playlists[["Art", "Name", "Number of Songs", "Liked Songs", "🔗"]]
 
     display_playlists.sort_values(by="Name", inplace=True)
 
@@ -57,6 +60,7 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
         'Art': '💚',
         'Name': md_link("Liked Songs", playlist_overview_path("Liked Songs", output_dir())),
         'Number of Songs': tracks_full['track_liked'].sum(),
+        'Liked Songs': tracks_full['track_liked'].sum(),
         '🔗': ''
     }, index=[0])
 
