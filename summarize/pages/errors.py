@@ -10,6 +10,7 @@ def make_errors(tracks_full: pd.DataFrame, playlists_full: pd.DataFrame, track_a
     content += title()
     content += duplicate_tracks(tracks_full, playlists_full, track_artist_full)
     content += duplicate_albums(albums, album_artist, artists, playlists_full, tracks_full)
+    content += low_popularity(tracks_full, track_artist_full)
 
     with open(errors_path(), "w") as f:
         f.write("\n".join(content))
@@ -67,6 +68,18 @@ def duplicate_albums(albums: pd.DataFrame, album_artist: pd.DataFrame, artists: 
     table = md_table(display)
 
     return ["## Duplicate albums", "", table, ""]
+
+
+def low_popularity(tracks_full, track_artist_full):
+    low_pop_tracks = tracks_full[(tracks_full["track_popularity"] < 3) & (tracks_full["album_popularity"] < 3)]
+    high_pop_artists = track_artist_full[track_artist_full["artist_popularity"] >= 25]
+
+    display = pd.merge(low_pop_tracks, high_pop_artists,  on="track_uri")
+
+    display = display[["track_name", "album_name", "artist_name", "track_popularity", "album_popularity", "artist_popularity"]]
+
+    return ['## Tracks with low popularity', '', md_table(display), ""]
+    
 
 
 def artist_names_for_album(album_uri: str, album_artist: pd.DataFrame, artists: pd.DataFrame):

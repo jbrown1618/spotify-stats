@@ -36,9 +36,15 @@ def summarize_results():
     albums['album_release_year'] = albums['album_release_date'].apply(release_year)
     albums['album_short_name'] = albums['album_name'].apply(short_album_name)
 
-    artist_track_counts = track_artist[["artist_uri", "track_uri"]].groupby("artist_uri").count().reset_index()
-    artist_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
-    artist_track_counts["artist_has_page"] = artist_track_counts["artist_track_count"] >= 10
+    artist_liked_tracks = pd.merge(track_artist, liked_tracks, on="track_uri").groupby("artist_uri").agg({"track_uri": "count"}).reset_index()
+    artist_liked_tracks.rename(columns={"track_uri": "artist_liked_track_count"}, inplace=True)
+    artist_all_track_counts = track_artist[["artist_uri", "track_uri"]].groupby("artist_uri").agg({"track_uri": "count"}).reset_index()
+    artist_all_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
+
+    artist_track_counts = pd.merge(artist_liked_tracks, artist_all_track_counts, how="outer", on="artist_uri")
+    artist_track_counts.fillna(0, inplace=True)
+    
+    artist_track_counts["artist_has_page"] = (artist_track_counts["artist_track_count"] >= 10) & (artist_track_counts["artist_liked_track_count"] > 0)
     artists_with_page = {artist_uri for artist_uri in artist_track_counts[artist_track_counts["artist_has_page"]]["artist_uri"] }
 
     artist_playlist = pd.merge(track_artist, playlist_track, on="track_uri").groupby(["artist_uri", "playlist_uri"]).count().reset_index()
@@ -62,8 +68,8 @@ def summarize_results():
     track_primary_artist = pd.merge(tracks_full, track_artist[track_artist["artist_index"] == 0], on="track_uri")
     track_genre = pd.merge(track_primary_artist, artist_genre, on="artist_uri")
     track_genre.drop(columns=["artist_uri"], inplace=True)
-    genre_track_counts = track_genre.groupby("genre").agg({"track_uri": "count"}).reset_index()
-    genres_with_page = set(genre_track_counts[genre_track_counts["track_uri"] >= 40]["genre"])
+    genre_track_counts = track_genre.groupby("genre").agg({"track_uri": "count", "track_liked": "sum"}).reset_index()
+    genres_with_page = set(genre_track_counts[(genre_track_counts["track_uri"] >= 40) & (genre_track_counts["track_liked"] > 0)]["genre"])
     artist_genre["genre_has_page"] = artist_genre["genre"].apply(lambda genre: genre in genres_with_page)
     track_genre["genre_has_page"] = track_genre["genre"].apply(lambda genre: genre in genres_with_page)
 
