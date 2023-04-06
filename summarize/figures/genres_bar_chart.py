@@ -15,7 +15,7 @@ def genres_bar_chart(tracks: pd.DataFrame, track_genre: pd.DataFrame, absolute_p
     if len(grouped) < 3:
         return ""
 
-    grouped = grouped.sort_values(by=["track_uri", "genre"], ascending=False).head(30)
+    grouped = grouped.sort_values(by=["track_uri", "track_liked", "genre"], ascending=False).head(30)
 
     all = grouped.rename(columns={"track_uri": "Number of Tracks", "genre": "Genre"})
     liked = grouped.rename(columns={"track_liked": "Number of Tracks", "genre": "Genre"})    
