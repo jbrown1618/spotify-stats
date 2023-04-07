@@ -10,29 +10,30 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
+from utils.artist import get_primary_artist_name
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details
 from utils.path import playlist_album_graph_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
-def make_playlist_summary(playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
-    playlist_name = "Liked Songs" if is_liked_songs else playlist_full["playlist_name"].iloc[0]
-    playlist_image_url = None if is_liked_songs else playlist_full["playlist_image_url"].iloc[0]
+def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
+    playlist_name = "Liked Songs" if is_liked_songs else tracks["playlist_name"].iloc[0]
+    playlist_image_url = None if is_liked_songs else tracks["playlist_image_url"].iloc[0]
     print(f"Generating summary for playlist {playlist_name}")
     
     content = []
     content += title(playlist_name)
     content += image(playlist_name, playlist_image_url)
-    content += [md_link(f"{len(playlist_full)} songs", playlist_tracks_path(playlist_name, playlist_path(playlist_name))), ""]
-    content += artists_section(playlist_name, playlist_full, track_artist_full)
-    content += albums_section(playlist_name, playlist_full)
-    content += labels_section(playlist_name, playlist_full, album_record_label)
-    content += genres_section(playlist_name, playlist_full, track_genre)
-    content += years_section(playlist_name, playlist_full, track_artist_full)
-    content += audio_features_section(playlist_full)
+    content += tracks_link(playlist_name, tracks)
+    content += artists_section(playlist_name, tracks, track_artist_full)
+    content += albums_section(playlist_name, tracks)
+    content += labels_section(playlist_name, tracks, album_record_label)
+    content += genres_section(playlist_name, tracks, track_genre)
+    content += years_section(playlist_name, tracks, track_artist_full)
+    content += audio_features_section(tracks)
 
-    tracks_content = tracks_section(playlist_name, playlist_full, track_artist_full)
+    tracks_content = tracks_section(playlist_name, tracks, track_artist_full)
 
     with open(playlist_overview_path(playlist_name), "w") as f:
         f.write("\n".join(content))
@@ -52,6 +53,13 @@ def image(playlist_name, playlist_image_url):
     return ["", md_image(playlist_name, playlist_image_url, 100), ""]
 
 
+def tracks_link(playlist_name: str, tracks: pd.DataFrame):
+    track_count = len(tracks)
+    liked_track_count = tracks["track_liked"].sum()
+    text = f"{track_count} songs" if track_count == liked_track_count else f"{track_count} songs ({liked_track_count} liked)"
+    return [md_link(text, playlist_tracks_path(playlist_name, playlist_path(playlist_name))), ""]
+
+
 def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_full: pd.DataFrame):
     img = artists_bar_chart(playlist_full, track_artist_full, playlist_artist_graph_path(playlist_name), playlist_artist_graph_path(playlist_name, playlist_path(playlist_name)))
     table_data = artists_table(playlist_full, track_artist_full, playlist_path(playlist_name))
@@ -66,7 +74,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
             playlist_full, 
-            playlist_full["track_uri"].apply(lambda uri: primary_artist_name(uri, track_artist_full)), 
+            playlist_full["track_uri"].apply(lambda uri: get_primary_artist_name(uri, track_artist_full)), 
             "Artist", 
             playlist_artist_comparison_scatterplot_path(playlist_name), 
             playlist_artist_comparison_scatterplot_path(playlist_name, playlist_path(playlist_name))
@@ -74,12 +82,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
     else:
         scatterplot = ""
 
-    return ["## Top Artists", "", img, "", scatterplot , "", full_list, ""]
-
-
-def primary_artist_name(track_uri: str, track_artist_full: pd.DataFrame):
-    name = track_artist_full[(track_artist_full["track_uri"] == track_uri) & (track_artist_full["artist_index"] == 0)].iloc[0]["artist_name"]
-    return name
+    return ["## Top Artists", "", full_list, "", img, "", scatterplot , ""]
 
 
 def albums_section(playlist_name, playlist_full: pd.DataFrame):
@@ -93,7 +96,7 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Albums", "", img, "", full_list, ""]
+    return ["## Top Albums", "", full_list, "", img, ""]
 
 
 def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -107,7 +110,7 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_labe
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Record Labels", "", img, "", full_list, ""]
+    return ["## Top Record Labels", "", full_list, "", img, ""]
 
 
 def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.DataFrame):
@@ -121,7 +124,7 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.Dat
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Genres", "", img, "", full_list, ""]
+    return ["## Genres", "", full_list, "", img, ""]
 
 
 def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
@@ -151,9 +154,9 @@ def years_section(playlist_name: str, tracks: pd.DataFrame, track_artist_full: p
     return [
         '## Years', 
         "",
-        bar_chart,
-        "",
         table_section,
+        "",
+        bar_chart,
         "",
         newest_and_oldest_albums(tracks)
     ]

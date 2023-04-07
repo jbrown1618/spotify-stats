@@ -3,13 +3,15 @@ import pandas as pd
 from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
+from summarize.figures.years_bar_chart import years_bar_chart
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
+from utils.date import newest_and_oldest_albums
 from utils.markdown import md_table, md_link, md_summary_details
-from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_label_graph_path, genre_path, genre_tracks_path, genres_path
+from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_label_graph_path, genre_path, genre_tracks_path, genre_years_graph_path, genres_path
 
 
 def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -22,6 +24,7 @@ def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, al
     content += artists_section(genre_name, tracks, track_artist_full)
     content += albums_section(genre_name, tracks)
     content += labels_section(genre_name, tracks, album_record_label)
+    content += years_section(genre_name, tracks)
     content += audio_features_section(tracks)
 
     tracks_content = tracks_section(genre_name, tracks, track_artist_full)
@@ -56,7 +59,7 @@ def artists_section(genre_name, tracks: pd.DataFrame, track_artist_full: pd.Data
         genre_artist_comparison_scatterplot_path(genre_name, genres_path())
     )
 
-    return ["## Top Artists", "", img, "", scatterplot , "", full_list]
+    return ["## Top Artists", "", full_list, "", img, "", scatterplot]
 
 
 def primary_artist_name(track_uri: str, track_artist_full: pd.DataFrame):
@@ -75,7 +78,7 @@ def albums_section(genre_name, tracks: pd.DataFrame):
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Albums", "", img, "", full_list, ""]
+    return ["## Top Albums", "", full_list, "", img, ""]
 
 
 def labels_section(genre_name, tracks: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -89,7 +92,27 @@ def labels_section(genre_name, tracks: pd.DataFrame, album_record_label: pd.Data
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Record Labels", "", img, "", full_list, ""]
+    return ["## Top Record Labels", "", full_list, "", img, ""]
+
+
+def years_section(genre_name: str, tracks: pd.DataFrame):
+    all_years = tracks.groupby('album_release_year').agg({'track_uri': 'count'}).reset_index()
+    all_years = all_years.rename(columns={'album_release_year': 'Year', 'track_uri': 'Number of Tracks'})
+
+    all_years = all_years.sort_values(by="Year", ascending=False)
+    
+    if len(all_years) >= 4:
+        bar_chart = years_bar_chart(tracks, genre_years_graph_path(genre_name), genre_years_graph_path(genre_name, genres_path()))
+    else:
+        bar_chart = ""
+
+    return [
+        '## Years', 
+        "",
+        bar_chart,
+        "",
+        newest_and_oldest_albums(tracks)
+    ]
 
 
 def tracks_section(genre_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):

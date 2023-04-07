@@ -1,4 +1,3 @@
-from genericpath import isfile
 import os
 import glob
 from utils.settings import output_dir
@@ -50,6 +49,27 @@ def overview_genre_graph_path(relative_to=None):
 def overview_genres_scatterplot_path(relative_to=None):
     return relative_to_path(
         os.path.join("images", "overview", "genres_comparison.png"),
+        relative_to
+    )
+
+
+def overview_artist_graph_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "artists.png"),
+        relative_to
+    )
+
+
+def overview_artists_scatterplot_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "artists_comparison.png"),
+        relative_to
+    )
+
+
+def overview_label_graph_path(relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "labels.png"),
         relative_to
     )
 
@@ -310,7 +330,19 @@ def genre_artist_comparison_scatterplot_path(genre_name: str, relative_to=None):
             "artists_comparison.png"
         ), 
         relative_to
-    )   
+    )
+
+
+def genre_years_graph_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "years.png"
+        ),
+        relative_to
+    ) 
 
 
 def pairplot_path(relative_to=None):
@@ -318,7 +350,6 @@ def pairplot_path(relative_to=None):
         os.path.join("images", "audio", "audio_pairplot.png"), 
         relative_to
     )
-
 
 
 def data_path(table_name=None, relative_to=None):

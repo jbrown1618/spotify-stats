@@ -80,7 +80,7 @@ def summarize_results():
 
     clear_markdown()
 
-    make_overview(playlists, playlist_track, tracks_full, track_genre)
+    make_overview(playlists, playlist_track, tracks_full, track_genre, track_artist_full, album_record_label)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
 
     make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, track_genre, is_liked_songs=True)

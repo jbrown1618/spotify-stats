@@ -1,12 +1,18 @@
 import pandas as pd
+from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
+from summarize.figures.labels_bar_chart import labels_bar_chart
+from summarize.tables.artists_table import artists_table
+from summarize.tables.genres_table import genres_table
+from summarize.tables.labels_table import labels_table
+from utils.artist import get_primary_artist_name
 from utils.audio_features import audio_pairplot, comparison_scatter_plot, top_and_bottom_lists
-from utils.markdown import md_image, md_link, md_table
-from utils.path import errors_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_playlists_scatterplot_path, pairplot_path, playlist_overview_path, overview_path
+from utils.markdown import md_image, md_link, md_summary_details, md_table
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, playlist_overview_path, overview_path
 from utils.settings import output_dir
 from utils.util import spotify_link
 
-def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame):
+def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
     print("Generating Overview")
 
     readme = []
@@ -14,7 +20,9 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     readme += title("jbrown1618")
     readme += byline()
     readme += playlists_section(playlists, playlist_track, tracks_full)
+    readme += artists_section(tracks_full, track_artist_full)
     readme += genres_section(tracks_full, track_genre)
+    readme += labels_section(tracks_full, album_record_label)
     readme += audio_features_section(tracks_full)
     readme += errors()
 
@@ -75,12 +83,46 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
     return ["## Playlists", "", table, "", scatter, ""]
 
 
+def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
+    img = artists_bar_chart(tracks, track_artist_full, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
+    table_data = artists_table(tracks, track_artist_full, output_dir())
+
+    summary = f"See all {len(table_data)} artists"
+    if len(table_data) > 100:
+        summary = "See top 100 artists"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, md_table(table_data))
+
+    if len(table_data) >= 10:
+        scatterplot = comparison_scatter_plot(
+            tracks, 
+            tracks["track_uri"].apply(lambda uri: get_primary_artist_name(uri, track_artist_full)), 
+            "Artist", 
+            overview_artists_scatterplot_path(), 
+            overview_artists_scatterplot_path(output_dir())
+        )
+    else:
+        scatterplot = ""
+
+    return ["## Artists", "", full_list, "", img, "", scatterplot , ""]
+
+
 def genres_section(tracks: pd.DataFrame, track_genre: pd.DataFrame):
     img = genres_bar_chart(tracks, track_genre, overview_genre_graph_path(), overview_genre_graph_path(output_dir()))
     main_genre_col = tracks["track_uri"].apply(lambda track_uri: get_main_genre(track_uri, track_genre))
     scatter = comparison_scatter_plot(tracks, main_genre_col, "Genre", overview_genres_scatterplot_path(), overview_genres_scatterplot_path(output_dir()))
 
-    return ["## Genres", "", img, "", scatter, ""]
+    table_data = genres_table(tracks, track_genre, output_dir())
+    
+    summary = f"See all {len(table_data)} genres"
+    if len(table_data) > 100:
+        summary = "See top 100 genres"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, md_table(table_data))
+
+    return ["## Genres", "", full_list, "", img, "", scatter, ""]
 
 
 def get_main_genre(track_uri: str, track_genre: pd.DataFrame):
@@ -98,6 +140,19 @@ def get_main_playlist(track_uri: str, playlist_track: pd.DataFrame, playlists: p
             return playlists[playlists["playlist_uri"] == playlist_uri].iloc[0]["playlist_name"]
     return "None"
 
+
+def labels_section(tracks: pd.DataFrame, album_record_label: pd.DataFrame):
+    img = labels_bar_chart(tracks, album_record_label, overview_label_graph_path(), overview_label_graph_path(output_dir()))
+    table_data = labels_table(tracks, album_record_label, output_dir())
+
+    summary = f"See all {len(table_data)} labels"
+    if len(table_data) > 100:
+        summary = "See top 100 labels"
+        table_data = table_data.head(100)
+
+    full_list = md_summary_details(summary, md_table(table_data))
+
+    return ["## Top Record Labels", "", full_list, "", img, ""]
 
 
 def audio_features_section(tracks_full):

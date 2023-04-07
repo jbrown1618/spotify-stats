@@ -53,7 +53,7 @@ def artists_section(label_name, label_full: pd.DataFrame, track_artist_full: pd.
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Artists", "", img, "", full_list, ""]
+    return ["## Top Artists", "", full_list, "", img, ""]
 
 
 def albums_section(label_name, label_full: pd.DataFrame):
@@ -67,7 +67,7 @@ def albums_section(label_name, label_full: pd.DataFrame):
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Top Albums", "", img, "", full_list, ""]
+    return ["## Top Albums", "", full_list, "", img, ""]
 
 
 def genres_section(label_name: str, tracks: pd.DataFrame, track_genre: pd.DataFrame):
@@ -81,7 +81,7 @@ def genres_section(label_name: str, tracks: pd.DataFrame, track_genre: pd.DataFr
 
     full_list = md_summary_details(summary, md_table(table_data))
 
-    return ["## Genres", "", img, "", full_list, ""]
+    return ["## Genres", "", full_list, "", img, ""]
 
 
 def tracks_section(label_name: str, label_full: pd.DataFrame, track_artist_full: pd.DataFrame):
