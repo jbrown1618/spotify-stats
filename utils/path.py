@@ -12,6 +12,7 @@ def clear_markdown():
     clear_contents(artists_path())
     clear_contents(playlists_path())
     clear_contents(labels_path())
+    clear_contents(genres_path())
     clear_contents(images_path())
 
 
