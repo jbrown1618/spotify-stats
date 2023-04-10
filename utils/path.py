@@ -87,7 +87,18 @@ def artist_path(artist_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "artists",
-            file_name_friendly(artist_name) + ".md"
+            file_name_friendly(artist_name)
+        ), 
+        relative_to
+    )
+
+
+def artist_overview_path(artist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "artists",
+            file_name_friendly(artist_name),
+            "overview.md"
         ), 
         relative_to
     )
@@ -220,7 +231,18 @@ def label_path(label_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "labels",
-            file_name_friendly(label_name) + ".md"
+            file_name_friendly(label_name)
+        ), 
+        relative_to
+    )
+
+
+def label_overview_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "labels",
+            file_name_friendly(label_name),
+            "overview.md"
         ), 
         relative_to
     )
@@ -270,7 +292,18 @@ def genre_path(genre_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "genres",
-            file_name_friendly(genre_name) + ".md"
+            file_name_friendly(genre_name)
+        ), 
+        relative_to
+    )
+
+
+def genre_overview_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "genres",
+            file_name_friendly(genre_name),
+            "overview.md"
         ), 
         relative_to
     )
@@ -280,7 +313,8 @@ def genre_tracks_path(genre_name, relative_to=None):
     return relative_to_path(
         os.path.join(
             "genres",
-            file_name_friendly(genre_name) + "_tracks.md"
+            file_name_friendly(genre_name),
+            "tracks.md"
         ), 
         relative_to
     )
