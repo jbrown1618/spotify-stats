@@ -1,4 +1,3 @@
-import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
@@ -23,6 +22,8 @@ albums_data = []
 audio_features = []
 
 liked_tracks = []
+top_tracks = []
+top_artists = []
 playlist_track = []
 track_artist = []
 album_artist = []
@@ -30,11 +31,14 @@ album_track = []
 artist_genre = []
 
 def save_data():
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=spotify_client_id(), 
-                                                   client_secret=spotify_client_secret(), 
-                                                   redirect_uri="http://localhost:3000/",
-                                                   open_browser=False,
-                                                   scope="user-library-read"))
+    auth_manager = SpotifyOAuth(client_id=spotify_client_id(), 
+                                client_secret=spotify_client_secret(), 
+                                redirect_uri="http://localhost:3000/",
+                                open_browser=False,
+                                scope="user-library-read user-top-read playlist-read-collaborative")
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    save_top_tracks_data(sp)
+    save_top_artists_data(sp)
     save_playlists_data(sp)
     save_liked_tracks_data(sp)
     save_albums_data(sp)
@@ -43,6 +47,9 @@ def save_data():
 
     print('Saving data...')
     clear_data()
+
+    pd.DataFrame(top_tracks).sort_values(by=["term", "index"]).to_csv(data_path("top_tracks"), index=False)
+    pd.DataFrame(top_artists).sort_values(by=["term", "index"]).to_csv(data_path("top_artists"), index=False)
     pd.DataFrame(playlists_data).sort_values(by="uri").to_csv(data_path("playlists"), index=False)
     pd.DataFrame(tracks_data).sort_values(by="uri").to_csv(data_path("tracks"), index=False)
     pd.DataFrame(artists_data).sort_values(by="uri").to_csv(data_path("artists"), index=False)
@@ -54,6 +61,32 @@ def save_data():
     pd.DataFrame(album_track).sort_values(by=["album_uri", "track_uri"]).to_csv(data_path("album_track"), index=False)
     pd.DataFrame(audio_features).sort_values(by="track_uri").to_csv(data_path("audio_features"), index=False)
     pd.DataFrame(artist_genre).sort_values(by=["artist_uri", "genre"]).to_csv(data_path("artist_genre"), index=False)
+
+
+def save_top_tracks_data(sp: spotipy.Spotify):
+    for term in ["short_term", "medium_term", "long_term"]:
+        print(f'Fetching {term} top tracks...')
+        tracks = sp.current_user_top_tracks(50, 0, term)["items"]
+        for i, track in enumerate(tracks):
+            top_tracks.append({
+                "track_uri": track["uri"],
+                "term": term,
+                "index": i + 1
+            })
+            process_track(track)
+
+
+def save_top_artists_data(sp: spotipy.Spotify):
+    for term in ["short_term", "medium_term", "long_term"]:
+        print(f'Fetching {term} top artists...')
+        artists = sp.current_user_top_artists(50, 0, term)["items"]
+        for i, artist in enumerate(artists):
+            top_artists.append({
+                "artist_uri": artist["uri"],
+                "term": term,
+                "index": i + 1
+            })
+            queue_artist(artist)
 
 
 def save_playlists_data(sp: spotipy.Spotify):
