@@ -5,12 +5,12 @@ from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
+from summarize.tables.playlists_table import playlists_table
 from utils.artist import get_primary_artist_name
 from utils.audio_features import audio_pairplot, comparison_scatter_plot, top_and_bottom_lists
-from utils.markdown import md_image, md_link, md_summary_details, md_table
-from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, playlist_overview_path, overview_path
+from utils.markdown import md_link, md_summary_details, md_table
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
 from utils.settings import output_dir
-from utils.util import spotify_link
 
 def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
     print("Generating Overview")
@@ -50,37 +50,20 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
         .agg({"track_uri": "count", "track_liked": "sum"})\
         .reset_index()
 
-    display_playlists = pd\
-        .merge(left=playlists, right=track_counts, left_on="playlist_uri", right_on="playlist_uri", how="inner")
-
-    display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
-    display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_overview_path(name, output_dir())))
-    display_playlists["Number of Songs"] = display_playlists["track_uri"]
-    display_playlists["Liked Songs"] = display_playlists["track_liked"]
-
-    display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda src: md_image("", src, 50))
-
-    display_playlists = display_playlists[["Art", "Name", "Number of Songs", "Liked Songs", "🔗"]]
-
-    display_playlists.sort_values(by="Name", inplace=True)
-
-    liked_songs_row = pd.DataFrame({
-        'Art': '💚',
-        'Name': md_link("Liked Songs", playlist_overview_path("Liked Songs", output_dir())),
-        'Number of Songs': tracks_full['track_liked'].sum(),
-        'Liked Songs': tracks_full['track_liked'].sum(),
-        '🔗': ''
-    }, index=[0])
-
-    display_playlists = pd.concat([liked_songs_row, display_playlists])
-
-    table = md_table(display_playlists)
+    table = md_table(playlists_table(playlists, playlist_track, tracks_full, output_dir()))
 
     playlists_sorted_by_track_count = track_counts.sort_values(by="track_uri", ascending=False)["playlist_uri"]
     main_playlist_col = tracks_full["track_uri"].apply(lambda track_uri: get_main_playlist(track_uri, playlist_track, playlists, playlists_sorted_by_track_count))
     scatter = comparison_scatter_plot(tracks_full, main_playlist_col, "Playlist", overview_playlists_scatterplot_path(), overview_playlists_scatterplot_path(output_dir()))
     
-    return ["## Playlists", "", table, "", scatter, ""]
+    return [
+        "## Playlists", 
+        "", 
+        md_summary_details("See all playlists", table), 
+        "", 
+        scatter, 
+        ""
+    ]
 
 
 def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
