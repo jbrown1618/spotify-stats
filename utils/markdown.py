@@ -32,3 +32,17 @@ def md_table(df: pd.DataFrame):
     table = more_than_one_space.sub(' ', table) # Consolidate spaces into two
     table = more_than_three_hyphens.sub('---', table) # Consolidate dashes into three
     return table
+
+
+def md_truncated_table(df: pd.DataFrame, initial: int, text="View all"):
+    if (len(df) <= initial):
+        return md_table(df)
+    
+    head = df.head(initial)
+    tail = df.tail(-1 * initial)
+
+    return "\n".join([
+        md_table(head),
+        "",
+        md_summary_details(text, md_table(tail))
+    ])

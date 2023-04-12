@@ -3,7 +3,7 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.markdown import md_table, md_image, md_link
+from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_overview_path, artist_path, genre_path, playlist_overview_path
 
 def make_artist_summary(artist: pd.Series, \
@@ -40,8 +40,8 @@ def playlists_section(artist_name: str, playlists: pd.DataFrame):
     display_playlists = playlists.sort_values(by="playlist_artist_track_count", ascending=False)
     display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda href: md_image("", href, 50))
     display_playlists["Playlist"] = display_playlists["playlist_uri"].apply(lambda uri: display_playlist(artist_name, uri, playlists))
-    display_playlists["Number of Tracks"] = display_playlists["playlist_artist_track_count"]
-    display_playlists = display_playlists[["Number of Tracks", "Art", "Playlist"]]
+    display_playlists["Tracks"] = display_playlists["playlist_artist_track_count"]
+    display_playlists = display_playlists[["Art", "Tracks", "Playlist"]]
 
     return [
         '## Featured on Playlists',
@@ -51,7 +51,7 @@ def playlists_section(artist_name: str, playlists: pd.DataFrame):
 
 def albums_section(artist_tracks: pd.DataFrame):
     table_data = albums_table(artist_tracks)
-    return ["## Top Albums", "", md_table(table_data), ""]
+    return ["## Top Albums", "", md_truncated_table(table_data, 10, "See all albums"), ""]
 
 
 def labels_section(artist_name: str, artist_tracks: pd.DataFrame, album_record_label: pd.DataFrame):
@@ -79,7 +79,7 @@ def genres_section(artist_name: str, artist_tracks: pd.DataFrame, artist_genre: 
 
 def tracks_section(artist_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     display_tracks = tracks_table(tracks, track_artist_full, artist_path(artist_name))
-    return ["## Tracks", "", md_table(display_tracks)]
+    return ["## Tracks", "", md_truncated_table(display_tracks, 10, "See all tracks")]
 
 
 def display_playlist(artist_name: str, playlist_uri: str, playlists: pd.DataFrame):

@@ -32,4 +32,4 @@ def newest_and_oldest_albums(tracks: pd.DataFrame):
 
 
 def album_row(row: pd.Series):
-    return f'<div style="display:flex; align-items:center;">{md_image(row["album_name"], row["album_image_url"], 50)} <span style="padding-left:10px;">{row["album_name"]} ({row["album_release_date"]})</span></div>'
+    return f'<div>{md_image(row["album_name"], row["album_image_url"], 50)} <span>{row["album_name"]} ({row["album_release_date"]})</span></div>'

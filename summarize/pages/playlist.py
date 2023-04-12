@@ -13,12 +13,12 @@ from summarize.tables.tracks_table import tracks_table
 from utils.artist import get_primary_artist_name
 from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
 from utils.date import newest_and_oldest_albums
-from utils.markdown import md_link, md_table, md_image, md_summary_details
+from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
 from utils.path import playlist_album_graph_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
 def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
-    playlist_name = "Liked Songs" if is_liked_songs else tracks["playlist_name"].iloc[0]
+    playlist_name = "Liked Tracks" if is_liked_songs else tracks["playlist_name"].iloc[0]
     playlist_image_url = None if is_liked_songs else tracks["playlist_image_url"].iloc[0]
     print(f"Generating summary for playlist {playlist_name}")
     
@@ -69,7 +69,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame, track_artist_ful
         summary = "See top 100 artists"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
@@ -94,7 +94,7 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
         summary = "See top 100 albums"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Top Albums", "", full_list, "", img, ""]
 
@@ -108,7 +108,7 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame, album_record_labe
         summary = "See top 100 labels"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Top Record Labels", "", full_list, "", img, ""]
 
@@ -122,7 +122,7 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.Dat
         summary = "See top 100 genres"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Genres", "", full_list, "", img, ""]
 

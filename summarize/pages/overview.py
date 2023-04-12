@@ -6,19 +6,23 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
+from summarize.tables.top_artists_table import top_artists_table
+from summarize.tables.top_tracks_table import top_tracks_table
 from utils.artist import get_primary_artist_name
 from utils.audio_features import audio_pairplot, comparison_scatter_plot, top_and_bottom_lists
-from utils.markdown import md_link, md_summary_details, md_table
+from utils.markdown import md_link, md_summary_details, md_table, md_truncated_table
 from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
 from utils.settings import output_dir
+from utils.util import first
 
-def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
+def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
     print("Generating Overview")
 
     readme = []
 
     readme += title("jbrown1618")
     readme += byline()
+    readme += top_tracks_and_artists_section(top_tracks, tracks_full, top_artists, track_artist_full)
     readme += playlists_section(playlists, playlist_track, tracks_full)
     readme += artists_section(tracks_full, track_artist_full)
     readme += genres_section(tracks_full, track_genre)
@@ -42,6 +46,20 @@ def errors():
     return ['## Possible organizational errors', md_link("Possible organizational errors", errors_path(output_dir()))]
 
 
+def top_tracks_and_artists_section(top_tracks: pd.DataFrame, tracks: pd.DataFrame, top_artists: pd.DataFrame, track_artist_full: pd.DataFrame):
+    artists = track_artist_full.groupby("artist_uri").agg({"artist_name": first, "artist_image_url": first}).reset_index()
+    return [
+        "## Top Tracks", 
+        "", 
+        md_truncated_table(top_tracks_table(top_tracks, tracks), 10, "See top 50 tracks"), 
+        "",
+        "Top Artists",
+        "",
+        md_truncated_table(top_artists_table(top_artists, artists), 10, "See top 50 artists"), 
+        ""
+    ]
+
+
 def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame):
     playlist_display_data = pd.merge(playlists, playlist_track, on="playlist_uri")
     playlist_display_data = pd.merge(playlist_display_data, tracks_full, on="track_uri")
@@ -50,7 +68,7 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
         .agg({"track_uri": "count", "track_liked": "sum"})\
         .reset_index()
 
-    table = md_table(playlists_table(playlists, playlist_track, tracks_full, output_dir()))
+    table = md_truncated_table(playlists_table(playlists, playlist_track, tracks_full, output_dir()), 10)
 
     playlists_sorted_by_track_count = track_counts.sort_values(by="track_uri", ascending=False)["playlist_uri"]
     main_playlist_col = tracks_full["track_uri"].apply(lambda track_uri: get_main_playlist(track_uri, playlist_track, playlists, playlists_sorted_by_track_count))
@@ -59,7 +77,7 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
     return [
         "## Playlists", 
         "", 
-        md_summary_details("See all playlists", table), 
+        table, 
         "", 
         scatter, 
         ""
@@ -75,7 +93,7 @@ def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
         summary = "See top 100 artists"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
@@ -103,7 +121,7 @@ def genres_section(tracks: pd.DataFrame, track_genre: pd.DataFrame):
         summary = "See top 100 genres"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Genres", "", full_list, "", img, "", scatter, ""]
 
@@ -133,9 +151,9 @@ def labels_section(tracks: pd.DataFrame, album_record_label: pd.DataFrame):
         summary = "See top 100 labels"
         table_data = table_data.head(100)
 
-    full_list = md_summary_details(summary, md_table(table_data))
+    full_list = md_truncated_table(table_data, 10, summary)
 
-    return ["## Top Record Labels", "", full_list, "", img, ""]
+    return ["## Record Labels", "", full_list, "", img, ""]
 
 
 def audio_features_section(tracks_full):

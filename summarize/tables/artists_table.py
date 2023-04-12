@@ -7,7 +7,7 @@ from utils.artist import get_display_artist
 def artists_table(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, relative_to: str):
     joined = pd.merge(track_artist_full, tracks, on="track_uri")
     grouped = joined.groupby("artist_uri").agg({"track_uri": "count", "track_liked": "sum", "artist_name": first, "artist_image_url": first}).reset_index()
-    grouped = grouped.sort_values(by=["track_uri", "track_liked", "artist_uri"], ascending=False)
+    grouped = grouped.sort_values(by=["track_liked", "track_uri", "artist_uri"], ascending=False)
     grouped = grouped.rename(columns={"track_uri": "Tracks", "track_liked": "💚", "artist_name": "Artist"})
 
     table_data = grouped

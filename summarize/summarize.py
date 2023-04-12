@@ -25,6 +25,8 @@ def summarize_results():
     track_artist = pd.read_csv(data_path("track_artist"))
     tracks = pd.read_csv(data_path("tracks"))
     artist_genre = pd.read_csv(data_path("artist_genre"))
+    top_tracks = pd.read_csv(data_path("top_tracks"))
+    top_artists = pd.read_csv(data_path("top_artists"))
 
     prefixes = ["album_", "track_", "playlist_", "artist_"]
     prefix_df(albums, "album_", prefixes)
@@ -80,7 +82,7 @@ def summarize_results():
 
     clear_markdown()
 
-    make_overview(playlists, playlist_track, tracks_full, track_genre, track_artist_full, album_record_label)
+    make_overview(playlists, playlist_track, tracks_full, track_genre, track_artist_full, album_record_label, top_tracks, top_artists)
     make_errors(tracks_full, playlists_full, track_artist_full, albums, album_artist, artists)
 
     make_playlist_summary(liked_tracks_full, track_artist_full, album_record_label, track_genre, is_liked_songs=True)
