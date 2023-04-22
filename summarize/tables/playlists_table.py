@@ -28,7 +28,7 @@ def playlists_table(playlists: pd.DataFrame, playlist_track: pd.DataFrame, track
 
     liked_tracks_row = pd.DataFrame({
         'Art': '💚',
-        'Name': md_link("Liked Tracks", playlist_overview_path('💚', relative_to)),
+        'Name': md_link("Liked Tracks", playlist_overview_path('Liked Tracks', relative_to)),
         'Tracks': tracks_full['track_liked'].sum(),
         '💚': tracks_full['track_liked'].sum(),
         '🔗': ''
