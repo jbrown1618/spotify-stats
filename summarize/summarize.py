@@ -1,6 +1,7 @@
 import pandas as pd
 
 from summarize.pages.artist import make_artist_summary
+from summarize.pages.audio_features import make_audio_features_page
 from summarize.pages.genre import make_genre_summary
 from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
@@ -9,7 +10,7 @@ from summarize.pages.errors import make_errors
 from utils.album import short_album_name
 from utils.audio_features import set_tracks_full
 from utils.date import release_year
-from utils.path import clear_markdown, data_path
+from utils.path import artist_audio_features_path, clear_markdown, data_path, overview_audio_features_path, playlist_audio_features_path
 from utils.record_label import standardize_record_labels
 from utils.util import first, prefix_df
 

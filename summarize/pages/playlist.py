@@ -5,16 +5,17 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.years_bar_chart import years_bar_chart
+from summarize.pages.audio_features import make_audio_features_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.artist import get_primary_artist_name
-from utils.audio_features import comparison_scatter_plot, top_and_bottom_lists
+from utils.audio_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
+from utils.path import playlist_album_graph_path, playlist_audio_features_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
 def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
@@ -26,12 +27,12 @@ def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame,
     content += title(playlist_name)
     content += image(playlist_name, playlist_image_url)
     content += tracks_link(playlist_name, tracks)
+    content += [md_link(f"See Audio Features", playlist_audio_features_path(playlist_name, playlist_path(playlist_name))), ""]
     content += artists_section(playlist_name, tracks, track_artist_full)
     content += albums_section(playlist_name, tracks)
     content += labels_section(playlist_name, tracks, album_record_label)
     content += genres_section(playlist_name, tracks, track_genre)
     content += years_section(playlist_name, tracks, track_artist_full)
-    content += audio_features_section(tracks)
 
     tracks_content = tracks_section(playlist_name, tracks, track_artist_full)
 
@@ -40,6 +41,8 @@ def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame,
 
     with open(playlist_tracks_path(playlist_name), "w") as f:
         f.write("\n".join(tracks_content))
+
+    make_audio_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name))
 
 
 def title(playlist_name):
@@ -186,7 +189,3 @@ def tracks_section(playlist_name: str, playlist_full: pd.DataFrame, track_artist
     display_tracks = tracks_table(playlist_full, track_artist_full, playlist_path(playlist_name))
     table = md_table(display_tracks)
     return [f"# Tracks in {playlist_name}", "", table, ""]
-
-
-def audio_features_section(playlist_full: pd.DataFrame):
-    return ["## Audio Features", ""] + top_and_bottom_lists(playlist_full)

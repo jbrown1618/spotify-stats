@@ -1,10 +1,11 @@
 import pandas as pd
+from summarize.pages.audio_features import make_audio_features_page
 from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_overview_path, artist_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_path, artist_overview_path, artist_path, genre_path, playlist_overview_path
 
 def make_artist_summary(artist: pd.Series, \
                         tracks: pd.DataFrame, \
@@ -14,18 +15,21 @@ def make_artist_summary(artist: pd.Series, \
                         artist_genre: pd.DataFrame):
     print(f"Generating summary for artist {artist['artist_name']}")
     artist_name = artist["artist_name"]
-    lines = []
+    content = []
 
-    lines += title(artist)
-    lines += image(artist)
-    lines += playlists_section(artist_name, playlists)
-    lines += albums_section(tracks)
-    lines += labels_section(artist_name, tracks, album_record_label)
-    lines += genres_section(artist_name, tracks, artist_genre)
-    lines += tracks_section(artist_name, tracks, track_artist_full)
+    content += title(artist)
+    content += image(artist)
+    content += [md_link(f"See Audio Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
+    content += playlists_section(artist_name, playlists)
+    content += albums_section(tracks)
+    content += labels_section(artist_name, tracks, album_record_label)
+    content += genres_section(artist_name, tracks, artist_genre)
+    content += tracks_section(artist_name, tracks, track_artist_full)
 
     with open(artist_overview_path(artist_name), "w") as f:
-        f.write("\n".join(lines))
+        f.write("\n".join(content))
+
+    make_audio_features_page(tracks, artist_name, artist_audio_features_path(artist_name))
 
 
 def title(artist):

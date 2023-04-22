@@ -2,28 +2,32 @@ import pandas as pd
 from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
+from summarize.pages.audio_features import make_audio_features_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.tracks_table import tracks_table
-from utils.markdown import md_table, md_summary_details, md_truncated_table
-from utils.path import label_album_graph_path, label_artist_graph_path, label_genre_graph_path, label_overview_path, label_path, labels_path
+from utils.markdown import md_link, md_truncated_table
+from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_path, label_genre_graph_path, label_overview_path, label_path, labels_path
 
 
-def make_label_summary(label_name: str, label_full: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame):
+def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame):
     print(f"Generating summary for label {label_name}")
     
     content = []
     content += title(label_name)
-    content += [f"{len(label_full)} songs", ""]
-    content += aliases(label_full)
-    content += artists_section(label_name, label_full, track_artist_full)
-    content += albums_section(label_name, label_full)
-    content += genres_section(label_name, label_full, track_genre)
-    content += tracks_section(label_name, label_full, track_artist_full)
+    content += [f"{len(tracks)} songs", ""]
+    content += [md_link(f"See Audio Features", label_audio_features_path(label_name, label_path(label_name))), ""]
+    content += aliases(tracks)
+    content += artists_section(label_name, tracks, track_artist_full)
+    content += albums_section(label_name, tracks)
+    content += genres_section(label_name, tracks, track_genre)
+    content += tracks_section(label_name, tracks, track_artist_full)
 
     with open(label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
+
+    make_audio_features_page(tracks, label_name, label_audio_features_path(label_name))
 
 
 def title(label_name):
