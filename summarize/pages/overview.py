@@ -34,7 +34,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     with open(overview_path(), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path(output_dir()))
+    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path())
 
 
 def title(user: str):
