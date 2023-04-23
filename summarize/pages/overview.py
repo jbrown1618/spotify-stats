@@ -23,7 +23,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
 
     content += title("jbrown1618")
     content += byline()
-    content += [md_link(f"See Audio Features", overview_audio_features_path()), ""]
+    content += [md_link(f"See Audio Features", overview_audio_features_path(output_dir())), ""]
     content += top_tracks_and_artists_section(top_tracks, tracks_full, top_artists, track_artist_full)
     content += playlists_section(playlists, playlist_track, tracks_full)
     content += artists_section(tracks_full, track_artist_full)
