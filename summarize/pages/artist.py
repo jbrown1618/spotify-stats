@@ -5,7 +5,7 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_path, artist_overview_path, artist_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_overview_path, artist_path, genre_path, playlist_overview_path
 
 def make_artist_summary(artist: pd.Series, \
                         tracks: pd.DataFrame, \
@@ -29,7 +29,7 @@ def make_artist_summary(artist: pd.Series, \
     with open(artist_overview_path(artist_name), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks, artist_name, artist_audio_features_path(artist_name))
+    make_audio_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
 
 
 def title(artist):

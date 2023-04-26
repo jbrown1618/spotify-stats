@@ -79,6 +79,17 @@ def overview_label_graph_path(relative_to=None):
     )
 
 
+def overview_audio_features_chart_path(relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "overview",
+            "audio_features"
+        ),
+        relative_to
+    )
+
+
 def errors_path(relative_to=None):
     return relative_to_path("errors.md", relative_to)
 
@@ -115,6 +126,18 @@ def artist_audio_features_path(artist_name, relative_to=None):
             file_name_friendly(artist_name),
             "audio_features.md"
         ), 
+        relative_to
+    )
+
+
+def artist_audio_features_chart_path(artist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "artists",
+            file_name_friendly(artist_name),
+            "audio_features"
+        ),
         relative_to
     )
 
@@ -162,6 +185,18 @@ def playlist_audio_features_path(playlist_name, relative_to=None):
             file_name_friendly(playlist_name),
             "audio_features.md"
         ), 
+        relative_to
+    )
+
+
+def playlist_audio_features_chart_path(playlist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "audio_features"
+        ),
         relative_to
     )
 
@@ -285,6 +320,18 @@ def label_audio_features_path(label_name, relative_to=None):
     )
 
 
+def label_audio_features_chart_path(label_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "labels",
+            file_name_friendly(label_name),
+            "audio_features"
+        ),
+        relative_to
+    )
+
+
 def label_artist_graph_path(label_name, relative_to=None):
     return relative_to_path(
         os.path.join(
@@ -353,6 +400,18 @@ def genre_audio_features_path(genre_name, relative_to=None):
             file_name_friendly(genre_name),
             "audio_features.md"
         ), 
+        relative_to
+    )
+
+
+def genre_audio_features_chart_path(genre_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "genres",
+            file_name_friendly(genre_name),
+            "audio_features"
+        ),
         relative_to
     )
 

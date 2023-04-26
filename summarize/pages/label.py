@@ -8,7 +8,7 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_link, md_truncated_table
-from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_path, label_genre_graph_path, label_overview_path, label_path, labels_path
+from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_genre_graph_path, label_overview_path, label_path, labels_path
 
 
 def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame):
@@ -27,7 +27,7 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full:
     with open(label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks, label_name, label_audio_features_path(label_name))
+    make_audio_features_page(tracks, label_name, label_audio_features_path(label_name), label_audio_features_chart_path(label_name))
 
 
 def title(label_name):

@@ -3,12 +3,85 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils.markdown import md_table, md_image
+from utils.markdown import md_image
+
+class AudioFeature:
+     def __init__(self, column, label, adjective, negated_adjective, type, categories=None, normalized=False):
+        self.column = column
+        self.label = label
+        self.adjective = adjective
+        self.negated_adjective = negated_adjective
+        self.type = type
+        self.categories = categories
+        self.normalized = normalized
 
 
-audio_columns = ["audio_danceability", "audio_energy", "audio_speechiness", "audio_acousticness", "audio_instrumentalness", "audio_liveness", "audio_valence"]
-labels = ["Danceable", "Energetic", "Speechy", "Acoustic", "Instrumental", "Live", "Happy"]
-negated_labels = ["Not danceable", "Mellow", "Melodic", "Electronic", "Vocal", "Produced", "Sad"]
+audio_features = [
+    AudioFeature(
+        column='audio_danceability',
+        label='Danceability',
+        adjective='Danceable',
+        negated_adjective='Not danceable',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_energy',
+        label='Energy',
+        adjective='Energetic',
+        negated_adjective='Mellow',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_speechiness',
+        label='Speechiness',
+        adjective='Speechy',
+        negated_adjective='Melodic',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_acousticness',
+        label='Acousticness',
+        adjective='Acoustic',
+        negated_adjective='Electronic',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_instrumentalness',
+        label='Instrumentalness',
+        adjective='Instrumental',
+        negated_adjective='Vocal',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_liveness',
+        label='Liveness',
+        adjective='Live',
+        negated_adjective='Produced',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_valence',
+        label='Valence',
+        adjective='Happy',
+        negated_adjective='Sad',
+        type='numeric',
+        normalized=True
+    ),
+    AudioFeature(
+        column='audio_tempo',
+        label='Tempo',
+        adjective='Fast',
+        negated_adjective='Slow',
+        type='numeric',
+        normalized=False
+    )
+]
 
 
 tracks_full_ = None
@@ -17,32 +90,13 @@ def set_tracks_full(tracks_full: pd.DataFrame):
     tracks_full_ = tracks_full
 
 
-def top_and_bottom_lists(tracks: pd.DataFrame):
-    lines = []
-    top_count = min(10, tracks.size / 2)
-
-    for col, label in zip(audio_columns, labels):
-        top_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=False)\
-            .head(top_count)\
-            .reset_index()\
-            .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
-        bottom_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=True)\
-            .head(top_count)\
-            .reset_index()\
-            .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
-
-        data = pd.DataFrame({
-            f"{top_count} most {label} tracks": top_tracks,
-            f"{top_count} least {label} tracks": bottom_tracks
-        })
-        
-        lines += [md_table(data), ""]
-
-    return lines
-
-
 def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
-    data = tracks[audio_columns].sample(n=500, random_state=0)
+    numeric_audio_columns = [
+        feature.column 
+        for feature in audio_features 
+        if feature.type == 'numeric'
+    ]
+    data = tracks[numeric_audio_columns].sample(n=500, random_state=0)
     sns.pairplot(data).savefig(absolute_path)
     plt.close("all")
 
@@ -107,7 +161,12 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
 
 
 def principal_component_analysis(tracks):
-    mat = tracks[audio_columns].to_numpy()
+    numeric_audio_columns = [
+        feature.column 
+        for feature in audio_features 
+        if feature.type == 'numeric' and feature.normalized
+    ]
+    mat = tracks[numeric_audio_columns].to_numpy()
     centered = center(mat)
     covariance = np.cov(centered, rowvar=False)
 
@@ -124,7 +183,12 @@ def principal_component_analysis(tracks):
 
 
 def project(tracks, first_component, second_component):
-    mat = tracks[audio_columns].to_numpy()
+    numeric_audio_columns = [
+        feature.column 
+        for feature in audio_features 
+        if feature.type == 'numeric' and feature.normalized
+    ]
+    mat = tracks[numeric_audio_columns].to_numpy()
     centered = center(mat)
     projection_mat = np.vstack((first_component, second_component)).T
     return centered.dot(projection_mat)
@@ -135,6 +199,18 @@ def center(X: np.ndarray):
 
 
 def label_for_eigenvector(eigenvector: np.ndarray):
+    numeric_audio_adjectives = [
+        feature.adjective 
+        for feature in audio_features 
+        if feature.type == 'numeric' and feature.normalized
+    ]
+
+    numeric_audio_negated_adjectives = [
+        feature.negated_adjective 
+        for feature in audio_features 
+        if feature.type == 'numeric' and feature.normalized
+    ]
+
     absolute_values = np.abs(eigenvector)
     signs = np.array([1 if val >= 0 else -1 for val in eigenvector])
 
@@ -145,7 +221,7 @@ def label_for_eigenvector(eigenvector: np.ndarray):
     for i in range(3):
         index = sorted_indices[i]
         sign = sorted_signs[i]
-        label = labels[index] if sign == 1 else negated_labels[index]
+        label = numeric_audio_adjectives[index] if sign == 1 else numeric_audio_negated_adjectives[index]
         label_parts.append(label)
 
     return ", ".join(label_parts)

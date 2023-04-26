@@ -15,7 +15,7 @@ from utils.artist import get_primary_artist_name
 from utils.audio_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_audio_features_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
+from utils.path import playlist_album_graph_path, playlist_audio_features_chart_path, playlist_audio_features_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
 def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
@@ -42,7 +42,7 @@ def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame,
     with open(playlist_tracks_path(playlist_name), "w") as f:
         f.write("\n".join(tracks_content))
 
-    make_audio_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name))
+    make_audio_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name), playlist_audio_features_chart_path(playlist_name))
 
 
 def title(playlist_name):

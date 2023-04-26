@@ -12,7 +12,7 @@ from summarize.tables.top_tracks_table import top_tracks_table
 from utils.artist import get_primary_artist_name
 from utils.audio_features import comparison_scatter_plot
 from utils.markdown import md_link, md_truncated_table
-from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_chart_path, overview_audio_features_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
 from utils.settings import output_dir
 from utils.util import first
 
@@ -34,7 +34,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     with open(overview_path(), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path())
+    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path(), overview_audio_features_chart_path())
 
 
 def title(user: str):
