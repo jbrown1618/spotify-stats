@@ -1,5 +1,6 @@
 import pandas as pd
 
+from data.raw import RawData
 from summarize.pages.artist import make_artist_summary
 from summarize.pages.genre import make_genre_summary
 from summarize.pages.label import make_label_summary
@@ -9,31 +10,25 @@ from summarize.pages.errors import make_errors
 from utils.album import short_album_name
 from utils.audio_features import set_tracks_full
 from utils.date import release_year
-from utils.path import clear_markdown, data_path
+from utils.path import clear_markdown
 from utils.record_label import standardize_record_labels
-from utils.util import first, prefix_df
+from utils.util import first
 
 
 def summarize_results():
-    album_artist = pd.read_csv(data_path('album_artist'))
-    albums = pd.read_csv(data_path("albums"))
-    artists = pd.read_csv(data_path("artists"))
-    audio_features = pd.read_csv(data_path("audio_features"))
-    liked_tracks = pd.read_csv(data_path("liked_tracks"))
-    playlist_track = pd.read_csv(data_path("playlist_track"))
-    playlists = pd.read_csv(data_path("playlists"))
-    track_artist = pd.read_csv(data_path("track_artist"))
-    tracks = pd.read_csv(data_path("tracks"))
-    artist_genre = pd.read_csv(data_path("artist_genre"))
-    top_tracks = pd.read_csv(data_path("top_tracks"))
-    top_artists = pd.read_csv(data_path("top_artists"))
-
-    prefixes = ["album_", "track_", "playlist_", "artist_"]
-    prefix_df(albums, "album_", prefixes)
-    prefix_df(tracks, "track_", prefixes)
-    prefix_df(audio_features, "audio_", prefixes)
-    prefix_df(playlists, "playlist_", prefixes)
-    prefix_df(artists, "artist_", prefixes)
+    raw_data = RawData()
+    album_artist = raw_data['album_artist']
+    albums = raw_data["albums"]
+    artists = raw_data["artists"]
+    audio_features = raw_data["audio_features"]
+    liked_tracks = raw_data["liked_tracks"]
+    playlist_track = raw_data["playlist_track"]
+    playlists = raw_data["playlists"]
+    track_artist = raw_data["track_artist"]
+    tracks = raw_data["tracks"]
+    artist_genre = raw_data["artist_genre"]
+    top_tracks = raw_data["top_tracks"]
+    top_artists = raw_data["top_artists"]
 
     albums['album_release_year'] = albums['album_release_date'].apply(release_year)
     albums['album_short_name'] = albums['album_name'].apply(short_album_name)
