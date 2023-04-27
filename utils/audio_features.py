@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from data.provider import DataProvider
 
 from utils.markdown import md_image
 
@@ -84,12 +85,6 @@ audio_features = [
 ]
 
 
-tracks_full_ = None
-def set_tracks_full(tracks_full: pd.DataFrame):
-    global tracks_full_
-    tracks_full_ = tracks_full
-
-
 def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     numeric_audio_columns = [
         feature.column 
@@ -137,7 +132,8 @@ def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_la
 
 
 def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_path):
-    projected, first_component, second_component = principal_component_analysis(tracks_full_)
+    dp = DataProvider()
+    projected, first_component, second_component = principal_component_analysis(dp.tracks())
 
     x = projected[:,0]
     y = projected[:,1]
@@ -145,7 +141,7 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
     y_label = label_for_eigenvector(second_component)
 
     data = {}
-    data[subset_label] = tracks_full_["track_uri"].apply(lambda uri: uri in track_uris)
+    data[subset_label] = dp.tracks()["track_uri"].apply(lambda uri: uri in track_uris)
     data[x_label] = x
     data[y_label] = y
     data = pd.DataFrame(data)
