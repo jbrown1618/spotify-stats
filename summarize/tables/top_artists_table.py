@@ -15,9 +15,9 @@ def top_artists_table(top_artists: pd.DataFrame, artists: pd.DataFrame):
     table_data["Place"] = table_data["index"]
     table_data[empty_header(1)] = table_data.apply(lambda row: display_image(row, "_x"), axis=1)
     table_data['Last month'] = table_data.apply(lambda row: display_artist(row, "_x"), axis=1)
-    table_data[empty_header(2)] = table_data.apply(lambda row: display_image(row, "_x"), axis=1)
+    table_data[empty_header(2)] = table_data.apply(lambda row: display_image(row, "_y"), axis=1)
     table_data['Last 6 months'] = table_data.apply(lambda row: display_artist(row, "_y"), axis=1)
-    table_data[empty_header(3)] = table_data.apply(lambda row: display_image(row, "_x"), axis=1)
+    table_data[empty_header(3)] = table_data.apply(lambda row: display_image(row, ""), axis=1)
     table_data['All time'] = table_data.apply(lambda row: display_artist(row, ""), axis=1)
 
     table_data.sort_values(by="Place", ascending=True, inplace=True)
