@@ -6,16 +6,16 @@ from utils.path import data_path
 valid_data_sources = {
     'album_artist',
     'albums',
+    'artist_genre',
     'artists',
     'audio_features',
     'liked_tracks',
     'playlist_track',
     'playlists',
-    'track_artist',
-    'tracks',
-    'artist_genre',
+    'top_artists',
     'top_tracks',
-    'top_artists'
+    'track_artist',
+    'tracks'
 }
 
 df_prefixes = {
@@ -41,27 +41,38 @@ class RawData:
         self._data = {}
 
     
-    def __getitem__(self, key) -> pd.DataFrame:
+    def __getitem__(self, key: str) -> pd.DataFrame:
         if key not in valid_data_sources:
             raise RuntimeError(f'Invalid data source {key}')
 
         if key not in self._data:
             df = pd.read_csv(data_path(key))
-            prefix = df_prefixes.get(key, None)
-            if prefix is not None:
-                prefix_df(df, prefix, set(df_prefixes.values()))
+            self._prefix_df(key, df)
 
             self._data[key] = df
 
         return self._data[key]
     
+    def __setitem__(self, key: str, value: pd.DataFrame):
+        if key not in valid_data_sources:
+            raise RuntimeError(f'Invalid data source {key}')
+        
+        value.to_csv(data_path(key), index=False)
+        self._prefix_df(key, value)
+        self._data[key] = value
 
-def prefix_df(df: pd.DataFrame, prefix: str, prefixes: list[str]):
-    df.columns = [prefix_col(col, prefix, prefixes) for col in df.columns]
 
+    def _prefix_df(self, key, df):
+        prefix = df_prefixes.get(key, None)
+        if prefix is None:
+            return
+        
+        df.columns = [self._prefix_col(col, prefix) for col in df.columns]
 
-def prefix_col(col: str, prefix: str, prefixes: list[str]):
-    for other_prefix in prefixes:
-        if col.startswith(other_prefix):
-            return col
-    return prefix + col
+    
+    def _prefix_col(self, col: str, prefix):
+        prefixes = set(df_prefixes.values())
+        for other_prefix in prefixes:
+            if col.startswith(other_prefix):
+                return col
+        return prefix + col
