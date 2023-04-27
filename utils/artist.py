@@ -19,8 +19,11 @@ def get_display_artist(artist_uri: str, track_artist_full: pd.DataFrame, relativ
     return get_artist_link(artist, relative_to)
 
 
-def get_artist_link(artist: pd.Series, relative_to: str):
-    if artist["artist_has_page"]:
-        return md_link(artist["artist_name"], artist_overview_path(artist["artist_name"], relative_to))
-    else:
-        return artist["artist_name"]
+def get_artist_link(artist: pd.Series, relative_to: str, suffix: str = ''):
+    if pd.isna(artist["artist_name" + suffix]):
+        return ""
+    
+    if artist["artist_has_page" + suffix]:
+        return md_link(artist["artist_name" + suffix], artist_overview_path(artist["artist_name" + suffix], relative_to))
+
+    return artist["artist_name" + suffix]

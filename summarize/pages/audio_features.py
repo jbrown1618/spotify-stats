@@ -3,7 +3,7 @@ import pandas as pd
 
 from summarize.figures.feature_distribution_chart import feature_distribution_chart
 from utils.audio_features import AudioFeature, audio_features
-from utils.markdown import md_table
+from utils.markdown import empty_header, md_image, md_table
 from utils.path import ensure_directory
 
 
@@ -38,17 +38,25 @@ def top_and_bottom_lists(feature: AudioFeature, tracks: pd.DataFrame):
 
     top_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=False)\
         .head(top_count)\
-        .reset_index()\
-        .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
+        .reset_index()
     
     bottom_tracks = tracks.sort_values(by=[col, 'track_uri'], ascending=True)\
         .head(top_count)\
-        .reset_index()\
-        .apply(lambda track: f"{track['track_name']} ({track[col]})", axis=1)
+        .reset_index()
 
     data = pd.DataFrame({
-        f"{top_count} most {feature.adjective} tracks": top_tracks,
-        f"{top_count} least {feature.adjective} tracks": bottom_tracks
+        empty_header(1): top_tracks.apply(display_image, axis=1),
+        f"{top_count} most {feature.adjective} tracks": top_tracks.apply(lambda row: display_track(row, feature), axis=1),
+        empty_header(2): bottom_tracks.apply(display_image, axis=1),
+        f"{top_count} least {feature.adjective} tracks": bottom_tracks.apply(lambda row: display_track(row, feature), axis=1)
     })
     
     return [md_table(data), ""]
+
+
+def display_track(row: pd.Series, feature: AudioFeature):
+    return f"{row['track_name']} ({row[feature.column]})"
+
+
+def display_image(row: pd.Series):
+    return md_image(row['album_name'], row['album_image_url'], 50)

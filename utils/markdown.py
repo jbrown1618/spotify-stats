@@ -46,3 +46,8 @@ def md_truncated_table(df: pd.DataFrame, initial: int, text="View all"):
         "",
         md_summary_details(text, md_table(tail))
     ])
+
+
+def empty_header(n: int):
+    # Zero-width spaces
+    return u"\u200B" * n

@@ -24,9 +24,9 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     content += title("jbrown1618")
     content += byline()
     content += [md_link(f"See Audio Features", overview_audio_features_path(output_dir())), ""]
-    content += top_tracks_and_artists_section(top_tracks, tracks_full, top_artists, track_artist_full)
     content += playlists_section(playlists, playlist_track, tracks_full)
-    content += artists_section(tracks_full, track_artist_full)
+    content += artists_section(tracks_full, track_artist_full, top_artists)
+    content += tracks_section(top_tracks, tracks_full)
     content += genres_section(tracks_full, track_genre)
     content += labels_section(tracks_full, album_record_label)
     content += errors()
@@ -49,16 +49,13 @@ def errors():
     return ['## Possible organizational errors', md_link("Possible organizational errors", errors_path(output_dir()))]
 
 
-def top_tracks_and_artists_section(top_tracks: pd.DataFrame, tracks: pd.DataFrame, top_artists: pd.DataFrame, track_artist_full: pd.DataFrame):
-    artists = track_artist_full.groupby("artist_uri").agg({"artist_name": first, "artist_image_url": first}).reset_index()
+def tracks_section(top_tracks: pd.DataFrame, tracks: pd.DataFrame):
     return [
-        "## Top Tracks", 
+        "## Tracks", 
         "", 
+        "Top tracks of the last month, six months, and all time",
+        "",
         md_truncated_table(top_tracks_table(top_tracks, tracks), 10, "See top 50 tracks"), 
-        "",
-        "Top Artists",
-        "",
-        md_truncated_table(top_artists_table(top_artists, artists), 10, "See top 50 artists"), 
         ""
     ]
 
@@ -87,7 +84,13 @@ def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tra
     ]
 
 
-def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
+def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, top_artists: pd.DataFrame):
+    artists = track_artist_full\
+        .groupby("artist_uri")\
+        .agg({"artist_name": first, "artist_image_url": first, "artist_has_page": first})\
+        .reset_index()
+    top_artists = md_truncated_table(top_artists_table(top_artists, artists), 10, "See top 50 artists")
+    
     img = artists_bar_chart(tracks, track_artist_full, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
     table_data = artists_table(tracks, track_artist_full, output_dir())
 
@@ -109,7 +112,21 @@ def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     else:
         scatterplot = ""
 
-    return ["## Artists", "", full_list, "", img, "", scatterplot , ""]
+    return [
+        "## Artists", 
+        "", 
+        "Top artists of the last month, six months, and all time",
+        "",
+        top_artists,
+        "", 
+        "Artists by number of liked tracks",
+        full_list, 
+        "", 
+        img, 
+        "", 
+        scatterplot , 
+        ""
+    ]
 
 
 def genres_section(tracks: pd.DataFrame, track_genre: pd.DataFrame):
