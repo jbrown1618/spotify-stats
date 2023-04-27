@@ -1,4 +1,5 @@
 import re
+import html
 import pandas as pd
 
 
@@ -12,7 +13,7 @@ def md_link(text: str, url: str):
 def md_summary_details(summary: str, details: str):
     return f"""
 <details>
-<summary>{summary}</summary>
+<summary>{html.escape(summary, quote=True)}</summary>
 
 {details}
 
@@ -24,7 +25,7 @@ def md_image(alt_text: str, url: str, width=None):
     if width is None:
         return f"![{alt_text}]({url})"
 
-    return f'<img src="{url}" alt="{alt_text}" width="{width}" />'
+    return f'<img src="{url}" alt="{html.escape(alt_text, quote=True)}" width="{width}" />'
 
 
 def md_table(df: pd.DataFrame):
