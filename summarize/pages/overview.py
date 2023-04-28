@@ -16,7 +16,7 @@ from utils.path import errors_path, overview_artist_graph_path, overview_artists
 from utils.settings import output_dir
 from utils.util import first
 
-def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
+def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
     print("Generating Overview")
 
     content = []
@@ -28,7 +28,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     content += artists_section(tracks_full, track_artist_full, top_artists)
     content += tracks_section(top_tracks, tracks_full)
     content += genres_section(tracks_full, track_genre)
-    content += labels_section(tracks_full, album_record_label)
+    content += labels_section(tracks_full)
     content += errors()
 
     with open(overview_path(), "w") as f:
@@ -162,9 +162,9 @@ def get_main_playlist(track_uri: str, playlist_track: pd.DataFrame, playlists: p
     return "None"
 
 
-def labels_section(tracks: pd.DataFrame, album_record_label: pd.DataFrame):
-    img = labels_bar_chart(tracks, album_record_label, overview_label_graph_path(), overview_label_graph_path(output_dir()))
-    table_data = labels_table(tracks, album_record_label, output_dir())
+def labels_section(tracks: pd.DataFrame):
+    img = labels_bar_chart(tracks, overview_label_graph_path(), overview_label_graph_path(output_dir()))
+    table_data = labels_table(tracks, output_dir())
 
     summary = f"See all {len(table_data)} labels"
     if len(table_data) > 100:

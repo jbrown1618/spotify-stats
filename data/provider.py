@@ -4,6 +4,8 @@ import pandas as pd
 from data.raw import RawData
 from utils.album import short_album_name
 from utils.date import release_year
+from utils.record_label import standardize_record_labels
+from utils.util import first
 
 class DataProvider:
     _instance = None
@@ -21,6 +23,7 @@ class DataProvider:
         self._playlists = None
         self._tracks = None
 
+        self._album_label = None
         self._album_artist = None
         self._playlist_track = None
         self._track_artist = None
@@ -43,7 +46,7 @@ class DataProvider:
         return out
 
 
-    def tracks(self, uris: typing.Iterable[str] = None, liked: bool = None) -> pd.DataFrame:
+    def tracks(self, uris: typing.Iterable[str] = None, liked: bool = None, label: str = None) -> pd.DataFrame:
         if self._tracks is None:
             raw = RawData()
             tracks = pd.merge(raw["tracks"], raw["audio_features"], on="track_uri")
@@ -61,5 +64,29 @@ class DataProvider:
 
         if liked is not None:
             out = out[out["track_liked"] == liked]
-        
+
+        if label is not None:
+            if self._album_label is None:
+                self._album_label = standardize_record_labels(self.albums(), self.tracks())
+                
+            albums_uris = self._album_label[self._album_label["album_standardized_label"] == label]["album_uri"]
+            out = out[out['album_uri'].isin(albums_uris)]
+
         return out
+    
+
+    def labels(self, track_uris: typing.Iterable[str] = None, with_page: bool = None):
+        if self._album_label is None:
+            self._album_label = standardize_record_labels(self.albums(), self.tracks())
+
+        out = pd.merge(self.tracks(uris=track_uris), self._album_label, on="album_uri")\
+            .groupby("album_standardized_label")\
+            .agg({"track_uri": "count", "track_liked": "sum", "label_has_page": first})\
+            .reset_index()\
+            .rename(columns={"track_uri": "track_count", "track_liked": "track_liked_count"})
+        
+        if with_page is not None:
+            out = out[out['label_has_page'] == with_page]
+
+        return out
+        

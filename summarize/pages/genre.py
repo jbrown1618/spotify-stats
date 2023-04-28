@@ -15,7 +15,7 @@ from utils.markdown import md_table, md_link, md_truncated_table
 from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_label_graph_path, genre_overview_path, genre_path, genre_tracks_path, genre_years_graph_path, genres_path
 
 
-def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, album_record_label: pd.DataFrame):
+def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     genre_name = tracks["genre"].iloc[0]
     print(f"Generating summary for genre {genre_name}")
     
@@ -25,7 +25,7 @@ def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, al
     content += [md_link(f"See Audio Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks, track_artist_full)
     content += albums_section(genre_name, tracks)
-    content += labels_section(genre_name, tracks, album_record_label)
+    content += labels_section(genre_name, tracks)
     content += years_section(genre_name, tracks)
 
     tracks_content = tracks_section(genre_name, tracks, track_artist_full)
@@ -84,9 +84,9 @@ def albums_section(genre_name, tracks: pd.DataFrame):
     return ["## Top Albums", "", full_list, "", img, ""]
 
 
-def labels_section(genre_name, tracks: pd.DataFrame, album_record_label: pd.DataFrame):
-    img = labels_bar_chart(tracks, album_record_label, genre_label_graph_path(genre_name), genre_label_graph_path(genre_name, genre_path(genre_name)))
-    table_data = labels_table(tracks, album_record_label, genre_path(genre_name))
+def labels_section(genre_name, tracks: pd.DataFrame):
+    img = labels_bar_chart(tracks, genre_label_graph_path(genre_name), genre_label_graph_path(genre_name, genre_path(genre_name)))
+    table_data = labels_table(tracks, genre_path(genre_name))
 
     summary = f"See all {len(table_data)} labels"
     if len(table_data) > 100:

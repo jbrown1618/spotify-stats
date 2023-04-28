@@ -10,7 +10,6 @@ from utils.path import artist_audio_features_chart_path, artist_audio_features_p
 def make_artist_summary(artist: pd.Series, \
                         tracks: pd.DataFrame, \
                         track_artist_full: pd.DataFrame, \
-                        album_record_label: pd.DataFrame, \
                         playlists: pd.DataFrame, \
                         artist_genre: pd.DataFrame):
     print(f"Generating summary for artist {artist['artist_name']}")
@@ -22,7 +21,7 @@ def make_artist_summary(artist: pd.Series, \
     content += [md_link(f"See Audio Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
     content += playlists_section(artist_name, playlists)
     content += albums_section(tracks)
-    content += labels_section(artist_name, tracks, album_record_label)
+    content += labels_section(artist_name, tracks)
     content += genres_section(artist_name, tracks, artist_genre)
     content += tracks_section(artist_name, tracks, track_artist_full)
 
@@ -58,8 +57,8 @@ def albums_section(artist_tracks: pd.DataFrame):
     return ["## Top Albums", "", md_truncated_table(table_data, 10, "See all albums"), ""]
 
 
-def labels_section(artist_name: str, artist_tracks: pd.DataFrame, album_record_label: pd.DataFrame):
-    table_data = labels_table(artist_tracks, album_record_label, artist_path(artist_name))
+def labels_section(artist_name: str, artist_tracks: pd.DataFrame):
+    table_data = labels_table(artist_tracks, artist_path(artist_name))
     return ["## Top Record Labels", "", md_table(table_data), ""]
 
 
