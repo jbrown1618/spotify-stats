@@ -92,7 +92,10 @@ def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str)
         for feature in audio_features 
         if feature.type == 'numeric'
     ]
-    data = tracks[numeric_audio_columns].sample(n=500, random_state=0)
+    
+    data = tracks[numeric_audio_columns]
+    if len(data) > 200:
+        data = data.sample(n=200, random_state=0)
 
     if not skip_figures():
         sns.pairplot(data).savefig(absolute_path)
