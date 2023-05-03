@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 
 from utils.markdown import md_image
+from utils.settings import skip_figures
 
 class AudioFeature:
      def __init__(self, column, label, adjective, negated_adjective, type, categories=None, normalized=False):
@@ -92,8 +93,10 @@ def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str)
         if feature.type == 'numeric'
     ]
     data = tracks[numeric_audio_columns].sample(n=500, random_state=0)
-    sns.pairplot(data).savefig(absolute_path)
-    plt.close("all")
+
+    if not skip_figures():
+        sns.pairplot(data).savefig(absolute_path)
+        plt.close("all")
 
     return md_image("Pairplot of audio features", relative_path)
 
@@ -121,12 +124,14 @@ def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_la
 
     data = data[data[category_label] != "Other"]
 
-    sns.set(rc = {"figure.figsize": (15,15) })
-    ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=category_label)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    ax.get_figure().savefig(absolute_path)
-    plt.close("all")
+
+    if not skip_figures():
+        sns.set(rc = {"figure.figsize": (15,15) })
+        ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=category_label)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        ax.get_figure().savefig(absolute_path)
+        plt.close("all")
 
     return md_image(f"Comparison of {category_label}", relative_path)
 
@@ -146,12 +151,13 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
     data[y_label] = y
     data = pd.DataFrame(data)
 
-    sns.set(rc = {"figure.figsize": (15,15) })
-    ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=subset_label)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    ax.get_figure().savefig(absolute_path)
-    plt.close("all")
+    if not skip_figures():
+        sns.set(rc = {"figure.figsize": (15,15) })
+        ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=subset_label)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        ax.get_figure().savefig(absolute_path)
+        plt.close("all")
 
     return md_image(f"Songs in {subset_label} compared to all songs", relative_path)
 

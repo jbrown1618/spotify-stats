@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from utils.markdown import md_image
+from utils.settings import skip_figures
 from utils.util import first
 
 def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, absolute_path: str, relative_path: str):
@@ -22,17 +23,18 @@ def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, abs
     all = grouped.rename(columns={"track_uri": "Number of Tracks", "artist_name": "Artist"})
     liked = grouped.rename(columns={"track_liked": "Number of Tracks", "artist_name": "Artist"})
 
-    sns.set(rc = {"figure.figsize": (13,13) })
-    sns.set_style('white')
+    if not skip_figures():
+        sns.set(rc = {"figure.figsize": (13,13) })
+        sns.set_style('white')
 
-    ax = sns.barplot(data=all, x="Number of Tracks", y="Artist", color="darkgray")
-    sns.barplot(data=liked, x="Number of Tracks", y="Artist", color="limegreen")
-    
-    ax.bar_label(ax.containers[0])
-    ax.bar_label(ax.containers[1])
+        ax = sns.barplot(data=all, x="Number of Tracks", y="Artist", color="darkgray")
+        sns.barplot(data=liked, x="Number of Tracks", y="Artist", color="limegreen")
+        
+        ax.bar_label(ax.containers[0])
+        ax.bar_label(ax.containers[1])
 
-    sns.despine(left=True)
-    ax.get_figure().savefig(absolute_path)
-    plt.clf()
+        sns.despine(left=True)
+        ax.get_figure().savefig(absolute_path)
+        plt.clf()
 
     return md_image(f"Bar chart of top {len(all)} artists", relative_path)

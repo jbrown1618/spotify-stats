@@ -135,9 +135,9 @@ class DataProvider:
             return
         
         rd = RawData()
-        track_artist = rd['track_artist']
-        artist_genre = rd['artist_genre'].copy()
         tracks = rd['tracks'].copy()
+        artist_genre = rd['artist_genre'].copy()
+        track_artist = rd['track_artist']
         liked_tracks = rd['liked_tracks']
 
         liked_track_uris = set(liked_tracks["track_uri"])

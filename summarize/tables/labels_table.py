@@ -10,9 +10,6 @@ def labels_table(tracks: pd.DataFrame, relative_to: str):
     labels = dp.labels(track_uris=tracks["track_uri"])\
         .sort_values(by=["track_liked_count", "track_count", "album_standardized_label"], ascending=False)\
         .rename(columns={"track_count": "Tracks", "track_liked_count": "💚"})
-    
-    if len(labels) == 0:
-        return None
 
     labels["Label"] = labels.apply(lambda l: display_label(l, relative_to), axis=1)
     table_data = labels[["Tracks", "💚", "Label"]]
