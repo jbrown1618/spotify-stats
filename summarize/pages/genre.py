@@ -15,8 +15,7 @@ from utils.markdown import md_table, md_link, md_truncated_table
 from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_label_graph_path, genre_overview_path, genre_path, genre_tracks_path, genre_years_graph_path, genres_path
 
 
-def make_genre_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
-    genre_name = tracks["genre"].iloc[0]
+def make_genre_summary(genre_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     print(f"Generating summary for genre {genre_name}")
     
     content = []

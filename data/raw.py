@@ -33,12 +33,17 @@ class RawData:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(RawData, cls).__new__(cls)
+            cls._instance._initialized = False
 
         return cls._instance
     
 
     def __init__(self):
+        if self._initialized:
+            return
+        
         self._data = {}
+        self._initialized = True
 
     
     def __getitem__(self, key: str) -> pd.DataFrame:

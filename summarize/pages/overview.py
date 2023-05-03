@@ -1,4 +1,5 @@
 import pandas as pd
+from data.provider import DataProvider
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
@@ -16,7 +17,7 @@ from utils.path import errors_path, overview_artist_graph_path, overview_artists
 from utils.settings import output_dir
 from utils.util import first
 
-def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_genre: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
+def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
     print("Generating Overview")
 
     content = []
@@ -27,7 +28,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     content += playlists_section(playlists, playlist_track, tracks_full)
     content += artists_section(tracks_full, track_artist_full, top_artists)
     content += tracks_section(top_tracks, tracks_full)
-    content += genres_section(tracks_full, track_genre)
+    content += genres_section(tracks_full)
     content += labels_section(tracks_full)
     content += errors()
 
@@ -129,12 +130,12 @@ def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, top_a
     ]
 
 
-def genres_section(tracks: pd.DataFrame, track_genre: pd.DataFrame):
-    img = genres_bar_chart(tracks, track_genre, overview_genre_graph_path(), overview_genre_graph_path(output_dir()))
-    main_genre_col = tracks["track_uri"].apply(lambda track_uri: get_main_genre(track_uri, track_genre))
+def genres_section(tracks: pd.DataFrame):
+    img = genres_bar_chart(tracks, overview_genre_graph_path(), overview_genre_graph_path(output_dir()))
+    main_genre_col = tracks["track_uri"].apply(get_main_genre)
     scatter = comparison_scatter_plot(tracks, main_genre_col, "Genre", overview_genres_scatterplot_path(), overview_genres_scatterplot_path(output_dir()))
 
-    table_data = genres_table(tracks, track_genre, output_dir())
+    table_data = genres_table(tracks, output_dir())
     
     summary = f"See all {len(table_data)} genres"
     if len(table_data) > 100:
@@ -146,7 +147,8 @@ def genres_section(tracks: pd.DataFrame, track_genre: pd.DataFrame):
     return ["## Genres", "", full_list, "", img, "", scatter, ""]
 
 
-def get_main_genre(track_uri: str, track_genre: pd.DataFrame):
+def get_main_genre(track_uri: str):
+    track_genre = DataProvider().track_genre()
     subset = track_genre[track_genre["track_uri"] == track_uri]
     if len(subset) == 0:
         return "None"

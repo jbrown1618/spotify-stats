@@ -59,6 +59,9 @@ def albums_section(artist_tracks: pd.DataFrame):
 
 def labels_section(artist_name: str, artist_tracks: pd.DataFrame):
     table_data = labels_table(artist_tracks, artist_path(artist_name))
+    if table_data is None:
+        return ["## Top Record Labels", "", "No record labels", ""]
+    
     return ["## Top Record Labels", "", md_table(table_data), ""]
 
 

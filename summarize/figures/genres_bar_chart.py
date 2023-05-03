@@ -2,12 +2,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from data.provider import DataProvider
 from utils.markdown import md_image
 
-def genres_bar_chart(tracks: pd.DataFrame, track_genre: pd.DataFrame, absolute_path: str, relative_path: str):
-    cols_in_genre = track_genre.columns.difference(tracks.columns).to_list() + ["track_uri"]
-    track_genre_subset = pd.merge(tracks, track_genre[cols_in_genre], on="track_uri")
-    grouped = track_genre_subset.groupby("genre").agg({
+def genres_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
+    dp = DataProvider()
+    
+    grouped = pd.merge(tracks, dp.track_genre(), on="track_uri").groupby("genre").agg({
         "track_uri": "count",
         "track_liked": "sum"
     }).reset_index()

@@ -11,7 +11,7 @@ from utils.markdown import md_link, md_truncated_table
 from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_genre_graph_path, label_overview_path, label_path, labels_path
 
 
-def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame):
+def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
     print(f"Generating summary for label {label_name}")
     
     content = []
@@ -21,7 +21,7 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full:
     content += aliases(tracks)
     content += artists_section(label_name, tracks, track_artist_full)
     content += albums_section(label_name, tracks)
-    content += genres_section(label_name, tracks, track_genre)
+    content += genres_section(label_name, tracks)
     content += tracks_section(label_name, tracks, track_artist_full)
 
     with open(label_overview_path(label_name), "w") as f:
@@ -74,9 +74,9 @@ def albums_section(label_name, label_full: pd.DataFrame):
     return ["## Top Albums", "", full_list, "", img, ""]
 
 
-def genres_section(label_name: str, tracks: pd.DataFrame, track_genre: pd.DataFrame):
-    img = genres_bar_chart(tracks, track_genre, label_genre_graph_path(label_name), label_genre_graph_path(label_name, label_path(label_name)))
-    table_data = genres_table(tracks, track_genre, label_path(label_name))
+def genres_section(label_name: str, tracks: pd.DataFrame):
+    img = genres_bar_chart(tracks, label_genre_graph_path(label_name), label_genre_graph_path(label_name, label_path(label_name)))
+    table_data = genres_table(tracks, label_path(label_name))
     
     summary = f"See all {len(table_data)} genres"
     if len(table_data) > 100:

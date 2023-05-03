@@ -18,7 +18,7 @@ from utils.markdown import md_link, md_table, md_image, md_summary_details, md_t
 from utils.path import playlist_album_graph_path, playlist_audio_features_chart_path, playlist_audio_features_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
-def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, track_genre: pd.DataFrame, is_liked_songs=False):
+def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, is_liked_songs=False):
     playlist_name = "Liked Tracks" if is_liked_songs else tracks["playlist_name"].iloc[0]
     playlist_image_url = None if is_liked_songs else tracks["playlist_image_url"].iloc[0]
     print(f"Generating summary for playlist {playlist_name}")
@@ -31,7 +31,7 @@ def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame,
     content += artists_section(playlist_name, tracks, track_artist_full)
     content += albums_section(playlist_name, tracks)
     content += labels_section(playlist_name, tracks)
-    content += genres_section(playlist_name, tracks, track_genre)
+    content += genres_section(playlist_name, tracks)
     content += years_section(playlist_name, tracks, track_artist_full)
 
     tracks_content = tracks_section(playlist_name, tracks, track_artist_full)
@@ -116,9 +116,9 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame):
     return ["## Top Record Labels", "", full_list, "", img, ""]
 
 
-def genres_section(playlist_name: str, tracks: pd.DataFrame, track_genre: pd.DataFrame):
-    img = genres_bar_chart(tracks, track_genre, playlist_genre_graph_path(playlist_name), playlist_genre_graph_path(playlist_name, playlist_path(playlist_name)))
-    table_data = genres_table(tracks, track_genre, playlist_path(playlist_name))
+def genres_section(playlist_name: str, tracks: pd.DataFrame):
+    img = genres_bar_chart(tracks, playlist_genre_graph_path(playlist_name), playlist_genre_graph_path(playlist_name, playlist_path(playlist_name)))
+    table_data = genres_table(tracks, playlist_path(playlist_name))
     
     summary = f"See all {len(table_data)} genres"
     if len(table_data) > 100:
