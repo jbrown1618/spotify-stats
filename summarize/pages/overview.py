@@ -1,5 +1,7 @@
+import typing
 import pandas as pd
 from data.provider import DataProvider
+from data.raw import RawData
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
@@ -17,7 +19,7 @@ from utils.path import errors_path, overview_artist_graph_path, overview_artists
 from utils.settings import output_dir
 from utils.util import first
 
-def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
+def make_overview(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
     print("Generating Overview")
 
     content = []
@@ -25,7 +27,7 @@ def make_overview(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_
     content += title("jbrown1618")
     content += byline()
     content += [md_link(f"See Audio Features", overview_audio_features_path(output_dir())), ""]
-    content += playlists_section(playlists, playlist_track, tracks_full)
+    content += playlists_section()
     content += artists_section(tracks_full, track_artist_full, top_artists)
     content += tracks_section(top_tracks, tracks_full)
     content += genres_section(tracks_full)
@@ -61,19 +63,16 @@ def tracks_section(top_tracks: pd.DataFrame, tracks: pd.DataFrame):
     ]
 
 
-def playlists_section(playlists: pd.DataFrame, playlist_track: pd.DataFrame, tracks_full: pd.DataFrame):
-    playlist_display_data = pd.merge(playlists, playlist_track, on="playlist_uri")
-    playlist_display_data = pd.merge(playlist_display_data, tracks_full, on="track_uri")
-    track_counts = playlist_display_data\
-        .groupby("playlist_uri")\
-        .agg({"track_uri": "count", "track_liked": "sum"})\
-        .reset_index()
+def playlists_section():
+    dp = DataProvider()
+    table = md_truncated_table(playlists_table(output_dir()), 10)
 
-    table = md_truncated_table(playlists_table(playlists, playlist_track, tracks_full, output_dir()), 10)
+    playlists_sorted_by_track_count = dp.playlists().sort_values(by="track_count", ascending=False)["playlist_uri"]
 
-    playlists_sorted_by_track_count = track_counts.sort_values(by="track_uri", ascending=False)["playlist_uri"]
-    main_playlist_col = tracks_full["track_uri"].apply(lambda track_uri: get_main_playlist(track_uri, playlist_track, playlists, playlists_sorted_by_track_count))
-    scatter = comparison_scatter_plot(tracks_full, main_playlist_col, "Playlist", overview_playlists_scatterplot_path(), overview_playlists_scatterplot_path(output_dir()))
+    main_playlist_col = dp.tracks()["track_uri"]\
+        .apply(lambda track_uri: get_main_playlist(track_uri, playlists_sorted_by_track_count))
+    
+    scatter = comparison_scatter_plot(dp.tracks(), main_playlist_col, "Playlist", overview_playlists_scatterplot_path(), overview_playlists_scatterplot_path(output_dir()))
     
     return [
         "## Playlists", 
@@ -156,7 +155,10 @@ def get_main_genre(track_uri: str):
     return subset.iloc[0]["genre"]
 
 
-def get_main_playlist(track_uri: str, playlist_track: pd.DataFrame, playlists: pd.DataFrame, playlists_sorted_by_track_count):
+def get_main_playlist(track_uri: str, playlists_sorted_by_track_count: typing.Iterable[str]):
+    playlists = DataProvider().playlists()
+    playlist_track = RawData()['playlist_track']
+
     playlist_uris = set(playlist_track[playlist_track["track_uri"] == track_uri]["playlist_uri"])
     for playlist_uri in playlists_sorted_by_track_count:
         if playlist_uri in playlist_uris:

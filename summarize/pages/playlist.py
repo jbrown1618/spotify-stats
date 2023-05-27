@@ -1,4 +1,5 @@
 import pandas as pd
+from data.provider import DataProvider
 
 from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
@@ -18,9 +19,11 @@ from utils.markdown import md_link, md_table, md_image, md_summary_details, md_t
 from utils.path import playlist_album_graph_path, playlist_audio_features_chart_path, playlist_audio_features_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
 
 
-def make_playlist_summary(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, is_liked_songs=False):
-    playlist_name = "Liked Tracks" if is_liked_songs else tracks["playlist_name"].iloc[0]
-    playlist_image_url = None if is_liked_songs else tracks["playlist_image_url"].iloc[0]
+def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
+    playlist = None if playlist_uri is None else DataProvider().playlist(playlist_uri)
+    playlist_name = 'Liked Tracks' if playlist is None else playlist["playlist_name"]
+    playlist_image_url = None if playlist is None else playlist["playlist_image_url"]
+
     print(f"Generating summary for playlist {playlist_name}")
     
     content = []

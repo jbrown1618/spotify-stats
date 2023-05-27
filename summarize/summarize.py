@@ -43,22 +43,19 @@ def summarize_results():
 
     track_artist_full = pd.merge(track_artist, artists_full, on="artist_uri")
 
-    playlists_full = pd.merge(playlists, playlist_track, on="playlist_uri")
-    playlists_full = pd.merge(playlists_full, dp.tracks(), on="track_uri")
-
     clear_markdown()
 
-    make_overview(playlists, playlist_track, dp.tracks(), track_artist_full, top_tracks, top_artists)
-    make_errors(dp.tracks(), playlists_full, track_artist_full, dp.albums(), album_artist, artists)
+    make_overview(dp.tracks(), track_artist_full, top_tracks, top_artists)
+    make_errors(dp.tracks(), track_artist_full, dp.albums(), album_artist, artists)
 
-    make_playlist_summary(dp.tracks(liked=True), track_artist_full, is_liked_songs=True)
+    make_playlist_summary(None, dp.tracks(liked=True), track_artist_full)
 
-    for playlist_uri in playlists["playlist_uri"]:
-        playlist_full = playlists_full[playlists_full["playlist_uri"] == playlist_uri]
-        if len(playlist_full) == 0:
+    for i, playlist in dp.playlists().iterrows():
+        playlist_tracks = dp.tracks(playlist_uri=playlist['playlist_uri'])
+        if len(playlist_tracks) == 0:
             continue
 
-        make_playlist_summary(playlist_full, track_artist_full)
+        make_playlist_summary(playlist['playlist_uri'], playlist_tracks, track_artist_full)
 
     for artist_uri in artists_with_page:
         artist = artists_full[artists_full["artist_uri"] == artist_uri].iloc[0]        

@@ -37,6 +37,42 @@ class DataProvider:
 
         self._initialized = True
 
+
+    def playlist(self, uri: str):
+        return self.playlists(uris=[uri]).iloc[0]
+    
+    
+    def playlists(self, uris: typing.Iterable[str] = None, track_uri: str = None, album_uri: str = None) -> pd.DataFrame:
+        raw = RawData()
+        playlist_track = raw['playlist_track']
+
+        if self._playlists is None:
+            playlist_track_full = pd.merge(playlist_track, self.tracks(), on='track_uri')
+            track_counts = playlist_track_full\
+                .groupby("playlist_uri")\
+                .agg({"track_uri": "count", "track_liked": "sum"})\
+                .reset_index()\
+                .rename(columns={"track_uri": "track_count", "track_liked": "track_liked_count"})
+            
+            self._playlists = pd.merge(raw['playlists'], track_counts, on='playlist_uri')
+
+        out = self._playlists
+
+        if uris is not None:
+            out = out[out['playlist_uri'].isin(uris)]
+
+        if track_uri is not None:
+            uris = set(playlist_track[playlist_track['track_uri'] == track_uri]['playlist_uri'])
+            out = out[out['playlist_uri'].isin(uris)]
+
+        if album_uri is not None:
+            track_uris = set(self.tracks(album_uri=album_uri)['track_uri'])
+            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
+            out = out[out['playlist_uri'].isin(uris)]
+
+        return out
+
+
     def albums(self, uris: typing.Iterable[str] = None) -> pd.DataFrame:
         if self._albums is None:
             raw = RawData()
@@ -53,9 +89,17 @@ class DataProvider:
         return out
 
 
-    def tracks(self, uris: typing.Iterable[str] = None, liked: bool = None, label: str = None, genre: str = None) -> pd.DataFrame:
+    def tracks(self, 
+               uris: typing.Iterable[str] = None, 
+               liked: bool = None, 
+               label: str = None, 
+               genre: str = None, 
+               album_uri: str = None, 
+               playlist_uri: str = None) -> pd.DataFrame:
+        
+        raw = RawData()
+
         if self._tracks is None:
-            raw = RawData()
             tracks = pd.merge(raw["tracks"], raw["audio_features"], on="track_uri")
             tracks = pd.merge(tracks, self.albums(), on="album_uri")
 
@@ -83,6 +127,14 @@ class DataProvider:
             track_genre = self.track_genre()
             tracks_in_genre = set(track_genre[track_genre['genre'] == genre]['track_uri'])
             out = out[out["track_uri"].isin(tracks_in_genre)]
+
+        if album_uri is not None:
+            out = out[out['album_uri'] == album_uri]
+
+        if playlist_uri is not None:
+            playlist_track = raw['playlist_track']
+            track_uris = set(playlist_track[playlist_track['playlist_uri'] == playlist_uri]['track_uri'])
+            out = out[out["track_uri"].isin(track_uris)]
 
         return out
     
