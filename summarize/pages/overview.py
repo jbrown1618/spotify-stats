@@ -67,7 +67,7 @@ def playlists_section():
     dp = DataProvider()
     table = md_truncated_table(playlists_table(output_dir()), 10)
 
-    playlists_sorted_by_track_count = dp.playlists().sort_values(by="track_count", ascending=False)["playlist_uri"]
+    playlists_sorted_by_track_count = dp.playlists().sort_values(by="playlist_track_count", ascending=False)["playlist_uri"]
 
     main_playlist_col = dp.tracks()["track_uri"]\
         .apply(lambda track_uri: get_main_playlist(track_uri, playlists_sorted_by_track_count))

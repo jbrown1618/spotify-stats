@@ -8,8 +8,8 @@ def labels_table(tracks: pd.DataFrame, relative_to: str):
     dp = DataProvider()
 
     labels = dp.labels(track_uris=tracks["track_uri"])\
-        .sort_values(by=["track_liked_count", "track_count", "album_standardized_label"], ascending=False)\
-        .rename(columns={"track_count": "Tracks", "track_liked_count": "💚"})
+        .sort_values(by=["label_track_liked_count", "label_track_count", "album_standardized_label"], ascending=False)\
+        .rename(columns={"label_track_count": "Tracks", "label_track_liked_count": "💚"})
 
     labels["Label"] = labels.apply(lambda l: display_label(l, relative_to), axis=1)
     table_data = labels[["Tracks", "💚", "Label"]]

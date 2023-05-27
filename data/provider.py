@@ -38,10 +38,10 @@ class DataProvider:
         self._initialized = True
 
 
-    def playlist(self, uri: str):
+    def playlist(self, uri: str) -> pd.Series:
         return self.playlists(uris=[uri]).iloc[0]
     
-    
+
     def playlists(self, uris: typing.Iterable[str] = None, track_uri: str = None, album_uri: str = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
@@ -52,7 +52,7 @@ class DataProvider:
                 .groupby("playlist_uri")\
                 .agg({"track_uri": "count", "track_liked": "sum"})\
                 .reset_index()\
-                .rename(columns={"track_uri": "track_count", "track_liked": "track_liked_count"})
+                .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_track_liked_count"})
             
             self._playlists = pd.merge(raw['playlists'], track_counts, on='playlist_uri')
 
@@ -139,7 +139,11 @@ class DataProvider:
         return out
     
 
-    def labels(self, track_uris: typing.Iterable[str] = None, with_page: bool = None):
+    def artists(self) -> pd.DataFrame:
+        pass
+    
+
+    def labels(self, track_uris: typing.Iterable[str] = None, with_page: bool = None) -> pd.DataFrame:
         if self._album_label is None:
             self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
@@ -147,7 +151,7 @@ class DataProvider:
             .groupby("album_standardized_label")\
             .agg({"track_uri": "count", "track_liked": "sum", "label_has_page": first})\
             .reset_index()\
-            .rename(columns={"track_uri": "track_count", "track_liked": "track_liked_count"})
+            .rename(columns={"track_uri": "label_track_count", "track_liked": "label_track_liked_count"})
         
         if with_page is not None:
             out = out[out['label_has_page'] == with_page]
@@ -165,7 +169,7 @@ class DataProvider:
         return rd['artist_genre']['genre'].unique()
         
 
-    def track_genre(self, track_uris: typing.Iterable[str] = None):
+    def track_genre(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         if self._track_genre is None:
             self.__initialize_genre_join_tables()
 
@@ -175,7 +179,7 @@ class DataProvider:
         return self._track_genre
     
 
-    def artist_genre(self):
+    def artist_genre(self) -> pd.DataFrame:
         if self._artist_genre is None:
             self.__initialize_genre_join_tables()
 

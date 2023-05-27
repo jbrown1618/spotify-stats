@@ -11,8 +11,8 @@ def playlists_table(relative_to: str):
 
     display_playlists["🔗"] = display_playlists["playlist_uri"].apply(lambda uri: spotify_link(uri))
     display_playlists["Name"] = display_playlists["playlist_name"].apply(lambda name: md_link(name, playlist_overview_path(name, relative_to)))
-    display_playlists["Tracks"] = display_playlists["track_count"]
-    display_playlists['💚'] = display_playlists["track_liked_count"]
+    display_playlists["Tracks"] = display_playlists["playlist_track_count"]
+    display_playlists['💚'] = display_playlists["playlist_track_liked_count"]
 
     display_playlists["Art"] = display_playlists["playlist_image_url"].apply(lambda src: md_image("", src, 50))
 

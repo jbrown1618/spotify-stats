@@ -22,8 +22,6 @@ def summarize_results():
     top_tracks = raw_data["top_tracks"]
     top_artists = raw_data["top_artists"]
 
-    dp = DataProvider()
-
     artist_liked_tracks = pd.merge(track_artist, liked_tracks, on="track_uri").groupby("artist_uri").agg({"track_uri": "count"}).reset_index()
     artist_liked_tracks.rename(columns={"track_uri": "artist_liked_track_count"}, inplace=True)
     artist_all_track_counts = track_artist[["artist_uri", "track_uri"]].groupby("artist_uri").agg({"track_uri": "count"}).reset_index()
@@ -44,6 +42,8 @@ def summarize_results():
     track_artist_full = pd.merge(track_artist, artists_full, on="artist_uri")
 
     clear_markdown()
+
+    dp = DataProvider()
 
     make_overview(dp.tracks(), track_artist_full, top_tracks, top_artists)
     make_errors(dp.tracks(), track_artist_full, dp.albums(), album_artist, artists)

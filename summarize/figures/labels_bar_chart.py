@@ -13,11 +13,11 @@ def labels_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
     if len(labels) < 3:
         return ""
 
-    labels = labels.sort_values(by=["track_count", "track_liked_count", "album_standardized_label"], ascending=False)\
+    labels = labels.sort_values(by=["label_track_count", "label_track_liked_count", "album_standardized_label"], ascending=False)\
         .head(30)
     
-    all = labels.rename(columns={"track_count": "Number of Tracks", "album_standardized_label": "Label"})
-    liked = labels.rename(columns={"track_liked_count": "Number of Tracks", "album_standardized_label": "Label"})
+    all = labels.rename(columns={"label_track_count": "Number of Tracks", "album_standardized_label": "Label"})
+    liked = labels.rename(columns={"label_track_liked_count": "Number of Tracks", "album_standardized_label": "Label"})
     
 
     if not skip_figures():
