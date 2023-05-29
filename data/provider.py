@@ -35,6 +35,7 @@ class DataProvider:
         self._track_genre = None
         self._genres_with_page = None
         self._track_artist = None
+        self._liked_tracks_sample = None
 
         self._initialized = True
 
@@ -153,6 +154,14 @@ class DataProvider:
 
         return out
     
+
+    def liked_tracks_sample(self):
+        if self._liked_tracks_sample is None:
+            self._liked_tracks_sample = self.tracks(liked=True)
+            if len(self._liked_tracks_sample) > 200:
+                self._liked_tracks_sample = self._liked_tracks_sample.sample(200, random_state=0)
+        return self._liked_tracks_sample
+
 
     def primary_artist(self, track_uri: str) -> pd.Series:
         track_artist = RawData()['track_artist']
