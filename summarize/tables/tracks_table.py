@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils.artist import get_display_artists, get_primary_artist_name
+from utils.artist import get_display_artists
 from utils.markdown import md_image
 from utils.record_label import get_display_labels
 from utils.util import spotify_link
@@ -10,7 +10,7 @@ chronological_sorting = ["album_release_date", "Album", "Track"]
 
 def tracks_table(tracks: pd.DataFrame, relative_to: str, chronological=False):
     table_data = tracks.copy()
-    table_data["artist_names_sorting"] = table_data["track_uri"].apply(get_primary_artist_name)
+    table_data["artist_names_sorting"] = table_data["primary_artist_name"]
     table_data["Art"] = table_data["album_image_url"].apply(lambda src: md_image("", src, 50))
     table_data["Artists"] = table_data["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, relative_to))
     table_data["Track"] = table_data["track_name"]

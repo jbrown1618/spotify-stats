@@ -20,8 +20,5 @@ def file_name_friendly(text: str):
     return re.sub(r"[^a-z0-9]", "_", text.lower())
 
 
-
-
-
 def first(series: pd.Series):
     return None if len(series) == 0 else series.iloc[0]

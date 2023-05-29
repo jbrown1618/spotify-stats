@@ -117,6 +117,14 @@ class DataProvider:
             liked_track_uris = set(raw["liked_tracks"]["track_uri"])
             tracks["track_liked"] = tracks["track_uri"].isin(liked_track_uris)
 
+            artists = add_primary_prefix(self.artists().copy())
+            track_artist = raw['track_artist']
+            track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
+            track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
+
+            tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
+            tracks = pd.merge(tracks, artists, on="primary_artist_uri")
+
             self._tracks = tracks
 
         out = self._tracks
@@ -209,7 +217,7 @@ class DataProvider:
 
         if track_uri is not None:
             track_artist = raw['track_artist']
-            uris = set(track_artist[track_artist['track_uri'] == track_uri]['artist_uri'])
+            uris = track_artist[track_artist['track_uri'] == track_uri]['artist_uri']
             out = out[out['artist_uri'].isin(uris)]
 
         if album_uri is not None:
@@ -246,6 +254,13 @@ class DataProvider:
             out = out[out['label_has_page'] == with_page]
 
         return out
+    
+
+    def album_label(self):
+        if self._album_label is None:
+            self._album_label = standardize_record_labels(self.albums(), self.tracks())
+
+        return self._album_label
     
 
     def genres(self, with_page: bool = None) -> typing.Iterable[str]:
@@ -299,3 +314,8 @@ class DataProvider:
 
         self._track_genre = track_genre[['track_uri', 'genre', 'genre_has_page']]
         self._artist_genre = artist_genre[['artist_uri', 'genre', 'genre_has_page']]
+
+
+def add_primary_prefix(artists: pd.DataFrame):
+    artists.columns = ['primary_' + col for col in artists.columns]
+    return artists

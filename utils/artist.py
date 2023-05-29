@@ -4,9 +4,6 @@ from data.provider import DataProvider
 from utils.util import md_link
 from utils.path import artist_overview_path
 
-def get_primary_artist_name(track_uri: str):
-    return DataProvider().primary_artist(track_uri)['artist_name'].upper()
-
 
 def get_display_artists(track_uri: str, relative_to: str):
     artists = DataProvider().artists(track_uri=track_uri)

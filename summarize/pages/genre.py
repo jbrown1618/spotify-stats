@@ -54,10 +54,9 @@ def artists_section(genre_name, tracks: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    dp = DataProvider()
     scatterplot = comparison_scatter_plot(
         tracks, 
-        tracks["track_uri"].apply(lambda uri: dp.primary_artist(uri)['artist_name']), 
+        tracks["primary_artist_name"], 
         "Artist", 
         genre_artist_comparison_scatterplot_path(genre_name), 
         genre_artist_comparison_scatterplot_path(genre_name, genre_path(genre_name))

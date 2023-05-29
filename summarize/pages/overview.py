@@ -12,7 +12,6 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
-from utils.artist import get_primary_artist_name
 from utils.audio_features import comparison_scatter_plot
 from utils.markdown import md_link, md_truncated_table
 from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_chart_path, overview_audio_features_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
@@ -101,7 +100,7 @@ def artists_section(tracks: pd.DataFrame, top_artists: pd.DataFrame):
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
             tracks, 
-            tracks["track_uri"].apply(get_primary_artist_name), 
+            tracks["primary_artist_name"], 
             "Artist", 
             overview_artists_scatterplot_path(), 
             overview_artists_scatterplot_path(output_dir())
