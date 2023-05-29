@@ -8,11 +8,11 @@ from utils.util import spotify_link
 artist_sorting = ["artist_names_sorting", "album_release_date", "Album", "Track"]
 chronological_sorting = ["album_release_date", "Album", "Track"]
 
-def tracks_table(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, relative_to: str, chronological=False):
+def tracks_table(tracks: pd.DataFrame, relative_to: str, chronological=False):
     table_data = tracks.copy()
-    table_data["artist_names_sorting"] = table_data["track_uri"].apply(lambda track_uri: get_primary_artist_name(track_uri, track_artist_full))
+    table_data["artist_names_sorting"] = table_data["track_uri"].apply(get_primary_artist_name)
     table_data["Art"] = table_data["album_image_url"].apply(lambda src: md_image("", src, 50))
-    table_data["Artists"] = table_data["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, track_artist_full, relative_to))
+    table_data["Artists"] = table_data["track_uri"].apply(lambda track_uri: get_display_artists(track_uri, relative_to))
     table_data["Track"] = table_data["track_name"]
     table_data["🔗"] = table_data["track_uri"].apply(lambda uri: spotify_link(uri))
     table_data["Album"] = table_data["album_name"]

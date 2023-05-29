@@ -1,19 +1,13 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from data.provider import DataProvider
 
 from utils.markdown import md_image
 from utils.settings import skip_figures
-from utils.util import first
 
-def artists_bar_chart(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, absolute_path: str, relative_path: str):
-    joined = pd.merge(track_artist_full, tracks, on="track_uri")
-    grouped = joined.groupby("artist_uri").agg({
-        "track_uri": "count", 
-        "track_liked": "sum",
-        "artist_name": first, 
-        "artist_image_url": first
-    }).reset_index()
+def artists_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
+    grouped = DataProvider().track_counts_by_artist(tracks['track_uri'])
 
     if len(grouped) < 3:
         return ""

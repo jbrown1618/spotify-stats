@@ -1,17 +1,18 @@
 import pandas as pd
 from data.provider import DataProvider
+from data.raw import RawData
 from utils.markdown import md_table
 from utils.path import errors_path
 from utils.util import spotify_link
 
-def make_errors(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, albums: pd.DataFrame, album_artist: pd.DataFrame, artists: pd.DataFrame):
+def make_errors(tracks_full: pd.DataFrame, albums: pd.DataFrame):
     print("Generating Errors")
 
     content = []
     content += title()
-    content += duplicate_tracks(tracks_full, track_artist_full)
-    content += duplicate_albums(albums, album_artist, artists)
-    content += low_popularity(tracks_full, track_artist_full)
+    content += duplicate_tracks(tracks_full)
+    content += duplicate_albums(albums)
+    content += low_popularity(tracks_full)
 
     with open(errors_path(), "w") as f:
         f.write("\n".join(content))
@@ -21,19 +22,19 @@ def title():
     return [f"# Possible organizational errors", ""]
 
 
-def duplicate_tracks(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame):
+def duplicate_tracks(tracks_full: pd.DataFrame):
     tracks_with_artists = tracks_full.copy()
-    tracks_with_artists["artist_names"] = tracks_with_artists["track_uri"].apply(lambda uri: artist_names_for_track(uri, track_artist_full))
+    tracks_with_artists["artist_names"] = tracks_with_artists["track_uri"].apply(artist_names_for_track)
     duplicated = tracks_with_artists[tracks_with_artists.duplicated(subset=["track_name", "artist_names"], keep=False)]
 
     if len(duplicated) == 0:
         return ["## Duplicate tracks", "", "None", ""]
 
     display = duplicated.copy().sort_values(by=["artist_names", "track_name"])
-    display["Track"] = display["track_name"] + " " + display["track_uri"].apply(lambda uri: spotify_link(uri))
+    display["Track"] = display["track_name"] + " " + display["track_uri"].apply(spotify_link)
     display["Track Popularity"] = display["track_popularity"]
-    display["Artists"] = duplicated["track_uri"].apply(lambda track_uri: display_artists_for_track(track_uri, track_artist_full))
-    display["Album"] = display["album_name"] + " " + display["album_uri"].apply(lambda uri: spotify_link(uri))
+    display["Artists"] = duplicated["track_uri"].apply(display_artists_for_track)
+    display["Album"] = display["album_name"] + " " + display["album_uri"].apply(spotify_link)
     display["Album Popularity"] = display["album_popularity"]
     display["Release Date"] = display["album_release_date"]
     display["Label"] = display["album_label"]
@@ -45,9 +46,9 @@ def duplicate_tracks(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame)
     return ["## Duplicate tracks", "", table, ""]
 
 
-def duplicate_albums(albums: pd.DataFrame, album_artist: pd.DataFrame, artists: pd.DataFrame):
+def duplicate_albums(albums: pd.DataFrame):
     albums_with_artists = albums.copy()
-    albums_with_artists["artist_names_sort"] = albums_with_artists["album_uri"].apply(lambda uri: artist_names_for_album(uri, album_artist, artists))
+    albums_with_artists["artist_names_sort"] = albums_with_artists["album_uri"].apply(artist_names_for_album)
 
     duplicated = albums_with_artists[albums_with_artists.duplicated(subset=["album_name", "artist_names_sort"], keep=False)]
 
@@ -56,8 +57,8 @@ def duplicate_albums(albums: pd.DataFrame, album_artist: pd.DataFrame, artists: 
 
     display = duplicated.copy().sort_values(by=["artist_names_sort", "album_name"])
 
-    display["Album"] = display["album_name"] + " " + display["album_uri"].apply(lambda uri: spotify_link(uri))
-    display["Artists"] = duplicated["album_uri"].apply(lambda uri: display_artists_for_album(uri, album_artist, artists))
+    display["Album"] = display["album_name"] + " " + display["album_uri"].apply(spotify_link)
+    display["Artists"] = duplicated["album_uri"].apply(display_artists_for_album)
     display["Album Popularity"] = display["album_popularity"]
     display["Release Date"] = display["album_release_date"]
     display["Label"] = display["album_label"]
@@ -71,49 +72,49 @@ def duplicate_albums(albums: pd.DataFrame, album_artist: pd.DataFrame, artists: 
     return ["## Duplicate albums", "", table, ""]
 
 
-def low_popularity(tracks_full, track_artist_full):
+def low_popularity(tracks_full):
+    artists = DataProvider().artists()
+    track_artist = RawData()['track_artist']
     low_pop_tracks = tracks_full[(tracks_full["track_popularity"] < 3) & (tracks_full["album_popularity"] < 3)]
-    high_pop_artists = track_artist_full[track_artist_full["artist_popularity"] >= 25]
+    high_pop_artists = artists[artists["artist_popularity"] >= 25]
 
-    display = pd.merge(low_pop_tracks, high_pop_artists,  on="track_uri")
+    display = pd.merge(low_pop_tracks, track_artist,  on="track_uri")
+    display = pd.merge(display, high_pop_artists, on='artist_uri')
 
     display = display[["track_name", "album_name", "artist_name", "track_popularity", "album_popularity", "artist_popularity"]]
 
     return ['## Tracks with low popularity', '', md_table(display), ""]
     
 
-
-def artist_names_for_album(album_uri: str, album_artist: pd.DataFrame, artists: pd.DataFrame):
-    artist_uris = set(album_artist[album_artist["album_uri"] == album_uri]["artist_uri"])
+def artist_names_for_album(album_uri: str):
+    artists = DataProvider().artists(album_uri=album_uri)
     names = []
-    for artist_uri in artist_uris:
-        artist = artists[artists["artist_uri"] == artist_uri].iloc[0]
+    for i, artist in artists.iterrows():
         names.append(artist["artist_name"] + " " + spotify_link(artist["artist_uri"]))
 
     names.sort()
     return ",<br>".join(names)
 
 
-def artist_names_for_track(track_uri: str, track_artist_full: pd.DataFrame):
-    artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
+def artist_names_for_track(track_uri: str):
+    artists = DataProvider().artists(track_uri=track_uri)
     names = [artist["artist_name"].lower() for i, artist in artists.iterrows()]
     names.sort()
     return ",<br>".join(names)
 
 
-def display_artists_for_track(track_uri: str, track_artist_full: pd.DataFrame):
-    artists = track_artist_full[track_artist_full["track_uri"] == track_uri]
+def display_artists_for_track(track_uri: str):
+    artists = DataProvider().artists(track_uri=track_uri)
     names = [artist["artist_name"] + " " + spotify_link(artist["artist_uri"]) for i, artist in artists.iterrows()]
     names.sort()
     return ",<br>".join(names)
 
 
-def display_artists_for_album(album_uri: str, album_artist: pd.DataFrame, artists: pd.DataFrame):
-    artist_uris = set(album_artist[album_artist["album_uri"] == album_uri]["artist_uri"])
+def display_artists_for_album(album_uri: str):
+    artists = DataProvider().artists(album_uri=album_uri)
     names = [
         artist["artist_name"] + " " + spotify_link(artist["artist_uri"]) 
         for i, artist in artists.iterrows() 
-        if artist["artist_uri"] in artist_uris
     ]
     names.sort()
     return ",<br>".join(names)

@@ -57,7 +57,7 @@ def save_data():
     raw_data["albums"] = pd.DataFrame(albums_data).sort_values(by="uri")
     raw_data["liked_tracks"] = pd.DataFrame(liked_tracks).sort_values(by="track_uri")
     raw_data["playlist_track"] = pd.DataFrame(playlist_track).sort_values(by=["playlist_uri", "track_uri"])
-    raw_data["track_artist"] = pd.DataFrame(track_artist).sort_values(by=["artist_uri", "track_uri"])
+    raw_data["track_artist"] = pd.DataFrame(track_artist).sort_values(by=["artist_index", "track_uri", "artist_uri"])
     raw_data["album_artist"] = pd.DataFrame(album_artist).sort_values(by=["artist_uri", "album_uri"])
     raw_data["audio_features"] = pd.DataFrame(audio_features).sort_values(by="track_uri")
     raw_data["artist_genre"] = pd.DataFrame(artist_genre).sort_values(by=["artist_uri", "genre"])

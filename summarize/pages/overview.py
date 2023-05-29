@@ -17,9 +17,9 @@ from utils.audio_features import comparison_scatter_plot
 from utils.markdown import md_link, md_truncated_table
 from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_chart_path, overview_audio_features_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
 from utils.settings import output_dir
-from utils.util import first
 
-def make_overview(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
+
+def make_overview(tracks_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
     print("Generating Overview")
 
     content = []
@@ -28,7 +28,7 @@ def make_overview(tracks_full: pd.DataFrame, track_artist_full: pd.DataFrame, to
     content += byline()
     content += [md_link(f"See Audio Features", overview_audio_features_path(output_dir())), ""]
     content += playlists_section()
-    content += artists_section(tracks_full, track_artist_full, top_artists)
+    content += artists_section(tracks_full, top_artists)
     content += tracks_section(top_tracks, tracks_full)
     content += genres_section(tracks_full)
     content += labels_section(tracks_full)
@@ -84,15 +84,12 @@ def playlists_section():
     ]
 
 
-def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, top_artists: pd.DataFrame):
-    artists = track_artist_full\
-        .groupby("artist_uri")\
-        .agg({"artist_name": first, "artist_image_url": first, "artist_has_page": first})\
-        .reset_index()
+def artists_section(tracks: pd.DataFrame, top_artists: pd.DataFrame):
+    artists = DataProvider().artists()
     top_artists = md_truncated_table(top_artists_table(top_artists, artists), 10, "See top 50 artists")
     
-    img = artists_bar_chart(tracks, track_artist_full, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
-    table_data = artists_table(tracks, track_artist_full, output_dir())
+    img = artists_bar_chart(tracks, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
+    table_data = artists_table(tracks, output_dir())
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -104,7 +101,7 @@ def artists_section(tracks: pd.DataFrame, track_artist_full: pd.DataFrame, top_a
     if len(table_data) >= 10:
         scatterplot = comparison_scatter_plot(
             tracks, 
-            tracks["track_uri"].apply(lambda uri: get_primary_artist_name(uri, track_artist_full)), 
+            tracks["track_uri"].apply(get_primary_artist_name), 
             "Artist", 
             overview_artists_scatterplot_path(), 
             overview_artists_scatterplot_path(output_dir())

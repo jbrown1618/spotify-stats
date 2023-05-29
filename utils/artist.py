@@ -1,21 +1,21 @@
 import pandas as pd
+from data.provider import DataProvider
 
 from utils.util import md_link
 from utils.path import artist_overview_path
 
-def get_primary_artist_name(track_uri: str, track_artist_full: pd.DataFrame):
-    artists = track_artist_full[(track_artist_full["track_uri"] == track_uri) & (track_artist_full["artist_index"] == 0)]
-    return artists["artist_name"].iloc[0].upper()
+def get_primary_artist_name(track_uri: str):
+    return DataProvider().primary_artist(track_uri)['artist_name'].upper()
 
 
-def get_display_artists(track_uri: str, track_artist_full: pd.DataFrame, relative_to: str):
-    artists = track_artist_full[track_artist_full["track_uri"] == track_uri].sort_values(by="artist_index")
+def get_display_artists(track_uri: str, relative_to: str):
+    artists = DataProvider().artists(track_uri=track_uri)
     artist_links = [get_artist_link(artist, relative_to) for i, artist in artists.iterrows()]
     return ", ".join(artist_links)
 
 
-def get_display_artist(artist_uri: str, track_artist_full: pd.DataFrame, relative_to: str):
-    artist = track_artist_full[track_artist_full["artist_uri"] == artist_uri].iloc[0]
+def get_display_artist(artist_uri: str, relative_to: str):
+    artist = DataProvider().artist(artist_uri)
     return get_artist_link(artist, relative_to)
 
 

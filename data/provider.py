@@ -34,15 +34,20 @@ class DataProvider:
         self._artist_genre = None
         self._track_genre = None
         self._genres_with_page = None
+        self._track_artist = None
 
         self._initialized = True
 
 
     def playlist(self, uri: str) -> pd.Series:
-        return self.playlists(uris=[uri]).iloc[0]
+        return self.playlists(uris={uri}).iloc[0]
     
 
-    def playlists(self, uris: typing.Iterable[str] = None, track_uri: str = None, album_uri: str = None) -> pd.DataFrame:
+    def playlists(self, 
+                  uris: typing.Iterable[str] = None, 
+                  track_uri: str = None, 
+                  album_uri: str = None,
+                  artist_uri: str = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
 
@@ -67,6 +72,11 @@ class DataProvider:
 
         if album_uri is not None:
             track_uris = set(self.tracks(album_uri=album_uri)['track_uri'])
+            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
+            out = out[out['playlist_uri'].isin(uris)]
+
+        if artist_uri is not None:
+            track_uris = set(self.tracks(artist_uri=artist_uri)['track_uri'])
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
@@ -95,8 +105,8 @@ class DataProvider:
                label: str = None, 
                genre: str = None, 
                album_uri: str = None, 
-               playlist_uri: str = None) -> pd.DataFrame:
-        
+               playlist_uri: str = None,
+               artist_uri: str = None) -> pd.DataFrame:
         raw = RawData()
 
         if self._tracks is None:
@@ -136,11 +146,81 @@ class DataProvider:
             track_uris = set(playlist_track[playlist_track['playlist_uri'] == playlist_uri]['track_uri'])
             out = out[out["track_uri"].isin(track_uris)]
 
+        if artist_uri is not None:
+            track_artist = raw['track_artist']
+            track_uris = set(track_artist[track_artist['artist_uri'] == artist_uri]['track_uri'])
+            out = out[out["track_uri"].isin(track_uris)]
+
         return out
     
 
-    def artists(self) -> pd.DataFrame:
-        pass
+    def primary_artist(self, track_uri: str) -> pd.Series:
+        track_artist = RawData()['track_artist']
+        artist_uri = track_artist[(track_artist['track_uri'] == track_uri) & (track_artist['artist_index'] == 0)].iloc[0]['artist_uri']
+        return self.artist(artist_uri)
+    
+
+    def artist(self, uri: str) -> pd.Series:
+        return self.artists(uris={uri}).iloc[0]
+    
+
+    def artists(self, 
+                uris: typing.Iterable[str] = None, 
+                with_page: bool = None, 
+                track_uri: str = None,
+                album_uri: str = None) -> pd.DataFrame:
+        raw = RawData()
+        if self._artists is None:
+            track_artist = raw['track_artist']
+            artist_liked_tracks = pd.merge(track_artist, raw["liked_tracks"], on="track_uri")\
+                .groupby("artist_uri")\
+                .agg({"track_uri": "count"})\
+                .reset_index()
+            artist_liked_tracks.rename(columns={"track_uri": "artist_liked_track_count"}, inplace=True)
+            artist_all_track_counts = track_artist[["artist_uri", "track_uri"]]\
+                .groupby("artist_uri")\
+                .agg({"track_uri": "count"})\
+                .reset_index()
+            artist_all_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
+
+            artist_track_counts = pd.merge(artist_liked_tracks, artist_all_track_counts, how="outer", on="artist_uri")
+            artist_track_counts.fillna(0, inplace=True)
+            
+            artist_track_counts["artist_has_page"] = (artist_track_counts["artist_track_count"] >= 10) & (artist_track_counts["artist_liked_track_count"] > 0)
+
+            self._artists = pd.merge(raw['artists'], artist_track_counts, on="artist_uri")
+
+        out = self._artists
+
+        if uris is not None:
+            out = out[out['artist_uri'].isin(uris)]
+
+        if with_page is not None:
+            out = out[out['artist_has_page'] == with_page]
+
+        if track_uri is not None:
+            track_artist = raw['track_artist']
+            uris = set(track_artist[track_artist['track_uri'] == track_uri]['artist_uri'])
+            out = out[out['artist_uri'].isin(uris)]
+
+        if album_uri is not None:
+            album_artist = raw['album_artist']
+            uris = set(album_artist[album_artist['album_uri'] == album_uri]['artist_uri'])
+            out = out[out['artist_uri'].isin(uris)]
+
+        return out
+    
+
+    def track_counts_by_artist(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+        if self._track_artist is None:
+            track_artist = pd.merge(self.tracks(), RawData()['track_artist'], on='track_uri')
+            track_artist = pd.merge(track_artist, self.artists(), on='artist_uri')
+            self._track_artist = track_artist
+
+        return self._track_artist[self._track_artist['track_uri'].isin(track_uris)]\
+            .groupby("artist_uri")\
+            .agg({"track_uri": "count", "track_liked": "sum", "artist_name": first, "artist_image_url": first})\
+            .reset_index()
     
 
     def labels(self, track_uris: typing.Iterable[str] = None, with_page: bool = None) -> pd.DataFrame:

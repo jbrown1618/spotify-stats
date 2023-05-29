@@ -11,7 +11,7 @@ from utils.markdown import md_link, md_truncated_table
 from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_genre_graph_path, label_overview_path, label_path, labels_path
 
 
-def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full: pd.DataFrame):
+def make_label_summary(label_name: str, tracks: pd.DataFrame):
     print(f"Generating summary for label {label_name}")
     
     content = []
@@ -19,10 +19,10 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame, track_artist_full:
     content += [f"{len(tracks)} songs", ""]
     content += [md_link(f"See Audio Features", label_audio_features_path(label_name, label_path(label_name))), ""]
     content += aliases(tracks)
-    content += artists_section(label_name, tracks, track_artist_full)
+    content += artists_section(label_name, tracks)
     content += albums_section(label_name, tracks)
     content += genres_section(label_name, tracks)
-    content += tracks_section(label_name, tracks, track_artist_full)
+    content += tracks_section(label_name, tracks)
 
     with open(label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
@@ -46,9 +46,9 @@ def aliases(label_full: pd.DataFrame):
     ] + [""]
 
 
-def artists_section(label_name, label_full: pd.DataFrame, track_artist_full: pd.DataFrame):
-    img = artists_bar_chart(label_full, track_artist_full, label_artist_graph_path(label_name), label_artist_graph_path(label_name, label_path(label_name)))
-    table_data = artists_table(label_full, track_artist_full, label_path(label_name))
+def artists_section(label_name, label_full: pd.DataFrame):
+    img = artists_bar_chart(label_full, label_artist_graph_path(label_name), label_artist_graph_path(label_name, label_path(label_name)))
+    table_data = artists_table(label_full, label_path(label_name))
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -88,7 +88,7 @@ def genres_section(label_name: str, tracks: pd.DataFrame):
     return ["## Genres", "", full_list, "", img, ""]
 
 
-def tracks_section(label_name: str, label_full: pd.DataFrame, track_artist_full: pd.DataFrame):
-    display_tracks = tracks_table(label_full, track_artist_full, label_path(label_name))
+def tracks_section(label_name: str, label_full: pd.DataFrame):
+    display_tracks = tracks_table(label_full, label_path(label_name))
     table = md_truncated_table(display_tracks, 10, "See all tracks")
     return [f"## Tracks released under {label_name}", "", table, ""]
