@@ -4,6 +4,7 @@ import pandas as pd
 from data.raw import RawData
 from utils.album import short_album_name
 from utils.date import release_year
+from utils.machine_learning import prepare_ml_data
 from utils.record_label import standardize_record_labels
 from utils.util import first
 
@@ -36,6 +37,7 @@ class DataProvider:
         self._genres_with_page = None
         self._track_artist = None
         self._liked_tracks_sample = None
+        self._ml_data = None
 
         self._initialized = True
 
@@ -163,6 +165,12 @@ class DataProvider:
         return out
     
 
+    def ml_data(self):
+        if self._ml_data is None:
+            self._ml_data = prepare_ml_data(self.tracks(), self.track_genre(), self.album_label())
+        return self._ml_data
+    
+    
     def liked_tracks_sample(self):
         if self._liked_tracks_sample is None:
             self._liked_tracks_sample = self.tracks(liked=True)

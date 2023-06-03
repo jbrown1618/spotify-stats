@@ -35,7 +35,7 @@ def md_table(df: pd.DataFrame):
     return table
 
 
-def md_truncated_table(df: pd.DataFrame, initial: int, text="View all"):
+def md_truncated_table(df: pd.DataFrame, initial: int = 10, text="View all"):
     if (len(df) <= initial):
         return md_table(df)
     

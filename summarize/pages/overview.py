@@ -6,6 +6,7 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.pages.audio_features import make_audio_features_page
+from summarize.pages.clusters import make_clusters_page
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
@@ -14,7 +15,7 @@ from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
 from utils.audio_features import comparison_scatter_plot
 from utils.markdown import md_link, md_truncated_table
-from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_chart_path, overview_audio_features_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, pairplot_path, overview_path
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path
 from utils.settings import output_dir
 
 
@@ -26,6 +27,7 @@ def make_overview(tracks_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artis
     content += title("jbrown1618")
     content += byline()
     content += [md_link(f"See Audio Features", overview_audio_features_path(output_dir())), ""]
+    content += [md_link(f"See Clusters", overview_clusters_path(output_dir())), ""]
     content += playlists_section()
     content += artists_section(tracks_full, top_artists)
     content += tracks_section(top_tracks, tracks_full)
@@ -36,7 +38,8 @@ def make_overview(tracks_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artis
     with open(overview_path(), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path(), overview_audio_features_chart_path())
+    make_audio_features_page(tracks_full, "All Tracks", overview_audio_features_path(), overview_audio_features_figure_path())
+    make_clusters_page(tracks_full, "All tracks", overview_clusters_path(), overview_clusters_figure_path())
 
 
 def title(user: str):

@@ -6,14 +6,10 @@ from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
 from summarize.pages.overview import make_overview
 from summarize.pages.errors import make_errors
-from utils.machine_learning import prepare_ml_data
 from utils.path import clear_markdown
 
 
 def summarize_results():
-    prepare_ml_data()
-    return
-
     raw_data = RawData()
     top_tracks = raw_data["top_tracks"]
     top_artists = raw_data["top_artists"]
