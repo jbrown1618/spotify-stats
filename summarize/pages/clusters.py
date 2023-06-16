@@ -54,31 +54,28 @@ def cluster_section(i: int, uris: pd.Series, center: pd.Series, path: str):
 
 
 def get_clusters(tracks: pd.DataFrame) -> pd.Series:
-    ml_data = DataProvider().ml_data()
-    # TODO: some track uris are not found in the ML data - why??
-    uris = tracks[tracks['track_uri'].isin(ml_data.index)]['track_uri']
+    tracks_data = DataProvider().ml_data(track_uris=tracks['track_uri'])
 
-    subset = ml_data.loc[uris]
-    if len(subset) == 0:
+    if len(tracks_data) == 0:
         return None, None
 
-    clustering = get_clustering(subset)
+    clustering = get_clustering(tracks_data)
 
-    clusters_df = pd.DataFrame(data={'cluster': clustering.labels_}, index=uris)
-    centers_df = pd.DataFrame(data=clustering.cluster_centers_, columns=ml_data.columns)
+    clusters_df = pd.DataFrame(data={'cluster': clustering.labels_}, index=tracks_data.index)
+    centers_df = pd.DataFrame(data=clustering.cluster_centers_, columns=tracks_data.columns)
 
-    distance = clustering.transform(subset)
+    distance = clustering.transform(tracks_data)
     # One col for the distance to each cluster
 
     return clusters_df, centers_df
 
 
-def get_clustering(subset: pd.DataFrame):
-    n = get_initial_cluster_count(subset)
+def get_clustering(tracks_data: pd.DataFrame):
+    n = get_initial_cluster_count(tracks_data)
 
     clustering = None
     while n >= MIN_CLUSTERS and (clustering is None or is_bad_clustering(clustering)):
-        clustering = KMeans(n_clusters=n, n_init='auto', random_state=0).fit(subset)
+        clustering = KMeans(n_clusters=n, n_init='auto', random_state=0).fit(tracks_data)
         n -= 1
 
     print(pd.Series(clustering.labels_).value_counts())
@@ -96,5 +93,3 @@ def is_bad_clustering(clustering):
 
     print(f"n: {len(counts)}, largest: {largest}, smallest: {smallest}")
     return smallest * 10 < largest
-
-

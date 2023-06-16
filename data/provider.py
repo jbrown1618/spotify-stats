@@ -165,10 +165,17 @@ class DataProvider:
         return out
     
 
-    def ml_data(self):
+    def ml_data(self, track_uris: typing.Iterable[str] = None):
         if self._ml_data is None:
             self._ml_data = prepare_ml_data(self.tracks(), self.track_genre(), self.album_label())
-        return self._ml_data
+
+        out = self._ml_data
+
+        if track_uris is not None:
+            track_uris = [uri for uri in track_uris if uri in out.index]
+            out = out.loc[track_uris]
+
+        return out
     
     
     def liked_tracks_sample(self):

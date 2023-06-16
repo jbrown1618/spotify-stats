@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 from summarize.figures.feature_distribution_chart import feature_distribution_chart
-from utils.track_features import TrackFeature, audio_features
+from utils.track_features import TrackFeature, track_features
 from utils.markdown import empty_header, md_image, md_table
 from utils.path import ensure_directory
 
@@ -10,7 +10,7 @@ from utils.path import ensure_directory
 def make_track_features_page(tracks: pd.DataFrame, description: str, path: str, figure_root_path: str):
     content = [f"# Track Features for {description}", ""]
 
-    for feature in audio_features:
+    for feature in track_features:
         content += feature_section(feature, tracks, path, figure_root_path)
 
     with open(path, "w") as f:

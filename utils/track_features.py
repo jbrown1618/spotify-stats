@@ -18,7 +18,7 @@ class TrackFeature:
         self.normalized = normalized
 
 
-audio_features = [
+track_features = [
     TrackFeature(
         column='audio_danceability',
         label='Danceability',
@@ -89,7 +89,7 @@ audio_features = [
 def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     numeric_audio_columns = [
         feature.column 
-        for feature in audio_features 
+        for feature in track_features 
         if feature.type == 'numeric'
     ]
     
@@ -105,6 +105,7 @@ def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str)
 
 
 def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_label: str, absolute_path: str, relative_path: str):
+    dp = DataProvider().ml_data()
     projected, components = principal_component_analysis(tracks, 2)
     first_component = components[0]
     second_component = components[1]
@@ -172,7 +173,7 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
 def principal_component_analysis(tracks: pd.DataFrame, ndim: int):
     numeric_audio_columns = [
         feature.column 
-        for feature in audio_features 
+        for feature in track_features 
         if feature.type == 'numeric' and feature.normalized
     ]
     mat = tracks[numeric_audio_columns].to_numpy()
@@ -198,7 +199,7 @@ def principal_component_analysis(tracks: pd.DataFrame, ndim: int):
 def project(tracks, first_component, second_component):
     numeric_audio_columns = [
         feature.column 
-        for feature in audio_features 
+        for feature in track_features 
         if feature.type == 'numeric' and feature.normalized
     ]
     mat = tracks[numeric_audio_columns].to_numpy()
@@ -214,13 +215,13 @@ def center(X: np.ndarray):
 def label_for_eigenvector(eigenvector: np.ndarray):
     numeric_audio_adjectives = [
         feature.adjective 
-        for feature in audio_features 
+        for feature in track_features 
         if feature.type == 'numeric' and feature.normalized
     ]
 
     numeric_audio_negated_adjectives = [
         feature.negated_adjective 
-        for feature in audio_features 
+        for feature in track_features 
         if feature.type == 'numeric' and feature.normalized
     ]
 
