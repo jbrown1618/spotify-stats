@@ -2,13 +2,13 @@ import os
 import pandas as pd
 
 from summarize.figures.feature_distribution_chart import feature_distribution_chart
-from utils.audio_features import AudioFeature, audio_features
+from utils.track_features import TrackFeature, audio_features
 from utils.markdown import empty_header, md_image, md_table
 from utils.path import ensure_directory
 
 
-def make_audio_features_page(tracks: pd.DataFrame, description: str, path: str, figure_root_path: str):
-    content = [f"# Audio Features for {description}", ""]
+def make_track_features_page(tracks: pd.DataFrame, description: str, path: str, figure_root_path: str):
+    content = [f"# Track Features for {description}", ""]
 
     for feature in audio_features:
         content += feature_section(feature, tracks, path, figure_root_path)
@@ -17,7 +17,7 @@ def make_audio_features_page(tracks: pd.DataFrame, description: str, path: str, 
         f.write("\n".join(content))
 
 
-def feature_section(feature: AudioFeature, tracks: pd.DataFrame, path: str, figure_root_path: str):
+def feature_section(feature: TrackFeature, tracks: pd.DataFrame, path: str, figure_root_path: str):
     content = [f"## {feature.label}", ""]
     current_page_dir = os.path.dirname(path)
 
@@ -31,7 +31,7 @@ def feature_section(feature: AudioFeature, tracks: pd.DataFrame, path: str, figu
     return content
 
 
-def top_and_bottom_lists(feature: AudioFeature, tracks: pd.DataFrame):    
+def top_and_bottom_lists(feature: TrackFeature, tracks: pd.DataFrame):    
     top_count = min(10, tracks.size / 2)
 
     col = feature.column
@@ -54,7 +54,7 @@ def top_and_bottom_lists(feature: AudioFeature, tracks: pd.DataFrame):
     return [md_table(data), ""]
 
 
-def display_track(row: pd.Series, feature: AudioFeature):
+def display_track(row: pd.Series, feature: TrackFeature):
     return f"{row['track_name']} ({row[feature.column]})"
 
 

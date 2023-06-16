@@ -5,13 +5,13 @@ from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.years_bar_chart import years_bar_chart
-from summarize.pages.audio_features import make_audio_features_page
+from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.audio_features import comparison_scatter_plot
+from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_table, md_link, md_truncated_table
 from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_clusters_figure_path, genre_clusters_path, genre_label_graph_path, genre_overview_path, genre_path, genre_tracks_path, genre_years_graph_path, genres_path
@@ -23,7 +23,7 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content = []
     content += title(genre_name)
     content += [md_link(f"{len(tracks)} songs", genre_tracks_path(genre_name, genre_path(genre_name))), ""]
-    content += [md_link(f"See Audio Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
+    content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
     content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks)
     content += albums_section(genre_name, tracks)
@@ -38,7 +38,7 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     with open(genre_tracks_path(genre_name), "w") as f:
         f.write("\n".join(tracks_content))
 
-    make_audio_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
+    make_track_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
     make_clusters_page(tracks, genre_name, genre_clusters_path(genre_name), genre_clusters_figure_path(genre_name))
 
 

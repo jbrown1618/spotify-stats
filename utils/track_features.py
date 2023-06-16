@@ -7,7 +7,7 @@ from data.provider import DataProvider
 from utils.markdown import md_image
 from utils.settings import skip_figures
 
-class AudioFeature:
+class TrackFeature:
      def __init__(self, column, label, adjective, negated_adjective, type, categories=None, normalized=False):
         self.column = column
         self.label = label
@@ -19,7 +19,7 @@ class AudioFeature:
 
 
 audio_features = [
-    AudioFeature(
+    TrackFeature(
         column='audio_danceability',
         label='Danceability',
         adjective='Danceable',
@@ -27,7 +27,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_energy',
         label='Energy',
         adjective='Energetic',
@@ -35,7 +35,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_speechiness',
         label='Speechiness',
         adjective='Speechy',
@@ -43,7 +43,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_acousticness',
         label='Acousticness',
         adjective='Acoustic',
@@ -51,7 +51,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_instrumentalness',
         label='Instrumentalness',
         adjective='Instrumental',
@@ -59,7 +59,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_liveness',
         label='Liveness',
         adjective='Live',
@@ -67,7 +67,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_valence',
         label='Valence',
         adjective='Happy',
@@ -75,7 +75,7 @@ audio_features = [
         type='numeric',
         normalized=True
     ),
-    AudioFeature(
+    TrackFeature(
         column='audio_tempo',
         label='Tempo',
         adjective='Fast',
@@ -105,7 +105,9 @@ def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str)
 
 
 def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_label: str, absolute_path: str, relative_path: str):
-    projected, first_component, second_component = principal_component_analysis(tracks)
+    projected, components = principal_component_analysis(tracks, 2)
+    first_component = components[0]
+    second_component = components[1]
 
     x = projected[:,0]
     y = projected[:,1]
@@ -141,7 +143,9 @@ def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_la
 
 def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_path):
     dp = DataProvider()
-    projected, first_component, second_component = principal_component_analysis(dp.tracks())
+    projected, components = principal_component_analysis(dp.tracks(), 2)
+    first_component = components[0]
+    second_component = components[1]
 
     x = projected[:,0]
     y = projected[:,1]
@@ -165,7 +169,7 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
     return md_image(f"Songs in {subset_label} compared to all songs", relative_path)
 
 
-def principal_component_analysis(tracks):
+def principal_component_analysis(tracks: pd.DataFrame, ndim: int):
     numeric_audio_columns = [
         feature.column 
         for feature in audio_features 
@@ -180,11 +184,15 @@ def principal_component_analysis(tracks):
     eigenvalue_indices = np.argsort(eigenvalues)[::-1]
     eigenvectors_sorted = eigenvectors[:,eigenvalue_indices]
 
-    projection_mat = (eigenvectors_sorted[:2]).T
+    projection_mat = (eigenvectors_sorted[:ndim]).T
 
     projected = centered.dot(projection_mat)
 
-    return (projected, eigenvectors_sorted[:,0], eigenvectors_sorted[:,1])
+    component_vectors = []
+    for i in range(ndim):
+        component_vectors.append(eigenvectors_sorted[:,i])
+
+    return (projected, component_vectors)
 
 
 def project(tracks, first_component, second_component):

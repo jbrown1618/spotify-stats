@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 
 from data.provider import DataProvider
 from summarize.tables.tracks_table import tracks_table
-from utils.audio_features import comparison_scatter_plot
+from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_truncated_table
 from utils.path import ensure_directory
 

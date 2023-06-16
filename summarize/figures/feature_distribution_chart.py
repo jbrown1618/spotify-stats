@@ -3,11 +3,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from data.provider import DataProvider
-from utils.audio_features import AudioFeature
+from utils.track_features import TrackFeature
 from utils.markdown import md_image
 from utils.settings import skip_figures
 
-def feature_distribution_chart(feature: AudioFeature, tracks: pd.DataFrame, absolute_path: str, relative_path: str):
+def feature_distribution_chart(feature: TrackFeature, tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     liked_sample = DataProvider().liked_tracks_sample()
 
     feature_data = tracks[feature.column]

@@ -1,6 +1,6 @@
 import pandas as pd
 from data.provider import DataProvider
-from summarize.pages.audio_features import make_audio_features_page
+from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 
@@ -19,7 +19,7 @@ def make_artist_summary(artist: pd.Series, \
 
     content += title(artist)
     content += image(artist)
-    content += [md_link(f"See Audio Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
+    content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
     content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
     content += playlists_section(artist, playlists)
     content += albums_section(tracks)
@@ -30,7 +30,7 @@ def make_artist_summary(artist: pd.Series, \
     with open(artist_overview_path(artist_name), "w") as f:
         f.write("\n".join(content))
 
-    make_audio_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
+    make_track_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
     make_clusters_page(tracks, artist_name, artist_clusters_path(artist_name), artist_clusters_figure_path(artist_name))
 
 
