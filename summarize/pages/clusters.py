@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 
 from data.provider import DataProvider
 from summarize.tables.tracks_table import tracks_table
-from utils.track_features import comparison_scatter_plot
+from utils.track_features import comparison_scatter_plot, principal_component_analysis
 from utils.markdown import md_truncated_table
 from utils.path import ensure_directory
 
@@ -16,16 +16,16 @@ IDEAL_CLUSTER_SIZE = 50.0
 def make_clusters_page(tracks: pd.DataFrame, description: str, path: str, figure_root_path: str):
     content = [f"# Clusters in {description}", ""]
 
-    clusters, centers  = get_clusters(tracks)
+    clusters = get_clusters(tracks)
 
     if clusters is None:
         return
 
     content += clusters_scatterplot(clusters, path, figure_root_path)
 
-    for i, center in centers.iterrows():
+    for i in clusters['cluster'].unique():
         cluster = clusters[clusters['cluster'] == i].index
-        content += cluster_section(i, cluster, center, path)
+        content += cluster_section(i, cluster, path)
 
     with open(path, "w") as f:
         f.write("\n".join(content))
@@ -47,7 +47,7 @@ def clusters_scatterplot(clusters: pd.DataFrame, path: str, figure_root_path: st
 
     return [scatter, '']
 
-def cluster_section(i: int, uris: pd.Series, center: pd.Series, path: str):
+def cluster_section(i: int, uris: pd.Series, path: str):
     tracks = DataProvider().tracks(uris).head(10)
 
     return [f'## Cluster #{i + 1}', '', str(len(uris)), '', md_truncated_table(tracks_table(tracks, path))]
@@ -62,20 +62,22 @@ def get_clusters(tracks: pd.DataFrame) -> pd.Series:
     clustering = get_clustering(tracks_data)
 
     clusters_df = pd.DataFrame(data={'cluster': clustering.labels_}, index=tracks_data.index)
-    centers_df = pd.DataFrame(data=clustering.cluster_centers_, columns=tracks_data.columns)
+    # centers_df = pd.DataFrame(data=clustering.cluster_centers_, columns=tracks_data.columns)
 
-    distance = clustering.transform(tracks_data)
+    # distance = clustering.transform(tracks_data)
     # One col for the distance to each cluster
 
-    return clusters_df, centers_df
+    return clusters_df#, centers_df
 
 
 def get_clustering(tracks_data: pd.DataFrame):
-    n = get_initial_cluster_count(tracks_data)
+    projected, components = principal_component_analysis(tracks_data, 5)
+    
+    n = get_initial_cluster_count(projected)
 
     clustering = None
     while n >= MIN_CLUSTERS and (clustering is None or is_bad_clustering(clustering)):
-        clustering = KMeans(n_clusters=n, n_init='auto', random_state=0).fit(tracks_data)
+        clustering = KMeans(n_clusters=n, n_init='auto', random_state=0).fit(projected)
         n -= 1
 
     print(pd.Series(clustering.labels_).value_counts())
