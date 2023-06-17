@@ -19,8 +19,9 @@ def make_artist_summary(artist: pd.Series, \
 
     content += title(artist)
     content += image(artist)
-    content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
-    content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
+    if len(tracks) > 10:
+        content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
+        content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
     content += playlists_section(artist, playlists)
     content += albums_section(tracks)
     content += labels_section(artist_name, tracks)
@@ -30,8 +31,9 @@ def make_artist_summary(artist: pd.Series, \
     with open(artist_overview_path(artist_name), "w") as f:
         f.write("\n".join(content))
 
-    make_track_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
-    make_clusters_page(tracks, artist_name, artist_clusters_path(artist_name), artist_clusters_figure_path(artist_name))
+    if len(tracks) > 10:
+        make_track_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
+        make_clusters_page(tracks, artist_name, artist_clusters_path(artist_name), artist_clusters_figure_path(artist_name))
 
 
 def title(artist):

@@ -30,8 +30,9 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += title(playlist_name)
     content += image(playlist_name, playlist_image_url)
     content += tracks_link(playlist_name, tracks)
-    content += [md_link(f"See Track Features", playlist_audio_features_path(playlist_name, playlist_path(playlist_name))), ""]
-    content += [md_link(f"See Clusters", playlist_clusters_path(playlist_name, playlist_path(playlist_name))), ""]
+    if len(tracks) > 10:
+        content += [md_link(f"See Track Features", playlist_audio_features_path(playlist_name, playlist_path(playlist_name))), ""]
+        content += [md_link(f"See Clusters", playlist_clusters_path(playlist_name, playlist_path(playlist_name))), ""]
     content += artists_section(playlist_name, tracks)
     content += albums_section(playlist_name, tracks)
     content += labels_section(playlist_name, tracks)
@@ -46,8 +47,9 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     with open(playlist_tracks_path(playlist_name), "w") as f:
         f.write("\n".join(tracks_content))
 
-    make_track_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name), playlist_audio_features_figure_path(playlist_name))
-    make_clusters_page(tracks, playlist_name, playlist_clusters_path(playlist_name), playlist_clusters_figure_path(playlist_name))
+    if len(tracks) > 10:
+        make_track_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name), playlist_audio_features_figure_path(playlist_name))
+        make_clusters_page(tracks, playlist_name, playlist_clusters_path(playlist_name), playlist_clusters_figure_path(playlist_name))
 
 
 def title(playlist_name):

@@ -85,15 +85,21 @@ track_features = [
     )
 ]
 
+numeric_column_names = [
+    feature.column 
+    for feature in track_features 
+    if feature.type == 'numeric'
+]
+
+pca_column_names = [
+    feature.column 
+    for feature in track_features 
+    if feature.type == 'numeric' and feature.normalized
+]
+
 
 def audio_pairplot(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
-    numeric_audio_columns = [
-        feature.column 
-        for feature in track_features 
-        if feature.type == 'numeric'
-    ]
-    
-    data = tracks[numeric_audio_columns]
+    data = tracks[numeric_column_names]
     if len(data) > 200:
         data = data.sample(n=200, random_state=0)
 
@@ -171,12 +177,7 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
 
 
 def principal_component_analysis(tracks: pd.DataFrame, ndim: int):
-    numeric_audio_columns = [
-        feature.column 
-        for feature in track_features 
-        if feature.type == 'numeric' and feature.normalized
-    ]
-    mat = tracks[numeric_audio_columns].to_numpy()
+    mat = tracks[pca_column_names].to_numpy()
     centered = center(mat)
     covariance = np.cov(centered, rowvar=False)
 
@@ -197,12 +198,7 @@ def principal_component_analysis(tracks: pd.DataFrame, ndim: int):
 
 
 def project(tracks, first_component, second_component):
-    numeric_audio_columns = [
-        feature.column 
-        for feature in track_features 
-        if feature.type == 'numeric' and feature.normalized
-    ]
-    mat = tracks[numeric_audio_columns].to_numpy()
+    mat = tracks[pca_column_names].to_numpy()
     centered = center(mat)
     projection_mat = np.vstack((first_component, second_component)).T
     return centered.dot(projection_mat)

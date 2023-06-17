@@ -23,8 +23,9 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content = []
     content += title(genre_name)
     content += [md_link(f"{len(tracks)} songs", genre_tracks_path(genre_name, genre_path(genre_name))), ""]
-    content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
-    content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
+    if len(tracks) > 10:
+        content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
+        content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks)
     content += albums_section(genre_name, tracks)
     content += labels_section(genre_name, tracks)
@@ -38,8 +39,9 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     with open(genre_tracks_path(genre_name), "w") as f:
         f.write("\n".join(tracks_content))
 
-    make_track_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
-    make_clusters_page(tracks, genre_name, genre_clusters_path(genre_name), genre_clusters_figure_path(genre_name))
+    if len(tracks) > 10:
+        make_track_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
+        make_clusters_page(tracks, genre_name, genre_clusters_path(genre_name), genre_clusters_figure_path(genre_name))
 
 
 def title(genre_name):

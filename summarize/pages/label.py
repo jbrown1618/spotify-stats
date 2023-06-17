@@ -18,8 +18,9 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     content = []
     content += title(label_name)
     content += [f"{len(tracks)} songs", ""]
-    content += [md_link(f"See Track Features", label_audio_features_path(label_name, label_path(label_name))), ""]
-    content += [md_link(f"See Clusters", label_clusters_path(label_name, label_path(label_name))), ""]
+    if len(tracks) > 10:
+        content += [md_link(f"See Track Features", label_audio_features_path(label_name, label_path(label_name))), ""]
+        content += [md_link(f"See Clusters", label_clusters_path(label_name, label_path(label_name))), ""]
     content += aliases(tracks)
     content += artists_section(label_name, tracks)
     content += albums_section(label_name, tracks)
@@ -29,8 +30,9 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     with open(label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
 
-    make_track_features_page(tracks, label_name, label_audio_features_path(label_name), label_audio_features_chart_path(label_name))
-    make_clusters_page(tracks, label_name, label_clusters_path(label_name), label_clusters_figure_path(label_name))
+    if len(tracks) > 10:
+        make_track_features_page(tracks, label_name, label_audio_features_path(label_name), label_audio_features_chart_path(label_name))
+        make_clusters_page(tracks, label_name, label_clusters_path(label_name), label_clusters_figure_path(label_name))
 
 
 
