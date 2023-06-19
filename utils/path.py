@@ -25,14 +25,13 @@ def clear_markdown():
 def clear_contents(path: str, exclude: typing.Iterable[str] = []):
     files = glob.glob(f'{path}/*')
     for f in files:
-        for exclusion_path in exclude:
-            if exclusion_path in f:
-                continue
+        if any([exclusion_path in f for exclusion_path in exclude]):
+            continue
 
         if os.path.isfile(f):
             os.remove(f)
         else:
-            clear_contents(f)
+            clear_contents(f, exclude)
 
 
 def images_path(relative_to=None):

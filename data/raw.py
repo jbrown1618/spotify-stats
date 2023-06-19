@@ -118,7 +118,8 @@ class RawData:
         next_latest_date_str = date_strings[-2]
 
         # Replace the most recent day of data if it is fewer than three days away from the previous day
-        should_replace_latest = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days <= 3
+        days_diff = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days
+        should_replace_latest = days_diff < 3 or this_day == latest_date_str
 
         if should_replace_latest:
             current_df = current_df[current_df['as_of_date'] != latest_date_str]
