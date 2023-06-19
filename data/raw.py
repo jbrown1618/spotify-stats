@@ -117,13 +117,14 @@ class RawData:
         latest_date_str = date_strings[-1]
         next_latest_date_str = date_strings[-2]
 
-        should_replace_latest = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days < 3
+        # Replace the most recent day of data if it is fewer than three days away from the previous day
+        should_replace_latest = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days <= 3
 
         if should_replace_latest:
-            # If the most recent day is within 3 days
             current_df = current_df[current_df['as_of_date'] != latest_date_str]
 
         value = pd.concat([value, current_df], axis=0)
+        return value
 
 
     def _prefix_df(self, key, df):
