@@ -61,7 +61,7 @@ class RawData:
             df = self._merge_all_years(key)
         else:
             df = pd.read_csv(data_path(key))
-            
+
         self._prefix_df(key, df)
 
         self._data[key] = df
@@ -90,10 +90,13 @@ class RawData:
         if key not in valid_data_sources:
             raise RuntimeError(f'Invalid data source {key}')
         
+        path = data_path(key)
+
         if key in persistent_data_sources:
             value = self._merge_persistent_data_source(key, value)
+            path = persistent_data_path(key, today.strftime('%Y'))
 
-        value.to_csv(data_path(key), index=False)
+        value.to_csv(path, index=False)
         self._prefix_df(key, value)
         self._data[key] = value
 
