@@ -1,11 +1,17 @@
 import os
 import glob
+import typing
 from utils.settings import output_dir
 from utils.util import file_name_friendly
 
 
-def clear_data():
-    clear_contents(data_path())
+persistent_data_sources = {
+    'top_tracks',
+    'top_artists'
+}
+
+def clear_non_persistent_data():
+    clear_contents(data_path(), exclude=persistent_data_sources)
 
 
 def clear_markdown():
@@ -16,9 +22,13 @@ def clear_markdown():
     clear_contents(images_path())
 
 
-def clear_contents(path: str):
+def clear_contents(path: str, exclude: typing.Iterable[str] = []):
     files = glob.glob(f'{path}/*')
     for f in files:
+        for exclusion_path in exclude:
+            if exclusion_path in f:
+                continue
+
         if os.path.isfile(f):
             os.remove(f)
         else:
@@ -610,6 +620,17 @@ def data_path(table_name=None, relative_to=None):
             "data",
             table_name + ".csv"
         ), 
+        relative_to
+    )
+
+
+def persistent_data_path(table_name: str, year: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "data",
+            table_name,
+            year + ".csv"
+        ),
         relative_to
     )
         

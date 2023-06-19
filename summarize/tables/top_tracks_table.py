@@ -1,8 +1,11 @@
 import pandas as pd
 
+from data.provider import DataProvider
 from utils.markdown import empty_header, md_image
 
-def top_tracks_table(top_tracks: pd.DataFrame, tracks: pd.DataFrame):
+def top_tracks_table(tracks: pd.DataFrame):
+    top_tracks = DataProvider().top_tracks(current=True)
+
     top_tracks_with_data = pd.merge(top_tracks, tracks, on="track_uri")
     short = top_tracks_with_data[top_tracks_with_data['term'] == 'short_term']
     medium = top_tracks_with_data[top_tracks_with_data['term'] == 'medium_term']

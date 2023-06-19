@@ -100,7 +100,7 @@ class DataProvider:
             out = out[out["album_uri"].isin(uris)]
         
         return out
-
+        
 
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
@@ -161,6 +161,17 @@ class DataProvider:
             track_artist = raw['track_artist']
             track_uris = set(track_artist[track_artist['artist_uri'] == artist_uri]['track_uri'])
             out = out[out["track_uri"].isin(track_uris)]
+
+        return out
+    
+
+    def top_tracks(self, current: bool = None):
+        out = RawData()['top_tracks']
+
+        if current:
+            most_recent_date = out['as_of_date'].iloc[0]
+            out = out[out['as_of_date'] == most_recent_date]
+            out = out.drop(columns=['as_of_date'])
 
         return out
     
@@ -239,6 +250,17 @@ class DataProvider:
             album_artist = raw['album_artist']
             uris = set(album_artist[album_artist['album_uri'] == album_uri]['artist_uri'])
             out = out[out['artist_uri'].isin(uris)]
+
+        return out
+    
+
+    def top_artists(self, current: bool = None):
+        out = RawData()['top_artists']
+
+        if current:
+            most_recent_date = out['as_of_date'].iloc[0]
+            out = out[out['as_of_date'] == most_recent_date]
+            out = out.drop(columns=['as_of_date'])
 
         return out
     

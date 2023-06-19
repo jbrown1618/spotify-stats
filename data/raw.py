@@ -1,7 +1,11 @@
+import os
+from datetime import datetime
 import pandas as pd
 
-from utils.path import data_path
+from utils.path import data_path, persistent_data_path, persistent_data_sources
 
+
+today = datetime.today()
 
 valid_data_sources = {
     'album_artist',
@@ -50,21 +54,73 @@ class RawData:
         if key not in valid_data_sources:
             raise RuntimeError(f'Invalid data source {key}')
 
-        if key not in self._data:
+        if key in self._data:
+            return self._data[key]
+        
+        if key in persistent_data_sources:
+            df = self._merge_all_years(key)
+        else:
             df = pd.read_csv(data_path(key))
-            self._prefix_df(key, df)
+            
+        self._prefix_df(key, df)
 
-            self._data[key] = df
-
+        self._data[key] = df
         return self._data[key]
+    
+
+    def _merge_all_years(self, key: str) -> pd.DataFrame:
+        year = today.strftime('%Y')
+        merged = None
+
+        while True:
+            df_path = persistent_data_path(key, year)
+            if not os.path.isfile(df_path):
+                return merged
+            
+            df_for_year = pd.read_csv(df_path)
+            if merged is None:
+                merged = df_for_year
+            else:
+                merged = pd.concat([merged, df_for_year], axis=0)
+
+            year = str(int(year) - 1)
+
     
     def __setitem__(self, key: str, value: pd.DataFrame):
         if key not in valid_data_sources:
             raise RuntimeError(f'Invalid data source {key}')
         
+        if key in persistent_data_sources:
+            value = self._merge_persistent_data_source(key, value)
+
         value.to_csv(data_path(key), index=False)
         self._prefix_df(key, value)
         self._data[key] = value
+
+
+    def _merge_persistent_data_source(self, key: str, value: pd.DataFrame) -> pd.DataFrame:
+        this_year = today.strftime('%Y')
+        this_day = today.strftime('%Y-%m-%d')
+        value['as_of_date'] = this_day
+        
+        current_file = persistent_data_path(key, this_year)
+        if not os.path.isfile(current_file):
+            return value
+        
+        current_df = pd.read_csv(current_file)
+        date_strings = [d for d in current_df['as_of_date'].unique()]
+        date_strings.sort()
+
+        latest_date_str = date_strings[-1]
+        next_latest_date_str = date_strings[-2]
+
+        should_replace_latest = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days < 3
+
+        if should_replace_latest:
+            # If the most recent day is within 3 days
+            current_df = current_df[current_df['as_of_date'] != latest_date_str]
+
+        value = pd.concat([value, current_df], axis=0)
 
 
     def _prefix_df(self, key, df):

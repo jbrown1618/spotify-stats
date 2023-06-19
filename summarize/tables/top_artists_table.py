@@ -1,10 +1,13 @@
 import pandas as pd
-from utils.artist import get_artist_link
 
+from data.provider import DataProvider
+from utils.artist import get_artist_link
 from utils.markdown import empty_header, md_image
 from utils.settings import output_dir
 
-def top_artists_table(top_artists: pd.DataFrame, artists: pd.DataFrame):
+def top_artists_table(artists: pd.DataFrame):
+    top_artists = DataProvider().top_artists(current=True)
+    
     top_artists_with_data = pd.merge(top_artists, artists, on="artist_uri")
     short = top_artists_with_data[top_artists_with_data['term'] == 'short_term']
     medium = top_artists_with_data[top_artists_with_data['term'] == 'medium_term']

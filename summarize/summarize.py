@@ -1,5 +1,4 @@
 from data.provider import DataProvider
-from data.raw import RawData
 from summarize.pages.artist import make_artist_summary
 from summarize.pages.genre import make_genre_summary
 from summarize.pages.label import make_label_summary
@@ -10,15 +9,11 @@ from utils.path import clear_markdown
 
 
 def summarize_results():
-    raw_data = RawData()
-    top_tracks = raw_data["top_tracks"]
-    top_artists = raw_data["top_artists"]
-
     clear_markdown()
 
     dp = DataProvider()
 
-    make_overview(dp.tracks(), top_tracks, top_artists)
+    make_overview(dp.tracks())
     make_errors(dp.tracks(), dp.albums())
 
     make_playlist_summary(None, dp.tracks(liked=True))

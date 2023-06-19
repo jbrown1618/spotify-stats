@@ -2,7 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 from data.raw import RawData
-from utils.path import clear_data, data_path
+from utils.path import clear_non_persistent_data, data_path
 from utils.settings import spotify_client_id, spotify_client_secret
 
 page_size = 50
@@ -46,7 +46,7 @@ def save_data():
     save_audio_features_data(sp)
 
     print('Saving data...')
-    clear_data()
+    clear_non_persistent_data()
 
     raw_data = RawData()
     raw_data["top_tracks"] = pd.DataFrame(top_tracks).sort_values(by=["term", "index"])

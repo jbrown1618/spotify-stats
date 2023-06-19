@@ -19,7 +19,7 @@ from utils.path import errors_path, overview_artist_graph_path, overview_artists
 from utils.settings import output_dir
 
 
-def make_overview(tracks_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artists: pd.DataFrame):
+def make_overview(tracks_full: pd.DataFrame):
     print("Generating Overview")
 
     content = []
@@ -29,8 +29,8 @@ def make_overview(tracks_full: pd.DataFrame, top_tracks: pd.DataFrame, top_artis
     content += [md_link(f"See Track Features", overview_audio_features_path(output_dir())), ""]
     content += [md_link(f"See Clusters", overview_clusters_path(output_dir())), ""]
     content += playlists_section()
-    content += artists_section(tracks_full, top_artists)
-    content += tracks_section(top_tracks, tracks_full)
+    content += artists_section(tracks_full)
+    content += tracks_section(tracks_full)
     content += genres_section(tracks_full)
     content += labels_section(tracks_full)
     content += errors()
@@ -54,13 +54,13 @@ def errors():
     return ['## Possible organizational errors', md_link("Possible organizational errors", errors_path(output_dir()))]
 
 
-def tracks_section(top_tracks: pd.DataFrame, tracks: pd.DataFrame):
+def tracks_section(tracks: pd.DataFrame):
     return [
         "## Tracks", 
         "", 
         "Top tracks of the last month, six months, and all time",
         "",
-        md_truncated_table(top_tracks_table(top_tracks, tracks), 10, "See top 50 tracks"), 
+        md_truncated_table(top_tracks_table(tracks), 10, "See top 50 tracks"), 
         ""
     ]
 
@@ -86,9 +86,9 @@ def playlists_section():
     ]
 
 
-def artists_section(tracks: pd.DataFrame, top_artists: pd.DataFrame):
+def artists_section(tracks: pd.DataFrame):
     artists = DataProvider().artists()
-    top_artists = md_truncated_table(top_artists_table(top_artists, artists), 10, "See top 50 artists")
+    top_artists = md_truncated_table(top_artists_table(artists), 10, "See top 50 artists")
     
     img = artists_bar_chart(tracks, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
     table_data = artists_table(tracks, output_dir())
