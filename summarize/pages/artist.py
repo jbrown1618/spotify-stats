@@ -1,5 +1,6 @@
 import pandas as pd
 from data.provider import DataProvider
+from summarize.figures.artist_rank_time_series import artist_rank_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
@@ -7,7 +8,8 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, genre_path, playlist_overview_path
+from utils.top_lists import get_term_length_phrase, top_list_terms
 
 def make_artist_summary(artist: pd.Series, \
                         tracks: pd.DataFrame, \
@@ -22,6 +24,8 @@ def make_artist_summary(artist: pd.Series, \
     if len(tracks) > 10:
         content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
         content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
+    content += top_artists_rank_section(artist)
+    content += top_tracks_section(artist)
     content += playlists_section(artist, playlists)
     content += albums_section(tracks)
     content += labels_section(artist_name, tracks)
@@ -42,6 +46,43 @@ def title(artist):
 
 def image(artist):
     return ["", md_image(artist["artist_name"], artist["artist_image_url"], 100), ""]
+
+
+def top_artists_rank_section(artist: pd.Series):
+    contents = []
+
+    current_entries = DataProvider().top_artists(current=True, artist_uris=[artist['artist_uri']])
+
+    if len(current_entries) > 0:
+        rankings_list = [f'{artist["artist_name"]} is currently:']
+        for term in top_list_terms:
+            entries_for_term = current_entries[current_entries['term'] == term]
+            if len(entries_for_term) == 0:
+                continue
+
+            rank_for_term = entries_for_term['index'].iloc[0]
+            if rank_for_term is None:
+                continue
+            
+            rankings_list.append(f'- The #{rank_for_term} artist of {get_term_length_phrase(term)}')
+
+        contents += rankings_list
+        
+    time_series = artist_rank_time_series(
+        artist['artist_uri'],
+        artist['artist_name'],
+        artist_rank_time_series_path(artist['artist_name']),
+        artist_rank_time_series_path(artist['artist_name'], artist_path(artist['artist_name']))
+    )
+
+    if time_series is not None:
+        contents += ["", time_series]
+
+    return contents
+
+
+def top_tracks_section(artist: pd.Series):
+    return []
 
 
 def playlists_section(artist: pd.Series, playlists: pd.DataFrame):

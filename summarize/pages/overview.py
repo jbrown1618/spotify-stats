@@ -15,6 +15,7 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
+from utils.top_lists import get_term_length_phrase, top_list_terms
 from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_link, md_summary_details, md_truncated_table
 from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path, overview_top_artists_time_series_path, overview_top_tracks_time_series_path
@@ -57,38 +58,29 @@ def errors():
 
 
 def tracks_section(tracks: pd.DataFrame):
-    short_term_img = top_tracks_time_series(
-        'short_term', 
-        10, 
-        overview_top_tracks_time_series_path('short_term'), 
-        overview_top_tracks_time_series_path('short_term', output_dir())
-    )
+    images = [
+        md_summary_details(
+            f'Top tracks of {get_term_length_phrase(term)} over time', 
+            top_tracks_time_series(
+                term, 
+                10, 
+                overview_top_tracks_time_series_path(term), 
+                overview_top_tracks_time_series_path(term, output_dir())
+            )
+        )
+        for term in top_list_terms
+    ]
 
-    medium_term_img = top_tracks_time_series(
-        'medium_term', 
-        10, 
-        overview_top_tracks_time_series_path('medium_term'), 
-        overview_top_tracks_time_series_path('medium_term', output_dir())
-    )
-
-    long_term_img = top_tracks_time_series(
-        'long_term', 
-        10, 
-        overview_top_tracks_time_series_path('long_term'), 
-        overview_top_tracks_time_series_path('long_term', output_dir())
-    )
-
-    return [
+    contents = [
         "## Tracks", 
         "", 
         "Top tracks of the last month, six months, and all time",
         "",
         md_truncated_table(top_tracks_table(tracks), 10, "See top 50 tracks"), 
-        "",
-        md_summary_details('Top tracks of the last month over time', short_term_img),
-        md_summary_details('Top tracks of the last six months over time', medium_term_img),
-        md_summary_details('Top tracks of all time over time', long_term_img)
+        ""
     ]
+
+    return contents + images
 
 
 def playlists_section():
@@ -115,26 +107,18 @@ def playlists_section():
 def artists_section(tracks: pd.DataFrame):
     artists = DataProvider().artists()
 
-    short_term_img = top_artists_time_series(
-        'short_term', 
-        10, 
-        overview_top_artists_time_series_path('short_term'), 
-        overview_top_artists_time_series_path('short_term', output_dir())
-    )
-
-    medium_term_img = top_artists_time_series(
-        'medium_term', 
-        10, 
-        overview_top_artists_time_series_path('medium_term'), 
-        overview_top_artists_time_series_path('medium_term', output_dir())
-    )
-
-    long_term_img = top_artists_time_series(
-        'long_term', 
-        10, 
-        overview_top_artists_time_series_path('long_term'), 
-        overview_top_artists_time_series_path('long_term', output_dir())
-    )
+    time_series_images = [
+        md_summary_details(
+            f'Top artists of {get_term_length_phrase(term)} over time', 
+            top_artists_time_series(
+                term, 
+                10, 
+                overview_top_artists_time_series_path(term), 
+                overview_top_artists_time_series_path(term, output_dir())
+            )
+        )
+        for term in top_list_terms
+    ]
 
     top_artists = md_truncated_table(top_artists_table(artists), 10, "See top 50 artists")
     
@@ -165,10 +149,8 @@ def artists_section(tracks: pd.DataFrame):
         "Top artists of the last month, six months, and all time",
         "",
         top_artists,
-        "", 
-        md_summary_details('Top artists of the last month over time', short_term_img),
-        md_summary_details('Top artists of the last six months over time', medium_term_img),
-        md_summary_details('Top artists of all time over time', long_term_img),
+        ""
+    ] + time_series_images + [
         "",
         "Artists by number of liked tracks",
         full_list, 

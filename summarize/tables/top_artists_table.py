@@ -4,6 +4,7 @@ from data.provider import DataProvider
 from utils.artist import get_artist_link
 from utils.markdown import empty_header, md_image
 from utils.settings import output_dir
+from utils.top_lists import get_term_length_description
 
 def top_artists_table(artists: pd.DataFrame):
     top_artists = DataProvider().top_artists(current=True)
@@ -17,15 +18,20 @@ def top_artists_table(artists: pd.DataFrame):
 
     table_data["Place"] = table_data["index"]
     table_data[empty_header(1)] = table_data.apply(lambda row: display_image(row, "_x"), axis=1)
-    table_data['Last month'] = table_data.apply(lambda row: display_artist(row, "_x"), axis=1)
+    table_data[get_term_length_description('short_term')] = table_data.apply(lambda row: display_artist(row, "_x"), axis=1)
     table_data[empty_header(2)] = table_data.apply(lambda row: display_image(row, "_y"), axis=1)
-    table_data['Last 6 months'] = table_data.apply(lambda row: display_artist(row, "_y"), axis=1)
+    table_data[get_term_length_description('medium_term')] = table_data.apply(lambda row: display_artist(row, "_y"), axis=1)
     table_data[empty_header(3)] = table_data.apply(lambda row: display_image(row, ""), axis=1)
-    table_data['All time'] = table_data.apply(lambda row: display_artist(row, ""), axis=1)
+    table_data[get_term_length_description('long_term')] = table_data.apply(lambda row: display_artist(row, ""), axis=1)
 
     table_data.sort_values(by="Place", ascending=True, inplace=True)
 
-    return table_data[['Place', empty_header(1), 'Last month', empty_header(2), 'Last 6 months', empty_header(3), 'All time']]
+    return table_data[[
+        'Place', 
+        empty_header(1), get_term_length_description('short_term'), 
+        empty_header(2), get_term_length_description('medium_term'), 
+        empty_header(3), get_term_length_description('long_term')
+    ]]
 
 
 def display_image(row: pd.Series, suffix: str):

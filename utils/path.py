@@ -200,6 +200,18 @@ def artist_clusters_figure_path(artist_name, relative_to=None):
     )
 
 
+def artist_rank_time_series_path(artist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "artists",
+            file_name_friendly(artist_name),
+            "rank_time_series.png"
+        ),
+        relative_to
+    )
+
+
 def playlists_path():
     return os.path.join(output_dir(), "playlists")
 

@@ -201,7 +201,7 @@ class DataProvider:
         if artist_uris is not None:
             out = out[out['artist_uri'].isin(artist_uris)]
 
-        return out
+        return out.copy()
     
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):

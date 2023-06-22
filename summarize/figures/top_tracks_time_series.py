@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 from utils.markdown import md_image
 from utils.settings import skip_figures
+from utils.top_lists import get_term_length_phrase
 
 def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_path: str) -> str:
     current_top_track_uris = DataProvider().top_tracks(term=term, top=top, current=True)['track_uri'].unique()
@@ -31,6 +32,6 @@ def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_pat
         ax.get_figure().savefig(absolute_path)
         plt.clf()
 
-    return md_image(f"Line chart of top tracks in a {term} window over time", relative_path)
+    return md_image(f"Line chart of top tracks of {get_term_length_phrase(term)} over time", relative_path)
 
 
