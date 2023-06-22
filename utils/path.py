@@ -92,6 +92,20 @@ def overview_artists_scatterplot_path(relative_to=None):
     )
 
 
+def overview_top_artists_time_series_path(term: str, relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "top_artists" ,f"{term}.png"),
+        relative_to
+    )
+
+
+def overview_top_tracks_time_series_path(term: str, relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "top_tracks" ,f"{term}.png"),
+        relative_to
+    )
+
+
 def overview_label_graph_path(relative_to=None):
     return relative_to_path(
         os.path.join("images", "overview", "labels.png"),

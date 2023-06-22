@@ -165,13 +165,41 @@ class DataProvider:
         return out
     
 
-    def top_tracks(self, current: bool = None):
+    def top_tracks(self, current: bool = None, top: int = None, term: str = None, track_uris: typing.Iterable[str] = None):
         out = RawData()['top_tracks']
 
         if current:
             most_recent_date = out['as_of_date'].iloc[0]
             out = out[out['as_of_date'] == most_recent_date]
             out = out.drop(columns=['as_of_date'])
+
+        if term is not None:
+            out = out[out['term'] == term]
+
+        if top is not None:
+            out = out[out['index'] <= top]
+
+        if track_uris is not None:
+            out = out[out['track_uri'].isin(track_uris)]
+
+        return out
+    
+    def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None):
+        out = RawData()['top_artists']
+
+        if current:
+            most_recent_date = out['as_of_date'].iloc[0]
+            out = out[out['as_of_date'] == most_recent_date]
+            out = out.drop(columns=['as_of_date'])
+
+        if term is not None:
+            out = out[out['term'] == term]
+
+        if top is not None:
+            out = out[out['index'] <= top]
+
+        if artist_uris is not None:
+            out = out[out['artist_uri'].isin(artist_uris)]
 
         return out
     
@@ -254,13 +282,22 @@ class DataProvider:
         return out
     
 
-    def top_artists(self, current: bool = None):
+    def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None):
         out = RawData()['top_artists']
 
         if current:
             most_recent_date = out['as_of_date'].iloc[0]
             out = out[out['as_of_date'] == most_recent_date]
             out = out.drop(columns=['as_of_date'])
+
+        if term is not None:
+            out = out[out['term'] == term]
+
+        if top is not None:
+            out = out[out['index'] <= top]
+
+        if artist_uris is not None:
+            out = out[out['artist_uri'].isin(artist_uris)]
 
         return out
     

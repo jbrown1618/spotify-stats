@@ -5,6 +5,8 @@ from data.raw import RawData
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
+from summarize.figures.top_artists_time_series import top_artists_time_series
+from summarize.figures.top_tracks_time_series import top_tracks_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.artists_table import artists_table
@@ -14,8 +16,8 @@ from summarize.tables.playlists_table import playlists_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
 from utils.track_features import comparison_scatter_plot
-from utils.markdown import md_link, md_truncated_table
-from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path
+from utils.markdown import md_link, md_summary_details, md_truncated_table
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path, overview_top_artists_time_series_path, overview_top_tracks_time_series_path
 from utils.settings import output_dir
 
 
@@ -55,13 +57,37 @@ def errors():
 
 
 def tracks_section(tracks: pd.DataFrame):
+    short_term_img = top_tracks_time_series(
+        'short_term', 
+        10, 
+        overview_top_tracks_time_series_path('short_term'), 
+        overview_top_tracks_time_series_path('short_term', output_dir())
+    )
+
+    medium_term_img = top_tracks_time_series(
+        'medium_term', 
+        10, 
+        overview_top_tracks_time_series_path('medium_term'), 
+        overview_top_tracks_time_series_path('medium_term', output_dir())
+    )
+
+    long_term_img = top_tracks_time_series(
+        'long_term', 
+        10, 
+        overview_top_tracks_time_series_path('long_term'), 
+        overview_top_tracks_time_series_path('long_term', output_dir())
+    )
+
     return [
         "## Tracks", 
         "", 
         "Top tracks of the last month, six months, and all time",
         "",
         md_truncated_table(top_tracks_table(tracks), 10, "See top 50 tracks"), 
-        ""
+        "",
+        md_summary_details('Top tracks of the last month over time', short_term_img),
+        md_summary_details('Top tracks of the last six months over time', medium_term_img),
+        md_summary_details('Top tracks of all time over time', long_term_img)
     ]
 
 
@@ -88,9 +114,31 @@ def playlists_section():
 
 def artists_section(tracks: pd.DataFrame):
     artists = DataProvider().artists()
+
+    short_term_img = top_artists_time_series(
+        'short_term', 
+        10, 
+        overview_top_artists_time_series_path('short_term'), 
+        overview_top_artists_time_series_path('short_term', output_dir())
+    )
+
+    medium_term_img = top_artists_time_series(
+        'medium_term', 
+        10, 
+        overview_top_artists_time_series_path('medium_term'), 
+        overview_top_artists_time_series_path('medium_term', output_dir())
+    )
+
+    long_term_img = top_artists_time_series(
+        'long_term', 
+        10, 
+        overview_top_artists_time_series_path('long_term'), 
+        overview_top_artists_time_series_path('long_term', output_dir())
+    )
+
     top_artists = md_truncated_table(top_artists_table(artists), 10, "See top 50 artists")
     
-    img = artists_bar_chart(tracks, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
+    bar_chart = artists_bar_chart(tracks, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
     table_data = artists_table(tracks, output_dir())
 
     summary = f"See all {len(table_data)} artists"
@@ -118,12 +166,16 @@ def artists_section(tracks: pd.DataFrame):
         "",
         top_artists,
         "", 
+        md_summary_details('Top artists of the last month over time', short_term_img),
+        md_summary_details('Top artists of the last six months over time', medium_term_img),
+        md_summary_details('Top artists of all time over time', long_term_img),
+        "",
         "Artists by number of liked tracks",
         full_list, 
         "", 
-        img, 
+        bar_chart, 
         "", 
-        scatterplot , 
+        scatterplot, 
         ""
     ]
 
