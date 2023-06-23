@@ -31,12 +31,18 @@ album_artist = []
 artist_genre = []
 
 def save_data():
-    auth_manager = SpotifyOAuth(client_id=spotify_client_id(), 
-                                client_secret=spotify_client_secret(), 
-                                redirect_uri="http://localhost:3000/",
-                                open_browser=False,
-                                scope="user-library-read user-top-read playlist-read-collaborative")
-    sp = spotipy.Spotify(auth_manager=auth_manager)
+    auth_manager = SpotifyOAuth(
+        client_id=spotify_client_id(), 
+        client_secret=spotify_client_secret(), 
+        redirect_uri="http://localhost:3000/",
+        open_browser=False,
+        scope="user-library-read user-top-read playlist-read-collaborative"
+    )
+    sp = spotipy.Spotify(
+        auth_manager=auth_manager,
+        requests_timeout=10,
+        retries=10
+    )
     save_top_tracks_data(sp)
     save_top_artists_data(sp)
     save_playlists_data(sp)
