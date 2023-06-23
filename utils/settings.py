@@ -65,7 +65,10 @@ def should_clear_markdown() -> bool:
 
 
 def should_generate_page(page_type: str) -> bool:
-    return settings["generate_only_page"] == None or settings["generate_only_page"].lower() == page_type.lower()
+    return settings["generate_only_page"] == None \
+        or settings["generate_only_page"].lower() == page_type.lower() \
+        or (settings["generate_only_page"].lower() + 's') == page_type.lower()\
+        or settings["generate_only_page"].lower() == (page_type.lower() + 's')
 
 
 def set_generate_only_page(page_type: str):
