@@ -100,6 +100,10 @@ class DataProvider:
             out = out[out["album_uri"].isin(uris)]
         
         return out
+    
+
+    def track(self, uri: str):
+        return self.tracks(uris=[uri]).iloc[0]
         
 
     def tracks(self, 
@@ -181,25 +185,6 @@ class DataProvider:
 
         if track_uris is not None:
             out = out[out['track_uri'].isin(track_uris)]
-
-        return out
-    
-    def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None):
-        out = RawData()['top_artists']
-
-        if current:
-            most_recent_date = out['as_of_date'].iloc[0]
-            out = out[out['as_of_date'] == most_recent_date]
-            out = out.drop(columns=['as_of_date'])
-
-        if term is not None:
-            out = out[out['term'] == term]
-
-        if top is not None:
-            out = out[out['index'] <= top]
-
-        if artist_uris is not None:
-            out = out[out['artist_uri'].isin(artist_uris)]
 
         return out.copy()
     
@@ -299,7 +284,7 @@ class DataProvider:
         if artist_uris is not None:
             out = out[out['artist_uri'].isin(artist_uris)]
 
-        return out
+        return out.copy()
     
 
     def track_counts_by_artist(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:

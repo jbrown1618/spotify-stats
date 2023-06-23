@@ -17,21 +17,38 @@ def top_artists_time_series(term: str, top: int, absolute_path: str, relative_pa
     data['Artist'] = data['artist_name']
     data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    ticks = [-1, -10, -20, -30, -40, -50]
+    lowest_rank = data['index'].max()
+    highest_rank = 1
+
+    y_max = -1 * (highest_rank - 1)
+    y_min = -1 * min(lowest_rank + 1, 30)
+
+    ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank]
     tick_labels = [str(-1 * i) for i in ticks]
+
+    max_date = data['Date'].max()
+    annotations = []
+    for _, entry in data[data['Date'] == max_date].iterrows():
+        text = '  ' + entry['Artist']
+        coords = (entry['Date'], entry['Place'] - 0.15)
+        annotations.append((text, coords))
 
     if not skip_figures():
         sns.set(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
+        sns.set_palette('bright')
 
-        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Artist')
+        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Artist', linewidth=3)
 
-        plt.xticks(rotation=90)
         plt.yticks(ticks=ticks, labels=tick_labels)
+        plt.ylim([y_min, y_max])
         sns.despine(bottom=True)
+
+        ax.get_legend().remove()
+        for text, coords in annotations:
+            plt.annotate(text, coords)
+
         ax.get_figure().savefig(absolute_path)
         plt.clf()
 
     return md_image(f"Line chart of top artists of {get_term_length_phrase(term)} over time", relative_path)
-
-

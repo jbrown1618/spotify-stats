@@ -1,6 +1,7 @@
 import pandas as pd
 from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series
+from summarize.figures.artist_top_tracks_time_series import artist_top_tracks_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
@@ -8,7 +9,7 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, top_list_terms
 
 def make_artist_summary(artist: pd.Series, \
@@ -78,11 +79,77 @@ def top_artists_rank_section(artist: pd.Series):
     if time_series is not None:
         contents += ["", time_series]
 
-    return contents
+    if len(contents) == 0:
+        return contents
+    
+    return ['## Artist Rank'] + contents
 
 
 def top_tracks_section(artist: pd.Series):
-    return []
+    contents = []
+
+    track_uris = DataProvider().tracks(artist_uri=artist['artist_uri'])['track_uri']
+    current_entries = DataProvider().top_tracks(current=True, track_uris=track_uris)
+
+    done = set()
+
+    for _, entry in current_entries.iterrows():
+        if entry['track_uri'] in done:
+            continue
+
+        track_uri = entry['track_uri']
+
+        entries_for_track = current_entries[current_entries['track_uri'] == track_uri]
+
+        short = entries_for_track[entries_for_track['term'] == 'short_term']
+        medium = entries_for_track[entries_for_track['term'] == 'medium_term']
+        long = entries_for_track[entries_for_track['term'] == 'long_term']
+
+        short_term_rank = short['index'].iloc[0] if len(short) > 0 else None
+        medium_term_rank = medium['index'].iloc[0] if len(medium) > 0 else None
+        long_term_rank = long['index'].iloc[0] if len(long) > 0 else None
+
+        contents += track_ranks_superlatives_list(
+            DataProvider().track(track_uri)['track_name'],
+            short_term_rank,
+            medium_term_rank,
+            long_term_rank
+        )
+
+        done.add(track_uri)
+
+    for term in top_list_terms:
+        time_series_for_term = artist_top_tracks_time_series(
+            artist['artist_uri'],
+            term,
+            artist_top_tracks_time_series_path(artist['artist_name'], term),
+            artist_top_tracks_time_series_path(artist['artist_name'], term, artist_path(artist['artist_name']))
+        )
+
+        if time_series_for_term == '':
+            continue
+
+        contents += ['', f'### Top tracks of {get_term_length_phrase(term)} over time', '', time_series_for_term]
+
+    if len(contents) == 0:
+        return contents
+    
+    return ['## Top Tracks', ''] + contents
+
+
+def track_ranks_superlatives_list(track_name: str, short_term_rank: int, medium_term_rank: int, long_term_rank: int):
+    superlatives_list = [f'- {track_name} is:']
+
+    if short_term_rank is not None:
+        superlatives_list.append(f'    - the #{short_term_rank} track of {get_term_length_phrase("short_term")}') 
+
+    if medium_term_rank is not None:
+        superlatives_list.append(f'    - the #{medium_term_rank} track of {get_term_length_phrase("medium_term")}') 
+
+    if long_term_rank is not None:
+        superlatives_list.append(f'    - the #{long_term_rank} track of {get_term_length_phrase("long_term")}') 
+
+    return superlatives_list
 
 
 def playlists_section(artist: pd.Series, playlists: pd.DataFrame):
