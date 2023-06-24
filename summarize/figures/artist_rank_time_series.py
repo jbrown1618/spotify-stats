@@ -14,7 +14,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
                                 .agg({"index": "count"})\
                                 .rename(columns={"index": "entry_count"})\
                                 .reset_index()
-    terms_with_sufficient_data = entry_counts_by_term[entry_counts_by_term['entry_count'] > 2]['term']
+    terms_with_sufficient_data = entry_counts_by_term[entry_counts_by_term['entry_count'] > 2]['term'].unique()
 
     data = data[data['term'].isin(terms_with_sufficient_data)]
 
