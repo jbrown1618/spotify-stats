@@ -2,7 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 from data.raw import RawData
-from utils.path import clear_non_persistent_data, data_path
+from utils.path import clear_non_persistent_data
 from utils.settings import spotify_client_id, spotify_client_secret
 
 page_size = 50
