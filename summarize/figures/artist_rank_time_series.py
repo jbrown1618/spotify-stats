@@ -25,6 +25,12 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
     data['Term'] = data['term'].apply(get_term_length_description)
     data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
+    if data.index.has_duplicates():
+        duplicates = data[data.index.duplicated(keep=False)]
+        print(duplicates.head(100))
+        # Reset the index to avoid the crash for now
+        data = data.reset_index()
+
     lowest_rank = data['index'].max()
     highest_rank = data['index'].min()
 
@@ -43,6 +49,12 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
 
         text = '  ' + entry_at_max_date['Term']
         coords = (entry_at_max_date['Date'], entry_at_max_date['Place'] - 0.15)
+
+        for _, c in annotations:
+            if c == coords:
+                # Offset text for any annotations in the same location
+                coords = (coords[0], coords[1] + 0.15)
+    
         annotations.append((text, coords))
 
     if not skip_figures():
