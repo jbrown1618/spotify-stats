@@ -25,8 +25,6 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
     data['Term'] = data['term'].apply(get_term_length_description)
     data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    data = data.reset_index()
-
     lowest_rank = data['index'].max()
     highest_rank = data['index'].min()
 
