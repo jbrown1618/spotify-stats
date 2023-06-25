@@ -25,7 +25,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
     data['Term'] = data['term'].apply(get_term_length_description)
     data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    if data.index.has_duplicates():
+    if data.index.has_duplicates:
         duplicates = data[data.index.duplicated(keep=False)]
         print(duplicates.head(100))
         # Reset the index to avoid the crash for now
