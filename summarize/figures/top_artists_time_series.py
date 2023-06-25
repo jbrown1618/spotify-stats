@@ -16,6 +16,7 @@ def top_artists_time_series(term: str, top: int, absolute_path: str, relative_pa
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
     data['Artist'] = data['artist_name']
     data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
+    data = data.reset_index()
 
     lowest_rank = data['index'].max()
     highest_rank = 1
