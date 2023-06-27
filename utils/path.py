@@ -249,17 +249,6 @@ def playlist_overview_path(playlist_name, relative_to=None):
     )
 
 
-def playlist_tracks_path(playlist_name, relative_to=None):
-    return relative_to_path(
-        os.path.join(
-            "playlists",
-            file_name_friendly(playlist_name),
-            "tracks.md"
-        ), 
-        relative_to
-    )
-
-
 def playlist_audio_features_path(playlist_name, relative_to=None):
     return relative_to_path(
         os.path.join(

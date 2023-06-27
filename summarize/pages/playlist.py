@@ -16,7 +16,8 @@ from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_tracks_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
+from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
+from utils.util import spotify_url
 
 
 def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
@@ -29,7 +30,7 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content = []
     content += title(playlist_name)
     content += image(playlist_name, playlist_image_url)
-    content += tracks_link(playlist_name, tracks)
+    content += tracks_link(playlist_uri, tracks)
     if len(tracks) > 10:
         content += [md_link(f"See Track Features", playlist_audio_features_path(playlist_name, playlist_path(playlist_name))), ""]
         content += [md_link(f"See Clusters", playlist_clusters_path(playlist_name, playlist_path(playlist_name))), ""]
@@ -39,13 +40,8 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += genres_section(playlist_name, tracks)
     content += years_section(playlist_name, tracks)
 
-    tracks_content = tracks_section(playlist_name, tracks)
-
     with open(playlist_overview_path(playlist_name), "w") as f:
         f.write("\n".join(content))
-
-    with open(playlist_tracks_path(playlist_name), "w") as f:
-        f.write("\n".join(tracks_content))
 
     if len(tracks) > 10:
         make_track_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name), playlist_audio_features_figure_path(playlist_name))
@@ -63,11 +59,16 @@ def image(playlist_name, playlist_image_url):
     return ["", md_image(playlist_name, playlist_image_url, 100), ""]
 
 
-def tracks_link(playlist_name: str, tracks: pd.DataFrame):
+def tracks_link(playlist_uri: str, tracks: pd.DataFrame):
     track_count = len(tracks)
     liked_track_count = tracks["track_liked"].sum()
-    text = f"{track_count} songs" if track_count == liked_track_count else f"{track_count} songs ({liked_track_count} liked)"
-    return [md_link(text, playlist_tracks_path(playlist_name, playlist_path(playlist_name))), ""]
+    text = f"{track_count} tracks" if track_count == liked_track_count else f"{track_count} tracks ({liked_track_count} liked)"
+
+    # The Liked Songs playlist has no URI
+    if playlist_uri is None:
+        return [text, ""]
+
+    return [md_link(text + " 🔗", spotify_url(playlist_uri)), ""]
 
 
 def artists_section(playlist_name, playlist_full: pd.DataFrame):
@@ -190,9 +191,3 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         md_table(tracks_table(tracks_for_year, playlist_path(playlist_name), chronological=True)),
         ""
     ]
-
-
-def tracks_section(playlist_name: str, playlist_full: pd.DataFrame):
-    display_tracks = tracks_table(playlist_full, playlist_path(playlist_name))
-    table = md_table(display_tracks)
-    return [f"# Tracks in {playlist_name}", "", table, ""]

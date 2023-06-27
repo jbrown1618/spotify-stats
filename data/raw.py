@@ -124,7 +124,12 @@ class RawData:
         if should_replace_latest:
             current_df = current_df[current_df['as_of_date'] != latest_date_str]
 
-        value = pd.concat([value, current_df], axis=0).reset_index()
+        value = pd.concat([value, current_df], axis=0).reset_index(drop=True)
+
+        # Temporary
+        if 'level_0' in value.columns:
+            value = value.drop(columns=['level_0'])
+
         return value
 
 

@@ -10,10 +10,14 @@ def get_id(uri: str):
 
 
 def spotify_link(uri: str):
+    return md_link("🔗", spotify_url(uri))
+
+
+def spotify_url(uri: str):
     pieces = uri.split(":")
     type = pieces[1]
     id = pieces[2]
-    return md_link("🔗", f"https://open.spotify.com/{type}/{id}")
+    return f"https://open.spotify.com/{type}/{id}"
 
 
 def file_name_friendly(text: str):
