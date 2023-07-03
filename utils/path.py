@@ -10,9 +10,6 @@ persistent_data_sources = {
     'top_artists'
 }
 
-def clear_non_persistent_data():
-    clear_contents(data_path(), exclude=persistent_data_sources)
-
 
 def clear_markdown():
     clear_contents(artists_path())
@@ -659,6 +656,10 @@ def persistent_data_path(table_name: str, year: str, relative_to=None):
         ),
         relative_to
     )
+
+
+def data_cache_stamp_path(table_name: str, relative_to=None):
+    return relative_to_path(os.path.join("data", f"{table_name}_cache_stamp"), relative_to)
         
 
 def relative_to_path(destination, relative_to=None):
