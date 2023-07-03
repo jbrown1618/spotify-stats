@@ -10,9 +10,6 @@ persistent_data_sources = {
     'top_artists'
 }
 
-def clear_non_persistent_data():
-    clear_contents(data_path(), exclude=persistent_data_sources)
-
 
 def clear_markdown():
     clear_contents(artists_path())

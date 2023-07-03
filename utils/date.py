@@ -1,8 +1,20 @@
 import math
+from datetime import datetime
 import pandas as pd
 from utils.markdown import empty_header, md_table, md_image
 
 from utils.util import first
+
+__today = datetime.today()
+def today():
+    global __today
+    return __today
+
+def this_year():
+    return today().strftime('%Y')
+
+def this_date():
+    return today().strftime('%Y-%m-%d')
 
 def release_year(release_date:str):
     first_four = release_date[0:4]

@@ -2,7 +2,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 from data.raw import RawData
-from utils.path import clear_non_persistent_data
 from utils.settings import spotify_client_id, spotify_client_secret
 
 page_size = 50
@@ -51,22 +50,19 @@ def save_data():
     save_artists_data(sp)
     save_audio_features_data(sp)
 
-    print('Saving data...')
-    clear_non_persistent_data()
-
     raw_data = RawData()
-    raw_data["top_tracks"] = pd.DataFrame(top_tracks).sort_values(by=["term", "index"])
-    raw_data["top_artists"] = pd.DataFrame(top_artists).sort_values(by=["term", "index"])
-    raw_data["playlists"] = pd.DataFrame(playlists_data).sort_values(by="uri")
-    raw_data["tracks"] = pd.DataFrame(tracks_data).sort_values(by="uri")
-    raw_data["artists"] = pd.DataFrame(artists_data).sort_values(by="uri")
-    raw_data["albums"] = pd.DataFrame(albums_data).sort_values(by="uri")
-    raw_data["liked_tracks"] = pd.DataFrame(liked_tracks).sort_values(by="track_uri")
-    raw_data["playlist_track"] = pd.DataFrame(playlist_track).sort_values(by=["playlist_uri", "track_uri"])
-    raw_data["track_artist"] = pd.DataFrame(track_artist).sort_values(by=["artist_index", "track_uri", "artist_uri"])
-    raw_data["album_artist"] = pd.DataFrame(album_artist).sort_values(by=["artist_uri", "album_uri"])
-    raw_data["audio_features"] = pd.DataFrame(audio_features).sort_values(by="track_uri")
-    raw_data["artist_genre"] = pd.DataFrame(artist_genre).sort_values(by=["artist_uri", "genre"])
+    raw_data["top_tracks"] = pd.DataFrame(top_tracks)
+    raw_data["top_artists"] = pd.DataFrame(top_artists)
+    raw_data["playlists"] = pd.DataFrame(playlists_data)
+    raw_data["tracks"] = pd.DataFrame(tracks_data)
+    raw_data["artists"] = pd.DataFrame(artists_data)
+    raw_data["albums"] = pd.DataFrame(albums_data)
+    raw_data["liked_tracks"] = pd.DataFrame(liked_tracks)
+    raw_data["playlist_track"] = pd.DataFrame(playlist_track)
+    raw_data["track_artist"] = pd.DataFrame(track_artist)
+    raw_data["album_artist"] = pd.DataFrame(album_artist)
+    raw_data["audio_features"] = pd.DataFrame(audio_features)
+    raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
 
 def save_top_tracks_data(sp: spotipy.Spotify):
