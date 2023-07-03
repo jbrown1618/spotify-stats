@@ -238,13 +238,17 @@ class DataProvider:
                 .agg({"track_uri": "count"})\
                 .reset_index()
             artist_all_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
-
             artist_track_counts = pd.merge(artist_liked_tracks, artist_all_track_counts, how="outer", on="artist_uri")
-            artist_track_counts.fillna(0, inplace=True)
             
-            artist_track_counts["artist_has_page"] = (artist_track_counts["artist_track_count"] >= 10) & (artist_track_counts["artist_liked_track_count"] > 0)
+            artists = pd.merge(raw['artists'], artist_track_counts, on="artist_uri", how="outer")
+            artists['artist_track_count'].fillna(0, inplace=True)
+            artists['artist_liked_track_count'].fillna(0, inplace=True)
+            
+            artists["artist_has_page"] = (artists["artist_track_count"] >= 50) \
+                | ((artists["artist_track_count"] >= 10) & (artists["artist_liked_track_count"] > 0)) \
+                | (artists["artist_liked_track_count"] >= 5)
 
-            self._artists = pd.merge(raw['artists'], artist_track_counts, on="artist_uri")
+            self._artists = artists
 
         out = self._artists
 
@@ -256,8 +260,10 @@ class DataProvider:
 
         if track_uri is not None:
             track_artist = raw['track_artist']
-            uris = track_artist[track_artist['track_uri'] == track_uri]['artist_uri']
-            out = out[out['artist_uri'].isin(uris)]
+            artist_entries_for_track = track_artist[track_artist['track_uri'] == track_uri]
+            out = pd.merge(artist_entries_for_track, out, on="artist_uri")\
+                .sort_values(by="artist_index", ascending=True)\
+                .drop(columns=["artist_index", "track_uri"])
 
         if album_uri is not None:
             album_artist = raw['album_artist']
@@ -365,8 +371,17 @@ class DataProvider:
         track_genre = pd.merge(track_primary_artist, artist_genre, on="artist_uri")
         track_genre.drop(columns=["artist_uri"], inplace=True)
 
+        genre_artist_counts = artist_genre.groupby('genre').agg({'artist_uri': 'count'}).reset_index()
         genre_track_counts = track_genre.groupby("genre").agg({"track_uri": "count", "track_liked": "sum"}).reset_index()
-        genres_with_page = set(genre_track_counts[(genre_track_counts["track_uri"] >= 40) & (genre_track_counts["track_liked"] > 0)]["genre"])
+        genre_counts = pd.merge(genre_track_counts, genre_artist_counts, on="genre")
+        genres_with_page = set(genre_counts[
+            (genre_counts["artist_uri"] > 1) \
+            & (
+                (genre_counts["track_uri"] >= 50) \
+                | ((genre_counts["track_uri"] >= 30) & (genre_counts["track_liked"] > 0)) \
+                | (genre_counts["track_liked"] > 20)
+            )
+        ]["genre"])
 
         track_genre['genre_has_page'] = track_genre['genre'].isin(genres_with_page)
         artist_genre['genre_has_page'] = artist_genre['genre'].isin(genres_with_page)

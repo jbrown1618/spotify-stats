@@ -6,7 +6,8 @@ from utils.markdown import empty_header, md_image
 from utils.settings import output_dir
 from utils.top_lists import get_term_length_description
 
-def top_artists_table(artists: pd.DataFrame):
+def top_artists_table():
+    artists = DataProvider().artists()
     top_artists = DataProvider().top_artists(current=True)
     
     top_artists_with_data = pd.merge(top_artists, artists, on="artist_uri")

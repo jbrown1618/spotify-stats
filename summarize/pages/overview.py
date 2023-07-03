@@ -105,8 +105,6 @@ def playlists_section():
 
 
 def artists_section(tracks: pd.DataFrame):
-    artists = DataProvider().artists()
-
     time_series_images = [
         md_summary_details(
             f'Top artists of {get_term_length_phrase(term)} over time', 
@@ -120,7 +118,7 @@ def artists_section(tracks: pd.DataFrame):
         for term in top_list_terms
     ]
 
-    top_artists = md_truncated_table(top_artists_table(artists), 10, "See top 50 artists")
+    top_artists = md_truncated_table(top_artists_table(), 10, "See top 50 artists")
     
     bar_chart = artists_bar_chart(tracks, overview_artist_graph_path(), overview_artist_graph_path(output_dir()))
     table_data = artists_table(tracks, output_dir())
