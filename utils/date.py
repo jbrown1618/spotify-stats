@@ -11,10 +11,10 @@ def today():
     return __today
 
 def this_year():
-    return today.strftime('%Y')
+    return today().strftime('%Y')
 
 def this_date():
-    return today.strftime('%Y-%m-%d')
+    return today().strftime('%Y-%m-%d')
 
 def release_year(release_date:str):
     first_four = release_date[0:4]

@@ -2,60 +2,27 @@ import os
 from datetime import datetime
 import pandas as pd
 
-from utils.date import this_date, this_year
-from utils.path import data_path, persistent_data_path
-
-
-class RawData:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(RawData, cls).__new__(cls)
-            cls._instance._initialized = False
-
-        return cls._instance
-    
-
-    def __init__(self):
-        if self._initialized:
-            return
-        
-        self._data = {}
-        self._initialized = True
-
-    
-    def __getitem__(self, key: str) -> pd.DataFrame:
-        source = data_sources.get(key, None)
-        if source is None:
-            raise RuntimeError(f'Invalid data source {key}')
-        
-        return source.data()
-
-    
-    def __setitem__(self, key: str, value: pd.DataFrame):
-        source = data_sources.get(key, None)
-        if source is None:
-            raise RuntimeError(f'Invalid data source {key}')
-        
-        source.set_data(value)
+from utils.date import this_date, this_year, today
+from utils.path import data_cache_stamp_path, data_path, persistent_data_path
 
 
 class DataSource:
     short_cache = 30
     long_cache = 365
 
-    def __init__(self, key: str, index: list[str], prefix: str = None, cache_days: int = None, persistent: bool = False):
+    def __init__(self, key: str, index: list[str], prefix: str = None, cache_days: int = None, persistent: bool = False, source_key: str = None):
         self.key = key
         self.index = index
         self.prefix = prefix
         self.cache_days = cache_days
         self.persistent = persistent
+        self.source_key = source_key
 
-        self._cache_stamp = None
         self._value: pd.DataFrame = None
-
-        data_sources[key] = self
+        self._cached_uris: set[str] = None
+        if not self.__is_cached() and not self.persistent and os.path.isfile(data_path(self.key)):
+            print(f'Removing existing {self.key} data')
+            os.remove(data_path(self.key))
 
 
     def data(self) -> pd.DataFrame:
@@ -68,7 +35,7 @@ class DataSource:
         else:
             df = pd.read_csv(data_path(self.key))
 
-        self._prefix_df(df)
+        self.__prefix_df(df)
 
         self._value = df
         return self._value
@@ -76,16 +43,50 @@ class DataSource:
 
     def set_data(self, value: pd.DataFrame):
         print(f'Updating {self.key} data')
+        if len(value) == 0:
+            return
+        
         value = value.sort_values(by=self.index)
+        self.__prefix_df(value)
+
         path = data_path(self.key)
 
         if self.persistent:
             value = self._merge_persistent_data_source(value)
             path = persistent_data_path(self.key, this_year())
 
+        if self.__is_cached():
+            cache_col = self.__prefix_col(self.index[0])
+            existing = self.data()
+            value = value[~value[cache_col].isin(self.cached_uris())]
+            value = pd.concat([value, existing], axis=0)\
+                .reset_index(drop=True)\
+                .sort_values(by=cache_col)
+
         value.to_csv(path, index=False)
-        self._prefix_df(value)
         self._value = value
+
+        if self.__is_cacheable() and not self.__is_cached():
+            with open(data_cache_stamp_path(self.key), 'w') as f:
+                f.write(this_date())
+
+
+    def cached_uris(self) -> set[str]:
+        if not self.__is_cacheable():
+            raise RuntimeError('Invalid data source for cached URIs')
+        
+        if self._cached_uris is not None:
+            return self._cached_uris
+        
+        if not self.__is_cached():
+            self._cached_uris = set()
+            return self._cached_uris
+        
+        cache_col = self.__prefix_col(self.index[0])
+        existing = self.data()
+
+        self._cached_uris = set(existing[cache_col])
+        return self._cached_uris
 
 
     def _merge_all_years(self) -> pd.DataFrame:
@@ -130,17 +131,50 @@ class DataSource:
         value = pd.concat([value, current_df], axis=0).reset_index(drop=True)
 
         return value
+    
+
+    def __is_cacheable(self):
+        if self.cache_days is None:
+            return False
+        
+        if self.cache_days == 0:
+            return False
+        
+        if len(self.index) != 1:
+            return False
+        
+        return True
+    
+
+    def __is_cached(self):
+        if not self.__is_cacheable():
+            return False
+        
+        cache_stamp_path = data_cache_stamp_path(self.key)
+        if not os.path.isfile(cache_stamp_path):
+            return False
+        
+        if not os.path.isfile(data_path(self.key)):
+            return False
+        
+        with open(cache_stamp_path) as f:
+            contents = f.read().strip()
+
+        cache_datetime = datetime.strptime(contents, '%Y-%m-%d')
+        days_since_cache = (cache_datetime - today()).days
+
+        return days_since_cache <= self.cache_days
 
 
-    def _prefix_df(self, df: pd.DataFrame):
+    def __prefix_df(self, df: pd.DataFrame):
         if self.prefix is None:
             return
         
-        df.columns = [self._prefix_col(col) for col in df.columns]
+        df.columns = [self.__prefix_col(col) for col in df.columns]
 
     
-    def _prefix_col(self, col: str):
-        prefixes = {s.prefix for s in data_sources.values() if s.prefix is not None}
+    def __prefix_col(self, col: str):
+        prefixes = {"playlist_", "track_", "album_", "audio_", "artist_"}
 
         for other_prefix in prefixes:
             if col.startswith(other_prefix):
@@ -149,19 +183,65 @@ class DataSource:
         return self.prefix + col
 
 
-data_sources: dict[str, DataSource] = {}
+class RawData:
+    _instance = None
 
-DataSource('playlists',      index=["uri"],       prefix="playlist_")
-DataSource('tracks',         index=["uri"],       prefix="track_",    cache_days=DataSource.short_cache)
-DataSource('albums',         index=["uri"],       prefix="album_",    cache_days=DataSource.short_cache)
-DataSource('audio_features', index=["track_uri"], prefix="audio_",    cache_days=DataSource.long_cache)
-DataSource('artists',        index=["uri"],       prefix="artist_",   cache_days=DataSource.short_cache)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(RawData, cls).__new__(cls)
+            cls._instance._initialized = False
 
-DataSource('album_artist',   index=["artist_uri", "album_uri"])
-DataSource('artist_genre',   index=["artist_uri", "genre"])
-DataSource('liked_tracks',   index=["track_uri"])
-DataSource('playlist_track', index=["playlist_uri", "track_uri"])
-DataSource('track_artist',   index=["track_uri", "artist_uri"])
+        return cls._instance
+    
 
-DataSource('top_artists',    index=["term", "index"], persistent=True)
-DataSource('top_tracks',     index=["term", "index"], persistent=True)
+    def __init__(self):
+        if self._initialized:
+            return
+        
+        self._data_sources: dict[str, DataSource] = {}
+
+        self.__add_data_source(DataSource('playlists',      index=["uri"],       prefix="playlist_"))
+        self.__add_data_source(DataSource('tracks',         index=["uri"],       prefix="track_"))
+        self.__add_data_source(DataSource('albums',         index=["uri"],       prefix="album_",    cache_days=DataSource.short_cache))
+        self.__add_data_source(DataSource('audio_features', index=["track_uri"], prefix="audio_",    cache_days=DataSource.long_cache))
+        self.__add_data_source(DataSource('artists',        index=["uri"],       prefix="artist_",   cache_days=DataSource.short_cache))
+        
+        self.__add_data_source(DataSource('album_artist',   index=["artist_uri", "album_uri"]))
+        self.__add_data_source(DataSource('artist_genre',   index=["artist_uri", "genre"]))
+        self.__add_data_source(DataSource('liked_tracks',   index=["track_uri"]))
+        self.__add_data_source(DataSource('playlist_track', index=["playlist_uri", "track_uri"]))
+        self.__add_data_source(DataSource('track_artist',   index=["track_uri", "artist_uri"]))
+        
+        self.__add_data_source(DataSource('top_artists',    index=["term", "index"], persistent=True))
+        self.__add_data_source(DataSource('top_tracks',     index=["term", "index"], persistent=True))
+        
+        self._initialized = True
+
+    
+    def __getitem__(self, key: str) -> pd.DataFrame:
+        source = self._data_sources.get(key, None)
+        if source is None:
+            raise RuntimeError(f'Invalid data source {key}')
+        
+        return source.data()
+
+    
+    def __setitem__(self, key: str, value: pd.DataFrame):
+        source = self._data_sources.get(key, None)
+        if source is None:
+            raise RuntimeError(f'Invalid data source {key}')
+        
+        source.set_data(value)
+
+
+    def cached_uris(self, key: str) -> set[str]:
+        source = self._data_sources.get(key, None)
+        if source is None:
+            raise RuntimeError(f'Invalid data source {key}')
+        
+        return source.cached_uris()
+
+
+    def __add_data_source(self, ds: DataSource):
+        self._data_sources[ds.key] = ds
+

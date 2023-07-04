@@ -189,6 +189,9 @@ def save_albums_data(sp: spotipy.Spotify):
 def queue_album(album):
     if album["uri"] in queued_albums:
         return
+    
+    if album["uri"] in RawData().cached_uris("albums"):
+        return
 
     queued_albums.add(album["uri"])
 
@@ -230,6 +233,9 @@ def save_artists_data(sp: spotipy.Spotify):
 def queue_artist(artist):
     if artist["uri"] in queued_artists:
         return
+    
+    if artist["uri"] in RawData().cached_uris("artists"):
+        return
 
     queued_artists.add(artist["uri"])
 
@@ -258,7 +264,13 @@ def artist_data(artist):
 
 
 def save_audio_features_data(sp: spotipy.Spotify):
-    queue = [track_uri for track_uri in processed_tracks]
+    cached = RawData().cached_uris("audio_features")
+    queue = [
+        track_uri 
+        for track_uri in processed_tracks 
+        if track_uri not in cached
+    ]
+
     while len(queue) > 0:
         next = queue[0:page_size]
         queue = queue[page_size:]
