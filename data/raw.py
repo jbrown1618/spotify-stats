@@ -42,12 +42,13 @@ class RawData:
 
 
 class DataSource:
-    def __init__(self, source: str, key: str, index: list[str], prefix: str = None, persistent: bool = False):
+    def __init__(self, source: str, key: str, index: list[str], prefix: str = None, persistent: bool = False, merge_on_set: bool = False):
         self.source = source
         self.key = key
         self.index = index
         self.prefix = prefix
         self.persistent = persistent
+        self.merge_on_set = merge_on_set
 
         self._value: pd.DataFrame = None
 
@@ -78,6 +79,12 @@ class DataSource:
         if self.persistent:
             value = self._merge_persistent_data_source(value)
             path = persistent_data_path(self.source, self.key, this_year())
+
+        if self.merge_on_set and os.path.isfile(path):
+            existing = pd.read_csv(path)
+            value = pd.concat([existing, value])
+            value = value.drop_duplicates(subset=self.index)
+            value = value.sort_values(by=self.index)
 
         value.to_csv(path, index=False)
         self._prefix_df(value)
@@ -162,12 +169,13 @@ DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 DataSource('spotify', 'top_artists',    index=["term", "index"], persistent=True)
 DataSource('spotify', 'top_tracks',     index=["term", "index"], persistent=True)
 
-DataSource('musicbrainz', 'mb_recordings', index=['mbid'])
-DataSource('musicbrainz', 'mb_artists', index=['mbid'])
-DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"])
-DataSource('musicbrainz', 'mb_artist_relationships', index=["artist_mbid", "other_mbid", "relationship_type"])
-DataSource('musicbrainz', 'mb_tags', index=['tag', 'entity_type', 'mbid'])
+DataSource('musicbrainz', 'mb_recordings', index=['mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_artists', index=['mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"], merge_on_set=True)
+DataSource('musicbrainz', 'mb_artist_relationships', index=["artist_mbid", "other_mbid", "relationship_type"], merge_on_set=True)
+DataSource('musicbrainz', 'mb_tags', index=['tag', 'mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_unfetchable_isrcs', index=["isrc"], merge_on_set=True)
 
-DataSource('musicbrainz', 'sp_track_mb_recording', index=["spotify_uri", "mbid"])
-DataSource('musicbrainz', 'sp_artist_mb_artist', index=["spotify_uri", "mbid"])
+DataSource('musicbrainz', 'sp_track_mb_recording', index=["spotify_uri", "mbid"], merge_on_set=True)
+DataSource('musicbrainz', 'sp_artist_mb_artist', index=["spotify_uri", "mbid"], merge_on_set=True)
 

@@ -20,6 +20,9 @@ def get_setting(setting_key, default):
     if isinstance(default, bool) and value is not None:
         value = (value.lower() == "true")
 
+    if isinstance(default, int) and value is not None:
+        value = int(value)
+
     settings[setting_key] = value if value is not None else default
 
     return settings[setting_key]
@@ -47,6 +50,14 @@ def musicbrainz_version() -> str:
 
 def musicbrainz_contact() -> str:
     return get_setting("MUSICBRAINZ_CONTACT", "https://github.com/jbrown1618/spotify-stats")
+
+
+def musicbrainz_max_tracks_per_run() -> str:
+    return get_setting("MUSICBRAINZ_MAX_TRACKS_PER_RUN", 100)
+
+
+def musicbrainz_save_batch_size() -> str:
+    return get_setting("MUSICBRAINZ_SAVE_BATCH_SIZE", 100)
 
 
 def should_save_spotify_data() -> bool:
