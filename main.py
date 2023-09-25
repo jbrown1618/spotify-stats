@@ -7,12 +7,18 @@ from utils.settings import should_generate_output, should_save_spotify_data, sho
 def main():
     if should_save_spotify_data():
         save_spotify_data()
+    else:
+        print('Skipping saving spotify data')
 
     if should_save_supplemental_data():
         save_supplemental_data()
+    else:
+        print('Skipping saving supplemental data')
 
     if should_generate_output():
         generate_output()
+    else:
+        print('Skipping generating output')
 
 
 if __name__ == '__main__':

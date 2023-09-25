@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from utils.date import this_date, this_year
-from utils.path import data_path, persistent_data_path
+from utils.path import spotify_data_path, persistent_spotify_data_path
 
 
 class RawData:
@@ -61,7 +61,7 @@ class DataSource:
         if self.persistent:
             df = self._merge_all_years()
         else:
-            df = pd.read_csv(data_path(self.key))
+            df = pd.read_csv(spotify_data_path(self.key))
 
         self._prefix_df(df)
 
@@ -72,11 +72,11 @@ class DataSource:
     def set_data(self, value: pd.DataFrame):
         print(f'Updating {self.key} data')
         value = value.sort_values(by=self.index)
-        path = data_path(self.key)
+        path = spotify_data_path(self.key)
 
         if self.persistent:
             value = self._merge_persistent_data_source(value)
-            path = persistent_data_path(self.key, this_year())
+            path = persistent_spotify_data_path(self.key, this_year())
 
         value.to_csv(path, index=False)
         self._prefix_df(value)
@@ -88,7 +88,7 @@ class DataSource:
         merged = None
 
         while True:
-            df_path = persistent_data_path(self.key, year)
+            df_path = persistent_spotify_data_path(self.key, year)
             if not os.path.isfile(df_path):
                 return merged
             
@@ -104,7 +104,7 @@ class DataSource:
     def _merge_persistent_data_source(self, value: pd.DataFrame) -> pd.DataFrame:
         value['as_of_date'] = this_date()
         
-        current_file = persistent_data_path(self.key, this_year())
+        current_file = persistent_spotify_data_path(self.key, this_year())
         if not os.path.isfile(current_file):
             return value
         
@@ -160,3 +160,12 @@ DataSource('track_artist',   index=["track_uri", "artist_uri"])
 
 DataSource('top_artists',    index=["term", "index"], persistent=True)
 DataSource('top_tracks',     index=["term", "index"], persistent=True)
+
+DataSource('mb_recordings', index=['mbid'])
+DataSource('mb_artists', index=['mbid'])
+DataSource('mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"])
+DataSource('mb_artist_relationships', index=["artist_mbid", "other_artist_mbid", "relationship_type"])
+
+DataSource('sp_track_mb_recording', index=["spotify_uri", "mbid"])
+DataSource('sp_artist_mb_artist', index=["spotify_uri", "mbid"])
+
