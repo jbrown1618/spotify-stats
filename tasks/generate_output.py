@@ -9,7 +9,7 @@ from utils.path import clear_markdown
 from utils.settings import should_clear_markdown, should_generate_page
 
 
-def summarize_results():
+def generate_output():
     dp = DataProvider()
 
     if should_clear_markdown():

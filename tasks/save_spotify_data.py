@@ -29,7 +29,7 @@ track_artist = []
 album_artist = []
 artist_genre = []
 
-def save_data():
+def save_spotify_data():
     auth_manager = SpotifyOAuth(
         client_id=spotify_client_id(), 
         client_secret=spotify_client_secret(), 
@@ -170,6 +170,7 @@ def track_data(track):
     fields = ["name", "popularity", "explicit", "duration_ms", "uri"]
     data = {field: track[field] for field in fields}
     data["album_uri"] = track["album"]["uri"]
+    data["isrc"] = track["external_ids"]["isrc"]
 
     return data
 

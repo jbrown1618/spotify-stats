@@ -1,75 +1,77 @@
 import os
 from dotenv import load_dotenv
 
-settings = {
-    "output_dir": "./output",
-    "spotify_client_id": "",
-    "spotify_client_secret": "",
-    "skip_data_fetching": False,
-    "skip_figures": False,
-}
+settings = {}
+loaded = False
 
 
-def init_settings():
-    load_dotenv()
-    set_output_dir(os.getenv("OUTPUT_DIR"))
-    set_spotify_client_id(os.getenv("SPOTIPY_CLIENT_ID"))
-    set_spotify_client_secret(os.getenv("SPOTIPY_CLIENT_SECRET"))
-    set_skip_data_fetching(os.getenv("SKIP_DATA_FETCHING") is not None and os.getenv("SKIP_DATA_FETCHING") != "False")
-    set_skip_figures(os.getenv("SKIP_FIGURES") is not None and os.getenv("SKIP_FIGURES") != "False")
-    set_generate_only_page(os.getenv("GENERATE_ONLY_PAGE"))
+def get_setting(setting_key, default):
+    global loaded
 
+    if setting_key in settings:
+        return settings[setting_key]
 
-def set_output_dir(output_dir: str):
-    settings["output_dir"] = output_dir
+    if not loaded:
+        load_dotenv()
+        loaded = True
+    
+    value = os.getenv(setting_key)
+
+    if isinstance(default, bool):
+        value = (value.lower() == "true")
+
+    settings[setting_key] = value if value is not None else default
+
+    return settings[setting_key]
 
 
 def output_dir() -> str:
-    return settings["output_dir"]
-
-
-def set_spotify_client_id(id: str):
-    settings["spotify_client_id"] = id
+    return get_setting("OUTPUT_DIR", "./output")
 
 
 def spotify_client_id() -> str:
-    return settings["spotify_client_id"]
-
-
-def set_spotify_client_secret(secret: str):
-    settings["spotify_client_secret"] = secret
+    return get_setting("SPOTIFY_CLIENT_ID", None)
     
 
 def spotify_client_secret() -> str:
-    return settings["spotify_client_secret"]
+    return get_setting("SPOTIFY_CLIENT_SECRET", None)
 
 
-def set_skip_data_fetching(skip: bool):
-    settings["skip_data_fetching"] = skip
+def musicbrainz_useragent() -> str:
+    return get_setting("MUSICBRAINZ_USERAGENT", "jbrown1618/spotify-stats")
 
 
-def skip_data_fetching() -> bool:
-    return settings["skip_data_fetching"]
+def musicbrainz_version() -> str:
+    return get_setting("MUSIVBRAINZ_VERSION", "1.0.0")
 
 
-def set_skip_figures(skip: bool):
-    settings["skip_figures"] = skip
+def musicbrainz_contact() -> str:
+    return get_setting("MUSICBRAINZ_CONTACT", "https://github.com/jbrown1618/spotify-stats")
+
+
+def should_save_spotify_data() -> bool:
+    return get_setting("SAVE_SPOTIFY_DATA", True)
+
+
+def should_save_supplemental_data() -> bool:
+    return get_setting("SAVE_SUPPLEMENTAL_DATA", True)
+
+
+def should_generate_output() -> bool:
+    return get_setting("GENERATE_OUTPUT", True)
 
 
 def skip_figures() -> bool:
-    return settings["skip_figures"]
+    return get_setting("SKIP_FIGURES", False)
 
 
 def should_clear_markdown() -> bool:
-    return settings["generate_only_page"] == None
+    return get_setting("GENERATE_ONLY_PAGE", None) == None
 
 
 def should_generate_page(page_type: str) -> bool:
-    return settings["generate_only_page"] == None \
-        or settings["generate_only_page"].lower() == page_type.lower() \
-        or (settings["generate_only_page"].lower() + 's') == page_type.lower()\
-        or settings["generate_only_page"].lower() == (page_type.lower() + 's')
-
-
-def set_generate_only_page(page_type: str):
-    settings["generate_only_page"] = page_type
+    page = get_setting("GENERATE_ONLY_PAGE", None)
+    return page == None \
+        or page.lower() == page_type.lower() \
+        or (page.lower() + 's') == page_type.lower()\
+        or page.lower() == (page_type.lower() + 's')
