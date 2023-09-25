@@ -17,8 +17,8 @@ def get_setting(setting_key, default):
     
     value = os.getenv(setting_key)
 
-    if isinstance(default, bool):
-        value = (value is not None and value.lower() == "true")
+    if isinstance(default, bool) and value is not None:
+        value = (value.lower() == "true")
 
     settings[setting_key] = value if value is not None else default
 

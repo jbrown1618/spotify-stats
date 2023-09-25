@@ -6,7 +6,7 @@ from utils.settings import musicbrainz_useragent, musicbrainz_version, musicbrai
 out = {}
 
 def save_supplemental_data():
-    pass
+    print('Saving supplemental data...')
 
 
 def test_musicbrainz():
