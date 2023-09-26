@@ -82,8 +82,8 @@ def save_supplemental_data_for_isrc(isrc: str, spotify_uri: str):
     
     mbid = isrc_result["isrc"]["recording-list"][0]["id"]
     sp_track_recording.append({
-        "spotify_uri": spotify_uri,
-        "mbid": mbid
+        "spotify_track_uri": spotify_uri,
+        "recording_mbid": mbid
     })
 
     recording = mb.get_recording_by_id(mbid, includes=[
@@ -102,9 +102,9 @@ def save_supplemental_data_for_isrc(isrc: str, spotify_uri: str):
             break
 
     recordings.append({
-        "mbid": recording["id"],
-        "title": recording["title"],
-        "language": (primary_work or {}).get("language", None)
+        "recording_mbid": recording["id"],
+        "recording_title": recording["title"],
+        "recording_language": (primary_work or {}).get("language", None)
     })
 
     artist_relations = recording.get('artist-relation-list', []) + (primary_work or {}).get('artist-relation-list', [])
@@ -122,7 +122,7 @@ def save_supplemental_data_for_isrc(isrc: str, spotify_uri: str):
             'recording_mbid': mbid,
             'artist_mbid': artist_relation['artist']['id'],
             'credit_type': credit_type,
-            'details': ';'.join(artist_relation.get('attribute-list', []))
+            'credit_details': ';'.join(artist_relation.get('attribute-list', []))
         })
 
 
@@ -165,23 +165,23 @@ def save_supplemental_data_for_artist(mbid):
     artist = mb.get_artist_by_id(mbid, includes=['artist-rels', 'tags'])['artist']
     print(f'Fetching supplemental data for artist {artist["name"]}')
     artists.append({
-        "mbid": mbid,
-        "name": artist["name"],
-        "sort_name": artist["sort-name"],
-        "disambiguation": artist.get("disambiguation", None),
-        "type": artist.get("type", 'Unknown'),
-        "area": artist.get("area", {}).get("name", None),
-        "birthplace": artist.get("begin-area", {}).get("name", None),
-        "start_date": artist.get("life-span", {}).get('begin', None),
-        "end_date": artist.get("life-span", {}).get('end', None)
+        "artist_mbid": mbid,
+        "artist_mb_name": artist["name"],
+        "artist_sort_name": artist["sort-name"],
+        "artist_disambiguation": artist.get("disambiguation", None),
+        "artist_type": artist.get("type", 'Unknown'),
+        "artist_area": artist.get("area", {}).get("name", None),
+        "artist_birthplace": artist.get("begin-area", {}).get("name", None),
+        "artist_start_date": artist.get("life-span", {}).get('begin', None),
+        "artist_end_date": artist.get("life-span", {}).get('end', None)
     })
 
     sp_artists = RawData()['artists']
     matching_artists = sp_artists[sp_artists['artist_name'] == artist['name']]
     if len(matching_artists) == 1:
         sp_artist_artist.append({
-            "spotify_uri": matching_artists.iloc[0]['artist_uri'],
-            "mbid": artist['id']
+            "spotify_artist_uri": matching_artists.iloc[0]['artist_uri'],
+            "artist_mbid": artist['id']
         })
     elif len(matching_artists) > 1:
         print(f'Found multiple artists matching {artist_relation["artist"]["name"]} - find a way to disambiguate')
@@ -191,8 +191,8 @@ def save_supplemental_data_for_artist(mbid):
 
     for tag in artist.get('tag-list', []):
         tags.append({
-            "tag": tag["name"],
-            "mbid": mbid
+            "mb_tag": tag["name"],
+            "artist_mbid": mbid
         })
 
     for artist_relation in artist.get('artist-relation-list', []):

@@ -169,13 +169,13 @@ DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 DataSource('spotify', 'top_artists',    index=["term", "index"], persistent=True)
 DataSource('spotify', 'top_tracks',     index=["term", "index"], persistent=True)
 
-DataSource('musicbrainz', 'mb_recordings', index=['mbid'], merge_on_set=True)
-DataSource('musicbrainz', 'mb_artists', index=['mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_recordings', index=['recording_mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_artists', index=['artist_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"], merge_on_set=True)
 DataSource('musicbrainz', 'mb_artist_relationships', index=["artist_mbid", "other_mbid", "relationship_type"], merge_on_set=True)
-DataSource('musicbrainz', 'mb_tags', index=['tag', 'mbid'], merge_on_set=True)
+DataSource('musicbrainz', 'mb_tags', index=['mb_tag', 'artist_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_unfetchable_isrcs', index=["isrc"], merge_on_set=True)
 
-DataSource('musicbrainz', 'sp_track_mb_recording', index=["spotify_uri", "mbid"], merge_on_set=True)
-DataSource('musicbrainz', 'sp_artist_mb_artist', index=["spotify_uri", "mbid"], merge_on_set=True)
+DataSource('musicbrainz', 'sp_track_mb_recording', index=["spotify_track_uri", "recording_mbid"], merge_on_set=True)
+DataSource('musicbrainz', 'sp_artist_mb_artist', index=["spotify_artist_uri", "artist_mbid"], merge_on_set=True)
 

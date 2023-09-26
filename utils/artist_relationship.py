@@ -25,9 +25,12 @@ def relationship_phrase(relationship_row):
 
 def related_artist_name(relationship_row, relative_to_path):
     if not pd.isna(relationship_row['artist_name']):
-        return md_link(relationship_row['artist_name'], artist_overview_path(relationship_row['artist_name'], relative_to_path)) if relationship_row['artist_has_page'] else relationship_row['artist_name']
+        if relationship_row['artist_has_page']:
+            return md_link(relationship_row['artist_name'], artist_overview_path(relationship_row['artist_name'], relative_to_path))
+        else:
+            return relationship_row['artist_name']
     
-    if not relationship_row['name'].isascii():
-        return f"{relationship_row['name']} ({relationship_row['sort_name']})"
+    if not relationship_row['artist_mb_name'].isascii():
+        return f"{relationship_row['artist_mb_name']} ({relationship_row['artist_sort_name']})"
     
-    return relationship_row['name']
+    return relationship_row['artist_mb_name']

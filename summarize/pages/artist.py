@@ -33,6 +33,7 @@ def make_artist_summary(artist: pd.Series, \
     content += albums_section(tracks)
     content += labels_section(artist_name, tracks)
     content += genres_section(artist, artist_genre)
+    content += credits_section(artist)
     content += tracks_section(artist_name, tracks)
 
     with open(artist_overview_path(artist_name), "w") as f:
@@ -219,6 +220,10 @@ def genres_section(artist: pd.Series, artist_genre: pd.DataFrame):
     section.append("")
     return section
 
+
+def credits_section(artist: pd.Series):
+    credits = DataProvider().track_credits(artist_uri=artist["artist_uri"])
+    return []
 
 def tracks_section(artist_name: str, tracks: pd.DataFrame):
     display_tracks = tracks_table(tracks, artist_path(artist_name))

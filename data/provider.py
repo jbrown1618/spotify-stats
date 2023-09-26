@@ -38,6 +38,7 @@ class DataProvider:
         self._track_artist = None
         self._liked_tracks_sample = None
         self._ml_data = None
+        self._track_credits = None
 
         self._initialized = True
 
@@ -276,10 +277,10 @@ class DataProvider:
     def related_artists(self, uri: str) -> pd.DataFrame:
         raw = RawData()
         artist_join = raw['sp_artist_mb_artist']
-        if uri not in set(artist_join['spotify_uri']):
+        if uri not in set(artist_join['spotify_artist_uri']):
             return None
 
-        own_mbid = artist_join[artist_join['spotify_uri'] == uri].iloc[0]['mbid']
+        own_mbid = artist_join[artist_join['spotify_artist_uri'] == uri].iloc[0]['artist_mbid']
         if own_mbid is None:
             return None
 
@@ -290,23 +291,24 @@ class DataProvider:
         if len(forward_relationships) == 0 and len(backward_relationships) == 0:
             return None
 
-        forward_relationships = pd.merge(forward_relationships, artist_join, how="left", left_on='other_mbid', right_on='mbid')
-        backward_relationships = pd.merge(backward_relationships, artist_join, how="left", left_on='artist_mbid', right_on='mbid')
+        forward_relationships = pd.merge(forward_relationships, artist_join, how="left", left_on='other_mbid', right_on='artist_mbid')
+        backward_relationships = pd.merge(backward_relationships, artist_join, how="left", on='artist_mbid')
 
-        related_artist_uris = set(forward_relationships['spotify_uri'].dropna()).union(set(backward_relationships['spotify_uri'].dropna()))
+        related_artist_uris = set(forward_relationships['spotify_artist_uri'].dropna())\
+                       .union(set(backward_relationships['spotify_artist_uri'].dropna()))
         related_artists = self.artists(related_artist_uris)
 
-        forward_relationships = pd.merge(forward_relationships, related_artists, how="left", left_on="spotify_uri", right_on="artist_uri")
-        backward_relationships = pd.merge(backward_relationships, related_artists, how="left", left_on="spotify_uri", right_on="artist_uri")
+        forward_relationships = pd.merge(forward_relationships, related_artists, how="left", left_on="spotify_artist_uri", right_on="artist_uri")
+        backward_relationships = pd.merge(backward_relationships, related_artists, how="left", left_on="spotify_artist_uri", right_on="artist_uri")
 
         mb_artists = raw['mb_artists']
-        forward_relationships = pd.merge(forward_relationships, mb_artists, left_on="other_mbid", right_on="mbid")
-        backward_relationships = pd.merge(backward_relationships, mb_artists, left_on="artist_mbid", right_on="mbid")
+        forward_relationships = pd.merge(forward_relationships, mb_artists, left_on="other_mbid", right_on="artist_mbid")
+        backward_relationships = pd.merge(backward_relationships, mb_artists, on="artist_mbid")
 
         forward_relationships['relationship_direction'] = 'forward'
         backward_relationships['relationship_direction'] = 'backward'
 
-        return pd.concat([forward_relationships, backward_relationships]).sort_values(by=['relationship_type', 'relationship_direction', 'sort_name'])
+        return pd.concat([forward_relationships, backward_relationships]).sort_values(by=['relationship_type', 'relationship_direction', 'artist_sort_name'])
 
 
     def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
@@ -390,6 +392,33 @@ class DataProvider:
 
         return self._artist_genre
     
+
+    def track_credits(self, track_uris: typing.Iterable[str] = None, artist_uri: str = None, credit_type: str = None) -> pd.DataFrame:
+        if self._track_credits is None:
+            rd = RawData()
+
+            track_credits = pd.merge(rd['mb_recording_credits'], rd['mb_recordings'], on="recording_mbid")
+            track_credits = pd.merge(track_credits, rd['mb_artists'], on="artist_mbid")
+            track_credits = pd.merge(track_credits, rd['sp_artist_mb_artist'], how="left", on="artist_mbid")
+            track_credits = pd.merge(track_credits, rd['sp_track_mb_recording'], how="left", on="recording_mbid")
+            track_credits = pd.merge(track_credits, self.artists(), how="left", left_on="spotify_artist_uri", right_on="artist_uri")
+            track_credits = pd.merge(track_credits, self.tracks(), how="left", left_on="spotify_track_uri", right_on="track_uri")
+
+            self._track_credits = track_credits
+
+        out = self._track_credits
+
+        if track_uris is not None:
+            out = out[out["track_uri"].isin(track_uris)]
+
+        if credit_type is not None:
+            out = out[out["credit_type"] == credit_type]
+
+        if artist_uri is not None:
+            out = out[out["artist_uri"] == artist_uri]
+
+        return out
+
 
     def __initialize_genre_join_tables(self):
         if self._artist_genre is not None and self._track_genre is not None:
