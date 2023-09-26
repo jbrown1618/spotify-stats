@@ -273,7 +273,43 @@ class DataProvider:
         return out
     
 
-    def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None):
+    def related_artists(self, uri: str) -> pd.DataFrame:
+        raw = RawData()
+        artist_join = raw['sp_artist_mb_artist']
+        if uri not in set(artist_join['spotify_uri']):
+            return None
+
+        own_mbid = artist_join[artist_join['spotify_uri'] == uri].iloc[0]['mbid']
+        if own_mbid is None:
+            return None
+
+        relationships = raw['mb_artist_relationships']
+        forward_relationships = relationships[relationships['artist_mbid'] == own_mbid]
+        backward_relationships = relationships[relationships['other_mbid'] == own_mbid]
+
+        if len(forward_relationships) == 0 and len(backward_relationships) == 0:
+            return None
+
+        forward_relationships = pd.merge(forward_relationships, artist_join, how="left", left_on='other_mbid', right_on='mbid')
+        backward_relationships = pd.merge(backward_relationships, artist_join, how="left", left_on='artist_mbid', right_on='mbid')
+
+        related_artist_uris = set(forward_relationships['spotify_uri'].dropna()).union(set(backward_relationships['spotify_uri'].dropna()))
+        related_artists = self.artists(related_artist_uris)
+
+        forward_relationships = pd.merge(forward_relationships, related_artists, how="left", left_on="spotify_uri", right_on="artist_uri")
+        backward_relationships = pd.merge(backward_relationships, related_artists, how="left", left_on="spotify_uri", right_on="artist_uri")
+
+        mb_artists = raw['mb_artists']
+        forward_relationships = pd.merge(forward_relationships, mb_artists, left_on="other_mbid", right_on="mbid")
+        backward_relationships = pd.merge(backward_relationships, mb_artists, left_on="artist_mbid", right_on="mbid")
+
+        forward_relationships['relationship_direction'] = 'forward'
+        backward_relationships['relationship_direction'] = 'backward'
+
+        return pd.concat([forward_relationships, backward_relationships]).sort_values(by=['relationship_type', 'relationship_direction', 'sort_name'])
+
+
+    def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         out = RawData()['top_artists']
 
         if current:

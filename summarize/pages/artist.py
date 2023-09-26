@@ -8,6 +8,7 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
+from utils.artist_relationship import relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, top_list_terms
@@ -25,6 +26,7 @@ def make_artist_summary(artist: pd.Series, \
     if len(tracks) > 10:
         content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
         content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
+    content += relationships_section(artist)
     content += top_artists_rank_section(artist)
     content += top_tracks_section(artist)
     content += playlists_section(artist, playlists)
@@ -47,6 +49,19 @@ def title(artist):
 
 def image(artist):
     return ["", md_image(artist["artist_name"], artist["artist_image_url"], 100), ""]
+
+
+def relationships_section(artist):
+    related_artists = DataProvider().related_artists(artist['artist_uri'])
+    if related_artists is None or len(related_artists) == 0:
+        return []
+
+    phrases = [
+        f'- {relationship_description(relationship, artist_path(artist["artist_name"]))}'
+        for _, relationship in related_artists.iterrows()
+    ]
+
+    return ["## Relationships", "", artist["artist_name"] + ":"] + phrases + [""]
 
 
 def top_artists_rank_section(artist: pd.Series):
