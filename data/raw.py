@@ -82,6 +82,10 @@ class DataSource:
 
         if self.merge_on_set and os.path.isfile(path):
             existing = pd.read_csv(path)
+            print('Existing columns:')
+            [print('    ' + col for col in existing.columns)]
+            print('New columns:')
+            [print('    ' + col for col in value.columns)]
             value = pd.concat([existing, value])
             value = value.drop_duplicates(subset=self.index)
             value = value.sort_values(by=self.index)
@@ -178,4 +182,3 @@ DataSource('musicbrainz', 'mb_unfetchable_isrcs', index=["isrc"], merge_on_set=T
 
 DataSource('musicbrainz', 'sp_track_mb_recording', index=["spotify_track_uri", "recording_mbid"], merge_on_set=True)
 DataSource('musicbrainz', 'sp_artist_mb_artist', index=["spotify_artist_uri", "artist_mbid"], merge_on_set=True)
-
