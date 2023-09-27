@@ -14,6 +14,7 @@ sp_track_recording = []
 sp_artist_artist = []
 
 unfetchable_isrcs = set()
+unmatchable_artists = set()
 artist_queue = set()
 processed_artists = set()
 
@@ -29,6 +30,7 @@ def save_supplemental_data():
     liked = raw['liked_tracks']
     track_recording = raw['sp_track_mb_recording']
     unfetchable_isrcs = set(raw['mb_unfetchable_isrcs']['isrc'])
+    unmatchable_artists = set(raw['mb_unmatchable_artists']['artist_uri'])
     processed_artists = set(raw['mb_artists']['artist_mbid'])
     unfetched_tracks = all_tracks[
         all_tracks['track_uri'].isin(liked['track_uri']) &
@@ -49,6 +51,7 @@ def save_supplemental_data():
         if i > musicbrainz_max_tracks_per_run():
             break
     
+    search_for_additional_liked_artists()
     temporary_retry_matching_artist_names()
     write_data()
 
@@ -245,6 +248,39 @@ def should_record_relationship(artist, artist_relation):
     
     return False
 
+
+def search_for_additional_liked_artists():
+    raw = RawData()
+    liked = raw['liked_tracks']
+    track_artist = raw['track_artist']
+    artists = raw['artists']
+
+    liked_tracks = pd.merge(liked, track_artist, on="track_uri")
+    liked_artist_uris = pd.merge(liked_tracks, artists, on="artist_uri")['artist_uri'].unique()
+    matched_artist_uris = raw['sp_artist_mb_artist']['spotify_artist_uri']
+    liked_artists = artists[artists['artist_uri'].isin(liked_artist_uris) & ~(artists['artist_uri'].isin(matched_artist_uris))]
+
+    for _, artist in liked_artists.iterrows():
+        results = mb.search_artists(artist['artist_name'], limit=1).get('artist-list', [])
+        if len(results) == 0:
+            print(f"No matches for {artist['artist_name']}")
+            continue
+
+        if float(results[0].get('ext:score')) < 95:
+            print(f"No close matches for {artist['artist_name']}")
+            continue
+
+        print(f"Got an exact match for {artist['artist_name']}")
+        sp_artist_artist.append({
+            "spotify_artist_uri": artist['artist_uri'],
+            "artist_mbid": results[0]['id']
+        })
+        queue_artist(results[0]['id'])
+
+    flush_artist_queue()
+
+
+# TODO: add alias-list and gender
 
 def temporary_retry_matching_artist_names():
     mb_artists = RawData()['mb_artists']
