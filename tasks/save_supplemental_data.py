@@ -38,9 +38,6 @@ def save_supplemental_data():
 
     print(f'There are {len(unfetched_tracks)} unfetched ISRCs')
 
-    if len(unfetched_tracks) == 0:
-        return
-
     i = 1
     for _, track in unfetched_tracks.iterrows():
         save_supplemental_data_for_isrc(track['track_isrc'], track['track_uri'])
@@ -52,6 +49,7 @@ def save_supplemental_data():
         if i > musicbrainz_max_tracks_per_run():
             break
     
+    temporary_retry_matching_artist_names()
     write_data()
 
 
@@ -118,7 +116,7 @@ def save_supplemental_data_for_isrc(isrc: str, spotify_uri: str):
 
     recordings.append({
         "recording_mbid": recording["id"],
-        "recording_title": recording["title"],
+        "recording_title": normalize_punctuation(recording["title"]),
         "recording_language": (primary_work or {}).get("language", None)
     })
 
@@ -181,8 +179,8 @@ def save_supplemental_data_for_artist(mbid):
     print(f'Fetching supplemental data for artist {artist["name"]}')
     artists.append({
         "artist_mbid": mbid,
-        "artist_mb_name": artist["name"],
-        "artist_sort_name": artist["sort-name"],
+        "artist_mb_name": normalize_punctuation(artist["name"]),
+        "artist_sort_name": normalize_punctuation(artist["sort-name"]),
         "artist_disambiguation": artist.get("disambiguation", None),
         "artist_type": artist.get("type", 'Unknown'),
         "artist_area": artist.get("area", {}).get("name", None),
@@ -192,7 +190,10 @@ def save_supplemental_data_for_artist(mbid):
     })
 
     sp_artists = RawData()['artists']
-    matching_artists = sp_artists[sp_artists['artist_name'] == artist['name']]
+    matching_artists = sp_artists[sp_artists['artist_name'].apply(normalize_artist_name).isin({
+        normalize_artist_name(artist['name']),
+        normalize_artist_name(artist['sort-name'])
+    })]
     if len(matching_artists) == 1:
         sp_artist_artist.append({
             "spotify_artist_uri": matching_artists.iloc[0]['artist_uri'],
@@ -243,3 +244,46 @@ def should_record_relationship(artist, artist_relation):
         return True
     
     return False
+
+
+def temporary_retry_matching_artist_names():
+    mb_artists = RawData()['mb_artists']
+    artists = RawData()['artists']
+    already_matched = set(RawData()['sp_artist_mb_artist']['artist_mbid'])
+
+    for _, mb_artist in mb_artists.iterrows():
+        if mb_artist['artist_mbid'] in already_matched:
+            continue
+
+        matching_artists = artists[artists['artist_name'].apply(normalize_artist_name).isin({
+            normalize_artist_name(mb_artist['artist_mb_name']),
+            normalize_artist_name(mb_artist['artist_sort_name'])
+        })]
+
+        if len(matching_artists) == 1:
+            print(f'Found new match: {mb_artist["artist_mb_name"]} === {matching_artists.iloc[0]["artist_name"]}')
+            sp_artist_artist.append({
+                "spotify_artist_uri": matching_artists.iloc[0]['artist_uri'],
+                "artist_mbid": mb_artist['artist_mbid']
+            })
+        elif len(matching_artists) > 1:
+            print(f'Multiple results for {mb_artist["artist_mb_name"]}')
+            print(matching_artists.head())
+
+
+replacements = {
+    '-': {'\u2010', '\u2011', '\u2012', '\u2013', '\u2014', '\u2015'},
+    "'": {'\u2018', '\u2019'},
+    '"': {'\u201C', '\u201D'}
+}
+
+def normalize_punctuation(name: str):
+    out = name
+    for replacement, values in replacements.items():
+        for value in values:
+            out = out.replace(value, replacement)
+    return out
+
+
+def normalize_artist_name(name: str):
+    return normalize_punctuation(name.strip().lower())
