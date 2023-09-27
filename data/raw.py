@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import pandas as pd
 
@@ -86,6 +87,8 @@ class DataSource:
             [print('    ' + col for col in existing.columns)]
             print('New columns:')
             [print('    ' + col for col in value.columns)]
+            time.sleep(2)
+            
             value = pd.concat([existing, value])
             value = value.drop_duplicates(subset=self.index)
             value = value.sort_values(by=self.index)
