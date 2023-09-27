@@ -83,11 +83,15 @@ class DataSource:
 
         if self.merge_on_set and os.path.isfile(path):
             existing = pd.read_csv(path)
+
+            time.sleep(5)
             print('Existing columns:')
             [print('    ' + col for col in existing.columns)]
             print('New columns:')
             [print('    ' + col for col in value.columns)]
-            time.sleep(2)
+            print('Index:')
+            [print('    ' + col for col in self.index)]
+            time.sleep(5)
             
             value = pd.concat([existing, value])
             value = value.drop_duplicates(subset=self.index)
