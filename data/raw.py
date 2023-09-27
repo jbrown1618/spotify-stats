@@ -1,5 +1,4 @@
 import os
-import time
 from datetime import datetime
 import pandas as pd
 
@@ -84,7 +83,7 @@ class DataSource:
         if self.merge_on_set and os.path.isfile(path):
             existing = pd.read_csv(path)            
             value = pd.concat([existing, value])
-            value = value.drop_duplicates(subset=self.index)
+            value = value.drop_duplicates(subset=self.index, keep="last")
             value = value.sort_values(by=self.index)
 
         value.to_csv(path, index=False)
