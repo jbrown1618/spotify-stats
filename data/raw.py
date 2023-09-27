@@ -82,17 +82,7 @@ class DataSource:
             path = persistent_data_path(self.source, self.key, this_year())
 
         if self.merge_on_set and os.path.isfile(path):
-            existing = pd.read_csv(path)
-
-            time.sleep(5)
-            print('Existing columns:')
-            [print('    ' + col for col in existing.columns)]
-            print('New columns:')
-            [print('    ' + col for col in value.columns)]
-            print('Index:')
-            [print('    ' + col for col in self.index)]
-            time.sleep(5)
-            
+            existing = pd.read_csv(path)            
             value = pd.concat([existing, value])
             value = value.drop_duplicates(subset=self.index)
             value = value.sort_values(by=self.index)

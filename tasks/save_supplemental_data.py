@@ -57,14 +57,29 @@ def save_supplemental_data():
 
 def write_data():
     raw = RawData()
-    raw['mb_recordings'] = pd.DataFrame(recordings)
-    raw['mb_artists'] = pd.DataFrame(artists)
-    raw['mb_recording_credits'] = pd.DataFrame(credits)
-    raw['mb_artist_relationships'] = pd.DataFrame(artist_relationships)
-    raw['mb_tags'] = pd.DataFrame(tags)
-    raw['sp_track_mb_recording'] = pd.DataFrame(sp_track_recording)
-    raw['sp_artist_mb_artist'] = pd.DataFrame(sp_artist_artist)
-    raw['mb_unfetchable_isrcs'] = pd.DataFrame({"isrc": [isrc for isrc in unfetchable_isrcs]})
+    if len(recordings) > 0:
+        raw['mb_recordings'] = pd.DataFrame(recordings)
+
+    if len(artists) > 0:
+        raw['mb_artists'] = pd.DataFrame(artists)
+
+    if len(credits) > 0:
+        raw['mb_recording_credits'] = pd.DataFrame(credits)
+
+    if len(artist_relationships) > 0:
+        raw['mb_artist_relationships'] = pd.DataFrame(artist_relationships)
+
+    if len(tags) > 0:
+        raw['mb_tags'] = pd.DataFrame(tags)
+
+    if len(sp_track_recording) > 0:
+        raw['sp_track_mb_recording'] = pd.DataFrame(sp_track_recording)
+
+    if len(sp_artist_artist) > 0:
+        raw['sp_artist_mb_artist'] = pd.DataFrame(sp_artist_artist)
+
+    if len(unfetchable_isrcs) > 0:
+        raw['mb_unfetchable_isrcs'] = pd.DataFrame({"isrc": [isrc for isrc in unfetchable_isrcs]})
 
 
 def save_supplemental_data_for_isrc(isrc: str, spotify_uri: str):
