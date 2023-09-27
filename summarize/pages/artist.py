@@ -8,9 +8,9 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.tracks_table import tracks_table
-from utils.artist_relationship import relationship_description
+from utils.artist_relationship import related_artist_name, relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, genre_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, top_list_terms
 
 def make_artist_summary(artist: pd.Series, \
@@ -34,6 +34,7 @@ def make_artist_summary(artist: pd.Series, \
     content += labels_section(artist_name, tracks)
     content += genres_section(artist, artist_genre)
     content += credits_section(artist)
+    content += producers_section(artist)
     content += tracks_section(artist_name, tracks)
 
     with open(artist_overview_path(artist_name), "w") as f:
@@ -182,7 +183,8 @@ def playlists_section(artist: pd.Series, playlists: pd.DataFrame):
 
     return [
         '## Featured on Playlists',
-        md_table(display_playlists)
+        md_table(display_playlists),
+        ''
     ]
 
 
@@ -213,7 +215,7 @@ def genres_section(artist: pd.Series, artist_genre: pd.DataFrame):
     section = ["## Genres", ""]
     for i, g in genres_for_artist.iterrows():
         if g["genre_has_page"]:
-            section.append(f"- {md_link(g['genre'], genre_path(g['genre'], artist_path(artist_name)))}")
+            section.append(f"- {md_link(g['genre'], genre_overview_path(g['genre'], artist_path(artist_name)))}")
         else:
             section.append(f"- {g['genre']}")
 
@@ -222,12 +224,73 @@ def genres_section(artist: pd.Series, artist_genre: pd.DataFrame):
 
 
 def credits_section(artist: pd.Series):
-    credits = DataProvider().track_credits(artist_uri=artist["artist_uri"])
+    out = []
+    out += credit_types_subsection(artist)
+    out += member_credits_subsection(artist)
+    out += production_credits_subsection(artist)
+
+    if len(out) == 0:
+        return []
+    
+    return ['## Credits', ''] + out
+
+
+def credit_types_subsection(artist: pd.Series):
+    credits = DataProvider().track_credits(artist_uri=artist["artist_uri"], include_aliases=True)
+    if len(credits) == 0:
+        return []
+
+    credits_by_type = credits.groupby("credit_type").agg({"recording_mbid": "count"}).reset_index()
+    credits_by_type['credit_type'] = credits_by_type['credit_type'].apply(lambda t: t.capitalize())
+    credits_by_type = credits_by_type.rename(columns={"credit_type": "Credit Type", "recording_mbid": "Tracks"})
+    return [
+        '### Credits by Type',
+        '',
+        md_table(credits_by_type),
+        ''
+    ]
+
+
+def production_credits_subsection(artist: pd.Series):
+    # A table of credits for songwriting, arranging, and producing
     return []
+
+
+def member_credits_subsection(artist: pd.Series):
+    members = DataProvider().group_members(artist['artist_uri'])
+    if members is None:
+        return []
+    
+    credits = DataProvider().track_credits(artist_mbids=members["artist_mbid"], include_aliases=True)
+    if len(credits) == 0:
+        return []
+    
+    credits['display_name'] = credits.apply(lambda r: related_artist_name(r, artist_path(artist["artist_name"])), axis=1)
+    credits['credit_type'] = credits['credit_type'].apply(lambda t: t.capitalize())
+    pivot = credits.pivot_table(
+        values=['recording_mbid'], 
+        index='credit_type', 
+        columns='display_name', 
+        aggfunc='count', 
+        fill_value=0).reset_index()
+    
+    pivot.columns = [tup[1] for tup in pivot.columns]
+    
+    return [
+        '### Member Credits', 
+        "", 
+        md_table(pivot)
+    ]
+
+
+def producers_section(artist: pd.Series):
+    # Tables and bar charts of top producers, arrangers, and songwriters
+    return []
+
 
 def tracks_section(artist_name: str, tracks: pd.DataFrame):
     display_tracks = tracks_table(tracks, artist_path(artist_name))
-    return ["## Tracks", "", md_truncated_table(display_tracks, 10, "See all tracks")]
+    return ["## Tracks", "", md_truncated_table(display_tracks, 10, "See all tracks"), ""]
 
 
 def display_playlist(artist_name: str, playlist_uri: str, playlists: pd.DataFrame):
