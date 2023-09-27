@@ -29,7 +29,7 @@ def save_supplemental_data():
     liked = raw['liked_tracks']
     track_recording = raw['sp_track_mb_recording']
     unfetchable_isrcs = set(raw['mb_unfetchable_isrcs']['isrc'])
-    processed_artists = set(raw['mb_artists']['mbid'])
+    processed_artists = set(raw['mb_artists']['artist_mbid'])
     unfetched_tracks = all_tracks[
         all_tracks['track_uri'].isin(liked['track_uri']) &
         ~all_tracks['track_uri'].isin(track_recording['spotify_uri']) &
