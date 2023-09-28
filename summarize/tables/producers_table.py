@@ -19,7 +19,7 @@ def producers_table(tracks: pd.DataFrame, relative_to: str):
         'credit_type': aggregate_to_unique_list
     }).reset_index()
 
-    grouped = grouped.sort_values(by="recording_mbid", ascending=False)
+    grouped = grouped.sort_values(by="recording_mbid", ascending=False).head(100)
     if len(grouped) == 0:
         return pd.DataFrame({
             'Art':[], 'Producer':[], 'Tracks':[], 'Credit Types':[]

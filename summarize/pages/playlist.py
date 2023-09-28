@@ -5,6 +5,7 @@ from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
+from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.years_bar_chart import years_bar_chart
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
@@ -12,11 +13,12 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
+from summarize.tables.producers_table import producers_table
 from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_year_path, playlist_years_graph_path
+from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_producers_graph_path, playlist_year_path, playlist_years_graph_path
 from utils.util import spotify_url
 
 
@@ -38,6 +40,7 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += albums_section(playlist_name, tracks)
     content += labels_section(playlist_name, tracks)
     content += genres_section(playlist_name, tracks)
+    content += producers_section(playlist_name, tracks)
     content += years_section(playlist_name, tracks)
 
     with open(playlist_overview_path(playlist_name), "w") as f:
@@ -136,6 +139,26 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame):
     full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Genres", "", full_list, "", img, ""]
+
+
+def producers_section(playlist_name, tracks: pd.DataFrame):
+    producers = producers_table(tracks, playlist_path(playlist_name))
+
+    if len(producers) == 0:
+        return []
+    
+    bar_chart = producers_bar_chart(
+        tracks, 
+        playlist_producers_graph_path(playlist_name),
+        playlist_producers_graph_path(playlist_name, playlist_path(playlist_name)))
+    
+    return [
+        '## Top Producers',
+        '',
+        md_truncated_table(producers),
+        '',
+        bar_chart
+    ]
 
 
 def years_section(playlist_name: str, tracks: pd.DataFrame):

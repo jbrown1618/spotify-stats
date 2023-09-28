@@ -5,6 +5,7 @@ from data.raw import RawData
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
+from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.top_artists_time_series import top_artists_time_series
 from summarize.figures.top_tracks_time_series import top_tracks_time_series
 from summarize.pages.track_features import make_track_features_page
@@ -13,12 +14,13 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
+from summarize.tables.producers_table import producers_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
 from utils.top_lists import get_term_length_phrase, top_list_terms
 from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_link, md_summary_details, md_truncated_table
-from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path, overview_top_artists_time_series_path, overview_top_tracks_time_series_path
+from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path, overview_producers_graph_path, overview_top_artists_time_series_path, overview_top_tracks_time_series_path
 from utils.settings import output_dir
 
 
@@ -36,6 +38,7 @@ def make_overview(tracks_full: pd.DataFrame):
     content += tracks_section(tracks_full)
     content += genres_section(tracks_full)
     content += labels_section(tracks_full)
+    content += producers_section(tracks_full)
     content += errors()
 
     with open(overview_path(), "w") as f:
@@ -209,3 +212,24 @@ def labels_section(tracks: pd.DataFrame):
     full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Record Labels", "", full_list, "", img, ""]
+
+
+
+def producers_section(tracks: pd.DataFrame):
+    producers = producers_table(tracks, output_dir())
+
+    if len(producers) == 0:
+        return []
+    
+    bar_chart = producers_bar_chart(
+        tracks, 
+        overview_producers_graph_path(),
+        overview_producers_graph_path(output_dir()))
+    
+    return [
+        '## Top Producers',
+        '',
+        md_truncated_table(producers),
+        '',
+        bar_chart
+    ]

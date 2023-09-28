@@ -2,14 +2,16 @@ import pandas as pd
 from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
+from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
+from summarize.tables.producers_table import producers_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_link, md_truncated_table
-from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_clusters_figure_path, label_clusters_path, label_genre_graph_path, label_overview_path, label_path, labels_path
+from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_clusters_figure_path, label_clusters_path, label_genre_graph_path, label_overview_path, label_path, label_producers_graph_path, labels_path
 
 
 def make_label_summary(label_name: str, tracks: pd.DataFrame):
@@ -25,6 +27,7 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     content += artists_section(label_name, tracks)
     content += albums_section(label_name, tracks)
     content += genres_section(label_name, tracks)
+    content += producers_section(label_name, tracks)
     content += tracks_section(label_name, tracks)
 
     with open(label_overview_path(label_name), "w") as f:
@@ -92,6 +95,26 @@ def genres_section(label_name: str, tracks: pd.DataFrame):
     full_list = md_truncated_table(table_data, 10, summary)
 
     return ["## Genres", "", full_list, "", img, ""]
+
+
+def producers_section(label_name, tracks: pd.DataFrame):
+    producers = producers_table(tracks, label_path(label_name))
+
+    if len(producers) == 0:
+        return []
+    
+    bar_chart = producers_bar_chart(
+        tracks, 
+        label_producers_graph_path(label_name),
+        label_producers_graph_path(label_name, label_path(label_name)))
+    
+    return [
+        '## Top Producers',
+        '',
+        md_truncated_table(producers),
+        '',
+        bar_chart
+    ]
 
 
 def tracks_section(label_name: str, label_full: pd.DataFrame):

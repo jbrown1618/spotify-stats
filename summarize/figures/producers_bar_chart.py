@@ -19,7 +19,7 @@ def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path:
 
     grouped['display_name'] = grouped.apply(lambda r: related_artist_plain_name(r), axis=1)
 
-    grouped = grouped.sort_values(by=["recording_mbid", 'display_name'], ascending=False)
+    grouped = grouped.sort_values(by=["recording_mbid", 'display_name'], ascending=False).head(30)
     if len(grouped) < 3:
         return ''
     
@@ -28,12 +28,15 @@ def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path:
         'display_name': 'Producer'
     })[['Tracks', 'Producer']]
 
+
     if not skip_figures():
         sns.set(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
 
         ax = sns.barplot(data=grouped, x="Tracks", y="Producer", color="limegreen")
 
+        ax.bar_label(ax.containers[0])
+        
         sns.despine(left=True)
         ax.get_figure().savefig(absolute_path)
         plt.clf()

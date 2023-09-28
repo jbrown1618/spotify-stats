@@ -349,9 +349,9 @@ def producers_section(artist: pd.Series):
     return [
         '## Top Producers',
         '',
-        bar_chart,
+        md_truncated_table(producers),
         '',
-        md_truncated_table(producers)
+        bar_chart
     ]
 
 
