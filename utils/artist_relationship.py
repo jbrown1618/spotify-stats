@@ -3,8 +3,11 @@ from utils.markdown import md_link
 from utils.path import artist_overview_path
 
 
+producer_credit_types = {'producer', 'arranger', 'songwriter', 'lyricist'}
+
 def relationship_description(relationship_row, relative_to_path):
     return relationship_phrase(relationship_row) + " " + related_artist_name(relationship_row, relative_to_path)
+
 
 def relationship_phrase(relationship_row):
     relationship = relationship_row['relationship_type']
@@ -29,6 +32,16 @@ def related_artist_name(relationship_row, relative_to_path):
             return md_link(relationship_row['artist_name'], artist_overview_path(relationship_row['artist_name'], relative_to_path))
         else:
             return relationship_row['artist_name']
+    
+    if not relationship_row['artist_mb_name'].isascii():
+        return f"{relationship_row['artist_mb_name']} ({relationship_row['artist_sort_name']})"
+    
+    return relationship_row['artist_mb_name']
+
+
+def related_artist_plain_name(relationship_row):
+    if not pd.isna(relationship_row['artist_name']):
+        return relationship_row['artist_name']
     
     if not relationship_row['artist_mb_name'].isascii():
         return f"{relationship_row['artist_mb_name']} ({relationship_row['artist_sort_name']})"

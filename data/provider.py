@@ -175,7 +175,7 @@ class DataProvider:
                       artist_uri: str = None, 
                       artist_mbids: typing.Iterable[str] = None, 
                       include_aliases: bool = False, 
-                      credit_type: str = None) -> pd.DataFrame:
+                      credit_types: typing.Iterable[str] = None) -> pd.DataFrame:
         if self._track_credits is None:
             rd = RawData()
 
@@ -193,9 +193,6 @@ class DataProvider:
         if track_uris is not None:
             out = out[out["track_uri"].isin(track_uris)]
 
-        if credit_type is not None:
-            out = out[out["credit_type"] == credit_type]
-
         if artist_uri is not None:
             if include_aliases:
                 alias_mbids = self._artist_mbids_with_aliases(artist_uri=artist_uri)
@@ -211,6 +208,9 @@ class DataProvider:
             for mbid in artist_mbids:
                 with_aliases = with_aliases.union(self._artist_mbids_with_aliases(artist_mbid=mbid))
             out = out[out["artist_mbid"].isin(artist_mbids)]
+
+        if credit_types is not None:
+            out = out[out["credit_type"].isin(credit_types)]
 
         return out.copy()
     

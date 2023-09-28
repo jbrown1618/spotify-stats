@@ -220,6 +220,16 @@ def artist_top_tracks_time_series_path(artist_name: str, term: str, relative_to=
         relative_to
     )
 
+def artist_producers_graph_path(artist_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "artists",
+            file_name_friendly(artist_name),
+            "producers.png"
+        ),
+        relative_to
+    )
 
 def playlists_path():
     return os.path.join(output_dir(), "playlists")

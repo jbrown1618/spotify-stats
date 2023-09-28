@@ -26,3 +26,10 @@ def file_name_friendly(text: str):
 
 def first(series: pd.Series):
     return None if len(series) == 0 else series.iloc[0]
+
+
+def aggregate_to_unique_list(series: pd.Series):
+    if len(series) == 0:
+        return ""
+    
+    return ", ".join(series.unique())

@@ -22,6 +22,9 @@ def md_summary_details(summary: str, details: str):
 
 
 def md_image(alt_text: str, url: str, width=None):
+    if pd.isna(url):
+        return ''
+    
     if width is None:
         return f"![{alt_text}]({url})"
 
