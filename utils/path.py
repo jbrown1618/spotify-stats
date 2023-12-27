@@ -554,17 +554,6 @@ def genre_overview_path(genre_name, relative_to=None):
     )
 
 
-def genre_tracks_path(genre_name, relative_to=None):
-    return relative_to_path(
-        os.path.join(
-            "genres",
-            file_name_friendly(genre_name),
-            "tracks.md"
-        ), 
-        relative_to
-    )
-
-
 def genre_artist_graph_path(genre_name, relative_to=None):
     return relative_to_path(
         os.path.join(

@@ -1,5 +1,4 @@
 import pandas as pd
-from data.provider import DataProvider
 
 from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
@@ -12,10 +11,9 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
-from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
-from utils.markdown import md_table, md_link, md_truncated_table
+from utils.markdown import md_link, md_truncated_table
 from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_clusters_figure_path, genre_clusters_path, genre_label_graph_path, genre_overview_path, genre_path, genre_producers_graph_path, genre_tracks_path, genre_years_graph_path, genres_path
 
 
@@ -34,13 +32,8 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content += producers_section(genre_name, tracks)
     content += years_section(genre_name, tracks)
 
-    tracks_content = tracks_section(genre_name, tracks)
-
     with open(genre_overview_path(genre_name), "w") as f:
         f.write("\n".join(content))
-
-    with open(genre_tracks_path(genre_name), "w") as f:
-        f.write("\n".join(tracks_content))
 
     if len(tracks) > 10:
         make_track_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
@@ -139,9 +132,3 @@ def years_section(genre_name: str, tracks: pd.DataFrame):
         "",
         bar_chart
     ]
-
-
-def tracks_section(genre_name: str, tracks: pd.DataFrame):
-    display_tracks = tracks_table(tracks, genre_path(genre_name))
-    table = md_table(display_tracks)
-    return [f"# Tracks in {genre_name}", "", table, ""]
