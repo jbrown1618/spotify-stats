@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from data.provider import DataProvider
 from utils.markdown import md_image
-from utils.settings import skip_figures
+from utils.settings import figure_dpi, skip_figures
 from utils.top_lists import get_term_length_description
 
 def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: str, relative_path: str) -> str:
@@ -66,7 +66,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
         for text, coords in annotations:
             plt.annotate(text, coords)
 
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 
     return md_image(f"Rank of {artist_name} over time", relative_path)

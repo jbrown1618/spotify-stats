@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from utils.markdown import md_image
-from utils.settings import skip_figures
+from utils.settings import figure_dpi, skip_figures
 from utils.util import first
 
 def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
@@ -33,7 +33,7 @@ def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
         ax.bar_label(ax.containers[1])
 
         sns.despine(left=True)
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
     
     return md_image(f"Bar chart of top {len(all)} albums", relative_path)

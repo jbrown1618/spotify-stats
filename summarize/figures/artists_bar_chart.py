@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 
 from utils.markdown import md_image
-from utils.settings import skip_figures
+from utils.settings import figure_dpi, skip_figures
 
 def artists_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
     grouped = DataProvider().track_counts_by_artist(tracks['track_uri'])
@@ -28,7 +28,7 @@ def artists_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: s
         ax.bar_label(ax.containers[1])
 
         sns.despine(left=True)
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 
     return md_image(f"Bar chart of top {len(all)} artists", relative_path)

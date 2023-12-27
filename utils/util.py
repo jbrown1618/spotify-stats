@@ -21,7 +21,7 @@ def spotify_url(uri: str):
 
 
 def file_name_friendly(text: str):
-    return re.sub(r"[^a-z0-9]", "_", text.lower())
+    return re.sub(r"[\s\&\#\.\*\%\?\$\'\"\/\\]", "_", text.lower())
 
 
 def first(series: pd.Series):

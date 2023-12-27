@@ -5,7 +5,7 @@ from data.provider import DataProvider
 
 from utils.artist_relationship import producer_credit_types, related_artist_plain_name
 from utils.markdown import md_image
-from utils.settings import skip_figures
+from utils.settings import figure_dpi, skip_figures
 from utils.util import first
 
 def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: str):
@@ -38,7 +38,7 @@ def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path:
         ax.bar_label(ax.containers[0])
         
         sns.despine(left=True)
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 
     return md_image(f"Bar chart of top {len(grouped)} producers", relative_path)

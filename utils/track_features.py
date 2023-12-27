@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 
 from utils.markdown import md_image
-from utils.settings import skip_figures
+from utils.settings import figure_dpi, skip_figures
 
 class TrackFeature:
      def __init__(self, column, label, adjective, negated_adjective, type, categories=None, normalized=False):
@@ -142,7 +142,7 @@ def comparison_scatter_plot(tracks: pd.DataFrame, comparison_column, category_la
         ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=category_label)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.close("all")
 
     return md_image(f"Comparison of {category_label}", relative_path)
@@ -170,7 +170,7 @@ def subset_scatter_plot(subset_label: str, track_uris, absolute_path, relative_p
         ax = sns.scatterplot(data=data, x=x_label, y=y_label, hue=subset_label)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        ax.get_figure().savefig(absolute_path)
+        ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.close("all")
 
     return md_image(f"Songs in {subset_label} compared to all songs", relative_path)

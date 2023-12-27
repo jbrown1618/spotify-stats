@@ -76,6 +76,10 @@ def skip_figures() -> bool:
     return get_setting("SKIP_FIGURES", False)
 
 
+def figure_dpi() -> int:
+    return get_setting("FIGURE_DPI", 50)
+
+
 def should_clear_markdown() -> bool:
     return get_setting("GENERATE_ONLY_PAGE", None) == None
 
