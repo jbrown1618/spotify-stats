@@ -1,7 +1,9 @@
 import pandas as pd
 
 from data.provider import DataProvider
-from utils.markdown import empty_header, md_image
+from utils.markdown import empty_header, md_image, md_link
+from utils.path import artist_overview_path
+from utils.settings import output_dir
 from utils.top_lists import get_term_length_description
 
 def top_tracks_table(tracks: pd.DataFrame):
@@ -43,4 +45,8 @@ def display_track(row: pd.Series, suffix: str):
     if pd.isna(row["track_name" + suffix]):
         return ''
     
-    return row["track_name" + suffix]
+    text = row["track_name" + suffix]
+
+    uri = artist_overview_path(row["primary_artist_name" + suffix], output_dir()) if row["primary_artist_has_page" + suffix] else None
+
+    return md_link(text, uri) if uri is not None else text
