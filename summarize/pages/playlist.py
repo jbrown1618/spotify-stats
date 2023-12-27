@@ -203,14 +203,14 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         "## Artists",
         "",
-        md_table(artists_table(tracks_for_year, playlist_path(playlist_name))),
+        md_truncated_table(artists_table(tracks_for_year, playlist_path(playlist_name)), 10),
         "",
         "## Albums",
         "",
-        md_table(albums_table(tracks_for_year)),
+        md_truncated_table(albums_table(tracks_for_year), 10),
         "",
         "## Tracks",
         "",
-        md_table(tracks_table(tracks_for_year, playlist_path(playlist_name), chronological=True)),
+        md_truncated_table(tracks_table(tracks_for_year, playlist_path(playlist_name), chronological=True), 10),
         ""
     ]

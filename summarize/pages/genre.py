@@ -14,7 +14,7 @@ from summarize.tables.producers_table import producers_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_truncated_table
-from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_clusters_figure_path, genre_clusters_path, genre_label_graph_path, genre_overview_path, genre_path, genre_producers_graph_path, genre_tracks_path, genre_years_graph_path, genres_path
+from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_clusters_figure_path, genre_clusters_path, genre_label_graph_path, genre_overview_path, genre_path, genre_producers_graph_path, genre_years_graph_path
 
 
 def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
@@ -22,7 +22,7 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     
     content = []
     content += title(genre_name)
-    content += [md_link(f"{len(tracks)} songs", genre_tracks_path(genre_name, genre_path(genre_name))), ""]
+    content += [f"{len(tracks)} songs", ""]
     if len(tracks) > 10:
         content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
         content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
