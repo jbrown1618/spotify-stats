@@ -1,3 +1,4 @@
+from typing import Optional
 import pandas as pd
 from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series
@@ -12,32 +13,39 @@ from summarize.tables.producers_table import producers_table
 from summarize.tables.tracks_table import tracks_table
 from utils.artist_relationship import related_artist_name, relationship_description, producer_credit_types
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, genre_path, playlist_overview_path
+from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms
 from utils.util import aggregate_to_unique_list, first
 
-def make_artist_summary(artist: pd.Series, \
-                        tracks: pd.DataFrame, \
-                        playlists: pd.DataFrame, \
-                        artist_genre: pd.DataFrame):
-    print(f"Generating summary for artist {artist['artist_name']}")
-    artist_name = artist["artist_name"]
+
+def make_artist_summary(artist_uri: str):
+    dp = DataProvider()
+    artist = dp.artist(artist_uri)
+    artist_name = artist['artist_name']
+    artist_image_url = artist['artist_image_url']
+
+    print(f"Generating summary for artist {artist_name}")
+
+    tracks = dp.tracks(artist_uri=artist_uri)
+    playlists = dp.playlists(artist_uri=artist_uri)
+    artist_genre = dp.artist_genre()
+
     content = []
 
-    content += title(artist)
-    content += image(artist)
+    content += title(artist_name)
+    content += image(artist_name, artist_image_url)
     if len(tracks) > 10:
         content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
         content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
-    content += relationships_section(artist)
-    content += top_artists_rank_section(artist)
-    content += top_tracks_section(artist)
-    content += playlists_section(artist, playlists)
+    content += relationships_section(artist_name, artist_uri)
+    content += top_artists_rank_section(artist_name, artist_uri)
+    content += top_tracks_section(artist_name, artist_uri)
+    content += playlists_section(artist_name, artist_uri, playlists)
     content += albums_section(tracks)
     content += labels_section(artist_name, tracks)
-    content += genres_section(artist, artist_genre)
-    content += credits_section(artist)
-    content += producers_section(artist)
+    content += genres_section(artist_name, artist_uri, artist_genre)
+    content += credits_section(artist_name, artist_uri)
+    content += producers_section(artist_name, artist_uri)
     content += tracks_section(artist_name, tracks)
 
     with open(artist_overview_path(artist_name), "w") as f:
@@ -48,34 +56,34 @@ def make_artist_summary(artist: pd.Series, \
         make_clusters_page(tracks, artist_name, artist_clusters_path(artist_name), artist_clusters_figure_path(artist_name))
 
 
-def title(artist):
-    return ["", f"# {artist['artist_name']}", ""]
+def title(artist_name):
+    return ["", f"# {artist_name}", ""]
 
 
-def image(artist):
-    return ["", md_image(artist["artist_name"], artist["artist_image_url"], 100), ""]
+def image(artist_name, artist_image_url):
+    return ["", md_image(artist_name, artist_image_url, 100), ""]
 
 
-def relationships_section(artist):
-    related_artists = DataProvider().related_artists(artist['artist_uri'])
+def relationships_section(artist_name, artist_uri):
+    related_artists = DataProvider().related_artists(artist_uri)
     if related_artists is None or len(related_artists) == 0:
         return []
 
     phrases = [
-        f'- {relationship_description(relationship, artist_path(artist["artist_name"]))}'
+        f'- {relationship_description(relationship, artist_path(artist_name))}'
         for _, relationship in related_artists.iterrows()
     ]
 
-    return ["## Relationships", "", artist["artist_name"] + ":"] + phrases + [""]
+    return ["## Relationships", "", artist_name + ":"] + phrases + [""]
 
 
-def top_artists_rank_section(artist: pd.Series):
+def top_artists_rank_section(artist_name, artist_uri):
     contents = []
 
-    current_entries = DataProvider().top_artists(current=True, artist_uris=[artist['artist_uri']])
+    current_entries = DataProvider().top_artists(current=True, artist_uris=[artist_uri])
 
     if len(current_entries) > 0:
-        rankings_list = [f'{artist["artist_name"]} is currently:']
+        rankings_list = [f'{artist_name} is currently:']
         for term in graphable_top_list_terms:
             entries_for_term = current_entries[current_entries['term'] == term]
             if len(entries_for_term) == 0:
@@ -90,10 +98,10 @@ def top_artists_rank_section(artist: pd.Series):
         contents += rankings_list
         
     time_series = artist_rank_time_series(
-        artist['artist_uri'],
-        artist['artist_name'],
-        artist_rank_time_series_path(artist['artist_name']),
-        artist_rank_time_series_path(artist['artist_name'], artist_path(artist['artist_name']))
+        artist_uri,
+        artist_name,
+        artist_rank_time_series_path(artist_name),
+        artist_rank_time_series_path(artist_name, artist_path(artist_name))
     )
 
     if time_series is not None:
@@ -105,10 +113,10 @@ def top_artists_rank_section(artist: pd.Series):
     return ['## Artist Rank'] + contents
 
 
-def top_tracks_section(artist: pd.Series):
+def top_tracks_section(artist_name, artist_uri):
     contents = []
 
-    track_uris = DataProvider().tracks(artist_uri=artist['artist_uri'])['track_uri']
+    track_uris = DataProvider().tracks(artist_uri=artist_uri)['track_uri']
     current_entries = DataProvider().top_tracks(current=True, track_uris=track_uris)
 
     done = set()
@@ -140,10 +148,10 @@ def top_tracks_section(artist: pd.Series):
 
     for term in graphable_top_list_terms:
         time_series_for_term = artist_top_tracks_time_series(
-            artist['artist_uri'],
+            artist_uri,
             term,
-            artist_top_tracks_time_series_path(artist['artist_name'], term),
-            artist_top_tracks_time_series_path(artist['artist_name'], term, artist_path(artist['artist_name']))
+            artist_top_tracks_time_series_path(artist_name, term),
+            artist_top_tracks_time_series_path(artist_name, term, artist_path(artist_name))
         )
 
         if time_series_for_term == '':
@@ -172,15 +180,15 @@ def track_ranks_superlatives_list(track_name: str, short_term_rank: int, medium_
     return superlatives_list
 
 
-def playlists_section(artist: pd.Series, playlists: pd.DataFrame):
+def playlists_section(artist_name, artist_uri, playlists: pd.DataFrame):
     display_playlists = playlists.copy()
     display_playlists['playlist_artist_track_count'] = display_playlists['playlist_uri']\
-        .apply(lambda playlist_uri: track_count_for_artist_in_playlist(playlist_uri, artist['artist_uri']))
+        .apply(lambda playlist_uri: track_count_for_artist_in_playlist(playlist_uri, artist_uri))
     display_playlists = display_playlists.sort_values(by="playlist_artist_track_count", ascending=False)
     display_playlists["Art"] = display_playlists["playlist_image_url"]\
         .apply(lambda href: md_image("", href, 50))
     display_playlists["Playlist"] = display_playlists["playlist_uri"]\
-        .apply(lambda uri: display_playlist(artist["artist_name"], uri, playlists))
+        .apply(lambda uri: display_playlist(artist_name, uri, playlists))
     display_playlists["Tracks"] = display_playlists["playlist_artist_track_count"]
     display_playlists = display_playlists[["Art", "Tracks", "Playlist"]]
 
@@ -207,9 +215,7 @@ def labels_section(artist_name: str, artist_tracks: pd.DataFrame):
     return ["## Top Record Labels", "", md_table(table_data), ""]
 
 
-def genres_section(artist: pd.Series, artist_genre: pd.DataFrame):
-    artist_uri = artist["artist_uri"]
-    artist_name = artist['artist_name']
+def genres_section(artist_name, artist_uri, artist_genre: pd.DataFrame):
     genres_for_artist = artist_genre[artist_genre["artist_uri"] == artist_uri]
 
     if len(genres_for_artist) == 0:
@@ -226,11 +232,11 @@ def genres_section(artist: pd.Series, artist_genre: pd.DataFrame):
     return section
 
 
-def credits_section(artist: pd.Series):
+def credits_section(artist_name, artist_uri):
     out = []
-    out += credit_types_subsection(artist)
-    out += member_credits_subsection(artist)
-    out += production_credits_subsection(artist)
+    out += credit_types_subsection(artist_uri)
+    out += member_credits_subsection(artist_name, artist_uri)
+    out += production_credits_subsection(artist_name, artist_uri)
 
     if len(out) == 0:
         return []
@@ -238,8 +244,8 @@ def credits_section(artist: pd.Series):
     return ['## Credits', ''] + out
 
 
-def credit_types_subsection(artist: pd.Series):
-    credits = DataProvider().track_credits(artist_uri=artist["artist_uri"], include_aliases=True)
+def credit_types_subsection(artist_uri):
+    credits = DataProvider().track_credits(artist_uri=artist_uri, include_aliases=True)
     if len(credits) == 0:
         return []
 
@@ -254,13 +260,13 @@ def credit_types_subsection(artist: pd.Series):
     ]
 
 
-def production_credits_subsection(artist: pd.Series):
+def production_credits_subsection(artist_name, artist_uri):
     production_credits = DataProvider().track_credits(
-        artist_uri=artist["artist_uri"], 
+        artist_uri=artist_uri, 
         include_aliases=True, 
         credit_types=producer_credit_types)
 
-    members = DataProvider().group_members(artist['artist_uri'])
+    members = DataProvider().group_members(artist_uri)
     if members is not None and len(members) > 0:
         member_credits = DataProvider().track_credits(
             artist_mbids=members["artist_mbid"],
@@ -274,7 +280,7 @@ def production_credits_subsection(artist: pd.Series):
         return []
 
     production_credits['credit_type'] = production_credits['credit_type'].apply(lambda t: t.capitalize())
-    production_credits['display_name'] = production_credits.apply(lambda r: related_artist_name(r, artist_path(artist['artist_name'])), axis=1)
+    production_credits['display_name'] = production_credits.apply(lambda r: related_artist_name(r, artist_path(artist_name)), axis=1)
 
     display = production_credits.groupby('recording_mbid').agg({
         'album_image_url': first,
@@ -307,8 +313,8 @@ def production_credits_subsection(artist: pd.Series):
     ]
 
 
-def member_credits_subsection(artist: pd.Series):
-    members = DataProvider().group_members(artist['artist_uri'])
+def member_credits_subsection(artist_name, artist_uri):
+    members = DataProvider().group_members(artist_uri)
     if members is None:
         return []
     
@@ -316,7 +322,7 @@ def member_credits_subsection(artist: pd.Series):
     if len(credits) == 0:
         return []
     
-    credits['display_name'] = credits.apply(lambda r: related_artist_name(r, artist_path(artist["artist_name"])), axis=1)
+    credits['display_name'] = credits.apply(lambda r: related_artist_name(r, artist_path(artist_name)), axis=1)
     credits['credit_type'] = credits['credit_type'].apply(lambda t: t.capitalize())
     pivot = credits.pivot_table(
         values=['recording_mbid'], 
@@ -334,17 +340,17 @@ def member_credits_subsection(artist: pd.Series):
     ]
 
 
-def producers_section(artist: pd.Series):
-    tracks = DataProvider().tracks(artist_uri=artist['artist_uri'])
-    producers = producers_table(tracks, artist_path(artist['artist_name']))
+def producers_section(artist_name, artist_uri):
+    tracks = DataProvider().tracks(artist_uri=artist_uri)
+    producers = producers_table(tracks, artist_path(artist_name))
 
     if len(producers) == 0:
         return []
     
     bar_chart = producers_bar_chart(
         tracks, 
-        artist_producers_graph_path(artist['artist_name']),
-        artist_producers_graph_path(artist['artist_name'], artist_path(artist['artist_name'])))
+        artist_producers_graph_path(artist_name),
+        artist_producers_graph_path(artist_name, artist_path(artist_name)))
     
     return [
         '## Top Producers',

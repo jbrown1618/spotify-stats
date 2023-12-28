@@ -33,8 +33,7 @@ def generate_output():
 
     if should_generate_page('artist'):
         for _, artist in dp.artists(with_page=True).iterrows():
-            artist_uri=artist['artist_uri']
-            make_artist_summary(artist, dp.tracks(artist_uri=artist_uri), dp.playlists(artist_uri=artist_uri), dp.artist_genre())
+            make_artist_summary(artist['artist_uri'])
 
     if should_generate_page('label'):
         for standardized_label in dp.labels(with_page=True)['album_standardized_label']:
