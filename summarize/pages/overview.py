@@ -17,7 +17,7 @@ from summarize.tables.playlists_table import playlists_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import top_tracks_table
-from utils.top_lists import get_term_length_phrase, top_list_terms
+from utils.top_lists import get_term_length_phrase, graphable_top_list_terms
 from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_link, md_summary_details, md_truncated_table
 from utils.path import errors_path, overview_artist_graph_path, overview_artists_scatterplot_path, overview_audio_features_figure_path, overview_audio_features_path, overview_clusters_figure_path, overview_clusters_path, overview_genre_graph_path, overview_genres_scatterplot_path, overview_label_graph_path, overview_playlists_scatterplot_path, overview_path, overview_producers_graph_path, overview_top_artists_time_series_path, overview_top_tracks_time_series_path
@@ -71,7 +71,7 @@ def tracks_section(tracks: pd.DataFrame):
                 overview_top_tracks_time_series_path(term, output_dir())
             )
         )
-        for term in top_list_terms
+        for term in graphable_top_list_terms
     ]
 
     contents = [
@@ -118,7 +118,7 @@ def artists_section(tracks: pd.DataFrame):
                 overview_top_artists_time_series_path(term, output_dir())
             )
         )
-        for term in top_list_terms
+        for term in graphable_top_list_terms
     ]
 
     top_artists = md_truncated_table(top_artists_table(), 10, "See top 50 artists")

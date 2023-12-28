@@ -1,7 +1,6 @@
-top_list_terms = [
+graphable_top_list_terms = [
     'long_term',
-    'medium_term',
-    'short_term'
+    'medium_term'
 ]
 
 def get_term_length_description(term):
