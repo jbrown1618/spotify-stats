@@ -98,7 +98,7 @@ class DataSource:
         while True:
             df_path = persistent_data_path(self.source, self.key, year)
             if not os.path.isfile(df_path):
-                return merged
+                return merged.reset_index()
             
             df_for_year = pd.read_csv(df_path)
             if merged is None:
