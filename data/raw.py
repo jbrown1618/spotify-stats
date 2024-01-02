@@ -121,11 +121,14 @@ class DataSource:
         date_strings.sort()
 
         latest_date_str = date_strings[-1]
-        next_latest_date_str = date_strings[-2]
+        should_replace_latest = this_date() == latest_date_str
 
-        # Replace the most recent day of data if it is fewer than three days away from the previous day
-        days_diff = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days
-        should_replace_latest = days_diff < 3 or this_date() == latest_date_str
+        if len(date_strings) > 1 and not should_replace_latest:
+            next_latest_date_str = date_strings[-2]
+
+            # Replace the most recent day of data if it is fewer than three days away from the previous day
+            days_diff = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days
+            should_replace_latest = days_diff < 3
 
         if should_replace_latest:
             current_df = current_df[current_df['as_of_date'] != latest_date_str]
