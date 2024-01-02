@@ -1,3 +1,9 @@
+top_list_terms = [
+    'short_term',
+    'medium_term',
+    'long_term'
+]
+
 graphable_top_list_terms = [
     'long_term',
     'medium_term'

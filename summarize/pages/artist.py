@@ -14,7 +14,7 @@ from summarize.tables.tracks_table import tracks_table
 from utils.artist_relationship import related_artist_name, relationship_description, producer_credit_types
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
-from utils.top_lists import get_term_length_phrase, graphable_top_list_terms
+from utils.top_lists import get_term_length_phrase, graphable_top_list_terms, top_list_terms
 from utils.util import aggregate_to_unique_list, first
 
 
@@ -84,7 +84,7 @@ def top_artists_rank_section(artist_name, artist_uri):
 
     if len(current_entries) > 0:
         rankings_list = [f'{artist_name} is currently:']
-        for term in graphable_top_list_terms:
+        for term in top_list_terms:
             entries_for_term = current_entries[current_entries['term'] == term]
             if len(entries_for_term) == 0:
                 continue
