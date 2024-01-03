@@ -87,7 +87,12 @@ class DataSource:
             value = value.sort_values(by=self.index)
 
         value.to_csv(path, index=False)
+
+        if self.persistent:
+            value = self._merge_all_years()
+
         self._prefix_df(value)
+
         self._value = value
 
 
