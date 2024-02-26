@@ -105,14 +105,11 @@ class DataSource:
             if not os.path.isfile(df_path):
                 return merged.reset_index()
             
-            print(f'DEBUG: Found {df_path}')
             df_for_year = pd.read_csv(df_path)
             if merged is None:
                 merged = df_for_year
             else:
                 merged = pd.concat([merged, df_for_year], axis=0)
-
-            print(f'DEBUG: merged df currently has {len(merged)} rows')
 
             year = str(int(year) - 1)
     

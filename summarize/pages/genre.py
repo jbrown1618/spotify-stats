@@ -11,6 +11,7 @@ from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
+from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_truncated_table
@@ -27,6 +28,7 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
         content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
         content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks)
+    content += most_and_least_listened_tracks_section(genre_name, tracks)
     content += albums_section(genre_name, tracks)
     content += labels_section(genre_name, tracks)
     content += producers_section(genre_name, tracks)
@@ -64,6 +66,14 @@ def artists_section(genre_name, tracks: pd.DataFrame):
     )
 
     return ["## Top Artists", "", full_list, "", img, "", scatterplot]
+
+
+def most_and_least_listened_tracks_section(genre_name: str, tracks: pd.DataFrame):
+    return [
+        '## Most and least listened tracks',
+        most_and_least_listened_tracks_table(tracks, genre_path(genre_name)),
+        ''
+    ]
 
 
 def albums_section(genre_name, tracks: pd.DataFrame):

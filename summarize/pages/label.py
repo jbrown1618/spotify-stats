@@ -118,6 +118,6 @@ def producers_section(label_name, tracks: pd.DataFrame):
 
 
 def tracks_section(label_name: str, label_full: pd.DataFrame):
-    display_tracks = tracks_table(label_full, label_path(label_name))
+    display_tracks = tracks_table(label_full, label_path(label_name), sorting='default')
     table = md_truncated_table(display_tracks, 10, "See all tracks")
     return [f"## Tracks released under {label_name}", "", table, ""]

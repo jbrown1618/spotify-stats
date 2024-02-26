@@ -362,7 +362,7 @@ def producers_section(artist_name, artist_uri):
 
 
 def tracks_section(artist_name: str, tracks: pd.DataFrame):
-    display_tracks = tracks_table(tracks, artist_path(artist_name))
+    display_tracks = tracks_table(tracks, artist_path(artist_name), sorting='default')
     return ["## Tracks", "", md_truncated_table(display_tracks, 10, "See all tracks"), ""]
 
 

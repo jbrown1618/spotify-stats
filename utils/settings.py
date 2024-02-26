@@ -87,6 +87,7 @@ def should_clear_markdown() -> bool:
 def should_generate_page(page_type: str) -> bool:
     page = get_setting("GENERATE_ONLY_PAGE", None)
     return page == None \
+        or page == '' \
         or page.lower() == page_type.lower() \
         or (page.lower() + 's') == page_type.lower()\
         or page.lower() == (page_type.lower() + 's')

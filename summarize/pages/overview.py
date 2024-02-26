@@ -16,7 +16,7 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_artists_table import top_artists_table
-from summarize.tables.top_tracks_table import top_tracks_table
+from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table, top_tracks_table
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms
 from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_link, md_summary_details, md_truncated_table
@@ -79,7 +79,9 @@ def tracks_section(tracks: pd.DataFrame):
         "", 
         "Top tracks of the last month, six months, and all time",
         "",
-        md_truncated_table(top_tracks_table(tracks), 10, "See top 50 tracks"), 
+        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks"), 
+        "",
+        most_and_least_listened_tracks_table(tracks, output_dir()),
         ""
     ]
 

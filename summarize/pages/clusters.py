@@ -59,7 +59,7 @@ def cluster_section(i: int, uris: pd.Series, distances_to_cluster_center: pd.Ser
     representative_track_uris = distances_to_cluster_center.sort_values(ascending=True).head(10).index
     tracks = DataProvider().tracks(uris=representative_track_uris)
 
-    return [f'## Cluster #{i + 1}', '', f'{str(len(uris))} tracks', '', md_truncated_table(tracks_table(tracks, path))]
+    return [f'## Cluster #{i + 1}', '', f'{str(len(uris))} tracks', '', md_truncated_table(tracks_table(tracks, path, sorting=None))]
 
 
 def get_clusters(tracks: pd.DataFrame) -> typing.Tuple[pd.DataFrame, pd.DataFrame]:

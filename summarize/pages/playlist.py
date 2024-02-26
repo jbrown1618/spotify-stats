@@ -14,6 +14,7 @@ from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
+from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table
 from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
@@ -41,6 +42,7 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += labels_section(playlist_name, tracks)
     content += genres_section(playlist_name, tracks)
     content += producers_section(playlist_name, tracks)
+    content += most_and_least_listened_tracks_section(playlist_name, tracks)
     content += years_section(playlist_name, tracks)
 
     with open(playlist_overview_path(playlist_name), "w") as f:
@@ -157,7 +159,16 @@ def producers_section(playlist_name, tracks: pd.DataFrame):
         '',
         md_truncated_table(producers),
         '',
-        bar_chart
+        bar_chart,
+        ''
+    ]
+
+
+def most_and_least_listened_tracks_section(playlist_name: str, tracks: pd.DataFrame):
+    return [
+        '## Most and least listened tracks',
+        most_and_least_listened_tracks_table(tracks, playlist_path(playlist_name)),
+        ''
     ]
 
 
@@ -211,6 +222,6 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         "## Tracks",
         "",
-        md_truncated_table(tracks_table(tracks_for_year, playlist_path(playlist_name), chronological=True), 10),
+        md_truncated_table(tracks_table(tracks_for_year, playlist_path(playlist_name), sorting="chronological"), 10),
         ""
     ]

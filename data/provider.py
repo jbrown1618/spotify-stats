@@ -129,8 +129,12 @@ class DataProvider:
             track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
             track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
 
+            scores = self.aggregate_track_scores()
+
             tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
             tracks = pd.merge(tracks, artists, on="primary_artist_uri")
+            tracks = pd.merge(tracks, scores, on='track_uri', how="left")
+            tracks['track_score'].fillna(0, inplace=True)
 
             self._tracks = tracks
 
@@ -264,6 +268,23 @@ class DataProvider:
             out = out[out['track_uri'].isin(track_uris)]
 
         return out.copy()
+    
+
+    def aggregate_track_scores(self):
+        top = self.top_tracks()
+        top['track_score'] = top.apply(lambda row: self.placement_score(row['index'], row['term']), axis=1)
+
+        return top.groupby('track_uri').agg({'track_score': 'sum'}).reset_index()
+
+
+    def placement_score(self, index, term):
+        multiplier = 1
+        if term == 'medium_term':
+            multiplier = 6
+        if term == 'long_term':
+            multiplier = 12
+
+        return multiplier * (51 - index)
     
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):
