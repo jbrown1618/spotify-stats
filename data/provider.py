@@ -40,6 +40,7 @@ class DataProvider:
         self._liked_tracks_sample = None
         self._ml_data = None
         self._track_credits = None
+        self._producers_with_page = None
 
         self._initialized = True
 
@@ -190,6 +191,7 @@ class DataProvider:
             track_credits = pd.merge(track_credits, rd['sp_track_mb_recording'], how="left", on="recording_mbid")
             track_credits = pd.merge(track_credits, self.artists(), how="left", left_on="spotify_artist_uri", right_on="artist_uri")
             track_credits = pd.merge(track_credits, self.tracks(), how="left", left_on="spotify_track_uri", right_on="track_uri")
+            track_credits['producer_has_page'] = track_credits['artist_mbid'].isin(self.producers_with_page())
 
             self._track_credits = track_credits
 
@@ -390,20 +392,26 @@ class DataProvider:
 
     def mb_artists(self, mbids: typing.Iterable[str] = None, with_page: bool = False):
         out = RawData()['mb_artists']
+        out['producer_has_page'] = out['artist_mbid'].isin(self.producers_with_page())
 
         if mbids is not None:
             out = out[out['artist_mbid'].isin(mbids)]
 
         if with_page:
+            out = out[out['producer_has_page']]
+
+        return out
+    
+
+    def producers_with_page(self):
+        if self._producers_with_page is None:
             credits = RawData()['mb_recording_credits']
             credits = credits[credits['credit_type'].isin(producer_credit_types)]
             grouped = credits.groupby('artist_mbid').agg({'recording_mbid': 'count'}).reset_index()
             filtered = grouped[grouped['recording_mbid'] > 10]
             mbids = filtered['artist_mbid']
-            out = out[out['artist_mbid'].isin(mbids)]
-
-        return out
-
+            self._producers_with_page = mbids
+        return self._producers_with_page
 
 
     def related_artists(self, artist_uri: str) -> pd.DataFrame:

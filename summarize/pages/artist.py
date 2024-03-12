@@ -8,10 +8,9 @@ from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
-from summarize.tables.producers_table import producers_table
-from summarize.tables.production_credits_table import production_credits_table
+from summarize.tables.producers_table import producers_table, production_credits_table
 from summarize.tables.tracks_table import tracks_table
-from utils.artist_relationship import related_artist_name, relationship_description
+from utils.artist_relationship import mb_artist_display_name, relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms, top_list_terms
@@ -262,6 +261,9 @@ def credit_types_subsection(artist_uri):
 def production_credits_subsection(artist_name, artist_uri):
     table = production_credits_table(artist_uri=artist_uri, relative_to=artist_overview_path(artist_name))
 
+    if table is None:
+        return []
+
     return [
         '### Production Credits',
         '',
@@ -279,7 +281,7 @@ def member_credits_subsection(artist_name, artist_uri):
     if len(credits) == 0:
         return []
     
-    credits['display_name'] = credits.apply(lambda r: related_artist_name(r, artist_path(artist_name)), axis=1)
+    credits['display_name'] = credits.apply(lambda r: mb_artist_display_name(r, artist_path(artist_name)), axis=1)
     credits['credit_type'] = credits['credit_type'].apply(lambda t: t.capitalize())
     pivot = credits.pivot_table(
         values=['recording_mbid'], 
