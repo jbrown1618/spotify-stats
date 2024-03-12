@@ -7,6 +7,7 @@ from utils.date import release_year
 from utils.machine_learning import prepare_ml_data
 from utils.record_label import standardize_record_labels
 from utils.util import first
+from utils.artist_relationship import producer_credit_types
 
 class DataProvider:
     _instance = None
@@ -314,12 +315,19 @@ class DataProvider:
         return self.artist(artist_uri)
     
 
-    def artist(self, uri: str) -> pd.Series:
-        return self.artists(uris={uri}).iloc[0]
+    def artist(self, uri: str = None, mbid: str = None) -> pd.Series:
+        if uri is not None:
+            return self.artists(uris={uri}).iloc[0]
+        
+        if mbid is not None:
+            return self.artists(mbids={mbid}).iloc[0]
+        
+        return None
     
 
     def artists(self, 
                 uris: typing.Iterable[str] = None, 
+                mbids: typing.Iterable[str] = None,
                 with_page: bool = None, 
                 track_uri: str = None,
                 album_uri: str = None) -> pd.DataFrame:
@@ -350,6 +358,11 @@ class DataProvider:
 
         out = self._artists
 
+        if mbids is not None:
+            mb_join = raw['sp_artist_mb_artist']
+            matching_uris = mb_join[mb_join['artist_mbid'].isin(mbids)]['spotify_artist_uri']
+            uris = set(uris or {}) + set(matching_uris)
+
         if uris is not None:
             out = out[out['artist_uri'].isin(uris)]
 
@@ -370,6 +383,28 @@ class DataProvider:
 
         return out
     
+
+    def mb_artist(self, mbid: str) -> pd.Series:
+        return self.mb_artists(mbids = {mbid}).iloc[0]
+    
+
+    def mb_artists(self, mbids: typing.Iterable[str] = None, with_page: bool = False):
+        out = RawData()['mb_artists']
+
+        if mbids is not None:
+            out = out[out['artist_mbid'].isin(mbids)]
+
+        if with_page:
+            credits = RawData()['mb_recording_credits']
+            credits = credits[credits['credit_type'].isin(producer_credit_types)]
+            grouped = credits.groupby('artist_mbid').agg({'recording_mbid': 'count'}).reset_index()
+            filtered = grouped[grouped['recording_mbid'] > 10]
+            mbids = filtered['artist_mbid']
+            out = out[out['artist_mbid'].isin(mbids)]
+
+        return out
+
+
 
     def related_artists(self, artist_uri: str) -> pd.DataFrame:
         raw = RawData()
@@ -419,6 +454,7 @@ class DataProvider:
             return None
 
         return members[[col for col in members.columns if col.startswith('artist_')]]
+
 
     def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         out = RawData()['top_artists']

@@ -1,4 +1,3 @@
-from typing import Optional
 import pandas as pd
 from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series

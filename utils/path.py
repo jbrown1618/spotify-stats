@@ -673,6 +673,17 @@ def genre_clusters_figure_path(genre_name, relative_to=None):
     )
 
 
+def producer_overview_path(producer_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "producers",
+            file_name_friendly(producer_name),
+            "overview.md"
+        ), 
+        relative_to
+    )
+
+
 def pairplot_path(relative_to=None):
     return relative_to_path(
         os.path.join("images", "audio", "audio_pairplot.png"), 

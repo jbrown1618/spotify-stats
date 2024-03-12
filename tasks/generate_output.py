@@ -5,6 +5,7 @@ from summarize.pages.label import make_label_summary
 from summarize.pages.playlist import make_playlist_summary
 from summarize.pages.overview import make_overview
 from summarize.pages.errors import make_errors
+from summarize.pages.producer import make_producer_summary
 from utils.path import clear_markdown
 from utils.settings import should_clear_markdown, should_generate_page
 
@@ -42,3 +43,7 @@ def generate_output():
     if should_generate_page('genre'):
         for genre in dp.genres(with_page=True):
             make_genre_summary(genre, dp.tracks(genre=genre))
+
+    if should_generate_page('producer'):
+        for mbid in dp.mb_artists(with_page=True)['artist_mbid']:
+            make_producer_summary(mbid)
