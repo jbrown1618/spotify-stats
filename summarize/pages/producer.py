@@ -2,9 +2,10 @@ import pandas as pd
 from data.provider import DataProvider
 from summarize.tables.artists_table import artists_table
 from summarize.tables.production_credits_table import production_credits_table
-from utils.markdown import md_image, md_table
-from utils.path import producer_overview_path
+from utils.markdown import md_table, md_truncated_table
+from utils.path import producer_overview_path, producer_path
 from utils.util import first
+from utils.artist_relationship import producer_credit_types
 
 
 def make_producer_summary(mbid: str):
@@ -25,7 +26,7 @@ def make_producer_summary(mbid: str):
     content += title(name)
     content += credit_types_section(mbid, credits)
     content += produces_for_artists_section(name, credits)
-    content += works_with_section()
+    content += works_with_section(mbid, credits)
     content += production_credits_section(mbid, name)
 
     with open(producer_overview_path(name), "w") as f:
@@ -54,19 +55,47 @@ def credit_types_section(mbid, credits):
 
 def produces_for_artists_section(name, credits: pd.DataFrame):
     track_uris = credits['track_uri']
-    table = artists_table(DataProvider().tracks(track_uris), producer_overview_path(name))
+    table = artists_table(DataProvider().tracks(track_uris), producer_path(name))
 
     return [
         '## Produces for Artists',
         '',
-        md_table(table),
+        md_truncated_table(table),
         ''
     ]
 
 
-def works_with_section():
+def works_with_section(mbid, credits: pd.DataFrame):
+    track_uris = credits['track_uri']
+    all_credits_for_tracks = DataProvider().track_credits(track_uris=track_uris, credit_types=producer_credit_types)
+    other_credits: pd.DataFrame = all_credits_for_tracks[all_credits_for_tracks['artist_mbid'] != mbid]
+    
+    # one per artist per track
+    grouped = other_credits.groupby(['artist_mbid', 'track_uri']).agg({
+        'artist_mb_name': first,
+        'artist_sort_name': first,
+        'artist_image_url': first
+    }).reset_index()
+
+    # counts per artist
+    grouped = grouped.groupby(['artist_mbid']).agg({
+        'artist_mb_name': first,
+        'artist_sort_name': first,
+        'artist_image_url': first,
+        'track_uri': 'count'
+    }).reset_index()
+
+    display = grouped.rename(columns={
+        'artist_mb_name': 'Producer',
+        'track_uri': 'Tracks'
+    })[['Producer', 'Tracks']]
+
+    display = display.sort_values(by=['Tracks'], ascending=False)
+
     return [
         '## Works with Producers',
+        '',
+        md_truncated_table(display),
         ''
     ]
 

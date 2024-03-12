@@ -673,6 +673,16 @@ def genre_clusters_figure_path(genre_name, relative_to=None):
     )
 
 
+def producer_path(producer_name, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "producers",
+            file_name_friendly(producer_name)
+        ), 
+        relative_to
+    )
+
+
 def producer_overview_path(producer_name, relative_to=None):
     return relative_to_path(
         os.path.join(
