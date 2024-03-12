@@ -9,12 +9,12 @@ from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
+from summarize.tables.production_credits_table import production_credits_table
 from summarize.tables.tracks_table import tracks_table
-from utils.artist_relationship import related_artist_name, relationship_description, producer_credit_types
+from utils.artist_relationship import related_artist_name, relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms, top_list_terms
-from utils.util import aggregate_to_unique_list, first
 
 
 def make_artist_summary(artist_uri: str):
@@ -260,54 +260,12 @@ def credit_types_subsection(artist_uri):
 
 
 def production_credits_subsection(artist_name, artist_uri):
-    production_credits = DataProvider().track_credits(
-        artist_uri=artist_uri, 
-        include_aliases=True, 
-        credit_types=producer_credit_types)
-
-    members = DataProvider().group_members(artist_uri)
-    if members is not None and len(members) > 0:
-        member_credits = DataProvider().track_credits(
-            artist_mbids=members["artist_mbid"],
-            include_aliases=True, 
-            credit_types=producer_credit_types)
-        
-        if len(member_credits) > 0:
-            production_credits = pd.concat([production_credits, member_credits])
-
-    if len(production_credits) == 0:
-        return []
-
-    production_credits['credit_type'] = production_credits['credit_type'].apply(lambda t: t.capitalize())
-    production_credits['display_name'] = production_credits.apply(lambda r: related_artist_name(r, artist_path(artist_name)), axis=1)
-
-    display = production_credits.groupby('recording_mbid').agg({
-        'album_image_url': first,
-        'album_name': first,
-        'album_release_date': first,
-        'track_name': first,
-        'track_uri': first,
-        'display_name': aggregate_to_unique_list,
-        'credit_type': aggregate_to_unique_list,
-    }).reset_index().sort_values(['album_release_date', 'track_uri'])
-
-    display['Art'] = display['album_image_url'].apply(lambda url: md_image("", url, 50))
-    display = display.rename(columns={
-        'track_name': 'Track',
-        'album_name': 'Album',
-        'credit_type': 'Credit Types',
-        'display_name': 'Members'
-    })
-
-    if members is not None and len(members) > 0:
-        display = display[['Art', 'Track', 'Members', 'Credit Types']]
-    else:
-        display = display[['Art', 'Track', 'Credit Types']]
+    table = production_credits_table(artist_uri=artist_uri, relative_to=artist_overview_path(artist_name))
 
     return [
         '### Production Credits',
         '',
-        md_truncated_table(display),
+        md_truncated_table(table),
         ''
     ]
 
