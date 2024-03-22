@@ -10,6 +10,9 @@ from utils.top_lists import get_term_length_phrase
 def top_artists_time_series(term: str, top: int, absolute_path: str, relative_path: str) -> str:
     current_top_artist_uris = DataProvider().top_artists(term=term, top=top, current=True)['artist_uri'].unique()
     data = DataProvider().top_artists(term=term, artist_uris=current_top_artist_uris)
+    if len(data) < 20:
+        return ""
+    
     artists = DataProvider().artists(uris=current_top_artist_uris)
     data = pd.merge(data, artists[['artist_uri', 'artist_name']], how='inner', on='artist_uri')
 

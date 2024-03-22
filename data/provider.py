@@ -282,12 +282,17 @@ class DataProvider:
 
     def placement_score(self, index, term):
         multiplier = 1
+        total = 50
+
+        if term == 'on_repeat':
+            multiplier = 3
+            total = 30
         if term == 'medium_term':
             multiplier = 6
         if term == 'long_term':
             multiplier = 12
 
-        return multiplier * (51 - index)
+        return multiplier * (total + 1 - index)
     
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):
@@ -451,7 +456,7 @@ class DataProvider:
         return pd.concat([forward_relationships, backward_relationships]).sort_values(by=['relationship_type', 'relationship_direction', 'artist_sort_name'])
 
 
-    def group_members(self, artist_uri: str) -> pd.DataFrame():
+    def group_members(self, artist_uri: str) -> pd.DataFrame:
         related = self.related_artists(artist_uri)
         if related is None:
             return None

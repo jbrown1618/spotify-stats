@@ -11,6 +11,12 @@ def md_link(text: str, url: str):
 
 
 def md_summary_details(summary: str, details: str):
+    if details is None:
+        return ""
+    
+    if details == "":
+        return ""
+    
     return f"""
 <details>
 <summary>{html.escape(summary, quote=True)}</summary>

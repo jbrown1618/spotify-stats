@@ -1,3 +1,4 @@
+from typing import Optional
 import pandas as pd
 from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series
@@ -13,7 +14,7 @@ from summarize.tables.tracks_table import tracks_table
 from utils.artist_relationship import mb_artist_display_name, relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
 from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
-from utils.top_lists import get_term_length_phrase, graphable_top_list_terms, top_list_terms
+from utils.top_lists import get_term_length_phrase, graphable_top_list_terms_for_artists, top_list_terms
 
 
 def make_artist_summary(artist_uri: str):
@@ -130,21 +131,24 @@ def top_tracks_section(artist_name, artist_uri):
         short = entries_for_track[entries_for_track['term'] == 'short_term']
         medium = entries_for_track[entries_for_track['term'] == 'medium_term']
         long = entries_for_track[entries_for_track['term'] == 'long_term']
+        repeat = entries_for_track[entries_for_track['term'] == 'on_repeat']
 
         short_term_rank = short['index'].iloc[0] if len(short) > 0 else None
         medium_term_rank = medium['index'].iloc[0] if len(medium) > 0 else None
         long_term_rank = long['index'].iloc[0] if len(long) > 0 else None
+        on_repeat_rank = repeat['index'].iloc[0] if len(repeat) > 0 else None
 
         contents += track_ranks_superlatives_list(
             DataProvider().track(track_uri)['track_name'],
             short_term_rank,
             medium_term_rank,
-            long_term_rank
+            long_term_rank,
+            on_repeat_rank
         )
 
         done.add(track_uri)
 
-    for term in graphable_top_list_terms:
+    for term in graphable_top_list_terms_for_artists:
         time_series_for_term = artist_top_tracks_time_series(
             artist_uri,
             term,
@@ -163,8 +167,38 @@ def top_tracks_section(artist_name, artist_uri):
     return ['## Top Tracks', ''] + contents
 
 
-def track_ranks_superlatives_list(track_name: str, short_term_rank: int, medium_term_rank: int, long_term_rank: int):
+def track_ranks_superlatives_list(
+        track_name: str, 
+        short_term_rank: Optional[int], 
+        medium_term_rank: Optional[int], 
+        long_term_rank: Optional[int], 
+        on_repeat_rank: Optional[int]):
+    
+    number_of_superlatives = (0 if short_term_rank is None else 1) \
+        + (0 if medium_term_rank is None else 1) \
+        + (0 if long_term_rank is None else 1) \
+        + (0 if on_repeat_rank is None else 1)
+    
+    if number_of_superlatives == 0:
+        return []
+    
+    if number_of_superlatives == 1:
+        if on_repeat_rank is not None:
+            return [f'- {track_name} is the #{on_repeat_rank} track of {get_term_length_phrase("on_repeat")}']
+        
+        if short_term_rank is not None:
+            return [f'- {track_name} is the #{short_term_rank} track of {get_term_length_phrase("short_term")}']
+        
+        if medium_term_rank is not None:
+            return [f'- {track_name} is the #{medium_term_rank} track of {get_term_length_phrase("medium_term")}']
+        
+        if long_term_rank is not None:
+            return [f'- {track_name} is the #{long_term_rank} track of {get_term_length_phrase("long_term")}']
+
     superlatives_list = [f'- {track_name} is:']
+
+    if on_repeat_rank is not None:
+        superlatives_list.append(f'    - the #{on_repeat_rank} track of {get_term_length_phrase("on_repeat")}')
 
     if short_term_rank is not None:
         superlatives_list.append(f'    - the #{short_term_rank} track of {get_term_length_phrase("short_term")}') 

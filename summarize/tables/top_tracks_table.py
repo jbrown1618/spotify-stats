@@ -12,24 +12,30 @@ def top_tracks_table(tracks: pd.DataFrame, relative_to):
     short = top_tracks_with_data[top_tracks_with_data['term'] == 'short_term']
     medium = top_tracks_with_data[top_tracks_with_data['term'] == 'medium_term']
     long = top_tracks_with_data[top_tracks_with_data['term'] == 'long_term']
-    table_data = pd.merge(short, medium, on="index", how="outer")
-    table_data = pd.merge(table_data, long, on="index", how="outer")
+    on_repeat = top_tracks_with_data[top_tracks_with_data['term'] == 'on_repeat']
+
+    table_data = pd.merge(on_repeat, short, on="index", how="outer", suffixes=[None, "__short"])
+    table_data = pd.merge(table_data, medium, on="index", how="outer", suffixes=[None, "__medium"])
+    table_data = pd.merge(table_data, long, on="index", how="outer", suffixes=[None, "__long"])
 
     table_data["Place"] = table_data["index"]
-    table_data[empty_header(1)] = table_data.apply(lambda row: display_image(row, "_x"), axis=1)
-    table_data[get_term_length_description('short_term')] = table_data.apply(lambda row: display_track(row, "_x", relative_to), axis=1)
-    table_data[empty_header(2)] = table_data.apply(lambda row: display_image(row, "_y"), axis=1)
-    table_data[get_term_length_description('medium_term')] = table_data.apply(lambda row: display_track(row, "_y", relative_to), axis=1)
-    table_data[empty_header(3)] = table_data.apply(lambda row: display_image(row, ""), axis=1)
-    table_data[get_term_length_description('long_term')] = table_data.apply(lambda row: display_track(row, "", relative_to), axis=1)
+    table_data[empty_header(1)] = table_data.apply(lambda row: display_image(row, ""), axis=1)
+    table_data[get_term_length_description('on_repeat')] = table_data.apply(lambda row: display_track(row, "", relative_to), axis=1)
+    table_data[empty_header(2)] = table_data.apply(lambda row: display_image(row, "__short"), axis=1)
+    table_data[get_term_length_description('short_term')] = table_data.apply(lambda row: display_track(row, "__short", relative_to), axis=1)
+    table_data[empty_header(3)] = table_data.apply(lambda row: display_image(row, "__medium"), axis=1)
+    table_data[get_term_length_description('medium_term')] = table_data.apply(lambda row: display_track(row, "__medium", relative_to), axis=1)
+    table_data[empty_header(4)] = table_data.apply(lambda row: display_image(row, "__long"), axis=1)
+    table_data[get_term_length_description('long_term')] = table_data.apply(lambda row: display_track(row, "__long", relative_to), axis=1)
 
     table_data.sort_values(by="Place", ascending=True, inplace=True)
 
     return table_data[[
         'Place', 
-        empty_header(1), get_term_length_description('short_term'), 
-        empty_header(2), get_term_length_description('medium_term'), 
-        empty_header(3), get_term_length_description('long_term')
+        empty_header(1), get_term_length_description('on_repeat'), 
+        empty_header(2), get_term_length_description('short_term'), 
+        empty_header(3), get_term_length_description('medium_term'), 
+        empty_header(4), get_term_length_description('long_term')
     ]]
 
 

@@ -10,6 +10,9 @@ from utils.top_lists import get_term_length_phrase
 def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_path: str) -> str:
     current_top_track_uris = DataProvider().top_tracks(term=term, top=top, current=True)['track_uri'].unique()
     data = DataProvider().top_tracks(term=term, track_uris=current_top_track_uris)
+    if len(data) < 20:
+        return ""
+    
     tracks = DataProvider().tracks(uris=current_top_track_uris)
     data = pd.merge(data, tracks[['track_uri', 'track_name']], how='inner', on='track_uri')
 
