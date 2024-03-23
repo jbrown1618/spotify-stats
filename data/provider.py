@@ -253,16 +253,30 @@ class DataProvider:
         return {own_mbid}.union(forward_aliases).union(backward_aliases)
     
 
-    def top_tracks(self, current: bool = None, top: int = None, term: str = None, track_uris: typing.Iterable[str] = None):
+    def top_tracks(self, 
+                   current: bool = None, 
+                   top: int = None, 
+                   min_occurrences: int = None, 
+                   term: str = None, 
+                   track_uris: typing.Iterable[str] = None):
         out = RawData()['top_tracks']
-
-        if current:
-            most_recent_date = out['as_of_date'].iloc[0]
-            out = out[out['as_of_date'] == most_recent_date]
-            out = out.drop(columns=['as_of_date'])
 
         if term is not None:
             out = out[out['term'] == term]
+
+        if min_occurrences is not None:
+            grouped = out.groupby('track_uri').agg({'as_of_date': 'count'}).reset_index()
+            grouped = grouped[grouped['as_of_date'] >= min_occurrences]
+            uris = grouped['track_uri'].unique()
+            out = out[out['track_uri'].isin(uris)]
+            
+        if current:
+            if len(out) == 0:
+                return out
+            
+            most_recent_date = out['as_of_date'].iloc[0]
+            out = out[out['as_of_date'] == most_recent_date]
+            out = out.drop(columns=['as_of_date'])
 
         if top is not None:
             out = out[out['index'] <= top]
