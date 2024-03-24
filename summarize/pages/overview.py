@@ -7,6 +7,7 @@ from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.top_artists_time_series import top_artists_time_series
+from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.figures.top_tracks_time_series import top_tracks_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
@@ -66,7 +67,15 @@ def tracks_section(tracks: pd.DataFrame):
         "", 
         "Top tracks of the last month, six months, and all time",
         "",
-        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks")
+        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks"),
+        "",
+        "Top Tracks, aggregated",
+        "",
+        top_tracks_score_time_series(
+            tracks,
+            overview_top_tracks_time_series_path('score'),
+            overview_top_tracks_time_series_path('score', output_dir())
+        )
     ] + [
         md_summary_details(
             f'Top tracks of {get_term_length_phrase(term)} over time', 

@@ -41,6 +41,8 @@ class DataProvider:
         self._ml_data = None
         self._track_credits = None
         self._producers_with_page = None
+        self._current_track_scores = None
+        self._track_scores_over_time = None
 
         self._initialized = True
 
@@ -131,7 +133,7 @@ class DataProvider:
             track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
             track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
 
-            scores = self.aggregate_track_scores()
+            scores = self._aggregate_track_scores()
 
             tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
             tracks = pd.merge(tracks, artists, on="primary_artist_uri")
@@ -258,7 +260,7 @@ class DataProvider:
                    top: int = None, 
                    min_occurrences: int = None, 
                    term: str = None, 
-                   track_uris: typing.Iterable[str] = None):
+                   track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         out = RawData()['top_tracks']
 
         if term is not None:
@@ -287,14 +289,48 @@ class DataProvider:
         return out.copy()
     
 
-    def aggregate_track_scores(self):
+    def track_scores_over_time(self):
+        if self._track_scores_over_time is None:
+            out = None
+
+            print('Calculating track scores over time...')
+            for as_of_date in self.top_tracks()['as_of_date'].unique():
+                print('    ' + as_of_date + '...')
+                scores = self._aggregate_track_scores(as_of=as_of_date)
+                scores['as_of_date'] = as_of_date
+                out = scores if out is None else pd.concat([out, scores])
+            self._track_scores_over_time = out.reset_index()
+            print('Done!')
+
+        return self._track_scores_over_time
+    
+
+    def _aggregate_track_scores(self, as_of: str=None):
+        if as_of is None and self._current_track_scores is not None:
+            return self._current_track_scores
+        
         top = self.top_tracks()
-        top['track_score'] = top.apply(lambda row: self.placement_score(row['index'], row['term']), axis=1)
 
-        return top.groupby('track_uri').agg({'track_score': 'sum'}).reset_index()
+        if as_of is not None:
+            top = top[top['as_of_date'] <= as_of]
+
+        top['track_score'] = top.apply(lambda row: self._placement_score(row['index'], row['term']), axis=1)
+
+        out = top.groupby('track_uri')\
+            .agg({'track_score': 'sum'})\
+            .reset_index()
+        
+        out = out.sort_values('track_score', ascending=False)
+
+        out['track_score_rank'] = [i + 1 for i in range(len(out))]
+
+        if as_of is None and self._current_track_scores is None:
+            self._current_track_scores = out
+
+        return out
 
 
-    def placement_score(self, index, term):
+    def _placement_score(self, index, term):
         multiplier = 1
         total = 50
 

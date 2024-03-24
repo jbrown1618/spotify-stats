@@ -4,6 +4,7 @@ from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series
 from summarize.figures.artist_top_tracks_time_series import artist_top_tracks_time_series
 from summarize.figures.producers_bar_chart import producers_bar_chart
+from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
@@ -147,6 +148,14 @@ def top_tracks_section(artist_name, artist_uri):
         )
 
         done.add(track_uri)
+
+    score_time_series = top_tracks_score_time_series(
+        DataProvider().tracks(artist_uri=artist_uri),
+        artist_top_tracks_time_series_path(artist_name, 'score'),
+        artist_top_tracks_time_series_path(artist_name, 'score', artist_path(artist_name))
+    )
+    if score_time_series != '':
+        contents += ['', '### Top tracks, aggregated', '', score_time_series]
 
     for term in graphable_top_list_terms_for_artists:
         time_series_for_term = artist_top_tracks_time_series(

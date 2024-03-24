@@ -33,13 +33,6 @@ def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_pat
     ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank]
     tick_labels = [str(-1 * i) for i in ticks]
 
-    max_date = data['Date'].max()
-    annotations = []
-    for _, entry in data[data['Date'] == max_date].iterrows():
-        text = '  ' + entry['Track']
-        coords = (entry['Date'], entry['Place'] - 0.15)
-        annotations.append((text, coords))
-
     annotations = []
     for track_uri in track_uris:
         entries_for_track = data[data['track_uri'] == track_uri]
