@@ -1,8 +1,9 @@
+from datetime import datetime
 import pandas as pd
 import musicbrainzngs as mb
 
 from data.raw import RawData
-from utils.settings import musicbrainz_max_tracks_per_run, musicbrainz_useragent, musicbrainz_version, musicbrainz_contact, musicbrainz_save_batch_size
+from utils.settings import musicbrainz_max_tracks_per_run, musicbrainz_retry_days, musicbrainz_useragent, musicbrainz_version, musicbrainz_contact, musicbrainz_save_batch_size
 
 recordings = []
 credits = []
@@ -25,6 +26,10 @@ def save_supplemental_data():
     raw = RawData()
     print('Saving supplemental data...')
     mb.set_useragent(musicbrainz_useragent(), musicbrainz_version(), musicbrainz_contact())
+
+    if should_retry_unfetchable_data():
+        raw['mb_unfetchable_isrcs'] = None
+        raw['mb_unmatchable_artists'] = None
 
     all_tracks = raw['tracks']
     liked = raw['liked_tracks']
@@ -302,3 +307,9 @@ def normalize_punctuation(name: str):
 
 def normalize_artist_name(name: str):
     return normalize_punctuation(name.strip().lower())
+
+
+def should_retry_unfetchable_data() -> bool:
+    day_of_year = datetime.now().timetuple().tm_yday
+    retry_days = musicbrainz_retry_days()
+    return (day_of_year % retry_days) <= 3

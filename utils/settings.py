@@ -52,12 +52,16 @@ def musicbrainz_contact() -> str:
     return get_setting("MUSICBRAINZ_CONTACT", "https://github.com/jbrown1618/spotify-stats")
 
 
-def musicbrainz_max_tracks_per_run() -> str:
+def musicbrainz_max_tracks_per_run() -> int:
     return get_setting("MUSICBRAINZ_MAX_TRACKS_PER_RUN", 100)
 
 
-def musicbrainz_save_batch_size() -> str:
+def musicbrainz_save_batch_size() -> int:
     return get_setting("MUSICBRAINZ_SAVE_BATCH_SIZE", 100)
+
+
+def musicbrainz_retry_days() -> int:
+    return get_setting("MUSICBRAINZ_RETRY_DAYS", 60)
 
 
 def should_save_spotify_data() -> bool:

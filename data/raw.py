@@ -72,9 +72,28 @@ class DataSource:
     
 
     def set_data(self, value: pd.DataFrame):
+        path = data_path(self.source, self.key)
+
+        if value is None:
+            if self.persistent:
+                raise ValueError("Cannot delete persistent data source")
+            
+            if not os.path.isfile(path):
+                # Nothing to do
+                return
+            
+            print(f'Deleting {self.key} data')
+            existing = pd.read_csv(path)
+            empty = pd.DataFrame(columns=existing.columns)
+
+            empty.to_csv(path, index=False)
+            self._prefix_df(value)
+            self._value = value
+            return
+
+            
         print(f'Updating {self.key} data')
         value = value.sort_values(by=self.index)
-        path = data_path(self.source, self.key)
 
         if self.persistent:
             value = self._merge_persistent_data_source(value)
