@@ -408,6 +408,16 @@ def playlist_artist_comparison_scatterplot_path(playlist_name: str, relative_to=
         relative_to
     )
 
+def playlist_top_tracks_time_series_path(playlist_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "top_tracks_time_series.png"
+        ), 
+        relative_to
+    )
 
 def labels_path():
     return os.path.join(output_dir(), "labels")
