@@ -28,6 +28,7 @@ class DataProvider:
         self._albums = None
         self._playlists = None
         self._tracks = None
+        self._owned_tracks = None
 
         self._album_label = None
         self._album_artist = None
@@ -43,6 +44,7 @@ class DataProvider:
         self._producers_with_page = None
         self._current_track_scores = None
         self._track_scores_over_time = None
+        self._owned_track_uris = None
 
         self._initialized = True
 
@@ -118,7 +120,8 @@ class DataProvider:
                genre: str = None, 
                album_uri: str = None, 
                playlist_uri: str = None,
-               artist_uri: str = None) -> pd.DataFrame:
+               artist_uri: str = None,
+               owned: bool = False) -> pd.DataFrame:
         raw = RawData()
 
         if self._tracks is None:
@@ -133,7 +136,7 @@ class DataProvider:
             track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
             track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
 
-            scores = self._aggregate_track_scores()
+            scores = self.__aggregate_track_scores()
 
             tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
             tracks = pd.merge(tracks, artists, on="primary_artist_uri")
@@ -141,8 +144,9 @@ class DataProvider:
             tracks['track_score'].fillna(0, inplace=True)
 
             self._tracks = tracks
+            self._owned_tracks = tracks[tracks['track_uri'].isin(self.__owned_track_uris())]
 
-        out = self._tracks
+        out = self._owned_tracks if owned else self._tracks
 
         if uris is not None:
             out = out[out["track_uri"].isin(uris)]
@@ -296,7 +300,7 @@ class DataProvider:
             print('Calculating track scores over time...')
             for as_of_date in self.top_tracks()['as_of_date'].unique():
                 print('    ' + as_of_date + '...')
-                scores = self._aggregate_track_scores(as_of=as_of_date)
+                scores = self.__aggregate_track_scores(as_of=as_of_date)
                 scores['as_of_date'] = as_of_date
                 out = scores if out is None else pd.concat([out, scores])
             self._track_scores_over_time = out.reset_index()
@@ -305,7 +309,7 @@ class DataProvider:
         return self._track_scores_over_time
     
 
-    def _aggregate_track_scores(self, as_of: str=None):
+    def __aggregate_track_scores(self, as_of: str=None):
         if as_of is None and self._current_track_scores is not None:
             return self._current_track_scores
         
@@ -314,7 +318,7 @@ class DataProvider:
         if as_of is not None:
             top = top[top['as_of_date'] <= as_of]
 
-        top['track_score'] = top.apply(lambda row: self._placement_score(row['index'], row['term']), axis=1)
+        top['track_score'] = top.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
 
         out = top.groupby('track_uri')\
             .agg({'track_score': 'sum'})\
@@ -329,21 +333,6 @@ class DataProvider:
 
         return out
 
-
-    def _placement_score(self, index, term):
-        multiplier = 1
-        total = 50
-
-        if term == 'on_repeat':
-            multiplier = 3
-            total = 30
-        if term == 'medium_term':
-            multiplier = 6
-        if term == 'long_term':
-            multiplier = 12
-
-        return multiplier * (total + 1 - index)
-    
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):
         if self._ml_data is None:
@@ -636,6 +625,35 @@ class DataProvider:
         self._artist_genre = artist_genre[['artist_uri', 'genre', 'genre_has_page']]
 
 
+    def __owned_track_uris(self):
+        if self._owned_track_uris is None:
+            raw = RawData()
+            playlists = raw['playlists']
+            playlist_track = raw['playlist_track']
+            owned_playlists = playlists[playlists['playlist_owner'] != 'spotify']
+            owned_tracks = pd.merge(owned_playlists, playlist_track, on='playlist_uri', how='inner')
+
+            self._owned_track_uris = {u for u in owned_tracks['track_uri']}
+
+        return self._owned_track_uris
+
+
 def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]
     return artists
+
+
+def placement_score(index, term):
+    multiplier = 1
+    total = 50
+
+    if term == 'on_repeat':
+        multiplier = 3
+        total = 30
+    if term == 'medium_term':
+        multiplier = 6
+    if term == 'long_term':
+        multiplier = 12
+
+    return multiplier * (total + 1 - index)
+    

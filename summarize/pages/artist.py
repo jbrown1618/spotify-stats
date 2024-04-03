@@ -26,7 +26,7 @@ def make_artist_summary(artist_uri: str):
 
     print(f"Generating summary for artist {artist_name}")
 
-    tracks = dp.tracks(artist_uri=artist_uri)
+    tracks = dp.tracks(artist_uri=artist_uri, owned=True)
     playlists = dp.playlists(artist_uri=artist_uri)
     artist_genre = dp.artist_genre()
 
@@ -343,7 +343,7 @@ def member_credits_subsection(artist_name, artist_uri):
 
 
 def producers_section(artist_name, artist_uri):
-    tracks = DataProvider().tracks(artist_uri=artist_uri)
+    tracks = DataProvider().tracks(artist_uri=artist_uri, owned=True)
     producers = producers_table(tracks, artist_path(artist_name))
 
     if len(producers) == 0:

@@ -45,7 +45,7 @@ def clusters_scatterplot(clusters: pd.DataFrame, path: str, figure_root_path: st
     scatter_relative_path = os.path.relpath(scatter_absolute_path, current_page_dir)
 
     scatter = comparison_scatter_plot(
-        DataProvider().tracks(clusters.index), 
+        DataProvider().tracks(uris=clusters.index), 
         (clusters['cluster'] + 1).astype(str), 
         'Cluster', 
         scatter_absolute_path,
