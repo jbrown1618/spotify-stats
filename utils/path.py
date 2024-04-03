@@ -319,7 +319,31 @@ def playlist_year_path(playlist_name, year: str, relative_to=None):
         os.path.join(
             "playlists",
             file_name_friendly(playlist_name),
-            f"{year}.md"
+            year
+        ), 
+        relative_to
+    )
+
+
+def playlist_year_overview_path(playlist_name, year: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "playlists",
+            file_name_friendly(playlist_name),
+            year,
+            "overview.md"
+        ), 
+        relative_to
+    )
+
+def playlist_year_tracks_time_series_path(playlist_name: str, year: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            year,
+            "tracks_time_series.png"
         ), 
         relative_to
     )

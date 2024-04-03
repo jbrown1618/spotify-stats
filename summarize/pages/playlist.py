@@ -20,7 +20,7 @@ from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_producers_graph_path, playlist_top_tracks_time_series_path, playlist_year_path, playlist_years_graph_path
+from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_producers_graph_path, playlist_top_tracks_time_series_path, playlist_year_overview_path, playlist_year_path, playlist_year_tracks_time_series_path, playlist_years_graph_path
 from utils.util import spotify_url
 
 
@@ -182,7 +182,7 @@ def years_section(playlist_name: str, tracks: pd.DataFrame):
     years_with_page = set(all_years[all_years['Number of Tracks'] >= 20]["Year"])
 
     all_years = all_years.sort_values(by="Year", ascending=False)
-    all_years["Year"] = all_years["Year"].apply(lambda y: y if y not in years_with_page else md_link(y, playlist_year_path(playlist_name, y, playlist_path(playlist_name))))
+    all_years["Year"] = all_years["Year"].apply(lambda y: y if y not in years_with_page else md_link(y, playlist_year_overview_path(playlist_name, y, playlist_path(playlist_name))))
     
     if len(all_years) >= 4:
         bar_chart = years_bar_chart(tracks, playlist_years_graph_path(playlist_name), playlist_years_graph_path(playlist_name, playlist_path(playlist_name)))
@@ -196,7 +196,7 @@ def years_section(playlist_name: str, tracks: pd.DataFrame):
 
     for year in years_with_page:
         page_content = year_page(playlist_name, year, tracks)
-        with open(playlist_year_path(playlist_name, year), "w") as f:
+        with open(playlist_year_overview_path(playlist_name, year), "w") as f:
             f.write("\n".join(page_content))
 
     return [
@@ -217,7 +217,7 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         "## Artists",
         "",
-        md_truncated_table(artists_table(tracks_for_year, playlist_path(playlist_name)), 10),
+        md_truncated_table(artists_table(tracks_for_year, playlist_year_path(playlist_name, year)), 10),
         "",
         "## Albums",
         "",
@@ -225,6 +225,12 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         "## Tracks",
         "",
-        md_truncated_table(tracks_table(tracks_for_year, playlist_path(playlist_name), sorting="chronological"), 10),
+        top_tracks_score_time_series(
+            tracks_for_year, 
+            playlist_year_tracks_time_series_path(playlist_name, year), 
+            playlist_year_tracks_time_series_path(playlist_name, year, playlist_year_path(playlist_name, year))
+        ),
+        "",
+        md_truncated_table(tracks_table(tracks_for_year, playlist_year_path(playlist_name, year), sorting="default"), 10),
         ""
     ]
