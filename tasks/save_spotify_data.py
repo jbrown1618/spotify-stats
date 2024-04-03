@@ -166,6 +166,8 @@ def playlist_data(playlist):
     data = {field: playlist[field] for field in fields}
     if playlist["images"] is not None and len(playlist["images"]) > 0:
         data["image_url"] = playlist["images"][0]["url"]
+
+    data["owner"] = playlist["owner"]["id"]
     return data
 
 
