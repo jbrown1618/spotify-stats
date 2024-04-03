@@ -47,7 +47,7 @@ def duplicate_tracks():
 
 
 def duplicate_albums():
-    albums_with_artists = DataProvider().albums().copy()
+    albums_with_artists = DataProvider().albums(owned=True).copy()
     albums_with_artists["artist_names_sort"] = albums_with_artists["album_uri"].apply(artist_names_for_album)
 
     duplicated = albums_with_artists[albums_with_artists.duplicated(subset=["album_name", "artist_names_sort"], keep=False)]
@@ -72,10 +72,19 @@ def duplicate_albums():
     return ["## Duplicate albums", "", table, ""]
 
 
+genres_to_ignore = {'classical', 'a cappella', 'college a cappella', 'classical performance', 'fantasy', 'orchestra', 'classical piano', 'soundtrack'}
+
 def low_popularity():
     tracks_full = DataProvider().tracks(owned=True)
-    artists = DataProvider().artists()
     track_artist = RawData()['track_artist']
+    artist_genre = RawData()['artist_genre']
+    artists = DataProvider().artists()
+
+    artists_in_ignored_genres = artist_genre[artist_genre['genre'].isin(genres_to_ignore)]['artist_uri']
+    artists = artists[~artists['artist_uri'].isin(artists_in_ignored_genres)]
+    # Ignore artists with no genres
+    artists = artists[artists['artist_uri'].isin(artist_genre['artist_uri'])]
+
     low_pop_tracks = tracks_full[(tracks_full["track_popularity"] < 3) & (tracks_full["album_popularity"] < 3)]
     high_pop_artists = artists[artists["artist_popularity"] >= 25]
 

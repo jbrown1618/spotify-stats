@@ -26,6 +26,7 @@ class DataProvider:
         
         self._artists = None
         self._albums = None
+        self._owned_albums = None
         self._playlists = None
         self._tracks = None
         self._owned_tracks = None
@@ -45,6 +46,7 @@ class DataProvider:
         self._current_track_scores = None
         self._track_scores_over_time = None
         self._owned_track_uris = None
+        self._owned_album_uris = None
 
         self._initialized = True
 
@@ -93,15 +95,16 @@ class DataProvider:
         return out
 
 
-    def albums(self, uris: typing.Iterable[str] = None) -> pd.DataFrame:
+    def albums(self, uris: typing.Iterable[str] = None, owned = False) -> pd.DataFrame:
         if self._albums is None:
             raw = RawData()
             albums = raw["albums"].copy()
             albums['album_release_year'] = albums['album_release_date'].apply(release_year)
             albums['album_short_name'] = albums['album_name'].apply(short_album_name)
             self._albums = albums
+            self._owned_albums = albums[albums['album_uri'].isin(self.__owned_album_uris())]
         
-        out = self._albums
+        out = self._owned_albums if owned else self._albums
 
         if uris is not None:
             out = out[out["album_uri"].isin(uris)]
@@ -636,6 +639,17 @@ class DataProvider:
             self._owned_track_uris = {u for u in owned_tracks['track_uri']}
 
         return self._owned_track_uris
+    
+
+    def __owned_album_uris(self):
+        if self._owned_album_uris is None:
+            tracks = RawData()['tracks']
+            owned_tracks = tracks[tracks['track_uri'].isin(self.__owned_track_uris())]
+
+            return {u for u in owned_tracks['album_uri']}
+        
+        return self._owned_album_uris
+
 
 
 def add_primary_prefix(artists: pd.DataFrame):
