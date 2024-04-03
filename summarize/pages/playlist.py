@@ -20,7 +20,7 @@ from summarize.tables.tracks_table import tracks_table
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
-from utils.path import playlist_album_graph_path, playlist_audio_features_figure_path, playlist_audio_features_path, playlist_clusters_figure_path, playlist_clusters_path, playlist_genre_graph_path, playlist_label_graph_path, playlist_overview_path, playlist_path, playlist_artist_comparison_scatterplot_path, playlist_artist_graph_path, playlist_producers_graph_path, playlist_top_tracks_time_series_path, playlist_year_overview_path, playlist_year_path, playlist_year_tracks_time_series_path, playlist_years_graph_path
+import utils.path as p
 from utils.util import spotify_url
 
 
@@ -36,8 +36,8 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += image(playlist_name, playlist_image_url)
     content += tracks_link(playlist_uri, tracks)
     if len(tracks) > 10:
-        content += [md_link(f"See Track Features", playlist_audio_features_path(playlist_name, playlist_path(playlist_name))), ""]
-        content += [md_link(f"See Clusters", playlist_clusters_path(playlist_name, playlist_path(playlist_name))), ""]
+        content += [md_link(f"See Track Features", p.playlist_audio_features_path(playlist_name, p.playlist_path(playlist_name))), ""]
+        content += [md_link(f"See Clusters", p.playlist_clusters_path(playlist_name, p.playlist_path(playlist_name))), ""]
     content += artists_section(playlist_name, tracks)
     content += tracks_section(playlist_name, tracks)
     content += albums_section(playlist_name, tracks)
@@ -46,12 +46,12 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += producers_section(playlist_name, tracks)
     content += years_section(playlist_name, tracks)
 
-    with open(playlist_overview_path(playlist_name), "w") as f:
+    with open(p.playlist_overview_path(playlist_name), "w") as f:
         f.write("\n".join(content))
 
     if len(tracks) > 10:
-        make_track_features_page(tracks, playlist_name, playlist_audio_features_path(playlist_name), playlist_audio_features_figure_path(playlist_name))
-        make_clusters_page(tracks, playlist_name, playlist_clusters_path(playlist_name), playlist_clusters_figure_path(playlist_name))
+        make_track_features_page(tracks, playlist_name, p.playlist_audio_features_path(playlist_name), p.playlist_audio_features_figure_path(playlist_name))
+        make_clusters_page(tracks, playlist_name, p.playlist_clusters_path(playlist_name), p.playlist_clusters_figure_path(playlist_name))
 
 
 def title(playlist_name):
@@ -78,8 +78,8 @@ def tracks_link(playlist_uri: str, tracks: pd.DataFrame):
 
 
 def artists_section(playlist_name, playlist_full: pd.DataFrame):
-    img = artists_bar_chart(playlist_full, playlist_artist_graph_path(playlist_name), playlist_artist_graph_path(playlist_name, playlist_path(playlist_name)))
-    table_data = artists_table(playlist_full, playlist_path(playlist_name))
+    img = artists_bar_chart(playlist_full, p.playlist_artist_graph_path(playlist_name), p.playlist_artist_graph_path(playlist_name, p.playlist_path(playlist_name)))
+    table_data = artists_table(playlist_full, p.playlist_path(playlist_name))
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -93,8 +93,8 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame):
             playlist_full, 
             playlist_full["primary_artist_name"], 
             "Artist", 
-            playlist_artist_comparison_scatterplot_path(playlist_name), 
-            playlist_artist_comparison_scatterplot_path(playlist_name, playlist_path(playlist_name))
+            p.playlist_artist_comparison_scatterplot_path(playlist_name), 
+            p.playlist_artist_comparison_scatterplot_path(playlist_name, p.playlist_path(playlist_name))
         )
     else:
         scatterplot = ""
@@ -103,7 +103,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame):
 
 
 def albums_section(playlist_name, playlist_full: pd.DataFrame):
-    img = albums_bar_chart(playlist_full, playlist_album_graph_path(playlist_name), playlist_album_graph_path(playlist_name, playlist_path(playlist_name)))
+    img = albums_bar_chart(playlist_full, p.playlist_album_graph_path(playlist_name), p.playlist_album_graph_path(playlist_name, p.playlist_path(playlist_name)))
     table_data = albums_table(playlist_full)
 
     summary = f"See all {len(table_data)} albums"
@@ -117,8 +117,8 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
 
 
 def labels_section(playlist_name, playlist_full: pd.DataFrame):
-    img = labels_bar_chart(playlist_full, playlist_label_graph_path(playlist_name), playlist_label_graph_path(playlist_name, playlist_path(playlist_name)))
-    table_data = labels_table(playlist_full, playlist_path(playlist_name))
+    img = labels_bar_chart(playlist_full, p.playlist_label_graph_path(playlist_name), p.playlist_label_graph_path(playlist_name, p.playlist_path(playlist_name)))
+    table_data = labels_table(playlist_full, p.playlist_path(playlist_name))
 
     summary = f"See all {len(table_data)} labels"
     if len(table_data) > 100:
@@ -131,8 +131,8 @@ def labels_section(playlist_name, playlist_full: pd.DataFrame):
 
 
 def genres_section(playlist_name: str, tracks: pd.DataFrame):
-    img = genres_bar_chart(tracks, playlist_genre_graph_path(playlist_name), playlist_genre_graph_path(playlist_name, playlist_path(playlist_name)))
-    table_data = genres_table(tracks, playlist_path(playlist_name))
+    img = genres_bar_chart(tracks, p.playlist_genre_graph_path(playlist_name), p.playlist_genre_graph_path(playlist_name, p.playlist_path(playlist_name)))
+    table_data = genres_table(tracks, p.playlist_path(playlist_name))
     
     summary = f"See all {len(table_data)} genres"
     if len(table_data) > 100:
@@ -145,15 +145,15 @@ def genres_section(playlist_name: str, tracks: pd.DataFrame):
 
 
 def producers_section(playlist_name, tracks: pd.DataFrame):
-    producers = producers_table(tracks, playlist_path(playlist_name))
+    producers = producers_table(tracks, p.playlist_path(playlist_name))
 
     if len(producers) == 0:
         return []
     
     bar_chart = producers_bar_chart(
         tracks, 
-        playlist_producers_graph_path(playlist_name),
-        playlist_producers_graph_path(playlist_name, playlist_path(playlist_name)))
+        p.playlist_producers_graph_path(playlist_name),
+        p.playlist_producers_graph_path(playlist_name, p.playlist_path(playlist_name)))
     
     return [
         '## Top Producers',
@@ -169,9 +169,9 @@ def tracks_section(playlist_name: str, tracks: pd.DataFrame):
     return [
         '## Top Tracks',
         '',
-        top_tracks_score_time_series(tracks, playlist_top_tracks_time_series_path(playlist_name), playlist_top_tracks_time_series_path(playlist_name, playlist_path(playlist_name))),
+        top_tracks_score_time_series(tracks, p.playlist_top_tracks_time_series_path(playlist_name), p.playlist_top_tracks_time_series_path(playlist_name, p.playlist_path(playlist_name))),
         '',
-        md_summary_details('Most and least listened tracks', most_and_least_listened_tracks_table(tracks, playlist_path(playlist_name)))
+        md_summary_details('Most and least listened tracks', most_and_least_listened_tracks_table(tracks, p.playlist_path(playlist_name)))
     ]
 
 
@@ -182,10 +182,10 @@ def years_section(playlist_name: str, tracks: pd.DataFrame):
     years_with_page = set(all_years[all_years['Number of Tracks'] >= 20]["Year"])
 
     all_years = all_years.sort_values(by="Year", ascending=False)
-    all_years["Year"] = all_years["Year"].apply(lambda y: y if y not in years_with_page else md_link(y, playlist_year_overview_path(playlist_name, y, playlist_path(playlist_name))))
+    all_years["Year"] = all_years["Year"].apply(lambda y: y if y not in years_with_page else md_link(y, p.playlist_year_overview_path(playlist_name, y, p.playlist_path(playlist_name))))
     
     if len(all_years) >= 4:
-        bar_chart = years_bar_chart(tracks, playlist_years_graph_path(playlist_name), playlist_years_graph_path(playlist_name, playlist_path(playlist_name)))
+        bar_chart = years_bar_chart(tracks, p.playlist_years_graph_path(playlist_name), p.playlist_years_graph_path(playlist_name, p.playlist_path(playlist_name)))
     else:
         bar_chart = ""
 
@@ -196,7 +196,7 @@ def years_section(playlist_name: str, tracks: pd.DataFrame):
 
     for year in years_with_page:
         page_content = year_page(playlist_name, year, tracks)
-        with open(playlist_year_overview_path(playlist_name, year), "w") as f:
+        with open(p.playlist_year_overview_path(playlist_name, year), "w") as f:
             f.write("\n".join(page_content))
 
     return [
@@ -217,7 +217,7 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         "## Artists",
         "",
-        md_truncated_table(artists_table(tracks_for_year, playlist_year_path(playlist_name, year)), 10),
+        md_truncated_table(artists_table(tracks_for_year, p.playlist_year_path(playlist_name, year)), 10),
         "",
         "## Albums",
         "",
@@ -227,10 +227,10 @@ def year_page(playlist_name: str, year: str, tracks: pd.DataFrame):
         "",
         top_tracks_score_time_series(
             tracks_for_year, 
-            playlist_year_tracks_time_series_path(playlist_name, year), 
-            playlist_year_tracks_time_series_path(playlist_name, year, playlist_year_path(playlist_name, year))
+            p.playlist_year_tracks_time_series_path(playlist_name, year), 
+            p.playlist_year_tracks_time_series_path(playlist_name, year, p.playlist_year_path(playlist_name, year))
         ),
         "",
-        md_truncated_table(tracks_table(tracks_for_year, playlist_year_path(playlist_name, year), sorting="default"), 10),
+        md_truncated_table(tracks_table(tracks_for_year, p.playlist_year_path(playlist_name, year), sorting="default"), 10),
         ""
     ]

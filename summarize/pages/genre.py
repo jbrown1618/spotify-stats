@@ -15,8 +15,7 @@ from summarize.tables.top_tracks_table import most_and_least_listened_tracks_tab
 from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_truncated_table
-from utils.path import genre_album_graph_path, genre_artist_comparison_scatterplot_path, genre_artist_graph_path, genre_audio_features_chart_path, genre_audio_features_path, genre_clusters_figure_path, genre_clusters_path, genre_label_graph_path, genre_overview_path, genre_path, genre_producers_graph_path, genre_years_graph_path
-
+import utils.path as p
 
 def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     print(f"Generating summary for genre {genre_name}")
@@ -25,8 +24,8 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content += title(genre_name)
     content += [f"{len(tracks)} songs", ""]
     if len(tracks) > 10:
-        content += [md_link(f"See Track Features", genre_audio_features_path(genre_name, genre_path(genre_name))), ""]
-        content += [md_link(f"See Clusters", genre_clusters_path(genre_name, genre_path(genre_name))), ""]
+        content += [md_link(f"See Track Features", p.genre_audio_features_path(genre_name, p.genre_path(genre_name))), ""]
+        content += [md_link(f"See Clusters", p.genre_clusters_path(genre_name, p.genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks)
     content += most_and_least_listened_tracks_section(genre_name, tracks)
     content += albums_section(genre_name, tracks)
@@ -34,12 +33,12 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content += producers_section(genre_name, tracks)
     content += years_section(genre_name, tracks)
 
-    with open(genre_overview_path(genre_name), "w") as f:
+    with open(p.genre_overview_path(genre_name), "w") as f:
         f.write("\n".join(content))
 
     if len(tracks) > 10:
-        make_track_features_page(tracks, genre_name, genre_audio_features_path(genre_name), genre_audio_features_chart_path(genre_name))
-        make_clusters_page(tracks, genre_name, genre_clusters_path(genre_name), genre_clusters_figure_path(genre_name))
+        make_track_features_page(tracks, genre_name, p.genre_audio_features_path(genre_name), p.genre_audio_features_chart_path(genre_name))
+        make_clusters_page(tracks, genre_name, p.genre_clusters_path(genre_name), p.genre_clusters_figure_path(genre_name))
 
 
 def title(genre_name):
@@ -47,8 +46,8 @@ def title(genre_name):
 
 
 def artists_section(genre_name, tracks: pd.DataFrame):
-    img = artists_bar_chart(tracks, genre_artist_graph_path(genre_name), genre_artist_graph_path(genre_name, genre_path(genre_name)))
-    table_data = artists_table(tracks, genre_path(genre_name))
+    img = artists_bar_chart(tracks, p.genre_artist_graph_path(genre_name), p.genre_artist_graph_path(genre_name, p.genre_path(genre_name)))
+    table_data = artists_table(tracks, p.genre_path(genre_name))
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -61,8 +60,8 @@ def artists_section(genre_name, tracks: pd.DataFrame):
         tracks, 
         tracks["primary_artist_name"], 
         "Artist", 
-        genre_artist_comparison_scatterplot_path(genre_name), 
-        genre_artist_comparison_scatterplot_path(genre_name, genre_path(genre_name))
+        p.genre_artist_comparison_scatterplot_path(genre_name), 
+        p.genre_artist_comparison_scatterplot_path(genre_name, p.genre_path(genre_name))
     )
 
     return ["## Top Artists", "", full_list, "", img, "", scatterplot]
@@ -71,13 +70,13 @@ def artists_section(genre_name, tracks: pd.DataFrame):
 def most_and_least_listened_tracks_section(genre_name: str, tracks: pd.DataFrame):
     return [
         '## Most and least listened tracks',
-        most_and_least_listened_tracks_table(tracks, genre_path(genre_name)),
+        most_and_least_listened_tracks_table(tracks, p.genre_path(genre_name)),
         ''
     ]
 
 
 def albums_section(genre_name, tracks: pd.DataFrame):
-    img = albums_bar_chart(tracks, genre_album_graph_path(genre_name), genre_album_graph_path(genre_name, genre_path(genre_name)))
+    img = albums_bar_chart(tracks, p.genre_album_graph_path(genre_name), p.genre_album_graph_path(genre_name, p.genre_path(genre_name)))
     table_data = albums_table(tracks)
 
     summary = f"See all {len(table_data)} albums"
@@ -91,8 +90,8 @@ def albums_section(genre_name, tracks: pd.DataFrame):
 
 
 def labels_section(genre_name, tracks: pd.DataFrame):
-    img = labels_bar_chart(tracks, genre_label_graph_path(genre_name), genre_label_graph_path(genre_name, genre_path(genre_name)))
-    table_data = labels_table(tracks, genre_path(genre_name))
+    img = labels_bar_chart(tracks, p.genre_label_graph_path(genre_name), p.genre_label_graph_path(genre_name, p.genre_path(genre_name)))
+    table_data = labels_table(tracks, p.genre_path(genre_name))
 
     summary = f"See all {len(table_data)} labels"
     if len(table_data) > 100:
@@ -105,15 +104,15 @@ def labels_section(genre_name, tracks: pd.DataFrame):
 
 
 def producers_section(genre_name, tracks: pd.DataFrame):
-    producers = producers_table(tracks, genre_path(genre_name))
+    producers = producers_table(tracks, p.genre_path(genre_name))
 
     if len(producers) == 0:
         return []
     
     bar_chart = producers_bar_chart(
         tracks, 
-        genre_producers_graph_path(genre_name),
-        genre_producers_graph_path(genre_name, genre_path(genre_name)))
+        p.genre_producers_graph_path(genre_name),
+        p.genre_producers_graph_path(genre_name, p.genre_path(genre_name)))
     
     return [
         '## Top Producers',
@@ -131,7 +130,7 @@ def years_section(genre_name: str, tracks: pd.DataFrame):
     all_years = all_years.sort_values(by="Year", ascending=False)
     
     if len(all_years) >= 4:
-        bar_chart = years_bar_chart(tracks, genre_years_graph_path(genre_name), genre_years_graph_path(genre_name, genre_path(genre_name)))
+        bar_chart = years_bar_chart(tracks, p.genre_years_graph_path(genre_name), p.genre_years_graph_path(genre_name, p.genre_path(genre_name)))
     else:
         bar_chart = ""
 

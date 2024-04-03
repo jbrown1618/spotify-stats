@@ -14,7 +14,7 @@ from summarize.tables.producers_table import producers_table, production_credits
 from summarize.tables.tracks_table import tracks_table
 from utils.artist_relationship import mb_artist_display_name, relationship_description
 from utils.markdown import md_table, md_image, md_link, md_truncated_table
-from utils.path import artist_audio_features_chart_path, artist_audio_features_path, artist_clusters_figure_path, artist_clusters_path, artist_overview_path, artist_path, artist_producers_graph_path, artist_rank_time_series_path, artist_top_tracks_time_series_path, genre_overview_path, playlist_overview_path
+import utils.path as p
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms_for_artists, top_list_terms
 
 
@@ -35,8 +35,8 @@ def make_artist_summary(artist_uri: str):
     content += title(artist_name)
     content += image(artist_name, artist_image_url)
     if len(tracks) > 10:
-        content += [md_link(f"See Track Features", artist_audio_features_path(artist_name, artist_path(artist_name))), ""]
-        content += [md_link(f"See Clusters", artist_clusters_path(artist_name, artist_path(artist_name))), ""]
+        content += [md_link(f"See Track Features", p.artist_audio_features_path(artist_name, p.artist_path(artist_name))), ""]
+        content += [md_link(f"See Clusters", p.artist_clusters_path(artist_name, p.artist_path(artist_name))), ""]
     content += relationships_section(artist_name, artist_uri)
     content += top_artists_rank_section(artist_name, artist_uri)
     content += top_tracks_section(artist_name, artist_uri)
@@ -48,12 +48,12 @@ def make_artist_summary(artist_uri: str):
     content += producers_section(artist_name, artist_uri)
     content += tracks_section(artist_name, tracks)
 
-    with open(artist_overview_path(artist_name), "w") as f:
+    with open(p.artist_overview_path(artist_name), "w") as f:
         f.write("\n".join(content))
 
     if len(tracks) > 10:
-        make_track_features_page(tracks, artist_name, artist_audio_features_path(artist_name), artist_audio_features_chart_path(artist_name))
-        make_clusters_page(tracks, artist_name, artist_clusters_path(artist_name), artist_clusters_figure_path(artist_name))
+        make_track_features_page(tracks, artist_name, p.artist_audio_features_path(artist_name), p.artist_audio_features_chart_path(artist_name))
+        make_clusters_page(tracks, artist_name, p.artist_clusters_path(artist_name), p.artist_clusters_figure_path(artist_name))
 
 
 def title(artist_name):
@@ -70,7 +70,7 @@ def relationships_section(artist_name, artist_uri):
         return []
 
     phrases = [
-        f'- {relationship_description(relationship, artist_path(artist_name))}'
+        f'- {relationship_description(relationship, p.artist_path(artist_name))}'
         for _, relationship in related_artists.iterrows()
     ]
 
@@ -100,8 +100,8 @@ def top_artists_rank_section(artist_name, artist_uri):
     time_series = artist_rank_time_series(
         artist_uri,
         artist_name,
-        artist_rank_time_series_path(artist_name),
-        artist_rank_time_series_path(artist_name, artist_path(artist_name))
+        p.artist_rank_time_series_path(artist_name),
+        p.artist_rank_time_series_path(artist_name, p.artist_path(artist_name))
     )
 
     if time_series is not None:
@@ -151,8 +151,8 @@ def top_tracks_section(artist_name, artist_uri):
 
     score_time_series = top_tracks_score_time_series(
         DataProvider().tracks(artist_uri=artist_uri),
-        artist_top_tracks_time_series_path(artist_name, 'score'),
-        artist_top_tracks_time_series_path(artist_name, 'score', artist_path(artist_name))
+        p.artist_top_tracks_time_series_path(artist_name, 'score'),
+        p.artist_top_tracks_time_series_path(artist_name, 'score', p.artist_path(artist_name))
     )
     if score_time_series != '':
         contents += ['', '### Top tracks, aggregated', '', score_time_series]
@@ -161,8 +161,8 @@ def top_tracks_section(artist_name, artist_uri):
         time_series_for_term = artist_top_tracks_time_series(
             artist_uri,
             term,
-            artist_top_tracks_time_series_path(artist_name, term),
-            artist_top_tracks_time_series_path(artist_name, term, artist_path(artist_name))
+            p.artist_top_tracks_time_series_path(artist_name, term),
+            p.artist_top_tracks_time_series_path(artist_name, term, p.artist_path(artist_name))
         )
 
         if time_series_for_term == '':
@@ -252,7 +252,7 @@ def albums_section(artist_tracks: pd.DataFrame):
 
 
 def labels_section(artist_name: str, artist_tracks: pd.DataFrame):
-    table_data = labels_table(artist_tracks, artist_path(artist_name))    
+    table_data = labels_table(artist_tracks, p.artist_path(artist_name))    
     return ["## Top Record Labels", "", md_table(table_data), ""]
 
 
@@ -265,7 +265,7 @@ def genres_section(artist_name, artist_uri, artist_genre: pd.DataFrame):
     section = ["## Genres", ""]
     for i, g in genres_for_artist.iterrows():
         if g["genre_has_page"]:
-            section.append(f"- {md_link(g['genre'], genre_overview_path(g['genre'], artist_path(artist_name)))}")
+            section.append(f"- {md_link(g['genre'], p.genre_overview_path(g['genre'], p.artist_path(artist_name)))}")
         else:
             section.append(f"- {g['genre']}")
 
@@ -302,7 +302,7 @@ def credit_types_subsection(artist_uri):
 
 
 def production_credits_subsection(artist_name, artist_uri):
-    table = production_credits_table(artist_uri=artist_uri, relative_to=artist_overview_path(artist_name))
+    table = production_credits_table(artist_uri=artist_uri, relative_to=p.artist_overview_path(artist_name))
 
     if table is None:
         return []
@@ -324,7 +324,7 @@ def member_credits_subsection(artist_name, artist_uri):
     if len(credits) == 0:
         return []
     
-    credits['display_name'] = credits.apply(lambda r: mb_artist_display_name(r, artist_path(artist_name)), axis=1)
+    credits['display_name'] = credits.apply(lambda r: mb_artist_display_name(r, p.artist_path(artist_name)), axis=1)
     credits['credit_type'] = credits['credit_type'].apply(lambda t: t.capitalize())
     pivot = credits.pivot_table(
         values=['recording_mbid'], 
@@ -344,15 +344,15 @@ def member_credits_subsection(artist_name, artist_uri):
 
 def producers_section(artist_name, artist_uri):
     tracks = DataProvider().tracks(artist_uri=artist_uri, owned=True)
-    producers = producers_table(tracks, artist_path(artist_name))
+    producers = producers_table(tracks, p.artist_path(artist_name))
 
     if len(producers) == 0:
         return []
     
     bar_chart = producers_bar_chart(
         tracks, 
-        artist_producers_graph_path(artist_name),
-        artist_producers_graph_path(artist_name, artist_path(artist_name)))
+        p.artist_producers_graph_path(artist_name),
+        p.artist_producers_graph_path(artist_name, p.artist_path(artist_name)))
     
     return [
         '## Top Producers',
@@ -364,10 +364,10 @@ def producers_section(artist_name, artist_uri):
 
 
 def tracks_section(artist_name: str, tracks: pd.DataFrame):
-    display_tracks = tracks_table(tracks, artist_path(artist_name), sorting='default')
+    display_tracks = tracks_table(tracks, p.artist_path(artist_name), sorting='default')
     return ["## Tracks", "", md_truncated_table(display_tracks, 10, "See all tracks"), ""]
 
 
 def display_playlist(artist_name: str, playlist_uri: str, playlists: pd.DataFrame):
     playlist = playlists[playlists["playlist_uri"] == playlist_uri].iloc[0]
-    return md_link(playlist["playlist_name"], playlist_overview_path(playlist["playlist_name"], artist_path(artist_name)))
+    return md_link(playlist["playlist_name"], p.playlist_overview_path(playlist["playlist_name"], p.artist_path(artist_name)))

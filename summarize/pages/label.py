@@ -11,8 +11,7 @@ from summarize.tables.genres_table import genres_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.tracks_table import tracks_table
 from utils.markdown import md_link, md_truncated_table
-from utils.path import label_album_graph_path, label_artist_graph_path, label_audio_features_chart_path, label_audio_features_path, label_clusters_figure_path, label_clusters_path, label_genre_graph_path, label_overview_path, label_path, label_producers_graph_path, labels_path
-
+import utils.path as p
 
 def make_label_summary(label_name: str, tracks: pd.DataFrame):
     print(f"Generating summary for label {label_name}")
@@ -21,8 +20,8 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     content += title(label_name)
     content += [f"{len(tracks)} songs", ""]
     if len(tracks) > 10:
-        content += [md_link(f"See Track Features", label_audio_features_path(label_name, label_path(label_name))), ""]
-        content += [md_link(f"See Clusters", label_clusters_path(label_name, label_path(label_name))), ""]
+        content += [md_link(f"See Track Features", p.label_audio_features_path(label_name, p.label_path(label_name))), ""]
+        content += [md_link(f"See Clusters", p.label_clusters_path(label_name, p.label_path(label_name))), ""]
     content += aliases(tracks)
     content += artists_section(label_name, tracks)
     content += albums_section(label_name, tracks)
@@ -30,12 +29,12 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     content += producers_section(label_name, tracks)
     content += tracks_section(label_name, tracks)
 
-    with open(label_overview_path(label_name), "w") as f:
+    with open(p.label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
 
     if len(tracks) > 10:
-        make_track_features_page(tracks, label_name, label_audio_features_path(label_name), label_audio_features_chart_path(label_name))
-        make_clusters_page(tracks, label_name, label_clusters_path(label_name), label_clusters_figure_path(label_name))
+        make_track_features_page(tracks, label_name, p.label_audio_features_path(label_name), p.label_audio_features_chart_path(label_name))
+        make_clusters_page(tracks, label_name, p.label_clusters_path(label_name), p.label_clusters_figure_path(label_name))
 
 
 
@@ -56,8 +55,8 @@ def aliases(label_full: pd.DataFrame):
 
 
 def artists_section(label_name, label_full: pd.DataFrame):
-    img = artists_bar_chart(label_full, label_artist_graph_path(label_name), label_artist_graph_path(label_name, label_path(label_name)))
-    table_data = artists_table(label_full, label_path(label_name))
+    img = artists_bar_chart(label_full, p.label_artist_graph_path(label_name), p.label_artist_graph_path(label_name, p.label_path(label_name)))
+    table_data = artists_table(label_full, p.label_path(label_name))
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -70,7 +69,7 @@ def artists_section(label_name, label_full: pd.DataFrame):
 
 
 def albums_section(label_name, label_full: pd.DataFrame):
-    img = albums_bar_chart(label_full, label_album_graph_path(label_name), label_album_graph_path(label_name, label_path(label_name)))
+    img = albums_bar_chart(label_full, p.label_album_graph_path(label_name), p.label_album_graph_path(label_name, p.label_path(label_name)))
     table_data = albums_table(label_full)
 
     summary = f"See all {len(table_data)} albums"
@@ -84,8 +83,8 @@ def albums_section(label_name, label_full: pd.DataFrame):
 
 
 def genres_section(label_name: str, tracks: pd.DataFrame):
-    img = genres_bar_chart(tracks, label_genre_graph_path(label_name), label_genre_graph_path(label_name, label_path(label_name)))
-    table_data = genres_table(tracks, label_path(label_name))
+    img = genres_bar_chart(tracks, p.label_genre_graph_path(label_name), p.label_genre_graph_path(label_name, p.label_path(label_name)))
+    table_data = genres_table(tracks, p.label_path(label_name))
     
     summary = f"See all {len(table_data)} genres"
     if len(table_data) > 100:
@@ -98,15 +97,15 @@ def genres_section(label_name: str, tracks: pd.DataFrame):
 
 
 def producers_section(label_name, tracks: pd.DataFrame):
-    producers = producers_table(tracks, label_path(label_name))
+    producers = producers_table(tracks, p.label_path(label_name))
 
     if len(producers) == 0:
         return []
     
     bar_chart = producers_bar_chart(
         tracks, 
-        label_producers_graph_path(label_name),
-        label_producers_graph_path(label_name, label_path(label_name)))
+        p.label_producers_graph_path(label_name),
+        p.label_producers_graph_path(label_name, p.label_path(label_name)))
     
     return [
         '## Top Producers',
@@ -118,6 +117,6 @@ def producers_section(label_name, tracks: pd.DataFrame):
 
 
 def tracks_section(label_name: str, label_full: pd.DataFrame):
-    display_tracks = tracks_table(label_full, label_path(label_name), sorting='default')
+    display_tracks = tracks_table(label_full, p.label_path(label_name), sorting='default')
     table = md_truncated_table(display_tracks, 10, "See all tracks")
     return [f"## Tracks released under {label_name}", "", table, ""]

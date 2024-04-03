@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from utils.date import this_date, this_year
-from utils.path import data_path, persistent_data_path
+import utils.path as p
 
 
 class RawData:
@@ -63,7 +63,7 @@ class DataSource:
         if self.persistent:
             df = self._merge_all_years()
         else:
-            df = pd.read_csv(data_path(self.source, self.key))
+            df = pd.read_csv(p.data_path(self.source, self.key))
 
         self._prefix_df(df)
 
@@ -72,7 +72,7 @@ class DataSource:
     
 
     def set_data(self, value: pd.DataFrame):
-        path = data_path(self.source, self.key)
+        path = p.data_path(self.source, self.key)
 
         if value is None:
             if self.persistent:
@@ -97,7 +97,7 @@ class DataSource:
 
         if self.persistent:
             value = self._merge_persistent_data_source(value)
-            path = persistent_data_path(self.source, self.key, this_year())
+            path = p.persistent_data_path(self.source, self.key, this_year())
 
         if self.merge_on_set and os.path.isfile(path):
             existing = pd.read_csv(path)            
@@ -120,7 +120,7 @@ class DataSource:
         merged = None
 
         while True:
-            df_path = persistent_data_path(self.source, self.key, year)
+            df_path = p.persistent_data_path(self.source, self.key, year)
             if not os.path.isfile(df_path):
                 return merged.reset_index()
             
@@ -136,7 +136,7 @@ class DataSource:
     def _merge_persistent_data_source(self, value: pd.DataFrame) -> pd.DataFrame:
         value['as_of_date'] = this_date()
         
-        current_file = persistent_data_path(self.source, self.key, this_year())
+        current_file = p.persistent_data_path(self.source, self.key, this_year())
         if not os.path.isfile(current_file):
             return value
         
