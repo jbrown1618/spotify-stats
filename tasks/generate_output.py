@@ -20,7 +20,7 @@ def generate_output():
         make_overview(dp.tracks())
 
     if should_generate_page('errors'):
-        make_errors(dp.tracks(), dp.albums())
+        make_errors()
 
     if should_generate_page('playlist'):
         make_playlist_summary(None, dp.tracks(liked=True))

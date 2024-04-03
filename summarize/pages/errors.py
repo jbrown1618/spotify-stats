@@ -5,14 +5,14 @@ from utils.markdown import md_table
 from utils.path import errors_path
 from utils.util import spotify_link
 
-def make_errors(tracks_full: pd.DataFrame, albums: pd.DataFrame):
+def make_errors():
     print("Generating Errors")
 
     content = []
     content += title()
-    content += duplicate_tracks(tracks_full)
-    content += duplicate_albums(albums)
-    content += low_popularity(tracks_full)
+    content += duplicate_tracks()
+    content += duplicate_albums()
+    content += low_popularity()
 
     with open(errors_path(), "w") as f:
         f.write("\n".join(content))
@@ -22,8 +22,8 @@ def title():
     return [f"# Possible organizational errors", ""]
 
 
-def duplicate_tracks(tracks_full: pd.DataFrame):
-    tracks_with_artists = tracks_full.copy()
+def duplicate_tracks():
+    tracks_with_artists = DataProvider().tracks(owned=True).copy()
     tracks_with_artists["artist_names"] = tracks_with_artists["track_uri"].apply(artist_names_for_track)
     duplicated = tracks_with_artists[tracks_with_artists.duplicated(subset=["track_name", "artist_names"], keep=False)]
 
@@ -46,8 +46,8 @@ def duplicate_tracks(tracks_full: pd.DataFrame):
     return ["## Duplicate tracks", "", table, ""]
 
 
-def duplicate_albums(albums: pd.DataFrame):
-    albums_with_artists = albums.copy()
+def duplicate_albums():
+    albums_with_artists = DataProvider().albums().copy()
     albums_with_artists["artist_names_sort"] = albums_with_artists["album_uri"].apply(artist_names_for_album)
 
     duplicated = albums_with_artists[albums_with_artists.duplicated(subset=["album_name", "artist_names_sort"], keep=False)]
@@ -72,7 +72,8 @@ def duplicate_albums(albums: pd.DataFrame):
     return ["## Duplicate albums", "", table, ""]
 
 
-def low_popularity(tracks_full):
+def low_popularity():
+    tracks_full = DataProvider().tracks(owned=True)
     artists = DataProvider().artists()
     track_artist = RawData()['track_artist']
     low_pop_tracks = tracks_full[(tracks_full["track_popularity"] < 3) & (tracks_full["album_popularity"] < 3)]
