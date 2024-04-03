@@ -64,18 +64,17 @@ def errors():
 def tracks_section(tracks: pd.DataFrame):
     return [
         "## Tracks", 
-        "", 
-        "Top tracks of the last month, six months, and all time",
-        "",
-        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks"),
-        "",
-        "Top Tracks, aggregated",
         "",
         top_tracks_score_time_series(
             tracks,
             overview_top_tracks_time_series_path('score'),
             overview_top_tracks_time_series_path('score', output_dir())
-        )
+        ),
+        "", 
+        "Top tracks of the last month, six months, and all time",
+        "",
+        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks"),
+        ""
     ] + [
         md_summary_details(
             f'Top tracks of {get_term_length_phrase(term)} over time', 
