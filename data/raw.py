@@ -110,7 +110,7 @@ class DataSource:
                 data.to_csv(path, index=False)
 
             self._prefix_df(value)
-            self._value = value
+            self._value = value.reset_index(drop=True)
             return
 
         if self.merge_on_set and os.path.isfile(path):

@@ -51,7 +51,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
     
         annotations.append((text, coords))
 
-    data = data[['Date', 'Term', 'Place']]
+    data = data[['Date', 'Term', 'Place']].reset_index()
     if not skip_figures():
         sns.set(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
