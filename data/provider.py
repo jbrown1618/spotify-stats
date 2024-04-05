@@ -651,6 +651,42 @@ class DataProvider:
         return self._owned_album_uris
 
 
+    def correct_orphan_tracks(self):
+        orphan_tracks = self.tracks(uris=self.__orphan_track_uris())
+        owned_tracks = self.tracks(owned=True)
+
+        replacement_map = {}
+
+        for _, track_row in orphan_tracks.iterrows():
+            matching = owned_tracks[
+                (owned_tracks['track_name'] == track_row['track_name']) & 
+                (owned_tracks['primary_artist_uri'] == track_row['primary_artist_uri'])
+            ]
+
+            if len(matching) == 0:
+                print(f"No owned match for orphan track {track_row['track_name']} by {track_row['primary_artist_name']}")
+                continue
+
+            if len(matching) > 1:
+                print(f"Multiple matches for orphan track {track_row['track_name']} by {track_row['primary_artist_name']}")
+                matching = matching.sort_values('track_popularity', ascending=False)
+
+            replacement_map[track_row['track_uri']] = matching['track_uri'].iloc[0]
+
+        print("Repairing orphaned tracks...")
+        for orig, repl in replacement_map.items():
+            print(f"    {orig} ---> {repl}")
+        raw = RawData()
+        raw['playlist_track'] = raw['playlist_track'].replace(replacement_map)
+        raw['top_tracks'] = raw['top_tracks'].replace(replacement_map)
+
+
+    def __orphan_track_uris(self):
+        all_track_uris = {u for u in self.tracks()['track_uri']}
+        owned_track_uris = {u for u in self.tracks(owned=True)['track_uri']}
+
+        return all_track_uris.difference(owned_track_uris)
+
 
 def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]

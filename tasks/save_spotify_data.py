@@ -1,6 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
+from data.provider import DataProvider
 from data.raw import RawData
 from utils.settings import spotify_client_id, spotify_client_secret
 
@@ -66,6 +67,8 @@ def save_spotify_data():
     raw_data["album_artist"] = pd.DataFrame(album_artist)
     raw_data["audio_features"] = pd.DataFrame(audio_features)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
+
+    DataProvider().correct_orphan_tracks()
 
 
 def save_top_tracks_data(sp: spotipy.Spotify):

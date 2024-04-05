@@ -95,9 +95,23 @@ class DataSource:
         print(f'Updating {self.key} data')
         value = value.sort_values(by=self.index)
 
-        if self.persistent:
-            value = self._merge_persistent_data_source(value)
+        if self.persistent and 'as_of_date' not in value.columns:
+            value = self._merge_into_current_year_data_source(value)
             path = p.persistent_data_path(self.source, self.key, this_year())
+
+        if self.persistent and 'as_of_date' in value.columns:
+            full_existing = self._merge_all_years()
+            value = pd.concat([value, full_existing])
+            value = value.drop_duplicates(subset=[c for c in self.index] + ['as_of_date'], keep="first")
+            distinct_years = value['as_of_date'].str.slice(0,4).unique()
+            for year in distinct_years:
+                path = p.persistent_data_path(self.source, self.key, year)
+                data = value[value['as_of_date'].str.startswith(year)]
+                data.to_csv(path, index=False)
+
+            self._prefix_df(value)
+            self._value = value
+            return
 
         if self.merge_on_set and os.path.isfile(path):
             existing = pd.read_csv(path)            
@@ -122,18 +136,18 @@ class DataSource:
         while True:
             df_path = p.persistent_data_path(self.source, self.key, year)
             if not os.path.isfile(df_path):
-                return merged.reset_index()
+                return merged
             
             df_for_year = pd.read_csv(df_path)
             if merged is None:
                 merged = df_for_year
             else:
-                merged = pd.concat([merged, df_for_year], axis=0)
+                merged = pd.concat([merged, df_for_year], axis=0).reset_index(drop=True)
 
             year = str(int(year) - 1)
     
 
-    def _merge_persistent_data_source(self, value: pd.DataFrame) -> pd.DataFrame:
+    def _merge_into_current_year_data_source(self, value: pd.DataFrame) -> pd.DataFrame:
         value['as_of_date'] = this_date()
         
         current_file = p.persistent_data_path(self.source, self.key, this_year())
