@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from data.provider import DataProvider
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 from utils.top_lists import get_term_length_phrase
@@ -58,6 +59,7 @@ def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_pat
         for text, coords in annotations:
             plt.annotate(text, coords)
 
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 

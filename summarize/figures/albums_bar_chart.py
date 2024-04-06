@@ -2,6 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 from utils.util import first
@@ -33,6 +34,7 @@ def albums_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: st
         ax.bar_label(ax.containers[1])
 
         sns.despine(left=True)
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
     

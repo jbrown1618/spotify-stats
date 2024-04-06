@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from data.provider import DataProvider
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 
@@ -62,7 +63,7 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         annotations.append((text, coords))
 
     if not skip_figures():
-        sns.set(rc = {"figure.figsize": (13,13) })
+        sns.set_theme(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
         sns.set_palette('bright')
 
@@ -76,6 +77,7 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         for text, coords in annotations:
             plt.annotate(text, coords)
 
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 

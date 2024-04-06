@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 
 from utils.artist_relationship import producer_credit_types, related_artist_plain_name
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 from utils.util import first
@@ -30,7 +31,7 @@ def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path:
 
 
     if not skip_figures():
-        sns.set(rc = {"figure.figsize": (13,13) })
+        sns.set_theme(rc = {"figure.figsize": (13,13)})
         sns.set_style('white')
 
         ax = sns.barplot(data=grouped, x="Tracks", y="Producer", color="limegreen")
@@ -38,6 +39,7 @@ def producers_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path:
         ax.bar_label(ax.containers[0])
         
         sns.despine(left=True)
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 

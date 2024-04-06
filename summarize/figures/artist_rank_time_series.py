@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from data.provider import DataProvider
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 from utils.top_lists import get_term_length_description
@@ -53,7 +54,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
 
     data = data[['Date', 'Term', 'Place']].reset_index()
     if not skip_figures():
-        sns.set(rc = {"figure.figsize": (13,13) })
+        sns.set_theme(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
         sns.set_palette('bright')
 
@@ -67,6 +68,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
         for text, coords in annotations:
             plt.annotate(text, coords)
 
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 

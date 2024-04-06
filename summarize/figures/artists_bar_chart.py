@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from data.provider import DataProvider
 
+from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 
@@ -18,7 +19,7 @@ def artists_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: s
     liked = grouped.rename(columns={"track_liked": "Number of Tracks", "artist_name": "Artist"})
 
     if not skip_figures():
-        sns.set(rc = {"figure.figsize": (13,13) })
+        sns.set_theme(rc = {"figure.figsize": (13,13) })
         sns.set_style('white')
 
         ax = sns.barplot(data=all, x="Number of Tracks", y="Artist", color="darkgray")
@@ -28,6 +29,7 @@ def artists_bar_chart(tracks: pd.DataFrame, absolute_path: str, relative_path: s
         ax.bar_label(ax.containers[1])
 
         sns.despine(left=True)
+        change_fonts(ax)
         ax.get_figure().savefig(absolute_path, dpi=figure_dpi())
         plt.clf()
 
