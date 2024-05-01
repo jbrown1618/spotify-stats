@@ -34,7 +34,7 @@ def md_image(alt_text: str, url: str, width=None):
     if width is None:
         return f"![{alt_text}]({url})"
 
-    return f'<img src="{url}" alt="{html.escape(alt_text, quote=True)}" width="{width}" />'
+    return f'<img src="{url}" alt="{md_table_escape(html.escape(alt_text, quote=True))}" width="{width}" />'
 
 
 def md_table(df: pd.DataFrame):
@@ -61,3 +61,8 @@ def md_truncated_table(df: pd.DataFrame, initial: int = 10, text="View all"):
 def empty_header(n: int):
     # Zero-width spaces
     return u"\u200B" * n
+
+
+def md_table_escape(text: str):
+    # Hack, since we do not expect this to be common. | will break to the next cell unless it is escaped
+    return text.replace('|', '\|')
