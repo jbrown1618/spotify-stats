@@ -51,6 +51,8 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
 
     if len(tracks) > 10:
         make_track_features_page(tracks, playlist_name, p.playlist_audio_features_path(playlist_name), p.playlist_audio_features_figure_path(playlist_name))
+
+    if len(tracks) > 50:
         make_clusters_page(tracks, playlist_name, p.playlist_clusters_path(playlist_name), p.playlist_clusters_figure_path(playlist_name))
 
 

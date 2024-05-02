@@ -8,6 +8,7 @@ from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
 
 top = 10
+max_axis_range = 70
 
 def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relative_path: str) -> str:
     track_scores = DataProvider().track_scores_over_time()
@@ -43,13 +44,11 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
     lowest_rank = data['track_score_rank'].max()
     highest_rank = data['track_score_rank'].min()
 
-    y_max = -1 * (highest_rank - 1)
-    y_min = -1 * (lowest_rank + 1)
-
     ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank, -1 * highest_rank]
     tick_labels = [str(-1 * i) for i in ticks]
 
     annotations = []
+    current_ranks = []
     for track_uri in track_uris:
         entries_for_track = data[data['track_uri'] == track_uri]
         if len(entries_for_track) == 0:
@@ -59,8 +58,35 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         entry_at_max_date = entries_for_track[entries_for_track['Date'] == max_date_for_track].iloc[0]
 
         text = '  ' + entry_at_max_date['Track']
-        coords = (entry_at_max_date['Date'], entry_at_max_date['Place'] - 0.15)
+        rank = entry_at_max_date['Place']
+        date = entry_at_max_date['Date']
+
+        coords = (date, rank - 0.15)
         annotations.append((text, coords))
+        current_ranks.append(-1 * rank)
+
+    min_annotation_space = None
+    last = None
+    current_ranks.sort()
+    for rank in current_ranks:
+        if last is not None:
+            annotation_space = rank - last
+            if min_annotation_space is None or annotation_space < min_annotation_space:
+                min_annotation_space = annotation_space
+        last = rank
+    
+    y_max = -1 * (highest_rank - 1)
+    y_min = -1 * (lowest_rank + 1)
+
+    lowest_current_rank = max(current_ranks)
+    if min_annotation_space is not None and y_max - y_min > max_axis_range * min_annotation_space:
+        # Can we cut everything off from the bottom? If so, do
+        new_min = y_max - max_axis_range * min_annotation_space
+        if new_min < -1 * lowest_current_rank:
+            y_min = new_min
+        else:  
+            # We can't make it totally legible without cutting off labels, so do as much as we can
+            y_min = -1 * (lowest_current_rank + 1)
 
     if not skip_figures():
         sns.set_theme(rc = {"figure.figsize": (13,13) })

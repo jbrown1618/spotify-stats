@@ -34,7 +34,6 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
 
     if len(tracks) > 10:
         make_track_features_page(tracks, label_name, p.label_audio_features_path(label_name), p.label_audio_features_chart_path(label_name))
-        make_clusters_page(tracks, label_name, p.label_clusters_path(label_name), p.label_clusters_figure_path(label_name))
 
 
 

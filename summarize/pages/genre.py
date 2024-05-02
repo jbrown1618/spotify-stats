@@ -38,7 +38,6 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
 
     if len(tracks) > 10:
         make_track_features_page(tracks, genre_name, p.genre_audio_features_path(genre_name), p.genre_audio_features_chart_path(genre_name))
-        make_clusters_page(tracks, genre_name, p.genre_clusters_path(genre_name), p.genre_clusters_figure_path(genre_name))
 
 
 def title(genre_name):

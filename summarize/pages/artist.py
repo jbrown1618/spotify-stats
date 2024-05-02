@@ -53,6 +53,8 @@ def make_artist_summary(artist_uri: str):
 
     if len(tracks) > 10:
         make_track_features_page(tracks, artist_name, p.artist_audio_features_path(artist_name), p.artist_audio_features_chart_path(artist_name))
+
+    if len(tracks) > 50:
         make_clusters_page(tracks, artist_name, p.artist_clusters_path(artist_name), p.artist_clusters_figure_path(artist_name))
 
 
