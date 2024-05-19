@@ -6,6 +6,7 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
+from summarize.figures.top_artists_score_time_series import top_artists_score_time_series
 from summarize.figures.top_artists_time_series import top_artists_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.figures.top_tracks_time_series import top_tracks_time_series
@@ -128,6 +129,15 @@ def artists_section(tracks: pd.DataFrame):
         for term in graphable_top_list_terms_for_artists
     ]
 
+    rank_time_series = md_summary_details(
+        "Aggregated top artists over time",
+        top_artists_score_time_series(
+            tracks['primary_artist_uri'], 
+            p.overview_top_artists_time_series_path("score"), 
+            p.overview_top_artists_time_series_path("score", output_dir())
+        )
+    )
+
     top_artists = md_truncated_table(top_artists_table(), 10, "See top 50 artists")
     
     bar_chart = artists_bar_chart(tracks, p.overview_artist_graph_path(), p.overview_artist_graph_path(output_dir()))
@@ -157,6 +167,8 @@ def artists_section(tracks: pd.DataFrame):
         "Top artists of the last month, six months, and all time",
         "",
         top_artists,
+        "",
+        rank_time_series,
         ""
     ] + time_series_images + [
         "",

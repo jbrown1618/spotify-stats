@@ -45,6 +45,8 @@ class DataProvider:
         self._producers_with_page = None
         self._current_track_scores = None
         self._track_scores_over_time = None
+        self._current_artist_scores = None
+        self._artist_scores_over_time = None
         self._owned_track_uris = None
         self._owned_album_uris = None
 
@@ -335,6 +337,47 @@ class DataProvider:
             self._current_track_scores = out
 
         return out
+    
+
+    def artist_scores_over_time(self):
+        if self._artist_scores_over_time is None:
+            out = None
+
+            print('Calculating artist scores over time...')
+            for as_of_date in self.top_artists()['as_of_date'].unique():
+                print('    ' + as_of_date + '...')
+                scores = self.__aggregate_artist_scores(as_of=as_of_date)
+                scores['as_of_date'] = as_of_date
+                out = scores if out is None else pd.concat([out, scores])
+            self._artist_scores_over_time = out.reset_index()
+            print('Done!')
+
+        return self._artist_scores_over_time
+    
+
+    def __aggregate_artist_scores(self, as_of: str=None):
+        if as_of is None and self._current_artist_scores is not None:
+            return self._current_artist_scores
+        
+        top = self.top_artists()
+
+        if as_of is not None:
+            top = top[top['as_of_date'] <= as_of]
+
+        top['artist_score'] = top.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
+
+        out = top.groupby('artist_uri')\
+            .agg({'artist_score': 'sum'})\
+            .reset_index()
+        
+        out = out.sort_values('artist_score', ascending=False)
+
+        out['artist_score_rank'] = [i + 1 for i in range(len(out))]
+
+        if as_of is None and self._current_artist_scores is None:
+            self._current_artist_scores = out
+
+        return out
 
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):
@@ -402,6 +445,9 @@ class DataProvider:
             artists["artist_has_page"] = (artists["artist_track_count"] >= 50) \
                 | ((artists["artist_track_count"] >= 10) & (artists["artist_liked_track_count"] > 0)) \
                 | (artists["artist_liked_track_count"] >= 5)
+            
+            scores = self.__aggregate_artist_scores()
+            artists = pd.merge(artists, scores, on="artist_uri", how="left")
 
             self._artists = artists
 
