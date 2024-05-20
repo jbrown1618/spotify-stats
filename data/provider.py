@@ -5,6 +5,7 @@ from data.raw import RawData
 from utils.album import short_album_name
 from utils.date import release_year
 from utils.machine_learning import prepare_ml_data
+from utils.ranking import artist_ranks, artist_ranks_over_time, track_ranks, track_ranks_over_time
 from utils.record_label import standardize_record_labels
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
@@ -43,10 +44,6 @@ class DataProvider:
         self._ml_data = None
         self._track_credits = None
         self._producers_with_page = None
-        self._current_track_scores = None
-        self._track_scores_over_time = None
-        self._current_artist_scores = None
-        self._artist_scores_over_time = None
         self._owned_track_uris = None
         self._owned_album_uris = None
 
@@ -141,11 +138,11 @@ class DataProvider:
             track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
             track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
 
-            scores = self.__aggregate_track_scores()
+            ranks = track_ranks()
 
             tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
             tracks = pd.merge(tracks, artists, on="primary_artist_uri")
-            tracks = pd.merge(tracks, scores, on='track_uri', how="left")
+            tracks = pd.merge(tracks, ranks, on='track_uri', how="left")
             tracks['track_score'].fillna(0, inplace=True)
 
             self._tracks = tracks
@@ -299,85 +296,11 @@ class DataProvider:
     
 
     def track_scores_over_time(self):
-        if self._track_scores_over_time is None:
-            out = None
-
-            print('Calculating track scores over time...')
-            for as_of_date in self.top_tracks()['as_of_date'].unique():
-                print('    ' + as_of_date + '...')
-                scores = self.__aggregate_track_scores(as_of=as_of_date)
-                scores['as_of_date'] = as_of_date
-                out = scores if out is None else pd.concat([out, scores])
-            self._track_scores_over_time = out.reset_index()
-            print('Done!')
-
-        return self._track_scores_over_time
+        return track_ranks_over_time()
     
-
-    def __aggregate_track_scores(self, as_of: str=None):
-        if as_of is None and self._current_track_scores is not None:
-            return self._current_track_scores
-        
-        top = self.top_tracks()
-
-        if as_of is not None:
-            top = top[top['as_of_date'] <= as_of]
-
-        top['track_score'] = top.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
-
-        out = top.groupby('track_uri')\
-            .agg({'track_score': 'sum'})\
-            .reset_index()
-        
-        out = out.sort_values('track_score', ascending=False)
-
-        out['track_score_rank'] = [i + 1 for i in range(len(out))]
-
-        if as_of is None and self._current_track_scores is None:
-            self._current_track_scores = out
-
-        return out
     
-
     def artist_scores_over_time(self):
-        if self._artist_scores_over_time is None:
-            out = None
-
-            print('Calculating artist scores over time...')
-            for as_of_date in self.top_artists()['as_of_date'].unique():
-                print('    ' + as_of_date + '...')
-                scores = self.__aggregate_artist_scores(as_of=as_of_date)
-                scores['as_of_date'] = as_of_date
-                out = scores if out is None else pd.concat([out, scores])
-            self._artist_scores_over_time = out.reset_index()
-            print('Done!')
-
-        return self._artist_scores_over_time
-    
-
-    def __aggregate_artist_scores(self, as_of: str=None):
-        if as_of is None and self._current_artist_scores is not None:
-            return self._current_artist_scores
-        
-        top = self.top_artists()
-
-        if as_of is not None:
-            top = top[top['as_of_date'] <= as_of]
-
-        top['artist_score'] = top.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
-
-        out = top.groupby('artist_uri')\
-            .agg({'artist_score': 'sum'})\
-            .reset_index()
-        
-        out = out.sort_values('artist_score', ascending=False)
-
-        out['artist_score_rank'] = [i + 1 for i in range(len(out))]
-
-        if as_of is None and self._current_artist_scores is None:
-            self._current_artist_scores = out
-
-        return out
+        return artist_ranks_over_time()
 
 
     def ml_data(self, track_uris: typing.Iterable[str] = None):
@@ -446,8 +369,8 @@ class DataProvider:
                 | ((artists["artist_track_count"] >= 10) & (artists["artist_liked_track_count"] > 0)) \
                 | (artists["artist_liked_track_count"] >= 5)
             
-            scores = self.__aggregate_artist_scores()
-            artists = pd.merge(artists, scores, on="artist_uri", how="left")
+            ranks = artist_ranks()
+            artists = pd.merge(artists, ranks, on="artist_uri", how="left")
 
             self._artists = artists
 
@@ -737,19 +660,4 @@ class DataProvider:
 def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]
     return artists
-
-
-def placement_score(index, term):
-    multiplier = 1
-    total = 50
-
-    if term == 'on_repeat':
-        multiplier = 3
-        total = 30
-    if term == 'medium_term':
-        multiplier = 6
-    if term == 'long_term':
-        multiplier = 12
-
-    return multiplier * (total + 1 - index)
     
