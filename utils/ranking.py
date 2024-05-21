@@ -1,13 +1,12 @@
 import pandas as pd
 
 from data.raw import RawData
+from utils.date import this_date
 
-
-_current_track_scores = None
-_current_artist_scores = None
 _track_scores_over_time = None
 _artist_scores_over_time = None
 
+as_of_now = this_date()
 
 def track_ranks():
     return __calculate_track_ranks()
@@ -33,16 +32,9 @@ def track_ranks_over_time():
     return _track_scores_over_time
 
 
-def __calculate_track_ranks(as_of: str=None):
-    global _current_track_scores
-
+def __calculate_track_ranks(as_of: str=as_of_now):
     top_tracks = RawData()['top_tracks'].copy()
-
-    if as_of is None and _current_track_scores is not None:
-        return _current_track_scores
-    
-    if as_of is not None:
-        top_tracks = top_tracks[top_tracks['as_of_date'] <= as_of]
+    top_tracks = top_tracks[top_tracks['as_of_date'] <= as_of]
 
     top_tracks['track_score'] = top_tracks.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
 
@@ -53,9 +45,6 @@ def __calculate_track_ranks(as_of: str=None):
     out = out.sort_values('track_score', ascending=False)
 
     out['track_score_rank'] = [i + 1 for i in range(len(out))]
-
-    if as_of is None and _current_track_scores is None:
-        _current_track_scores = out
 
     return out
 
@@ -84,16 +73,9 @@ def artist_ranks_over_time():
     return _artist_scores_over_time
 
 
-def __calculate_artist_ranks(as_of: str=None):
-    global _current_artist_scores
-
+def __calculate_artist_ranks(as_of: str=as_of_now):
     top_artists = RawData()['top_artists'].copy()
-
-    if as_of is None and _current_artist_scores is not None:
-        return _current_artist_scores
-    
-    if as_of is not None:
-        top_artists = top_artists[top_artists['as_of_date'] <= as_of]
+    top_artists = top_artists[top_artists['as_of_date'] <= as_of]
 
     top_artists['artist_score'] = top_artists.apply(lambda row: placement_score(row['index'], row['term']), axis=1)
 
@@ -104,9 +86,6 @@ def __calculate_artist_ranks(as_of: str=None):
     out = out.sort_values('artist_score', ascending=False)
 
     out['artist_score_rank'] = [i + 1 for i in range(len(out))]
-
-    if as_of is None and _current_artist_scores is None:
-        _current_artist_scores = out
 
     return out
 
