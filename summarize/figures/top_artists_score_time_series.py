@@ -6,33 +6,34 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 from utils.fonts import change_fonts
 from utils.markdown import md_image
+from utils.ranking import artist_ranks_over_time
 from utils.settings import figure_dpi, skip_figures
 
 top = 10
 max_axis_range = 70
 
 def top_artists_score_time_series(artist_uris: typing.Iterable[str], absolute_path: str, relative_path: str) -> str:
-    artist_scores = DataProvider().artist_scores_over_time()
+    artist_ranks = artist_ranks_over_time()
 
-    artist_scores = artist_scores[artist_scores['artist_uri'].isin(artist_uris)]
+    artist_ranks = artist_ranks[artist_ranks['artist_uri'].isin(artist_uris)]
 
-    max_date = artist_scores['as_of_date'].max()
-    current_top_artists = artist_scores[
-        (artist_scores['as_of_date'] == max_date)
+    max_date = artist_ranks['as_of_date'].max()
+    current_top_artists = artist_ranks[
+        (artist_ranks['as_of_date'] == max_date)
     ].head(top)['artist_uri']
 
-    most_frequent_artists = artist_scores[artist_scores['artist_score_rank'] <= top]\
+    most_frequent_artists = artist_ranks[artist_ranks['artist_rank'] <= top]\
         .groupby('artist_uri')\
-        .agg({'artist_score': 'count'})\
+        .agg({'artist_rank': 'count'})\
         .reset_index()\
-        .rename(columns={'artist_score': 'appearances'})\
+        .rename(columns={'artist_rank': 'appearances'})\
         .sort_values('appearances', ascending=False)\
         .head(10)['artist_uri']
     
     uris = {u for u in current_top_artists}.union({u for u in most_frequent_artists})
 
     artist_names = DataProvider().artists(uris=uris)[['artist_uri', 'artist_name']]
-    data = artist_scores[artist_scores['artist_uri'].isin(uris)]
+    data = artist_ranks[artist_ranks['artist_uri'].isin(uris)]
     data = pd.merge(data, artist_names, how="inner", on='artist_uri')
 
     if len(data) < 20:
@@ -40,10 +41,10 @@ def top_artists_score_time_series(artist_uris: typing.Iterable[str], absolute_pa
 
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
     data['Artist'] = data['artist_name']
-    data['Place'] = data['artist_score_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
+    data['Place'] = data['artist_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    lowest_rank = data['artist_score_rank'].max()
-    highest_rank = data['artist_score_rank'].min()
+    lowest_rank = data['artist_rank'].max()
+    highest_rank = data['artist_rank'].min()
 
     ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank, -1 * highest_rank]
     tick_labels = [str(-1 * i) for i in ticks]

@@ -5,33 +5,34 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 from utils.fonts import change_fonts
 from utils.markdown import md_image
+from utils.ranking import track_ranks_over_time
 from utils.settings import figure_dpi, skip_figures
 
 top = 10
 max_axis_range = 70
 
 def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relative_path: str) -> str:
-    track_scores = DataProvider().track_scores_over_time()
+    track_ranks = track_ranks_over_time()
 
-    track_scores = track_scores[track_scores['track_uri'].isin(tracks['track_uri'])]
+    track_ranks = track_ranks[track_ranks['track_uri'].isin(tracks['track_uri'])]
 
-    max_date = track_scores['as_of_date'].max()
-    current_top_tracks = track_scores[
-        (track_scores['as_of_date'] == max_date)
+    max_date = track_ranks['as_of_date'].max()
+    current_top_tracks = track_ranks[
+        (track_ranks['as_of_date'] == max_date)
     ].head(top)['track_uri']
 
-    most_frequent_tracks = track_scores[track_scores['track_score_rank'] <= top]\
+    most_frequent_tracks = track_ranks[track_ranks['track_rank'] <= top]\
         .groupby('track_uri')\
-        .agg({'track_score': 'count'})\
+        .agg({'track_rank': 'count'})\
         .reset_index()\
-        .rename(columns={'track_score': 'appearances'})\
+        .rename(columns={'track_rank': 'appearances'})\
         .sort_values('appearances', ascending=False)\
         .head(10)['track_uri']
     
     track_uris = {u for u in current_top_tracks}.union({u for u in most_frequent_tracks})
 
     track_names = DataProvider().tracks(uris=track_uris)[['track_uri', 'track_name']]
-    data = track_scores[track_scores['track_uri'].isin(track_uris)]
+    data = track_ranks[track_ranks['track_uri'].isin(track_uris)]
     data = pd.merge(data, track_names, how="inner", on='track_uri')
 
     if len(data) < 20:
@@ -39,10 +40,10 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
 
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
     data['Track'] = data['track_name']
-    data['Place'] = data['track_score_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
+    data['Place'] = data['track_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    lowest_rank = data['track_score_rank'].max()
-    highest_rank = data['track_score_rank'].min()
+    lowest_rank = data['track_rank'].max()
+    highest_rank = data['track_rank'].min()
 
     ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank, -1 * highest_rank]
     tick_labels = [str(-1 * i) for i in ticks]
