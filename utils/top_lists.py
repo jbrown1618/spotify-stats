@@ -28,6 +28,8 @@ def get_term_length_description(term):
     if term == 'long_term':
         return 'All time'
     
+    return term
+    
 
 def get_term_length_phrase(term):
     if term == 'on_repeat':

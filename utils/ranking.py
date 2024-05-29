@@ -4,7 +4,7 @@ from data.raw import RawData
 from utils.date import this_date
 
 artist_score_factor = 0.1
-track_score_factor = 0.1
+track_score_factor = 0.5
 as_of_now = this_date()
 
 
@@ -18,11 +18,11 @@ _track_ranks_over_time = None
 def track_ranks_over_time():
     global _track_ranks_over_time
 
-    dates = RawData()['top_tracks']['as_of_date'].unique()
 
     if _track_ranks_over_time is None:
         out = None
 
+        dates = RawData()['top_tracks']['as_of_date'].unique()
         for as_of_date in dates:
             scores = __track_ranks(as_of=as_of_date)
             scores['as_of_date'] = as_of_date
