@@ -13,7 +13,7 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table, production_credits_table
 from summarize.tables.tracks_table import tracks_table
 from utils.artist_relationship import mb_artist_display_name, relationship_description
-from utils.markdown import md_table, md_image, md_link, md_truncated_table
+from utils.markdown import md_summary_details, md_table, md_image, md_link, md_truncated_table
 import utils.path as p
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms_for_artists, top_list_terms
 
@@ -38,7 +38,7 @@ def make_artist_summary(artist_uri: str):
         content += [md_link(f"See Track Features", p.artist_audio_features_path(artist_name, p.artist_path(artist_name))), ""]
         content += [md_link(f"See Clusters", p.artist_clusters_path(artist_name, p.artist_path(artist_name))), ""]
     content += relationships_section(artist_name, artist_uri)
-    content += top_artists_rank_section(artist_name, artist_uri)
+    content += top_artists_rank_section(artist_name, artist_uri, artist['artist_rank'])
     content += top_tracks_section(artist_name, artist_uri)
     content += playlists_section(artist_name, artist_uri, playlists)
     content += albums_section(tracks)
@@ -79,7 +79,7 @@ def relationships_section(artist_name, artist_uri):
     return ["## Relationships", "", artist_name + ":"] + phrases + [""]
 
 
-def top_artists_rank_section(artist_name, artist_uri):
+def top_artists_rank_section(artist_name, artist_uri, artist_rank):
     contents = []
 
     current_entries = DataProvider().top_artists(current=True, artist_uris=[artist_uri])
@@ -98,6 +98,8 @@ def top_artists_rank_section(artist_name, artist_uri):
             rankings_list.append(f'- The #{rank_for_term} artist of {get_term_length_phrase(term)}')
 
         contents += rankings_list
+
+    contents.append(f'- The #{int(artist_rank)} artist overall')
         
     time_series = artist_rank_time_series(
         artist_uri,
@@ -118,44 +120,12 @@ def top_artists_rank_section(artist_name, artist_uri):
 def top_tracks_section(artist_name, artist_uri):
     contents = []
 
-    track_uris = DataProvider().tracks(artist_uri=artist_uri)['track_uri']
-    current_entries = DataProvider().top_tracks(current=True, track_uris=track_uris)
-
-    done = set()
-
-    for _, entry in current_entries.iterrows():
-        if entry['track_uri'] in done:
-            continue
-
-        track_uri = entry['track_uri']
-
-        entries_for_track = current_entries[current_entries['track_uri'] == track_uri]
-
-        short = entries_for_track[entries_for_track['term'] == 'short_term']
-        medium = entries_for_track[entries_for_track['term'] == 'medium_term']
-        long = entries_for_track[entries_for_track['term'] == 'long_term']
-        repeat = entries_for_track[entries_for_track['term'] == 'on_repeat']
-
-        short_term_rank = short['index'].iloc[0] if len(short) > 0 else None
-        medium_term_rank = medium['index'].iloc[0] if len(medium) > 0 else None
-        long_term_rank = long['index'].iloc[0] if len(long) > 0 else None
-        on_repeat_rank = repeat['index'].iloc[0] if len(repeat) > 0 else None
-
-        contents += track_ranks_superlatives_list(
-            DataProvider().track(track_uri)['track_name'],
-            short_term_rank,
-            medium_term_rank,
-            long_term_rank,
-            on_repeat_rank
-        )
-
-        done.add(track_uri)
-
     score_time_series = top_tracks_score_time_series(
         DataProvider().tracks(artist_uri=artist_uri),
         p.artist_top_tracks_time_series_path(artist_name, 'score'),
         p.artist_top_tracks_time_series_path(artist_name, 'score', p.artist_path(artist_name))
     )
+
     if score_time_series != '':
         contents += ['', '### Top tracks, aggregated', '', score_time_series]
 
@@ -170,7 +140,7 @@ def top_tracks_section(artist_name, artist_uri):
         if time_series_for_term == '':
             continue
 
-        contents += ['', f'### Top tracks of {get_term_length_phrase(term)} over time', '', time_series_for_term]
+        contents += ['', md_summary_details(f'Top tracks of {get_term_length_phrase(term)} over time', time_series_for_term)]
 
     if len(contents) == 0:
         return contents

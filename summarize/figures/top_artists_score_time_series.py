@@ -1,3 +1,4 @@
+import typing
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -5,60 +6,60 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 from utils.fonts import change_fonts
 from utils.markdown import md_image
-from utils.ranking import track_ranks_over_time
+from utils.ranking import artist_ranks_over_time
 from utils.settings import figure_dpi, skip_figures
 
 top = 10
 max_axis_range = 70
 
-def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relative_path: str) -> str:
-    track_ranks = track_ranks_over_time()
+def top_artists_score_time_series(artist_uris: typing.Iterable[str], absolute_path: str, relative_path: str) -> str:
+    artist_ranks = artist_ranks_over_time()
 
-    track_ranks = track_ranks[track_ranks['track_uri'].isin(tracks['track_uri'])]
+    artist_ranks = artist_ranks[artist_ranks['artist_uri'].isin(artist_uris)]
 
-    max_date = track_ranks['as_of_date'].max()
-    current_top_tracks = track_ranks[
-        (track_ranks['as_of_date'] == max_date)
-    ].head(top)['track_uri']
+    max_date = artist_ranks['as_of_date'].max()
+    current_top_artists = artist_ranks[
+        (artist_ranks['as_of_date'] == max_date)
+    ].head(top)['artist_uri']
 
-    most_frequent_tracks = track_ranks[track_ranks['track_rank'] <= top]\
-        .groupby('track_uri')\
-        .agg({'track_rank': 'count'})\
+    most_frequent_artists = artist_ranks[artist_ranks['artist_rank'] <= top]\
+        .groupby('artist_uri')\
+        .agg({'artist_rank': 'count'})\
         .reset_index()\
-        .rename(columns={'track_rank': 'appearances'})\
+        .rename(columns={'artist_rank': 'appearances'})\
         .sort_values('appearances', ascending=False)\
-        .head(10)['track_uri']
+        .head(10)['artist_uri']
     
-    track_uris = {u for u in current_top_tracks}.union({u for u in most_frequent_tracks})
+    uris = {u for u in current_top_artists}.union({u for u in most_frequent_artists})
 
-    track_names = DataProvider().tracks(uris=track_uris)[['track_uri', 'track_name']]
-    data = track_ranks[track_ranks['track_uri'].isin(track_uris)]
-    data = pd.merge(data, track_names, how="inner", on='track_uri')
+    artist_names = DataProvider().artists(uris=uris)[['artist_uri', 'artist_name']]
+    data = artist_ranks[artist_ranks['artist_uri'].isin(uris)]
+    data = pd.merge(data, artist_names, how="inner", on='artist_uri')
 
     if len(data) < 20:
         return ''
 
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
-    data['Track'] = data['track_name']
-    data['Place'] = data['track_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
+    data['Artist'] = data['artist_name']
+    data['Place'] = data['artist_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    lowest_rank = data['track_rank'].max()
-    highest_rank = data['track_rank'].min()
+    lowest_rank = data['artist_rank'].max()
+    highest_rank = data['artist_rank'].min()
 
     ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank, -1 * highest_rank]
     tick_labels = [str(-1 * i) for i in ticks]
 
     annotations = []
     current_ranks = []
-    for track_uri in track_uris:
-        entries_for_track = data[data['track_uri'] == track_uri]
-        if len(entries_for_track) == 0:
+    for artist_uri in uris:
+        entries_for_artist = data[data['artist_uri'] == artist_uri]
+        if len(entries_for_artist) == 0:
             continue
 
-        max_date_for_track = entries_for_track['Date'].max()
-        entry_at_max_date = entries_for_track[entries_for_track['Date'] == max_date_for_track].iloc[0]
+        max_date_for_track = entries_for_artist['Date'].max()
+        entry_at_max_date = entries_for_artist[entries_for_artist['Date'] == max_date_for_track].iloc[0]
 
-        text = '  ' + entry_at_max_date['Track']
+        text = '  ' + entry_at_max_date['Artist']
         rank = entry_at_max_date['Place']
         date = entry_at_max_date['Date']
 
@@ -94,7 +95,7 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         sns.set_style('white')
         sns.set_palette('bright')
 
-        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Track', linewidth=3)
+        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Artist', linewidth=3)
 
         plt.yticks(ticks=ticks, labels=tick_labels)
         plt.ylim([y_min, y_max])

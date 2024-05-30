@@ -60,21 +60,21 @@ def display_track(row: pd.Series, suffix: str, relative_to: str):
 def most_and_least_listened_tracks_table(tracks: pd.DataFrame, relative_to: str):
     top_count = min(10, tracks.size / 2)
 
-    top_tracks = tracks.sort_values(by=["track_score", 'track_uri'], ascending=False)\
+    top_tracks = tracks.sort_values(by=["track_rank", 'track_uri'], ascending=True)\
         .head(top_count)\
         .reset_index()
     
-    bottom_tracks = tracks.sort_values(by=["track_score", 'track_uri'], ascending=True)\
+    bottom_tracks = tracks.sort_values(by=["track_rank", 'track_uri'], ascending=False)\
         .head(top_count)\
         .reset_index()
 
     data = pd.DataFrame({
         empty_header(1): top_tracks.apply(lambda row: display_image(row, ""), axis=1),
         "Most listened tracks": top_tracks.apply(lambda row: display_track(row, "", relative_to), axis=1),
-        "Rank": top_tracks["track_score_rank"],
+        "Rank": top_tracks["track_rank"],
         empty_header(2): bottom_tracks.apply(lambda row: display_image(row, ""), axis=1),
         "Least listened tracks": bottom_tracks.apply(lambda row: display_track(row, "", relative_to), axis=1),
-        "Rank ": bottom_tracks["track_score_rank"]
+        "Rank ": bottom_tracks["track_rank"]
     })
     
     return md_table(data)

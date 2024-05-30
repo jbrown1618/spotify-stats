@@ -5,15 +5,25 @@ import matplotlib.pyplot as plt
 from data.provider import DataProvider
 from utils.fonts import change_fonts
 from utils.markdown import md_image
+from utils.ranking import artist_ranks_over_time
 from utils.settings import figure_dpi, skip_figures
 from utils.top_lists import get_term_length_description
 
 def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: str, relative_path: str) -> str:
     data = DataProvider().top_artists(artist_uris=[artist_uri])
+    data = data.rename(columns={'index': 'place'})
+    
+    ranks = artist_ranks_over_time()
+    ranks = ranks[ranks['artist_uri'] == artist_uri]
+    ranks = ranks.rename(columns={'artist_rank': 'place'})
+    ranks['term'] = 'Aggregated'
+    ranks = ranks[['artist_uri', 'term', 'place', 'as_of_date']]
+
+    data = pd.concat([data, ranks])
 
     entry_counts_by_term = data.groupby('term')\
-                                .agg({"index": "count"})\
-                                .rename(columns={"index": "entry_count"})\
+                                .agg({"place": "count"})\
+                                .rename(columns={"place": "entry_count"})\
                                 .reset_index()
     terms_with_sufficient_data = entry_counts_by_term[entry_counts_by_term['entry_count'] > 2]['term'].unique()
 
@@ -24,10 +34,10 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
 
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
     data['Term'] = data['term'].apply(get_term_length_description)
-    data['Place'] = data['index'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
+    data['Place'] = data['place'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
-    lowest_rank = data['index'].max()
-    highest_rank = data['index'].min()
+    lowest_rank = data['place'].max()
+    highest_rank = data['place'].min()
 
     y_max = -1 * (highest_rank - 1)
     y_min = -1 * (lowest_rank + 1)
