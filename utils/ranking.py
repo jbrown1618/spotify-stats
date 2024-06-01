@@ -3,7 +3,6 @@ import pandas as pd
 from data.raw import RawData
 from utils.date import this_date
 
-artist_score_factor = 0.1
 track_score_factor = 0.5
 as_of_now = this_date()
 
@@ -34,19 +33,10 @@ def track_ranks_over_time():
 
 def __track_ranks(as_of: str=as_of_now):
     placement_scores = __track_placement_scores(as_of)
-        
-    artist_scores = __artist_placement_scores(as_of)
-    track_artist = RawData()['track_artist']
+    placement_scores.rename(columns={'track_placement_score': 'track_score'}, inplace=True)
 
-    artist_scores_by_track = pd.merge(artist_scores, track_artist, on="artist_uri")\
-        .groupby("track_uri")\
-        .agg({'artist_placement_score': 'mean'})
-    
-    all_scores = pd.merge(placement_scores, artist_scores_by_track, on="track_uri", how="outer")
-    all_scores['track_score'] = all_scores['track_placement_score'] + all_scores['artist_placement_score'] * artist_score_factor
-
-    out = all_scores.sort_values('track_score', ascending=False)
-    all_scores.fillna(0, inplace=True)
+    out = placement_scores.sort_values('track_score', ascending=False)
+    out.fillna(0, inplace=True)
     out['track_rank'] = [i + 1 for i in range(len(out))]
 
     return out[['track_uri', 'track_rank']].copy()
