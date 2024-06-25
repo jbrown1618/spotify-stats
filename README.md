@@ -21,3 +21,9 @@ python ./main.py
 # Exit the virtual environment
 deactivate
 ```
+
+## Start the server
+
+```bash
+python -m flask --app ./app/app.py run
+```
