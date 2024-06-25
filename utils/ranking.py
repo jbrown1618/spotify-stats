@@ -128,6 +128,48 @@ def __artist_placement_scores(as_of: str=as_of_now):
     return out
 
 
+def current_album_ranks():
+    out = album_ranks_over_time()
+    out = out[out['as_of_date'] == out['as_of_date'].max()]
+    return out[['album_uri', 'album_rank']].copy()
+
+
+_album_ranks_over_time = None
+def album_ranks_over_time():
+    global _album_ranks_over_time
+
+    dates = RawData()['top_tracks']['as_of_date'].unique()
+
+    if _album_ranks_over_time is None:
+        out = None
+
+        for as_of_date in dates:
+            ranks = __album_ranks(as_of=as_of_date)
+            ranks['as_of_date'] = as_of_date
+            out = ranks if out is None else pd.concat([out, ranks])
+        _album_ranks_over_time = out.reset_index()
+
+    return _album_ranks_over_time
+
+
+def __album_ranks(as_of: str=as_of_now):      
+    track_scores = __track_placement_scores(as_of)
+    tracks = RawData()['tracks']
+
+    album_scores = pd.merge(track_scores, tracks, on="track_uri")\
+        .groupby("album_uri")\
+        .agg({'track_placement_score': 'sum'})\
+        .reset_index()
+    
+    album_scores.fillna(0, inplace=True)
+    album_scores['album_score'] = album_scores['track_placement_score']
+
+    out = album_scores.sort_values('album_score', ascending=False)
+    out['album_rank'] = [i + 1 for i in range(len(out))]
+
+    return out[['album_uri', 'album_rank']].copy()
+
+
 def __placement_score(index, term):
     multiplier = 1
     total = 50

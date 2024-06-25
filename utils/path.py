@@ -96,6 +96,13 @@ def overview_top_artists_time_series_path(term: str, relative_to=None):
     )
 
 
+def overview_top_albums_time_series_path(term: str, relative_to=None):
+    return relative_to_path(
+        os.path.join("images", "overview", "top_albums" ,f"{term}.png"),
+        relative_to
+    )
+
+
 def overview_top_tracks_time_series_path(term: str, relative_to=None):
     return relative_to_path(
         os.path.join("images", "overview", "top_tracks" ,f"{term}.png"),
@@ -230,6 +237,19 @@ def artist_top_tracks_time_series_path(artist_name: str, term: str, relative_to=
         ),
         relative_to
     )
+
+
+def artist_top_albums_time_series_path(artist_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "artists",
+            file_name_friendly(artist_name),
+            f"album_rank_time_series.png"
+        ),
+        relative_to
+    )
+
 
 def artist_producers_graph_path(artist_name, relative_to=None):
     return relative_to_path(
@@ -442,6 +462,19 @@ def playlist_top_tracks_time_series_path(playlist_name: str, relative_to=None):
         ), 
         relative_to
     )
+
+
+def playlist_top_albums_time_series_path(playlist_name: str, relative_to=None):
+    return relative_to_path(
+        os.path.join(
+            "images",
+            "playlists",
+            file_name_friendly(playlist_name),
+            "top_albums_time_series.png"
+        ), 
+        relative_to
+    )
+
 
 def labels_path():
     return os.path.join(output_dir(), "labels")

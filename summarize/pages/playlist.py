@@ -6,6 +6,7 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
+from summarize.figures.top_albums_score_time_series import top_albums_score_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.figures.years_bar_chart import years_bar_chart
 from summarize.pages.track_features import make_track_features_page
@@ -115,7 +116,22 @@ def albums_section(playlist_name, playlist_full: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    return ["## Top Albums", "", full_list, "", img, ""]
+    time_series = top_albums_score_time_series(
+        playlist_full, 
+        p.playlist_top_albums_time_series_path(playlist_name), 
+        p.playlist_top_albums_time_series_path(playlist_name, p.playlist_path(playlist_name))
+    )
+
+    return [
+        "## Top Albums", 
+        "",
+        time_series,
+        "", 
+        full_list, 
+        "", 
+        img, 
+        ""
+    ]
 
 
 def labels_section(playlist_name, playlist_full: pd.DataFrame):

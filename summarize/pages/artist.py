@@ -4,6 +4,7 @@ from data.provider import DataProvider
 from summarize.figures.artist_rank_time_series import artist_rank_time_series
 from summarize.figures.artist_top_tracks_time_series import artist_top_tracks_time_series
 from summarize.figures.producers_bar_chart import producers_bar_chart
+from summarize.figures.top_albums_score_time_series import top_albums_score_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
@@ -40,8 +41,8 @@ def make_artist_summary(artist_uri: str):
     content += relationships_section(artist_name, artist_uri)
     content += top_artists_rank_section(artist_name, artist_uri, artist['artist_rank'])
     content += top_tracks_section(artist_name, artist_uri)
+    content += albums_section(artist_name, tracks)
     content += playlists_section(artist_name, artist_uri, playlists)
-    content += albums_section(tracks)
     content += labels_section(artist_name, tracks)
     content += genres_section(artist_name, artist_uri, artist_genre)
     content += credits_section(artist_name, artist_uri)
@@ -218,9 +219,20 @@ def track_count_for_artist_in_playlist(playlist_uri: str, artist_uri: str) -> in
     return len(tracks_for_artist_in_playlist)
 
 
-def albums_section(artist_tracks: pd.DataFrame):
+def albums_section(artist_name: str, artist_tracks: pd.DataFrame):
     table_data = albums_table(artist_tracks)
-    return ["## Top Albums", "", md_truncated_table(table_data, 10, "See all albums"), ""]
+    return [
+        "## Top Albums", 
+        "", 
+        top_albums_score_time_series(
+            artist_tracks, 
+            p.artist_top_albums_time_series_path(artist_name), 
+            p.artist_top_albums_time_series_path(artist_name, p.artist_path(artist_name))
+        ),
+        "",
+        md_truncated_table(table_data, 10, "See all albums"), 
+        "",
+    ]
 
 
 def labels_section(artist_name: str, artist_tracks: pd.DataFrame):

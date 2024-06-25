@@ -6,6 +6,7 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
+from summarize.figures.top_albums_score_time_series import top_albums_score_time_series
 from summarize.figures.top_artists_score_time_series import top_artists_score_time_series
 from summarize.figures.top_artists_time_series import top_artists_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
@@ -38,6 +39,7 @@ def make_overview(tracks_full: pd.DataFrame):
     content += playlists_section()
     content += artists_section(tracks_full)
     content += tracks_section(tracks_full)
+    content += albums_section(tracks_full)
     content += genres_section(tracks_full)
     content += labels_section(tracks_full)
     content += producers_section(tracks_full)
@@ -178,6 +180,21 @@ def artists_section(tracks: pd.DataFrame):
         bar_chart, 
         "", 
         scatterplot, 
+        ""
+    ]
+
+
+def albums_section(tracks: pd.DataFrame):
+    return [
+        "## Albums",
+        "",
+        "Top albums over time",
+        "",
+        top_albums_score_time_series(
+            tracks, 
+            p.overview_top_albums_time_series_path("score"), 
+            p.overview_top_albums_time_series_path("score", output_dir())
+        ),
         ""
     ]
 
