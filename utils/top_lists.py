@@ -26,6 +26,9 @@ def get_term_length_description(term):
         return 'Last 6 months'
     
     if term == 'long_term':
+        return 'Last year'
+    
+    if term == 'aggregate_score':
         return 'All time'
     
     return term
@@ -42,4 +45,7 @@ def get_term_length_phrase(term):
         return 'the last 6 months'
     
     if term == 'long_term':
+        return 'the last year'
+    
+    if term == 'aggregate_score':
         return 'all time'

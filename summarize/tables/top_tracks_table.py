@@ -69,12 +69,12 @@ def most_and_least_listened_tracks_table(tracks: pd.DataFrame, relative_to: str)
         .reset_index()
 
     data = pd.DataFrame({
+        "Rank": top_tracks["track_rank"],
         empty_header(1): top_tracks.apply(lambda row: display_image(row, ""), axis=1),
         "Most listened tracks": top_tracks.apply(lambda row: display_track(row, "", relative_to), axis=1),
-        "Rank": top_tracks["track_rank"],
+        "Rank ": bottom_tracks["track_rank"],
         empty_header(2): bottom_tracks.apply(lambda row: display_image(row, ""), axis=1),
-        "Least listened tracks": bottom_tracks.apply(lambda row: display_track(row, "", relative_to), axis=1),
-        "Rank ": bottom_tracks["track_rank"]
+        "Least listened tracks": bottom_tracks.apply(lambda row: display_track(row, "", relative_to), axis=1)
     })
     
     return md_table(data)

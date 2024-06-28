@@ -100,7 +100,7 @@ def top_artists_rank_section(artist_name, artist_uri, artist_rank):
 
         contents += rankings_list
 
-    contents.append(f'- The #{int(artist_rank)} artist overall')
+    contents.append(f'- The #{int(artist_rank)} artist of {get_term_length_phrase("aggregate_score")}')
         
     time_series = artist_rank_time_series(
         artist_uri,
@@ -128,7 +128,7 @@ def top_tracks_section(artist_name, artist_uri):
     )
 
     if score_time_series != '':
-        contents += ['', '### Top tracks, aggregated', '', score_time_series]
+        contents += ['', '### Top tracks of all time', '', score_time_series]
 
     for term in graphable_top_list_terms_for_artists:
         time_series_for_term = artist_top_tracks_time_series(

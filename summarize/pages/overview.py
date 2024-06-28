@@ -20,9 +20,10 @@ from summarize.tables.playlists_table import playlists_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_artists_table import top_artists_table
 from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table, top_tracks_table
+from summarize.tables.tracks_table import tracks_table
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms_for_tracks, graphable_top_list_terms_for_artists
 from utils.track_features import comparison_scatter_plot
-from utils.markdown import md_link, md_summary_details, md_truncated_table
+from utils.markdown import md_link, md_summary_details, md_table, md_truncated_table
 import utils.path as p
 from utils.settings import output_dir
 
@@ -68,16 +69,21 @@ def tracks_section(tracks: pd.DataFrame):
     return [
         "## Tracks", 
         "",
+        "### Top Tracks of All Time",
+        "",
+        md_truncated_table(tracks_table(tracks.sort_values("track_rank", ascending=True).head(100), output_dir()), 10, "View top 100 tracks"),
+        "",
         top_tracks_score_time_series(
             tracks,
             p.overview_top_tracks_time_series_path('score'),
             p.overview_top_tracks_time_series_path('score', output_dir())
         ),
         "", 
-        "Top tracks of the last month, six months, and all time",
+        md_summary_details(
+            "Top tracks of the last month, six months, and year", 
+            md_table(top_tracks_table(tracks, output_dir()))
+        ),
         "",
-        md_truncated_table(top_tracks_table(tracks, output_dir()), 10, "See top 50 tracks"),
-        ""
     ] + [
         md_summary_details(
             f'Top tracks of {get_term_length_phrase(term)} over time', 
@@ -89,10 +95,6 @@ def tracks_section(tracks: pd.DataFrame):
             )
         )
         for term in graphable_top_list_terms_for_tracks
-    ] + [
-        "",
-        md_summary_details("Most and least listened tracks", most_and_least_listened_tracks_table(tracks, output_dir())),
-        ""
     ]
 
 
@@ -131,19 +133,16 @@ def artists_section(tracks: pd.DataFrame):
         for term in graphable_top_list_terms_for_artists
     ]
 
-    rank_time_series = md_summary_details(
-        "Aggregated top artists over time",
-        top_artists_score_time_series(
-            tracks['primary_artist_uri'], 
-            p.overview_top_artists_time_series_path("score"), 
-            p.overview_top_artists_time_series_path("score", output_dir())
-        )
+    rank_time_series = top_artists_score_time_series(
+        tracks['primary_artist_uri'], 
+        p.overview_top_artists_time_series_path("score"), 
+        p.overview_top_artists_time_series_path("score", output_dir())
     )
 
-    top_artists = md_truncated_table(top_artists_table(), 10, "See top 50 artists")
+    top_artists = md_table(top_artists_table())
     
     bar_chart = artists_bar_chart(tracks, p.overview_artist_graph_path(), p.overview_artist_graph_path(output_dir()))
-    table_data = artists_table(tracks, output_dir())
+    table_data = artists_table(tracks, output_dir(), "rank")
 
     summary = f"See all {len(table_data)} artists"
     if len(table_data) > 100:
@@ -152,34 +151,23 @@ def artists_section(tracks: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    if len(table_data) >= 10:
-        scatterplot = comparison_scatter_plot(
-            tracks, 
-            tracks["primary_artist_name"], 
-            "Artist", 
-            p.overview_artists_scatterplot_path(), 
-            p.overview_artists_scatterplot_path(output_dir())
-        )
-    else:
-        scatterplot = ""
-
     return [
         "## Artists", 
         "", 
-        "Top artists of the last month, six months, and all time",
-        "",
-        top_artists,
+        "### Top artists of all time",
         "",
         rank_time_series,
+        "",
+        full_list,
+        "",
+        md_summary_details("Top artists of the last month, last 6 months, and last year", top_artists),
+        "",
         ""
     ] + time_series_images + [
         "",
-        "Artists by number of liked tracks",
-        full_list, 
+        "### Artists by number of liked tracks",
         "", 
-        bar_chart, 
-        "", 
-        scatterplot, 
+        bar_chart,
         ""
     ]
 

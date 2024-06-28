@@ -16,7 +16,7 @@ def artist_rank_time_series(artist_uri: str, artist_name: str, absolute_path: st
     ranks = artist_ranks_over_time()
     ranks = ranks[ranks['artist_uri'] == artist_uri]
     ranks = ranks.rename(columns={'artist_rank': 'place'})
-    ranks['term'] = 'Aggregated'
+    ranks['term'] = get_term_length_description('aggregate_score')
     ranks = ranks[['artist_uri', 'term', 'place', 'as_of_date']]
 
     data = pd.concat([data, ranks])
