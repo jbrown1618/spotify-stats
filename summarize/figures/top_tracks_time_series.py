@@ -7,6 +7,7 @@ from data.provider import DataProvider
 from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.settings import figure_dpi, skip_figures
+from utils.tick_labels import get_ticks
 from utils.top_lists import get_term_length_phrase
 
 min_data_points_per_track = 3
@@ -31,7 +32,7 @@ def top_tracks_time_series(term: str, top: int, absolute_path: str, relative_pat
     y_max = -1 * (highest_rank - 1)
     y_min = -1 * min(lowest_rank + 1, 30)
 
-    ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank]
+    ticks = [-1 * n for n in get_ticks(lowest_rank, highest_rank)]
     tick_labels = [str(-1 * i) for i in ticks]
 
     annotations = []

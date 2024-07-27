@@ -7,6 +7,7 @@ from utils.fonts import change_fonts
 from utils.markdown import md_image
 from utils.ranking import track_ranks_over_time
 from utils.settings import figure_dpi, skip_figures
+from utils.tick_labels import get_ticks
 
 top = 10
 max_axis_range = 70
@@ -44,9 +45,6 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
 
     lowest_rank = data['track_rank'].max()
     highest_rank = data['track_rank'].min()
-
-    ticks = [-1, -10, -20, -30, -40, -50, -1 * lowest_rank, -1 * highest_rank]
-    tick_labels = [str(-1 * i) for i in ticks]
 
     annotations = []
     current_ranks = []
@@ -88,6 +86,9 @@ def top_tracks_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         else:  
             # We can't make it totally legible without cutting off labels, so do as much as we can
             y_min = -1 * (lowest_current_rank + 1)
+
+    ticks = get_ticks(y_max - 1, y_min)
+    tick_labels = [str(-1 * i) for i in ticks]
 
     if not skip_figures():
         sns.set_theme(rc = {"figure.figsize": (13,13) })

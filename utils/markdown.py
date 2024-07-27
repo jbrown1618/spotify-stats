@@ -28,6 +28,9 @@ def md_summary_details(summary: str, details: str):
 
 
 def md_image(alt_text: str, url: str, width=None):
+    if pd.isna(alt_text):
+        alt_text = ''
+        
     if pd.isna(url):
         return ''
     
