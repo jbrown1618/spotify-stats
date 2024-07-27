@@ -13,6 +13,7 @@ from summarize.figures.top_tracks_score_time_series import top_tracks_score_time
 from summarize.figures.top_tracks_time_series import top_tracks_time_series
 from summarize.pages.track_features import make_track_features_page
 from summarize.pages.clusters import make_clusters_page
+from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.labels_table import labels_table
@@ -71,13 +72,13 @@ def tracks_section(tracks: pd.DataFrame):
         "",
         "### Top Tracks of All Time",
         "",
-        md_truncated_table(tracks_table(tracks.sort_values("track_rank", ascending=True).head(100), output_dir()), 10, "View top 100 tracks"),
-        "",
         top_tracks_score_time_series(
             tracks,
             p.overview_top_tracks_time_series_path('score'),
             p.overview_top_tracks_time_series_path('score', output_dir())
         ),
+        "",
+        md_truncated_table(tracks_table(tracks.sort_values("track_rank", ascending=True).head(100), output_dir()), 10, "View top 100 tracks"),
         "", 
         md_summary_details(
             "Top tracks of the last month, six months, and year", 
@@ -183,6 +184,8 @@ def albums_section(tracks: pd.DataFrame):
             p.overview_top_albums_time_series_path("score"), 
             p.overview_top_albums_time_series_path("score", output_dir())
         ),
+        "",
+        md_truncated_table(albums_table(tracks).sort_values(by='Rank', ascending=True).head(100)),
         ""
     ]
 

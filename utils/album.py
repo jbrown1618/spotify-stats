@@ -1,10 +1,14 @@
 import re
+import pandas as pd
 
 album_index_regex = re.compile(r"the \d+(st|nd|rd|th)( mini)? album")
 ending_parenthetical_regex = re.compile(r"\((.+)\)$")
 disposable_keywords = {"remaster", "deluxe", "soundtrack", "standard", "bonus", "stereo"}
 
 def short_album_name(album_name: str):
+    if pd.isna(album_name):
+        return album_name
+    
     if ' - ' in album_name:
         parts = album_name.split(' - ', 1)
         main = parts[0].strip()
