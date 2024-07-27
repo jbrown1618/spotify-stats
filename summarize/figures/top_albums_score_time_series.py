@@ -31,7 +31,7 @@ def top_albums_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
     
     album_uris = {u for u in current_top_albums}.union({u for u in most_frequent_albums})
 
-    album_names = DataProvider().albums(uris=album_uris)[['album_uri', 'album_name']]
+    album_names = DataProvider().albums(uris=album_uris)[['album_uri', 'album_short_name']]
     data = album_ranks[album_ranks['album_uri'].isin(album_uris)]
     data = pd.merge(data, album_names, how="inner", on='album_uri')
 
@@ -39,7 +39,7 @@ def top_albums_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         return ''
 
     data['Date'] = data['as_of_date'].apply(lambda d: pd.to_datetime(d, format='%Y-%m-%d'))
-    data['Track'] = data['album_name']
+    data['Album'] = data['album_short_name']
     data['Place'] = data['album_rank'].apply(lambda x: -1 * x) # multiply by -1 to have lower places on top
 
     lowest_rank = data['album_rank'].max()
@@ -58,7 +58,7 @@ def top_albums_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         max_date_for_album = entries_for_album['Date'].max()
         entry_at_max_date = entries_for_album[entries_for_album['Date'] == max_date_for_album].iloc[0]
 
-        text = '  ' + entry_at_max_date['Track']
+        text = '  ' + entry_at_max_date['Album']
         rank = entry_at_max_date['Place']
         date = entry_at_max_date['Date']
 
@@ -94,7 +94,7 @@ def top_albums_score_time_series(tracks: pd.DataFrame, absolute_path: str, relat
         sns.set_style('white')
         sns.set_palette('bright')
 
-        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Track', linewidth=3)
+        ax = sns.lineplot(data=data, x='Date', y='Place', hue='Album', linewidth=3)
 
         plt.yticks(ticks=ticks, labels=tick_labels)
         plt.ylim([y_min, y_max])
