@@ -5,9 +5,7 @@ top_list_terms = [
 ]
 
 graphable_top_list_terms_for_tracks = [
-    'long_term',
-    'medium_term',
-    'on_repeat'
+    'long_term'
 ]
 
 graphable_top_list_terms_for_artists = [
@@ -18,6 +16,9 @@ graphable_top_list_terms_for_artists = [
 def get_term_length_description(term):
     if term == 'on_repeat':
         return 'On repeat'
+    
+    if term == 'repeat_rewind':
+        return 'Repeat rewind'
     
     if term == 'short_term':
         return 'Last month'
@@ -37,6 +38,9 @@ def get_term_length_description(term):
 def get_term_length_phrase(term):
     if term == 'on_repeat':
         return 'the On Repeat playlist'
+    
+    if term == 'repeat_rewind':
+        return 'the Repeat Rewind playlist'
     
     if term == 'short_term':
         return 'the last month'

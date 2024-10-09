@@ -10,6 +10,7 @@ small_page_size = 20
 
 made_for_you_category_id = '0JQ5DAt0tbjZptfcdMSKl3'
 on_repeat_playlist_name = 'On Repeat'
+repeat_rewind_playlist_name = 'Repeat Rewind'
 
 queued_artists = set()
 queued_albums = set()
@@ -83,7 +84,7 @@ def save_top_tracks_data(sp: spotipy.Spotify):
             })
             process_track(track)
 
-    on_repeat_playlist = get_on_repeat_playlist(sp)
+    on_repeat_playlist = get_made_for_you_playlist(sp, on_repeat_playlist_name)
     if on_repeat_playlist is not None:
         print('Fetching tracks in the On Repeat playlist...')
         tracks = sp.playlist_tracks(on_repeat_playlist['uri'], limit=page_size)
@@ -96,23 +97,36 @@ def save_top_tracks_data(sp: spotipy.Spotify):
             })
             process_track(track)
 
+    repeat_rewind_playlist = get_made_for_you_playlist(sp, repeat_rewind_playlist_name)
+    if repeat_rewind_playlist is not None:
+        print('Fetching tracks in the Repeat Rewind playlist...')
+        tracks = sp.playlist_tracks(repeat_rewind_playlist['uri'], limit=page_size)
+        for i, item in enumerate(tracks["items"]):
+            track = item["track"]
+            top_tracks.append({
+                "track_uri": track["uri"],
+                "term": 'repeat_rewind',
+                "index": i + 1
+            })
+            process_track(track)
 
-def get_on_repeat_playlist(sp: spotipy.Spotify):
-    on_repeat_playlist = None
+
+def get_made_for_you_playlist(sp: spotipy.Spotify, playlist_name: str):
+    playlist = None
     offset = 0
     has_more = True
-    while has_more and on_repeat_playlist is None:
+    while has_more and playlist is None:
         resp = sp.category_playlists(made_for_you_category_id, limit=page_size)['playlists']
         made_for_you_playlists = resp['items']
         for playlist in made_for_you_playlists:
-            if playlist['name'] == on_repeat_playlist_name:
-                on_repeat_playlist = playlist
+            if playlist['name'] == playlist_name:
+                playlist = playlist
                 break
 
         has_more = offset + page_size < resp["total"]
         offset += page_size
 
-    return on_repeat_playlist
+    return playlist
 
 
 def save_top_artists_data(sp: spotipy.Spotify):

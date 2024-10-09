@@ -177,9 +177,21 @@ def __placement_score(index, term):
     if term == 'on_repeat':
         multiplier = 3
         total = 30
+
+    if term == 'repeat_rewind':
+        multiplier = 1
+        total = 30
+
+    if term == 'short_term':
+        multiplier = 1
+        total = 50
+
     if term == 'medium_term':
-        multiplier = 6
+        multiplier = 4
+        total = 50
+
     if term == 'long_term':
-        multiplier = 12
+        multiplier = 8
+        total = 50
 
     return multiplier * (total + 1 - index)
