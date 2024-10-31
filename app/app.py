@@ -19,11 +19,13 @@ def data():
     dp = DataProvider()
 
     filters = to_filters(request.args)
+    artist_uris = filters.get('artists', None)
 
     return {
         "filters": filters,
-        "tracks": to_json(dp.tracks(artist_uris=filters.get("artists")).head(100)),
-        "artists": to_json(dp.artists(uris=filters.get("artists")).head(100))
+        "playlists": to_json(dp.playlists(artist_uris=artist_uris)),
+        "tracks": to_json(dp.tracks(artist_uris=artist_uris).head(100)),
+        "artists": to_json(dp.artists(uris=artist_uris).head(100))
     }
 
 

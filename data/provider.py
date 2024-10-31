@@ -58,7 +58,7 @@ class DataProvider:
                   uris: typing.Iterable[str] = None, 
                   track_uri: str = None, 
                   album_uri: str = None,
-                  artist_uri: str = None) -> pd.DataFrame:
+                  artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
 
@@ -86,8 +86,8 @@ class DataProvider:
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
-        if artist_uri is not None:
-            track_uris = set(self.tracks(artist_uris={artist_uri})['track_uri'])
+        if artist_uris is not None:
+            track_uris = set(self.tracks(artist_uris=artist_uris)['track_uri'])
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
