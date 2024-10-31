@@ -87,7 +87,7 @@ class DataProvider:
             out = out[out['playlist_uri'].isin(uris)]
 
         if artist_uri is not None:
-            track_uris = set(self.tracks(artist_uri=artist_uri)['track_uri'])
+            track_uris = set(self.tracks(artist_uris={artist_uri})['track_uri'])
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
@@ -127,7 +127,7 @@ class DataProvider:
                genre: str = None, 
                album_uri: str = None, 
                playlist_uri: str = None,
-               artist_uri: str = None,
+               artist_uris: str = None,
                owned: bool = False) -> pd.DataFrame:
         raw = RawData()
 
@@ -181,9 +181,9 @@ class DataProvider:
             track_uris = set(playlist_track[playlist_track['playlist_uri'] == playlist_uri]['track_uri'])
             out = out[out["track_uri"].isin(track_uris)]
 
-        if artist_uri is not None:
+        if artist_uris is not None:
             track_artist = raw['track_artist']
-            track_uris = set(track_artist[track_artist['artist_uri'] == artist_uri]['track_uri'])
+            track_uris = set(track_artist[track_artist['artist_uri'].isin(artist_uris)]['track_uri'])
             out = out[out["track_uri"].isin(track_uris)]
 
         return out

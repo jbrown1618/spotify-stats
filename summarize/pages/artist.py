@@ -27,7 +27,7 @@ def make_artist_summary(artist_uri: str):
 
     print(f"Generating summary for artist {artist_name}")
 
-    tracks = dp.tracks(artist_uri=artist_uri, owned=True)
+    tracks = dp.tracks(artist_uris={artist_uri}, owned=True)
     playlists = dp.playlists(artist_uri=artist_uri)
     artist_genre = dp.artist_genre()
 
@@ -122,7 +122,7 @@ def top_tracks_section(artist_name, artist_uri):
     contents = []
 
     score_time_series = top_tracks_score_time_series(
-        DataProvider().tracks(artist_uri=artist_uri),
+        DataProvider().tracks(artist_uris={artist_uri}),
         p.artist_top_tracks_time_series_path(artist_name, 'score'),
         p.artist_top_tracks_time_series_path(artist_name, 'score', p.artist_path(artist_name))
     )
@@ -215,7 +215,7 @@ def playlists_section(artist_name, artist_uri, playlists: pd.DataFrame):
 
 def track_count_for_artist_in_playlist(playlist_uri: str, artist_uri: str) -> int:
     dp = DataProvider()
-    tracks_for_artist_in_playlist = dp.tracks(playlist_uri=playlist_uri, artist_uri=artist_uri)
+    tracks_for_artist_in_playlist = dp.tracks(playlist_uri=playlist_uri, artist_uris={artist_uri})
     return len(tracks_for_artist_in_playlist)
 
 
@@ -327,7 +327,7 @@ def member_credits_subsection(artist_name, artist_uri):
 
 
 def producers_section(artist_name, artist_uri):
-    tracks = DataProvider().tracks(artist_uri=artist_uri, owned=True)
+    tracks = DataProvider().tracks(artist_uris={artist_uri}, owned=True)
     producers = producers_table(tracks, p.artist_path(artist_name))
 
     if len(producers) == 0:

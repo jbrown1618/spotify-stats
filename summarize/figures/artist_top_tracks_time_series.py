@@ -9,7 +9,7 @@ from utils.settings import figure_dpi, skip_figures
 from utils.top_lists import get_term_length_phrase
 
 def artist_top_tracks_time_series(artist_uri: str, term: str, absolute_path: str, relative_path: str) -> str:
-    artist_tracks = DataProvider().tracks(artist_uri=artist_uri)
+    artist_tracks = DataProvider().tracks(artist_uris={artist_uri})
     data = DataProvider().top_tracks(term=term, track_uris=artist_tracks['track_uri'].unique())
 
     entry_counts_by_track = data.groupby('track_uri')\
