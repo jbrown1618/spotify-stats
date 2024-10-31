@@ -7,13 +7,8 @@
 git clone git@github.com:jbrown1618/spotify-stats.git
 cd spotify-stats
 
-# Set up the virtual environment
-python3 -m venv ./venv
-source ./venv/bin/activate
-pip install -r ./requirements.txt
+script/setup
 
-# Set up environment variables
-cp .env.sample .env
 # Edit .env to include your Spotify credentials and desired output path
 
 python ./main.py
@@ -25,5 +20,21 @@ deactivate
 ## Start the server
 
 ```bash
-python -m flask --app ./app/app.py run
+script/server
 ```
+
+And navigate to `http://localhost:5000`
+
+## Start the server with live client reloading
+
+In two separate terminals, run:
+
+```bash
+script/server
+```
+
+```bash
+script/client-dev
+```
+
+And navigate to `http://localhost:5173`
