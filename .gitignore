@@ -7,3 +7,5 @@ output/
 .env
 .cache
 *austin*
+node_modules/
+/app/static/
