@@ -1,45 +1,32 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
-import { getData } from "./api";
-
-(async function () {
-  console.log(
-    await getData({
-      artists: [
-        "spotify:artist:6YVMFz59CuY7ngCxTxjpxE",
-        "spotify:artist:5t5FqBwTcgKTaWmfEbwQY9",
-      ],
-    })
-  );
-})();
+import { useData } from "./useData";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const { data, isLoading } = useData({
+    artists: [
+      "spotify:artist:6YVMFz59CuY7ngCxTxjpxE",
+      "spotify:artist:5t5FqBwTcgKTaWmfEbwQY9",
+    ],
+  });
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Spotify Stats</h1>
+      {isLoading || !data ? (
+        <span>Loading...</span>
+      ) : (
+        <div>
+          <h2>Artists</h2>
+          {data.artists.map((artist) => (
+            <div>{artist.artist_name}</div>
+          ))}
+
+          <h2>Tracks</h2>
+          {data.tracks.map((track) => (
+            <div>{track.track_name}</div>
+          ))}
+        </div>
+      )}
     </>
   );
 }
