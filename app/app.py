@@ -23,6 +23,7 @@ def data():
 
     return {
         "filters": filters,
+        "filter_options": get_filter_options(),
         "playlists": to_json(dp.playlists(artist_uris=artist_uris)),
         "tracks": to_json(dp.tracks(artist_uris=artist_uris).head(100)),
         "artists": to_json(dp.artists(uris=artist_uris).head(100))
@@ -30,6 +31,16 @@ def data():
 
 
 filter_keys = ["artists", "albums"]
+
+def get_filter_options():
+    artist_options = {}
+    
+    for _, artist in DataProvider().artists().iterrows():
+        artist_options[artist['artist_uri']] = artist['artist_name']
+
+    return {
+        "artists": artist_options
+    }
 
 def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Iterable[str]]:
     return {
