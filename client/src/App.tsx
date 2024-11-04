@@ -2,20 +2,17 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import { getData } from "./api";
 
 (async function () {
-  const artists = [
-    "spotify:artist:6YVMFz59CuY7ngCxTxjpxE",
-    "spotify:artist:5t5FqBwTcgKTaWmfEbwQY9",
-  ];
-
-  const query = new URLSearchParams();
-  query.append("artists", encodeURIComponent(JSON.stringify(artists)));
-
-  const res = await fetch("/api/data?" + query.toString());
-  if (!res.ok) return;
-
-  console.log(await res.json());
+  console.log(
+    await getData({
+      artists: [
+        "spotify:artist:6YVMFz59CuY7ngCxTxjpxE",
+        "spotify:artist:5t5FqBwTcgKTaWmfEbwQY9",
+      ],
+    })
+  );
 })();
 
 function App() {
