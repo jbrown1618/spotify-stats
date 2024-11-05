@@ -142,7 +142,7 @@ def display_playlists_for_track(track_uri: str):
 
 
 def display_playlists_for_album(album_uri: str):
-    playlists = DataProvider().playlists(album_uri=album_uri)
+    playlists = DataProvider().playlists(album_uris={album_uri})
     names = [
         playlist["playlist_name"] + " " + spotify_link(playlist["playlist_uri"]) 
         for i, playlist 

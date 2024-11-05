@@ -26,7 +26,7 @@ def generate_output():
         make_playlist_summary(None, dp.tracks(liked=True))
 
         for i, playlist in dp.playlists().iterrows():
-            playlist_tracks = dp.tracks(playlist_uri=playlist['playlist_uri'])
+            playlist_tracks = dp.tracks(playlist_uris={playlist['playlist_uri']})
             if len(playlist_tracks) == 0:
                 continue
 

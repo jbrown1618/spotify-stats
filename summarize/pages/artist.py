@@ -215,7 +215,7 @@ def playlists_section(artist_name, artist_uri, playlists: pd.DataFrame):
 
 def track_count_for_artist_in_playlist(playlist_uri: str, artist_uri: str) -> int:
     dp = DataProvider()
-    tracks_for_artist_in_playlist = dp.tracks(playlist_uri=playlist_uri, artist_uris={artist_uri})
+    tracks_for_artist_in_playlist = dp.tracks(playlist_uris={playlist_uri}, artist_uris={artist_uri})
     return len(tracks_for_artist_in_playlist)
 
 

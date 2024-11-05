@@ -20,25 +20,56 @@ def data():
 
     filters = to_filters(request.args)
     artist_uris = filters.get('artists', None)
+    album_uris = filters.get('albums', None)
+    playlist_uris = filters.get('playlists', None)
 
     return {
         "filters": filters,
-        "filter_options": get_filter_options(),
-        "playlists": to_json(dp.playlists(artist_uris=artist_uris), 'playlist_uri'),
-        "tracks": to_json(dp.tracks(artist_uris=artist_uris), 'track_uri'),
-        "artists": to_json(dp.artists(uris=artist_uris), 'artist_uri')
+        "filter_options": get_filter_options(filters),
+        "playlists": to_json(dp.playlists(
+            uris=playlist_uris, 
+            artist_uris=artist_uris,
+            album_uris=album_uris
+        ), 'playlist_uri'),
+        "tracks": to_json(dp.tracks(
+            playlist_uris=playlist_uris, 
+            artist_uris=artist_uris, 
+            album_uris=album_uris
+        ), 'track_uri'),
+        "artists": to_json(dp.artists(
+            uris=artist_uris,
+            album_uris=album_uris,
+            playlist_uris=playlist_uris
+        ), 'artist_uri'),
+        "albums": to_json(dp.albums(
+            uris=album_uris,
+            artist_uris=artist_uris,
+            playlist_uris=playlist_uris
+        ), 'album_uri')
     }
 
 
-filter_keys = ["artists", "albums"]
-
-def get_filter_options():
+def get_filter_options(filters):
+    artist_uris = filters.get('artists', None)
+    album_uris = filters.get('albums', None)
+    playlist_uris = filters.get('playlists', None)
     return {
-        "artists": to_json(DataProvider().artists()[['artist_uri', 'artist_name']], 'artist_uri'),
-        "albums": [],
-        "playlists": []
+        "artists": to_json(DataProvider().artists(
+            album_uris=album_uris, 
+            playlist_uris=playlist_uris
+        )[['artist_uri', 'artist_name']], 'artist_uri'),
+        "albums": to_json(DataProvider().albums(
+            artist_uris=artist_uris, 
+            playlist_uris=playlist_uris
+        )[['album_uri', 'album_name']], 'album_uri'),
+        "playlists": to_json(DataProvider().playlists(
+            artist_uris=artist_uris, 
+            album_uris=album_uris
+        )[['playlist_uri', 'playlist_name']], 'playlist_uri')
     }
 
+
+filter_keys = ["artists", "albums", "playlists"]
 def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Iterable[str]]:
     return {
         key: to_filter(args.get(key, None))

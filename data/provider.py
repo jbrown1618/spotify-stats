@@ -57,7 +57,7 @@ class DataProvider:
     def playlists(self, 
                   uris: typing.Iterable[str] = None, 
                   track_uri: str = None, 
-                  album_uri: str = None,
+                  album_uris: typing.Iterable[str] = None,
                   artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
@@ -81,8 +81,8 @@ class DataProvider:
             uris = set(playlist_track[playlist_track['track_uri'] == track_uri]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
-        if album_uri is not None:
-            track_uris = set(self.tracks(album_uri=album_uri)['track_uri'])
+        if album_uris is not None:
+            track_uris = set(self.tracks(album_uris=album_uris)['track_uri'])
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
@@ -94,10 +94,15 @@ class DataProvider:
         return out
 
 
-    def albums(self, uris: typing.Iterable[str] = None, owned = False) -> pd.DataFrame:
+    def albums(self, 
+               uris: typing.Iterable[str] = None, 
+               owned = False,
+               playlist_uris: typing.Iterable[str] = None,
+               artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+        raw = RawData()
         if self._albums is None:
-            raw = RawData()
             albums = raw["albums"].copy()
+            albums['album_name'] = albums['album_name'].fillna('NA') # This string gets set to null when going back and forth to CSV
             albums['album_release_year'] = albums['album_release_date'].apply(release_year)
             albums['album_short_name'] = albums['album_name'].apply(short_album_name)
 
@@ -112,7 +117,19 @@ class DataProvider:
 
         if uris is not None:
             out = out[out["album_uri"].isin(uris)]
-        
+
+        if playlist_uris is not None:
+            playlist_track = raw['playlist_track']
+            track_uris = set(playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri'])
+            tracks = raw['tracks']
+            uris = tracks[tracks['track_uri'].isin(track_uris)]['album_uri']
+            out = out[out["album_uri"].isin(uris)]
+
+        if artist_uris is not None:
+            album_artist = raw['album_artist']
+            uris = album_artist[album_artist['artist_uri'].isin(artist_uris)]['album_uri']
+            out = out[out["album_uri"].isin(uris)]
+
         return out
     
 
@@ -125,9 +142,9 @@ class DataProvider:
                liked: bool = None, 
                label: str = None, 
                genre: str = None, 
-               album_uri: str = None, 
-               playlist_uri: str = None,
-               artist_uris: str = None,
+               album_uris: typing.Iterable[str] = None, 
+               playlist_uris: typing.Iterable[str] = None,
+               artist_uris: typing.Iterable[str] = None,
                owned: bool = False) -> pd.DataFrame:
         raw = RawData()
 
@@ -173,12 +190,12 @@ class DataProvider:
             tracks_in_genre = set(track_genre[track_genre['genre'] == genre]['track_uri'])
             out = out[out["track_uri"].isin(tracks_in_genre)]
 
-        if album_uri is not None:
-            out = out[out['album_uri'] == album_uri]
+        if album_uris is not None:
+            out = out[out['album_uri'].isin(album_uris)]
 
-        if playlist_uri is not None:
+        if playlist_uris is not None:
             playlist_track = raw['playlist_track']
-            track_uris = set(playlist_track[playlist_track['playlist_uri'] == playlist_uri]['track_uri'])
+            track_uris = set(playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri'])
             out = out[out["track_uri"].isin(track_uris)]
 
         if artist_uris is not None:
@@ -342,7 +359,8 @@ class DataProvider:
                 mbids: typing.Iterable[str] = None,
                 with_page: bool = None, 
                 track_uri: str = None,
-                album_uri: str = None) -> pd.DataFrame:
+                album_uris: typing.Iterable[str] = None,
+                playlist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         if self._artists is None:
             track_artist = raw['track_artist']
@@ -392,9 +410,16 @@ class DataProvider:
                 .sort_values(by="artist_index", ascending=True)\
                 .drop(columns=["artist_index", "track_uri"])
 
-        if album_uri is not None:
+        if album_uris is not None:
             album_artist = raw['album_artist']
-            uris = set(album_artist[album_artist['album_uri'] == album_uri]['artist_uri'])
+            uris = set(album_artist[album_artist['album_uri'].isin(album_uris)]['artist_uri'])
+            out = out[out['artist_uri'].isin(uris)]
+
+        if playlist_uris is not None:
+            playlist_track = raw['playlist_track']
+            track_uris = playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri']
+            track_artist = raw['track_artist']
+            uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
             out = out[out['artist_uri'].isin(uris)]
 
         return out
