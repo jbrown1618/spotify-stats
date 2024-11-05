@@ -28,7 +28,7 @@ def make_artist_summary(artist_uri: str):
     print(f"Generating summary for artist {artist_name}")
 
     tracks = dp.tracks(artist_uris={artist_uri}, owned=True)
-    playlists = dp.playlists(artist_uri=artist_uri)
+    playlists = dp.playlists(artist_uris={artist_uri})
     artist_genre = dp.artist_genre()
 
     content = []
