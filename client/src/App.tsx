@@ -24,14 +24,18 @@ function App() {
       ) : (
         <div>
           <h2>Artists</h2>
-          {data.artists.map((artist) => (
-            <div key={artist.artist_uri}>{artist.artist_name}</div>
-          ))}
+          {Object.entries(data.artists)
+            .slice(0, 50)
+            .map(([uri, artist]) => (
+              <div key={uri}>{artist.artist_name}</div>
+            ))}
 
           <h2>Tracks</h2>
-          {data.tracks.map((track) => (
-            <div key={track.track_uri}>{track.track_name}</div>
-          ))}
+          {Object.entries(data.tracks)
+            .slice(0, 50)
+            .map(([uri, track]) => (
+              <div key={uri}>{track.track_name}</div>
+            ))}
         </div>
       )}
     </>

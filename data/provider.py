@@ -5,7 +5,7 @@ from data.raw import RawData
 from utils.album import short_album_name
 from utils.date import release_year
 from utils.machine_learning import prepare_ml_data
-from utils.ranking import artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
+from utils.ranking import current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
 from utils.record_label import standardize_record_labels
 from utils.util import first
 from utils.artist_relationship import producer_credit_types

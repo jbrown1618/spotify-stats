@@ -1,22 +1,22 @@
 export interface Summary {
-  tracks: Track[];
-  artists: Artist[];
-  albums: Album[];
+  tracks: Record<string, Track>;
+  artists: Record<string, Artist>;
+  albums: Record<string, Album>;
   filters: ActiveFilters;
   filter_options: FilterOptions;
 }
 
 export interface Track {
-  track_uri: string;
   track_name: string;
 }
 
 export interface Artist {
-  artist_uri: string;
   artist_name: string;
 }
 
-export interface Album {}
+export interface Album {
+  album_name: string;
+}
 
 export interface ActiveFilters {
   artists?: string[];
@@ -25,7 +25,7 @@ export interface ActiveFilters {
 }
 
 export interface FilterOptions {
-  artists: Record<string, string>;
+  artists: Record<string, Pick<Artist, "artist_name">>;
 }
 
 export async function getData(query: string): Promise<Summary> {

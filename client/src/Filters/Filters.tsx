@@ -1,5 +1,5 @@
 import { SetStateAction } from "react";
-import { ActiveFilters, FilterOptions } from "../api";
+import { ActiveFilters, FilterOptions, Summary } from "../api";
 import { MultiSelect } from "@mantine/core";
 
 interface FiltersProps {
@@ -15,12 +15,16 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
       <div>
         <MultiSelect
           label="Filter artists"
-          data={Object.entries(options.artists).map(([uri, name]) => ({
-            label: name,
-            value: uri,
-          }))}
+          data={Object.entries(options.artists).map(
+            ([uri, { artist_name }]) => {
+              return {
+                label: artist_name,
+                value: uri,
+              };
+            }
+          )}
           value={filters.artists}
-          renderOption={(d) => options.artists[d.option.value]}
+          //   renderOption={(d) => options.artists[d.option.value]}
           searchable
           onChange={(artists) =>
             onFilterChange((filters) => ({
