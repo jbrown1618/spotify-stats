@@ -1,5 +1,6 @@
 import { SetStateAction } from "react";
 import { ActiveFilters, FilterOptions } from "../api";
+import { MultiSelect } from "@mantine/core";
 
 interface FiltersProps {
   filters: ActiveFilters;
@@ -12,40 +13,23 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
     <>
       <h2>Filters</h2>
       <div>
-        {Object.keys(options.artists).map((uri) => (
-          <ArtistFilter
-            name={options.artists[uri]}
-            selected={!!filters.artists?.includes(uri)}
-            onClick={() =>
-              filters.artists?.includes(uri)
-                ? onFilterChange((filters) => ({
-                    ...filters,
-                    artists: filters.artists?.filter((a) => a !== uri),
-                  }))
-                : onFilterChange((filters) => ({
-                    ...filters,
-                    artists: [...(filters.artists ?? []), uri],
-                  }))
-            }
-          />
-        ))}
+        <MultiSelect
+          label="Filter artists"
+          data={Object.entries(options.artists).map(([uri, name]) => ({
+            label: name,
+            value: uri,
+          }))}
+          value={filters.artists}
+          renderOption={(d) => options.artists[d.option.value]}
+          searchable
+          onChange={(artists) =>
+            onFilterChange((filters) => ({
+              ...filters,
+              artists,
+            }))
+          }
+        />
       </div>
     </>
-  );
-}
-
-function ArtistFilter({
-  name,
-  selected,
-  onClick,
-}: {
-  name: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button onClick={onClick}>
-      {name} {selected && "(selected)"}
-    </button>
   );
 }

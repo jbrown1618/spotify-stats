@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ActiveFilters } from "./api";
-import "./App.css";
 import { Header } from "./Header/Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters/Filters";
@@ -12,23 +11,26 @@ function App() {
   return (
     <>
       <Header />
+      {data && (
+        <Filters
+          filters={filters}
+          options={data.filter_options}
+          onFilterChange={setFilters}
+        />
+      )}
+
       {isLoading || !data ? (
         <span>Loading...</span>
       ) : (
         <div>
-          <Filters
-            filters={filters}
-            options={data.filter_options}
-            onFilterChange={setFilters}
-          />
           <h2>Artists</h2>
           {data.artists.map((artist) => (
-            <div>{artist.artist_name}</div>
+            <div key={artist.artist_uri}>{artist.artist_name}</div>
           ))}
 
           <h2>Tracks</h2>
           {data.tracks.map((track) => (
-            <div>{track.track_name}</div>
+            <div key={track.track_uri}>{track.track_name}</div>
           ))}
         </div>
       )}

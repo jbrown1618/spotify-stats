@@ -7,10 +7,12 @@ export interface Summary {
 }
 
 export interface Track {
+  track_uri: string;
   track_name: string;
 }
 
 export interface Artist {
+  artist_uri: string;
   artist_name: string;
 }
 
