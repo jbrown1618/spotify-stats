@@ -360,7 +360,8 @@ class DataProvider:
                 with_page: bool = None, 
                 track_uri: str = None,
                 album_uris: typing.Iterable[str] = None,
-                playlist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+                playlist_uris: typing.Iterable[str] = None,
+                with_liked_tracks: bool = None) -> pd.DataFrame:
         raw = RawData()
         if self._artists is None:
             track_artist = raw['track_artist']
@@ -418,6 +419,12 @@ class DataProvider:
         if playlist_uris is not None:
             playlist_track = raw['playlist_track']
             track_uris = playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri']
+            track_artist = raw['track_artist']
+            uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
+            out = out[out['artist_uri'].isin(uris)]
+
+        if with_liked_tracks is not None:
+            track_uris = raw['liked_tracks']['track_uri']
             track_artist = raw['track_artist']
             uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
             out = out[out['artist_uri'].isin(uris)]

@@ -28,6 +28,7 @@ export interface Album {
 }
 
 export interface ActiveFilters {
+  liked?: boolean;
   artists?: string[];
   albums?: string[];
   playlists?: string[];
@@ -41,7 +42,7 @@ export interface FilterOptions {
 
 export async function getData(query: string): Promise<Summary> {
   try {
-    const res = await fetch("/api/data?" + query.toString());
+    const res = await fetch("/api/summary?" + query.toString());
     if (!res.ok)
       throw new Error(
         `Error fetching tracks summary: ${res.status}: ${res.statusText}`
@@ -55,14 +56,18 @@ export async function getData(query: string): Promise<Summary> {
   }
 }
 
+const arrayKeys = ["artists", "albums", "playlists"] as const;
+
 export function filtersQuery(filters: ActiveFilters) {
   const query = new URLSearchParams();
-  const sortedKeys = Object.keys(filters).sort();
-  for (const key of sortedKeys) {
-    const value = filters[key as keyof ActiveFilters];
+  for (const key of arrayKeys) {
+    const value = filters[key];
     if (!value || value.length === 0) continue;
     const filterString = encodeURIComponent(JSON.stringify(value.sort()));
     query.append(key, filterString);
+  }
+  if (filters.liked) {
+    query.append("liked", "true");
   }
   return query.toString();
 }

@@ -1,6 +1,6 @@
 import { SetStateAction } from "react";
 import { ActiveFilters, FilterOptions } from "../api";
-import { MultiSelect } from "@mantine/core";
+import { Checkbox, MultiSelect } from "@mantine/core";
 
 interface FiltersProps {
   filters: ActiveFilters;
@@ -65,6 +65,16 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             onFilterChange((filters) => ({
               ...filters,
               albums,
+            }))
+          }
+        />
+        <Checkbox
+          label="Liked"
+          checked={filters.liked}
+          onChange={(e) =>
+            onFilterChange((filters) => ({
+              ...filters,
+              liked: e.currentTarget.checked,
             }))
           }
         />

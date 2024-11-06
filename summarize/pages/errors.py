@@ -97,7 +97,7 @@ def low_popularity():
     
 
 def artist_names_for_album(album_uri: str):
-    artists = DataProvider().artists(album_uri=album_uri)
+    artists = DataProvider().artists(album_uris={album_uri})
     names = []
     for i, artist in artists.iterrows():
         names.append(artist["artist_name"] + " " + spotify_link(artist["artist_uri"]))
@@ -121,7 +121,7 @@ def display_artists_for_track(track_uri: str):
 
 
 def display_artists_for_album(album_uri: str):
-    artists = DataProvider().artists(album_uri=album_uri)
+    artists = DataProvider().artists(album_uris={album_uri})
     names = [
         artist["artist_name"] + " " + spotify_link(artist["artist_uri"]) 
         for i, artist in artists.iterrows() 
