@@ -15,11 +15,11 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
       <div style={{ display: "flex" }}>
         <MultiSelect
           label="Filter playlists"
-          data={Object.entries(options.playlists).map(
-            ([uri, { playlist_name }]) => {
+          data={Object.values(options.playlists).map(
+            ({ playlist_name, playlist_uri }) => {
               return {
                 label: playlist_name,
-                value: uri,
+                value: playlist_uri,
               };
             }
           )}
@@ -34,11 +34,11 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
         />
         <MultiSelect
           label="Filter artists"
-          data={Object.entries(options.artists).map(
-            ([uri, { artist_name }]) => {
+          data={Object.values(options.artists).map(
+            ({ artist_uri, artist_name }) => {
               return {
                 label: artist_name,
-                value: uri,
+                value: artist_uri,
               };
             }
           )}
@@ -53,18 +53,39 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
         />
         <MultiSelect
           label="Filter albums"
-          data={Object.entries(options.albums).map(([uri, { album_name }]) => {
-            return {
-              label: album_name,
-              value: uri,
-            };
-          })}
+          data={Object.values(options.albums).map(
+            ({ album_uri, album_name }) => {
+              return {
+                label: album_name,
+                value: album_uri,
+              };
+            }
+          )}
           value={filters.albums}
           searchable
           onChange={(albums) =>
             onFilterChange((filters) => ({
               ...filters,
               albums,
+            }))
+          }
+        />
+        <MultiSelect
+          label="Filter labels"
+          data={Object.values(options.labels).map(
+            ({ album_standardized_label }) => {
+              return {
+                label: album_standardized_label,
+                value: album_standardized_label,
+              };
+            }
+          )}
+          value={filters.labels}
+          searchable
+          onChange={(labels) =>
+            onFilterChange((filters) => ({
+              ...filters,
+              labels,
             }))
           }
         />

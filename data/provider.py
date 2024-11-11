@@ -58,7 +58,8 @@ class DataProvider:
                   uris: typing.Iterable[str] = None, 
                   track_uri: str = None, 
                   album_uris: typing.Iterable[str] = None,
-                  artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+                  artist_uris: typing.Iterable[str] = None,
+                  labels: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
 
@@ -91,6 +92,14 @@ class DataProvider:
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
+        if labels is not None:
+            if self._album_label is None:
+                self._album_label = standardize_record_labels(self.albums(), self.tracks())
+            album_uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
+            track_uris = set(self.tracks(album_uris==album_uris)['track_uri'])
+            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
+            out = out[out['playlist_uri'].isin(uris)]
+
         return out
 
 
@@ -98,7 +107,8 @@ class DataProvider:
                uris: typing.Iterable[str] = None, 
                owned = False,
                playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+               artist_uris: typing.Iterable[str] = None,
+               labels: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         if self._albums is None:
             albums = raw["albums"].copy()
@@ -130,6 +140,12 @@ class DataProvider:
             uris = album_artist[album_artist['artist_uri'].isin(artist_uris)]['album_uri']
             out = out[out["album_uri"].isin(uris)]
 
+        if labels is not None:
+            if self._album_label is None:
+                self._album_label = standardize_record_labels(self.albums(), self.tracks())
+            uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
+            out = out[out['album_uri'].isin(uris)]
+
         return out
     
 
@@ -140,7 +156,7 @@ class DataProvider:
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
                liked: bool = None, 
-               label: str = None, 
+               labels: typing.Iterable[str] = None, 
                genre: str = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
@@ -178,11 +194,11 @@ class DataProvider:
         if liked is not None:
             out = out[out["track_liked"] == liked]
 
-        if label is not None:
+        if labels is not None:
             if self._album_label is None:
                 self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
-            albums_uris = self._album_label[self._album_label["album_standardized_label"] == label]["album_uri"]
+            albums_uris = self._album_label[self._album_label["album_standardized_label"].isin(labels)]["album_uri"]
             out = out[out['album_uri'].isin(albums_uris)]
 
         if genre is not None:
@@ -361,6 +377,7 @@ class DataProvider:
                 track_uri: str = None,
                 album_uris: typing.Iterable[str] = None,
                 playlist_uris: typing.Iterable[str] = None,
+                labels: typing.Iterable[str] = None,
                 with_liked_tracks: bool = None) -> pd.DataFrame:
         raw = RawData()
         if self._artists is None:
@@ -421,6 +438,14 @@ class DataProvider:
             track_uris = playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri']
             track_artist = raw['track_artist']
             uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
+            out = out[out['artist_uri'].isin(uris)]
+
+        if labels is not None:
+            if self._album_label is None:
+                self._album_label = standardize_record_labels(self.albums(), self.tracks())
+            album_uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
+            album_artist = raw['album_artist']
+            uris = set(album_artist[album_artist['album_uri'].isin(album_uris)]['artist_uri'])
             out = out[out['artist_uri'].isin(uris)]
 
         if with_liked_tracks is not None:
@@ -542,16 +567,32 @@ class DataProvider:
             .reset_index()
     
 
-    def labels(self, track_uris: typing.Iterable[str] = None, with_page: bool = None) -> pd.DataFrame:
+    def labels(self, 
+               label_names: typing.Iterable[str] = None,
+               track_uris: typing.Iterable[str] = None, 
+               artist_uris: typing.Iterable[str] = None, 
+               playlist_uris: typing.Iterable[str] = None, 
+               album_uris: typing.Iterable[str] = None, 
+               liked: bool = None,
+               with_page: bool = None) -> pd.DataFrame:
         if self._album_label is None:
             self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
-        out = pd.merge(self.tracks(uris=track_uris), self._album_label, on="album_uri")\
+        tracks = self.tracks(uris=track_uris, 
+                             album_uris=album_uris, 
+                             artist_uris=artist_uris, 
+                             playlist_uris=playlist_uris,
+                             liked=liked)
+
+        out = pd.merge(tracks, self._album_label, on="album_uri")\
             .groupby("album_standardized_label")\
             .agg({"track_uri": "count", "track_liked": "sum", "label_has_page": first})\
             .reset_index()\
             .rename(columns={"track_uri": "label_track_count", "track_liked": "label_track_liked_count"})
         
+        if label_names is not None:
+            out = out[out['album_standardized_label'].isin(label_names)]
+
         if with_page is not None:
             out = out[out['label_has_page'] == with_page]
 

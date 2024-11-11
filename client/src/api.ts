@@ -3,6 +3,7 @@ export interface Summary {
   tracks: Record<string, Track>;
   artists: Record<string, Artist>;
   albums: Record<string, Album>;
+  labels: Record<string, Label>;
   filters: ActiveFilters;
   filter_options: FilterOptions;
 }
@@ -27,17 +28,23 @@ export interface Album {
   album_name: string;
 }
 
+export interface Label {
+  album_standardized_label: string;
+}
+
 export interface ActiveFilters {
   liked?: boolean;
+  labels?: string[];
   artists?: string[];
   albums?: string[];
   playlists?: string[];
 }
 
 export interface FilterOptions {
-  artists: Record<string, Pick<Artist, "artist_name">>;
-  albums: Record<string, Pick<Album, "album_name">>;
-  playlists: Record<string, Pick<Playlist, "playlist_name">>;
+  artists: Record<string, Pick<Artist, "artist_uri" | "artist_name">>;
+  albums: Record<string, Pick<Album, "album_uri" | "album_name">>;
+  playlists: Record<string, Pick<Playlist, "playlist_uri" | "playlist_name">>;
+  labels: Record<string, Pick<Label, "album_standardized_label">>;
 }
 
 export async function getData(query: string): Promise<Summary> {
@@ -56,7 +63,7 @@ export async function getData(query: string): Promise<Summary> {
   }
 }
 
-const arrayKeys = ["artists", "albums", "playlists"] as const;
+const arrayKeys = ["artists", "albums", "playlists", "labels"] as const;
 
 export function filtersQuery(filters: ActiveFilters) {
   const query = new URLSearchParams();

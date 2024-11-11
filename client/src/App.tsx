@@ -24,31 +24,40 @@ function App() {
       ) : (
         <div>
           <h2>Playlists</h2>
-          {Object.entries(data.playlists)
+          {Object.values(data.playlists)
             .slice(0, 50)
-            .map(([uri, playlist]) => (
-              <div key={uri}>{playlist.playlist_name}</div>
+            .map((playlist) => (
+              <div key={playlist.playlist_uri}>{playlist.playlist_name}</div>
             ))}
 
           <h2>Artists</h2>
-          {Object.entries(data.artists)
+          {Object.values(data.artists)
             .slice(0, 50)
-            .map(([uri, artist]) => (
-              <div key={uri}>{artist.artist_name}</div>
+            .map((artist) => (
+              <div key={artist.artist_uri}>{artist.artist_name}</div>
             ))}
 
           <h2>Albums</h2>
-          {Object.entries(data.albums)
+          {Object.values(data.albums)
             .slice(0, 50)
-            .map(([uri, album]) => (
-              <div key={uri}>{album.album_name}</div>
+            .map((album) => (
+              <div key={album.album_uri}>{album.album_name}</div>
             ))}
 
           <h2>Tracks</h2>
-          {Object.entries(data.tracks)
+          {Object.values(data.tracks)
             .slice(0, 50)
-            .map(([uri, track]) => (
-              <div key={uri}>{track.track_name}</div>
+            .map((track) => (
+              <div key={track.track_uri}>{track.track_name}</div>
+            ))}
+
+          <h2>Labels</h2>
+          {Object.values(data.labels)
+            .slice(0, 50)
+            .map((label) => (
+              <div key={label.album_standardized_label}>
+                {label.album_standardized_label}
+              </div>
             ))}
         </div>
       )}
