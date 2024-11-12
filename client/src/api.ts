@@ -70,6 +70,14 @@ export interface FilterOptions {
   genres: string[];
 }
 
+export const defaultFilterOptions: FilterOptions = {
+  artists: {},
+  albums: {},
+  playlists: {},
+  labels: [],
+  genres: [],
+};
+
 export async function getData(query: string): Promise<Summary> {
   try {
     const res = await fetch("/api/summary?" + query.toString());
