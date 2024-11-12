@@ -5,11 +5,11 @@ import { useData } from "./useData";
 import { Filters } from "./Filters/Filters";
 import "./global.css";
 import { PlaylistTile } from "./Playlists/PlaylistTile";
-import { Container, Grid, GridCol } from "@mantine/core";
+import { Container } from "@mantine/core";
 import { ArtistTile } from "./Artists/ArtistTile";
 import { AlbumTile } from "./Albums/AlbumTile";
+import { DisplayGrid } from "./DisplayGrid";
 
-const defaultGridCount = 1 * 2 * 3 * 5;
 function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
   const { data, isLoading } = useData(filters);
@@ -30,67 +30,64 @@ function App() {
       ) : (
         <div>
           <h2>Playlists</h2>
-          <Grid>
-            {Object.values(data.playlists)
-              .sort(
-                (a, b) =>
-                  b.playlist_track_liked_count - a.playlist_track_liked_count
-              )
-              .slice(0, defaultGridCount)
-              .map((playlist) => (
-                <GridCol span={2}>
-                  <PlaylistTile
-                    key={playlist.playlist_uri}
-                    playlist={playlist}
-                  />
-                </GridCol>
-              ))}
-          </Grid>
+          <DisplayGrid
+            items={Object.values(data.playlists).sort(
+              (a, b) =>
+                b.playlist_track_liked_count - a.playlist_track_liked_count
+            )}
+            loading={isLoading}
+            getKey={(p) => p.playlist_uri}
+            renderTile={(p) => <PlaylistTile playlist={p} />}
+            renderRow={(p) => <div>{p.playlist_name}</div>}
+          />
 
           <h2>Artists</h2>
-          <Grid>
-            {Object.values(data.artists)
-              .sort((a, b) => a.artist_rank - b.artist_rank)
-              .slice(0, defaultGridCount)
-              .map((artist) => (
-                <GridCol span={2}>
-                  <ArtistTile key={artist.artist_uri} artist={artist} />
-                </GridCol>
-              ))}
-          </Grid>
+          <DisplayGrid
+            items={Object.values(data.artists).sort(
+              (a, b) => a.artist_rank - b.artist_rank
+            )}
+            loading={isLoading}
+            getKey={(p) => p.artist_uri}
+            renderTile={(p) => <ArtistTile artist={p} />}
+            renderRow={(p) => <div>{p.artist_name}</div>}
+          />
 
           <h2>Albums</h2>
-          <Grid>
-            {Object.values(data.albums)
-              .sort((a, b) => a.album_rank - b.album_rank)
-              .slice(0, defaultGridCount)
-              .map((album) => (
-                <GridCol span={2}>
-                  <AlbumTile key={album.album_uri} album={album} />
-                </GridCol>
-              ))}
-          </Grid>
+          <DisplayGrid
+            items={Object.values(data.albums).sort(
+              (a, b) => a.album_rank - b.album_rank
+            )}
+            loading={isLoading}
+            getKey={(p) => p.album_uri}
+            renderTile={(p) => <AlbumTile album={p} />}
+            renderRow={(p) => <div>{p.album_name}</div>}
+          />
 
           <h2>Tracks</h2>
-          {Object.values(data.tracks)
-            .slice(0, defaultGridCount)
-            .map((track) => (
-              <div key={track.track_uri}>{track.track_name}</div>
-            ))}
+          <DisplayGrid
+            items={Object.values(data.tracks).sort(
+              (a, b) => a.track_rank - b.track_rank
+            )}
+            loading={isLoading}
+            getKey={(p) => p.track_uri}
+            renderRow={(p) => <div>{p.track_name}</div>}
+          />
 
           <h2>Labels</h2>
-          {Object.values(data.labels)
-            .slice(0, defaultGridCount)
-            .map((label) => (
-              <div key={label}>{label}</div>
-            ))}
+          <DisplayGrid
+            items={data.labels.sort()}
+            loading={isLoading}
+            getKey={(p) => p}
+            renderRow={(p) => <div>{p}</div>}
+          />
 
           <h2>Genres</h2>
-          {Object.values(data.genres)
-            .slice(0, defaultGridCount)
-            .map((genre) => (
-              <div key={genre}>{genre}</div>
-            ))}
+          <DisplayGrid
+            items={data.genres.sort()}
+            loading={isLoading}
+            getKey={(p) => p}
+            renderRow={(p) => <div>{p}</div>}
+          />
         </div>
       )}
     </Container>

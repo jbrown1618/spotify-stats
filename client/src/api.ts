@@ -21,6 +21,7 @@ export interface Playlist {
 export interface Track {
   track_uri: string;
   track_name: string;
+  track_rank: number;
 }
 
 export interface Artist {
