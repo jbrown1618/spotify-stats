@@ -37,6 +37,15 @@ export interface Artist {
 export interface Album {
   album_uri: string;
   album_name: string;
+  album_rank: number;
+  album_image_url: string;
+  album_label: string;
+  album_popularity: number;
+  album_release_date: string;
+  album_release_year: string;
+  album_short_name: string;
+  album_total_tracks: number;
+  album_type: string;
 }
 
 export interface Label {

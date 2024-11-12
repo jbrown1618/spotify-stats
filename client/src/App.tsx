@@ -4,18 +4,18 @@ import { Header } from "./Header/Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters/Filters";
 import "./global.css";
-import styles from "./App.module.css";
 import { PlaylistTile } from "./Playlists/PlaylistTile";
-import { Grid, GridCol } from "@mantine/core";
+import { Container, Grid, GridCol } from "@mantine/core";
 import { ArtistTile } from "./Artists/ArtistTile";
+import { AlbumTile } from "./Albums/AlbumTile";
 
-const defaultGridCount = 1 * 2 * 2 * 3 * 5;
+const defaultGridCount = 1 * 2 * 3 * 5;
 function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
   const { data, isLoading } = useData(filters);
 
   return (
-    <div className={styles.container}>
+    <Container size="lg">
       <Header />
       {data && (
         <Filters
@@ -60,11 +60,16 @@ function App() {
           </Grid>
 
           <h2>Albums</h2>
-          {Object.values(data.albums)
-            .slice(0, defaultGridCount)
-            .map((album) => (
-              <div key={album.album_uri}>{album.album_name}</div>
-            ))}
+          <Grid>
+            {Object.values(data.albums)
+              .sort((a, b) => a.album_rank - b.album_rank)
+              .slice(0, defaultGridCount)
+              .map((album) => (
+                <GridCol span={2}>
+                  <AlbumTile key={album.album_uri} album={album} />
+                </GridCol>
+              ))}
+          </Grid>
 
           <h2>Tracks</h2>
           {Object.values(data.tracks)
@@ -88,7 +93,7 @@ function App() {
             ))}
         </div>
       )}
-    </div>
+    </Container>
   );
 }
 
