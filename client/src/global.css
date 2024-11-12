@@ -1,9 +1,7 @@
 :root {
     --ss-bg-color: black;
-    --ss-fg-color: white;
 }
 
 body {
-    /* background-color: var(--ss-bg-color);
-    color: var(--ss-fg-color); */
+    background-color: var(--ss-bg-color);
 }

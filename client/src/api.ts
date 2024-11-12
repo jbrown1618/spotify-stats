@@ -11,6 +11,11 @@ export interface Summary {
 export interface Playlist {
   playlist_uri: string;
   playlist_name: string;
+  playlist_image_url: string;
+  playlist_owner: string;
+  playlist_collaborative: boolean;
+  playlist_track_liked_count: number;
+  playlist_track_count: number;
 }
 
 export interface Track {
@@ -21,6 +26,12 @@ export interface Track {
 export interface Artist {
   artist_uri: string;
   artist_name: string;
+  artist_followers: number;
+  artist_liked_track_count: number;
+  artist_popularity: number;
+  artist_rank: number;
+  artist_track_count: number;
+  artist_image_url: string;
 }
 
 export interface Album {
