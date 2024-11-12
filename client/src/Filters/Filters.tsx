@@ -73,7 +73,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
         <MultiSelect
           label="Filter labels"
           data={Object.values(options.labels).map(
-            ({ album_standardized_label }) => {
+            (album_standardized_label) => {
               return {
                 label: album_standardized_label,
                 value: album_standardized_label,
@@ -86,6 +86,23 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             onFilterChange((filters) => ({
               ...filters,
               labels,
+            }))
+          }
+        />
+        <MultiSelect
+          label="Filter genres"
+          data={Object.values(options.genres).map((genre) => {
+            return {
+              label: genre,
+              value: genre,
+            };
+          })}
+          value={filters.genres}
+          searchable
+          onChange={(genres) =>
+            onFilterChange((filters) => ({
+              ...filters,
+              genres,
             }))
           }
         />

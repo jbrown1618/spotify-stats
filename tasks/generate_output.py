@@ -38,11 +38,11 @@ def generate_output():
 
     if should_generate_page('label'):
         for standardized_label in dp.labels(with_page=True)['album_standardized_label']:
-            make_label_summary(standardized_label, dp.tracks(label=standardized_label, owned=True))
+            make_label_summary(standardized_label, dp.tracks(labels={standardized_label}, owned=True))
 
     if should_generate_page('genre'):
         for genre in dp.genres(with_page=True):
-            make_genre_summary(genre, dp.tracks(genre=genre, owned=True))
+            make_genre_summary(genre, dp.tracks(genres={genre}, owned=True))
 
     if should_generate_page('producer'):
         for mbid in dp.mb_artists(with_page=True)['artist_mbid']:

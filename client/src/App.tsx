@@ -3,6 +3,7 @@ import { ActiveFilters } from "./api";
 import { Header } from "./Header/Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters/Filters";
+import "./global.css";
 
 function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -55,9 +56,14 @@ function App() {
           {Object.values(data.labels)
             .slice(0, 50)
             .map((label) => (
-              <div key={label.album_standardized_label}>
-                {label.album_standardized_label}
-              </div>
+              <div key={label}>{label}</div>
+            ))}
+
+          <h2>Genres</h2>
+          {Object.values(data.genres)
+            .slice(0, 50)
+            .map((genre) => (
+              <div key={genre}>{genre}</div>
             ))}
         </div>
       )}

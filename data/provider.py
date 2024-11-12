@@ -59,7 +59,8 @@ class DataProvider:
                   track_uri: str = None, 
                   album_uris: typing.Iterable[str] = None,
                   artist_uris: typing.Iterable[str] = None,
-                  labels: typing.Iterable[str] = None) -> pd.DataFrame:
+                  labels: typing.Iterable[str] = None,
+                  genres: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         playlist_track = raw['playlist_track']
 
@@ -100,6 +101,12 @@ class DataProvider:
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
             out = out[out['playlist_uri'].isin(uris)]
 
+        if genres is not None:
+            track_genre = self.track_genre()
+            tracks_in_genre = set(track_genre[track_genre['genre'].isin(genres)]['track_uri'])
+            uris = playlist_track[playlist_track['track_uri'].isin(tracks_in_genre)]['playlist_uri']
+            out = out[out['playlist_uri'].isin(uris)]
+
         return out
 
 
@@ -108,7 +115,8 @@ class DataProvider:
                owned = False,
                playlist_uris: typing.Iterable[str] = None,
                artist_uris: typing.Iterable[str] = None,
-               labels: typing.Iterable[str] = None) -> pd.DataFrame:
+               labels: typing.Iterable[str] = None,
+               genres: typing.Iterable[str] = None) -> pd.DataFrame:
         raw = RawData()
         if self._albums is None:
             albums = raw["albums"].copy()
@@ -146,6 +154,13 @@ class DataProvider:
             uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
             out = out[out['album_uri'].isin(uris)]
 
+        if genres is not None:
+            artist_genre = raw['artist_genre']
+            artist_uris = artist_genre[artist_genre['genre'].isin(genres)]['artist_uri']
+            album_artist = raw['album_artist']
+            uris = album_artist[album_artist['artist_uri'].isin(artist_uris)]['album_uri']
+            out = out[out['album_uri'].isin(uris)] 
+
         return out
     
 
@@ -157,7 +172,7 @@ class DataProvider:
                uris: typing.Iterable[str] = None, 
                liked: bool = None, 
                labels: typing.Iterable[str] = None, 
-               genre: str = None, 
+               genres: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
                artist_uris: typing.Iterable[str] = None,
@@ -201,9 +216,9 @@ class DataProvider:
             albums_uris = self._album_label[self._album_label["album_standardized_label"].isin(labels)]["album_uri"]
             out = out[out['album_uri'].isin(albums_uris)]
 
-        if genre is not None:
+        if genres is not None:
             track_genre = self.track_genre()
-            tracks_in_genre = set(track_genre[track_genre['genre'] == genre]['track_uri'])
+            tracks_in_genre = set(track_genre[track_genre['genre'].isin(genres)]['track_uri'])
             out = out[out["track_uri"].isin(tracks_in_genre)]
 
         if album_uris is not None:
@@ -378,6 +393,7 @@ class DataProvider:
                 album_uris: typing.Iterable[str] = None,
                 playlist_uris: typing.Iterable[str] = None,
                 labels: typing.Iterable[str] = None,
+                genres: typing.Iterable[str] = None,
                 with_liked_tracks: bool = None) -> pd.DataFrame:
         raw = RawData()
         if self._artists is None:
@@ -452,6 +468,11 @@ class DataProvider:
             track_uris = raw['liked_tracks']['track_uri']
             track_artist = raw['track_artist']
             uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
+            out = out[out['artist_uri'].isin(uris)]
+
+        if genres is not None:
+            artist_genre = raw['artist_genre']
+            uris = artist_genre[artist_genre['genre'].isin(genres)]['artist_uri']
             out = out[out['artist_uri'].isin(uris)]
 
         return out
@@ -573,6 +594,7 @@ class DataProvider:
                artist_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
+               genres: typing.Iterable[str] = None, 
                liked: bool = None,
                with_page: bool = None) -> pd.DataFrame:
         if self._album_label is None:
@@ -582,6 +604,7 @@ class DataProvider:
                              album_uris=album_uris, 
                              artist_uris=artist_uris, 
                              playlist_uris=playlist_uris,
+                             genres=genres,
                              liked=liked)
 
         out = pd.merge(tracks, self._album_label, on="album_uri")\
@@ -606,14 +629,34 @@ class DataProvider:
         return self._album_label
     
 
-    def genres(self, with_page: bool = None) -> typing.Iterable[str]:
+    def genres(self, 
+               names: typing.Iterable[str] = None,
+               playlist_uris: typing.Iterable[str] = None,
+               artist_uris: typing.Iterable[str] = None,
+               album_uris: typing.Iterable[str] = None,
+               labels: typing.Iterable[str] = None,
+               with_liked_tracks: bool = None,
+               with_page: bool = None) -> typing.Iterable[str]:
         if with_page:
             out = self.track_genre()
             out = out[out['genre_has_page'] == True]
             return out.groupby('genre').agg({'track_uri': "sum"}).reset_index()['genre']
         
+        artist_uris = self.artists(uris=artist_uris, 
+                                   album_uris=album_uris, 
+                                   playlist_uris=playlist_uris, 
+                                   labels=labels, 
+                                   with_liked_tracks=with_liked_tracks)['artist_uri']
+        
         rd = RawData()
-        return rd['artist_genre']['genre'].unique()
+        artist_genre = rd['artist_genre']
+        out = artist_genre[artist_genre['artist_uri'].isin(artist_uris)]
+
+        if names is not None:
+            out = out[out['genre'].isin(names)]
+
+        return out['genre'].unique()
+
         
 
     def track_genre(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
