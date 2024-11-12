@@ -10,7 +10,10 @@ const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider defaultColorScheme="dark">
+      <MantineProvider
+        defaultColorScheme="dark"
+        theme={{ primaryColor: "green" }}
+      >
         <App />
       </MantineProvider>
     </QueryClientProvider>

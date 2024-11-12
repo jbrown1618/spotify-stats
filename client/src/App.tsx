@@ -4,13 +4,14 @@ import { Header } from "./Header/Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters/Filters";
 import "./global.css";
+import styles from "./App.module.css";
 
 function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
   const { data, isLoading } = useData(filters);
 
   return (
-    <>
+    <div className={styles.container}>
       <Header />
       {data && (
         <Filters
@@ -67,7 +68,7 @@ function App() {
             ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
