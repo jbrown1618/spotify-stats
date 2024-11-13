@@ -9,6 +9,7 @@ import { Container, useMantineTheme } from "@mantine/core";
 import { ArtistTile } from "./Artists/ArtistTile";
 import { AlbumTile } from "./Albums/AlbumTile";
 import { DisplayGrid } from "./DisplayGrid";
+import { SetFiltersProvider } from "./useSetFilters";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -16,7 +17,7 @@ export function App() {
   const t = useMantineTheme();
 
   return (
-    <div>
+    <SetFiltersProvider value={setFilters}>
       <div
         style={{
           width: "100%",
@@ -32,7 +33,6 @@ export function App() {
         <Filters
           filters={filters}
           options={data?.filter_options ?? defaultFilterOptions}
-          onFilterChange={setFilters}
         />
 
         <div>
@@ -108,6 +108,6 @@ export function App() {
           />
         </div>
       </Container>
-    </div>
+    </SetFiltersProvider>
   );
 }

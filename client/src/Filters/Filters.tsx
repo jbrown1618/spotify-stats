@@ -1,14 +1,14 @@
-import { SetStateAction } from "react";
 import { ActiveFilters, FilterOptions } from "../api";
 import { Checkbox, Grid, GridCol, MultiSelect } from "@mantine/core";
+import { useSetFilters } from "../useSetFilters";
 
 interface FiltersProps {
   filters: ActiveFilters;
   options: FilterOptions;
-  onFilterChange: (a: SetStateAction<ActiveFilters>) => void;
 }
 
-export function Filters({ filters, options, onFilterChange }: FiltersProps) {
+export function Filters({ filters, options }: FiltersProps) {
+  const setFilters = useSetFilters();
   return (
     <>
       <h2>Filters</h2>
@@ -27,7 +27,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             value={filters.playlists}
             searchable
             onChange={(playlists) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 playlists,
               }))
@@ -49,7 +49,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             value={filters.artists}
             searchable
             onChange={(artists) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 artists,
               }))
@@ -71,7 +71,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             value={filters.albums}
             searchable
             onChange={(albums) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 albums,
               }))
@@ -93,7 +93,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             value={filters.labels}
             searchable
             onChange={(labels) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 labels,
               }))
@@ -113,7 +113,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             value={filters.genres}
             searchable
             onChange={(genres) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 genres,
               }))
@@ -126,7 +126,7 @@ export function Filters({ filters, options, onFilterChange }: FiltersProps) {
             label="Liked"
             checked={filters.liked}
             onChange={(e) =>
-              onFilterChange((filters) => ({
+              setFilters((filters) => ({
                 ...filters,
                 liked: e.currentTarget.checked,
               }))
