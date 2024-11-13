@@ -1,3 +1,3 @@
 export function Header() {
-  return <h1>Spotify Stats</h1>;
+  return <h1 style={{ margin: 0 }}>Spotify Stats</h1>;
 }
