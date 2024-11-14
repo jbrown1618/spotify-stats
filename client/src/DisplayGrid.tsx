@@ -14,7 +14,7 @@ interface DisplayGridProps<T> {
 }
 
 const defaultGridCount = 1 * 2 * 3 * 5;
-const loadingItems = new Array(defaultGridCount).map((_, i) => i);
+const loadingItems = Array.from(Array(defaultGridCount).keys());
 
 export function DisplayGrid<T>({
   items,
@@ -43,12 +43,18 @@ export function DisplayGrid<T>({
                 {renderTile && span !== 12 ? renderTile(item) : renderRow(item)}
               </GridCol>
             ))
-          : loadingItems.map((_, i) => (
+          : loadingItems.map((i) => (
               <GridCol span={span} key={i}>
-                <Skeleton width="100%" height={200} />
+                <Skeleton width="100%" height={loadingItemHeights[span]} />
               </GridCol>
             ))}
       </Grid>
     </>
   );
 }
+
+const loadingItemHeights: Record<number, string | number> = {
+  12: 70,
+  4: "20vw",
+  2: "15vw",
+};

@@ -1,6 +1,6 @@
-import { ActiveFilters, FilterOptions } from "../api";
+import { ActiveFilters, FilterOptions } from "./api";
 import { Checkbox, Grid, GridCol, MultiSelect } from "@mantine/core";
-import { useSetFilters } from "../useSetFilters";
+import { useSetFilters } from "./useSetFilters";
 
 interface FiltersProps {
   filters: ActiveFilters;

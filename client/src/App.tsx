@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { ActiveFilters, defaultFilterOptions } from "./api";
-import { Header } from "./Header/Header";
+import { Header } from "./Header";
 import { useData } from "./useData";
-import { Filters } from "./Filters/Filters";
+import { Filters } from "./Filters";
 import "./global.css";
-import { PlaylistTile } from "./Playlists/PlaylistTile";
+import { PlaylistTile } from "./PlaylistTile";
 import { Container, useMantineTheme } from "@mantine/core";
-import { ArtistTile } from "./Artists/ArtistTile";
-import { AlbumTile } from "./Albums/AlbumTile";
+import { ArtistTile } from "./ArtistTile";
+import { AlbumTile } from "./AlbumTile";
 import { DisplayGrid } from "./DisplayGrid";
 import { SetFiltersProvider } from "./useSetFilters";
 
