@@ -13,7 +13,7 @@ interface DisplayGridProps<T> {
   renderRow: (item: T) => JSX.Element;
 }
 
-const defaultGridCount = 1 * 2 * 3 * 5;
+const defaultGridCount = 24;
 const loadingItems = Array.from(Array(defaultGridCount).keys());
 
 export function DisplayGrid<T>({
