@@ -58,7 +58,7 @@ export function App() {
               <h3>Top Playlists by Liked Tracks</h3>
               <BarChart
                 h={800}
-                data={Object.values(data.playlists)
+                data={Object.values(data.playlist_track_counts)
                   .sort(
                     (a, b) =>
                       b.playlist_track_liked_count -

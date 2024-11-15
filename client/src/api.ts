@@ -1,11 +1,12 @@
 export interface Summary {
+  filter_options: FilterOptions;
   playlists: Record<string, Playlist>;
   tracks: Record<string, Track>;
   artists: Record<string, Artist>;
   albums: Record<string, Album>;
   labels: string[];
   genres: string[];
-  filter_options: FilterOptions;
+  playlist_track_counts: Record<string, PlaylistTrackCount>;
 }
 
 export interface Playlist {
@@ -17,6 +18,14 @@ export interface Playlist {
   playlist_track_liked_count: number;
   playlist_track_count: number;
 }
+
+export type PlaylistTrackCount = Pick<
+  Playlist,
+  | "playlist_uri"
+  | "playlist_name"
+  | "playlist_track_count"
+  | "playlist_track_liked_count"
+>;
 
 export interface Track {
   track_uri: string;
