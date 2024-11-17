@@ -10,7 +10,8 @@ import { ArtistTile } from "./ArtistTile";
 import { AlbumTile } from "./AlbumTile";
 import { DisplayGrid } from "./DisplayGrid";
 import { SetFiltersProvider } from "./useSetFilters";
-import { BarChart } from "@mantine/charts";
+import { TracksLineChart } from "./TracksLineChart";
+import { PlaylistsBarChart } from "./PlaylistsBarChart";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -56,31 +57,8 @@ export function App() {
           {data && (
             <>
               <h3>Top Playlists by Liked Tracks</h3>
-              <BarChart
-                h={800}
-                data={Object.values(data.playlist_track_counts)
-                  .sort(
-                    (a, b) =>
-                      b.playlist_track_liked_count -
-                      a.playlist_track_liked_count
-                  )
-                  .slice(0, 20)
-                  .map((p) => ({
-                    Playlist: p.playlist_name,
-                    Liked: p.playlist_track_liked_count,
-                    Unliked:
-                      p.playlist_track_count - p.playlist_track_liked_count,
-                  }))}
-                orientation="vertical"
-                series={[
-                  { name: "Liked", color: "green" },
-                  { name: "Unliked", color: "gray" },
-                ]}
-                dataKey="Playlist"
-                type="stacked"
-                withLegend
-                legendProps={{ verticalAlign: "bottom" }}
-                gridAxis="y"
+              <PlaylistsBarChart
+                counts={Object.values(data.playlist_track_counts)}
               />
             </>
           )}
@@ -114,6 +92,14 @@ export function App() {
           />
 
           <h2>Tracks</h2>
+
+          {data && (
+            <TracksLineChart
+              ranks={data.track_rank_history}
+              tracks={data.tracks}
+            />
+          )}
+
           <DisplayGrid
             items={
               data

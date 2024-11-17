@@ -657,7 +657,6 @@ class DataProvider:
 
         return out['genre'].unique()
 
-        
 
     def track_genre(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         if self._track_genre is None:

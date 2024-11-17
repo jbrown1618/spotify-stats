@@ -7,6 +7,7 @@ export interface Summary {
   labels: string[];
   genres: string[];
   playlist_track_counts: Record<string, PlaylistTrackCount>;
+  track_rank_history: TrackRank[];
 }
 
 export interface Playlist {
@@ -31,6 +32,13 @@ export interface Track {
   track_uri: string;
   track_name: string;
   track_rank: number;
+  album_image_url: string;
+}
+
+export interface TrackRank {
+  track_uri: string;
+  track_rank: number;
+  as_of_date: string;
 }
 
 export interface Artist {

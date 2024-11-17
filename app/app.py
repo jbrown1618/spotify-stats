@@ -6,6 +6,7 @@ from flask import Flask, send_file, request
 
 from data.provider import DataProvider
 from data.raw import RawData
+from utils.ranking import track_ranks_over_time
 from utils.util import first
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -88,7 +89,8 @@ def data():
         "albums": to_json(albums, 'album_uri'),
         "labels": [l for l in labels['album_standardized_label']],
         "genres": [g for g in genres],
-        "playlist_track_counts": playlist_track_counts(playlists, tracks)
+        "playlist_track_counts": playlist_track_counts(playlists, tracks),
+        "track_rank_history": track_rank_history(tracks)
     }
 
 
@@ -153,6 +155,20 @@ def playlist_track_counts(playlists, tracks):
     return to_json(track_counts, 'playlist_uri')
 
 
+def track_rank_history(tracks):
+    ranks = track_ranks_over_time()
+    ranks = ranks[ranks['track_uri'].isin(tracks['track_uri'])]
+
+    max_date = ranks['as_of_date'].max()
+    current_top_tracks = ranks[
+        (ranks['as_of_date'] == max_date)
+    ].head(10)['track_uri']
+
+    ranks = ranks[ranks['track_uri'].isin(current_top_tracks)]
+
+    return to_json(ranks[['track_uri', 'track_rank', 'as_of_date']])
+
+
 array_filter_keys = ["artists", "albums", "playlists", "labels", "genres"]
 def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Iterable[str]]:
     filters = {
@@ -175,8 +191,11 @@ def to_array_filter(arg: str) -> typing.Iterable[str]:
     return json.loads(urllib.parse.unquote(arg))
 
 
-def to_json(df: pd.DataFrame, col: str):
-    index_col = col + '__index'
-    df[index_col] = df[col].copy()
-    df = df.set_index(index_col)
-    return json.loads(df.to_json(orient="index", index=True))
+def to_json(df: pd.DataFrame, col: str = None):
+    if col is not None:
+        index_col = col + '__index'
+        df[index_col] = df[col].copy()
+        df = df.set_index(index_col)
+        return json.loads(df.to_json(orient="index"))
+    
+    return json.loads(df.to_json(orient="records", index=True))
