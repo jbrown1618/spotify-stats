@@ -6,7 +6,7 @@ from flask import Flask, send_file, request
 
 from data.provider import DataProvider
 from data.raw import RawData
-from utils.ranking import track_ranks_over_time
+from utils.ranking import album_ranks_over_time, artist_ranks_over_time, track_ranks_over_time
 from utils.util import first
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -90,7 +90,9 @@ def data():
         "labels": [l for l in labels['album_standardized_label']],
         "genres": [g for g in genres],
         "playlist_track_counts": playlist_track_counts(playlists, tracks),
-        "track_rank_history": track_rank_history(tracks)
+        "track_rank_history": track_rank_history(tracks),
+        "artist_rank_history": artist_rank_history(artists),
+        "album_rank_history": album_rank_history(albums)
     }
 
 
@@ -167,6 +169,34 @@ def track_rank_history(tracks):
     ranks = ranks[ranks['track_uri'].isin(current_top_tracks)]
 
     return to_json(ranks[['track_uri', 'track_rank', 'as_of_date']])
+
+
+def artist_rank_history(artists):
+    ranks = artist_ranks_over_time()
+    ranks = ranks[ranks['artist_uri'].isin(artists['artist_uri'])]
+
+    max_date = ranks['as_of_date'].max()
+    current_top_artists = ranks[
+        (ranks['as_of_date'] == max_date)
+    ].head(10)['artist_uri']
+
+    ranks = ranks[ranks['artist_uri'].isin(current_top_artists)]
+
+    return to_json(ranks[['artist_uri', 'artist_rank', 'as_of_date']])
+
+
+def album_rank_history(albums):
+    ranks = album_ranks_over_time()
+    ranks = ranks[ranks['album_uri'].isin(albums['album_uri'])]
+
+    max_date = ranks['as_of_date'].max()
+    current_top_albums = ranks[
+        (ranks['as_of_date'] == max_date)
+    ].head(10)['album_uri']
+
+    ranks = ranks[ranks['album_uri'].isin(current_top_albums)]
+
+    return to_json(ranks[['album_uri', 'album_rank', 'as_of_date']])
 
 
 array_filter_keys = ["artists", "albums", "playlists", "labels", "genres"]

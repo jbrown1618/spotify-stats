@@ -12,6 +12,8 @@ import { DisplayGrid } from "./DisplayGrid";
 import { SetFiltersProvider } from "./useSetFilters";
 import { TracksLineChart } from "./TracksLineChart";
 import { PlaylistsBarChart } from "./PlaylistsBarChart";
+import { ArtistsLineChart } from "./ArtistsLineChart";
+import { AlbumsLineChart } from "./AlbumsLineChart";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -64,6 +66,14 @@ export function App() {
           )}
 
           <h2>Artists</h2>
+
+          {data && (
+            <ArtistsLineChart
+              ranks={data.artist_rank_history}
+              artists={data.artists}
+            />
+          )}
+
           <DisplayGrid
             items={
               data
@@ -78,6 +88,14 @@ export function App() {
           />
 
           <h2>Albums</h2>
+
+          {data && (
+            <AlbumsLineChart
+              ranks={data.album_rank_history}
+              albums={data.albums}
+            />
+          )}
+
           <DisplayGrid
             items={
               data
