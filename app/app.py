@@ -26,24 +26,24 @@ def data():
     artist_uris = filters.get('artists', None)
     album_uris = filters.get('albums', None)
     playlist_uris = filters.get('playlists', None)
-    labels = filters.get('labels', None)
-    genres = filters.get('genres', None)
+    label_names = filters.get('labels', None)
+    genre_names = filters.get('genres', None)
     liked = filters.get('liked', None)
 
     playlists = dp.playlists(
         uris=playlist_uris, 
         artist_uris=artist_uris,
         album_uris=album_uris,
-        labels=labels,
-        genres=genres
+        labels=label_names,
+        genres=genre_names
     )
 
     tracks = dp.tracks(
         playlist_uris=playlist_uris, 
         artist_uris=artist_uris, 
         album_uris=album_uris,
-        labels=labels,
-        genres=genres,
+        labels=label_names,
+        genres=genre_names,
         liked=liked
     )
 
@@ -51,8 +51,8 @@ def data():
         uris=artist_uris,
         album_uris=album_uris,
         playlist_uris=playlist_uris,
-        labels=labels,
-        genres=genres,
+        labels=label_names,
+        genres=genre_names,
         with_liked_tracks=liked
     )
     
@@ -60,12 +60,12 @@ def data():
         uris=album_uris,
         artist_uris=artist_uris,
         playlist_uris=playlist_uris,
-        labels=labels,
-        genres=genres
+        labels=label_names,
+        genres=genre_names
     )
 
     labels = dp.labels(
-        label_names=labels,
+        label_names=label_names,
         album_uris=album_uris,
         artist_uris=artist_uris,
         playlist_uris=playlist_uris,
@@ -73,11 +73,11 @@ def data():
     )
 
     genres = dp.genres(
-        names=genres,
+        names=genre_names,
         playlist_uris=playlist_uris,
         artist_uris=artist_uris,
         album_uris=album_uris,
-        labels=labels,
+        labels=label_names,
         with_liked_tracks=liked
     )
 
