@@ -42,7 +42,9 @@ export function TracksLineChart({
   return (
     <LineChart
       h={500}
-      data={Array.from(dataPoints.values())}
+      data={Array.from(dataPoints.values()).sort(
+        (a, b) => a["date"] - b["date"]
+      )}
       dataKey="date"
       series={Array.from(trackURIs).map((uri, i) => ({
         name: uri,
@@ -51,7 +53,6 @@ export function TracksLineChart({
       withDots={false}
       yAxisProps={{ reversed: true }}
       xAxisProps={{
-        reversed: true,
         tickFormatter: formatDate,
       }}
       tooltipProps={{

@@ -42,7 +42,9 @@ export function AlbumsLineChart({
   return (
     <LineChart
       h={300}
-      data={Array.from(dataPoints.values())}
+      data={Array.from(dataPoints.values()).sort(
+        (a, b) => a["date"] - b["date"]
+      )}
       dataKey="date"
       series={Array.from(artistURIs).map((uri, i) => ({
         name: uri,
@@ -51,7 +53,6 @@ export function AlbumsLineChart({
       withDots={false}
       yAxisProps={{ reversed: true }}
       xAxisProps={{
-        reversed: true,
         tickFormatter: formatDate,
       }}
       tooltipProps={{
