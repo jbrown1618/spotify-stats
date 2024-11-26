@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    rect {
+      fill: black;
+    }
+    polyline {
+      stroke: black;
+    }
+    @media (prefers-color-scheme: light) {
+      rect {
+        fill: white;
+      }
+      polyline {
+        stroke: white;
+      }
+    }
+  </style>
+  <circle cx="32" cy="32" r="30" stroke="none" fill="#1ed760"/>
+  <rect x="17" y="38" width="8" height="15" fill="white"/>
+  <rect x="28" y="30" width="8" height="23" fill="white"/>
+  <rect x="39" y="22" width="8" height="31" fill="white"/>
+  <polyline points="15,32 30,11 47,17" fill="none" stroke="white" stroke-width="4"/>
+</svg>
