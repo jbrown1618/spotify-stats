@@ -6,6 +6,7 @@ export interface Summary {
   albums: Record<string, Album>;
   labels: string[];
   genres: string[];
+  years: Record<string, YearCounts>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
   track_rank_history: TrackRank[];
   artist_rank_history: ArtistRank[];
@@ -84,6 +85,12 @@ export interface Label {
   album_standardized_label: string;
 }
 
+export interface YearCounts {
+  liked: number;
+  total: number;
+  year: string;
+}
+
 export interface ActiveFilters {
   liked?: boolean;
   labels?: string[];
@@ -91,6 +98,7 @@ export interface ActiveFilters {
   albums?: string[];
   playlists?: string[];
   genres?: string[];
+  years?: string[];
 }
 
 export interface FilterOptions {
@@ -99,6 +107,7 @@ export interface FilterOptions {
   playlists: Record<string, Pick<Playlist, "playlist_uri" | "playlist_name">>;
   labels: string[];
   genres: string[];
+  years: string[];
 }
 
 export const defaultFilterOptions: FilterOptions = {
@@ -107,6 +116,7 @@ export const defaultFilterOptions: FilterOptions = {
   playlists: {},
   labels: [],
   genres: [],
+  years: [],
 };
 
 export async function getData(query: string): Promise<Summary> {
@@ -131,6 +141,7 @@ const arrayKeys = [
   "playlists",
   "labels",
   "genres",
+  "years",
 ] as const;
 
 export function filtersQuery(filters: ActiveFilters) {

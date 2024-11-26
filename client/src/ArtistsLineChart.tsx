@@ -41,7 +41,7 @@ export function ArtistsLineChart({
 
   return (
     <LineChart
-      h={300}
+      h={500}
       data={Array.from(dataPoints.values()).sort(
         (a, b) => a["date"] - b["date"]
       )}

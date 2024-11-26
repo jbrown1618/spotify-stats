@@ -14,6 +14,7 @@ import { TracksLineChart } from "./TracksLineChart";
 import { PlaylistsBarChart } from "./PlaylistsBarChart";
 import { ArtistsLineChart } from "./ArtistsLineChart";
 import { AlbumsLineChart } from "./AlbumsLineChart";
+import { YearsBarChart } from "./YearsBarChart";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -41,6 +42,16 @@ export function App() {
 
         <div>
           <h2>Playlists</h2>
+
+          {data && (
+            <>
+              <h3>Top Playlists by Liked Tracks</h3>
+              <PlaylistsBarChart
+                counts={Object.values(data.playlist_track_counts)}
+              />
+            </>
+          )}
+
           <DisplayGrid
             items={
               data
@@ -55,15 +66,6 @@ export function App() {
             renderTile={(p) => <PlaylistTile playlist={p} />}
             renderRow={(p) => <div>{p.playlist_name}</div>}
           />
-
-          {data && (
-            <>
-              <h3>Top Playlists by Liked Tracks</h3>
-              <PlaylistsBarChart
-                counts={Object.values(data.playlist_track_counts)}
-              />
-            </>
-          )}
 
           <h2>Artists</h2>
 
@@ -143,6 +145,9 @@ export function App() {
             getKey={(p) => p}
             renderRow={(p) => <div>{p}</div>}
           />
+
+          <h2>Years</h2>
+          {data && <YearsBarChart counts={Object.values(data.years)} />}
         </div>
       </Container>
     </SetFiltersProvider>

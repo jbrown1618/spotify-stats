@@ -122,6 +122,29 @@ export function Filters({ filters, options }: FiltersProps) {
         </GridCol>
 
         <GridCol span={4}>
+          <MultiSelect
+            label="Filter years"
+            data={Object.values(options.years)
+              .sort()
+              .reverse()
+              .map((year) => {
+                return {
+                  label: year,
+                  value: year,
+                };
+              })}
+            value={filters.years}
+            searchable
+            onChange={(years) =>
+              setFilters((filters) => ({
+                ...filters,
+                years,
+              }))
+            }
+          />
+        </GridCol>
+
+        <GridCol span={4}>
           <Checkbox
             label="Liked"
             checked={filters.liked}
