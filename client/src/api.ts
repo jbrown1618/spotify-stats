@@ -7,6 +7,7 @@ export interface Summary {
   labels: string[];
   genres: string[];
   years: Record<string, YearCounts>;
+  artists_by_track: Record<string, string[]>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
   artist_track_counts: Record<string, ArtistTrackCount>;
   track_rank_history: TrackRank[];
@@ -40,11 +41,36 @@ export type ArtistTrackCount = Pick<
   | "artist_liked_track_count"
 >;
 
-export interface Track {
-  track_uri: string;
+export interface Track extends Album {
+  audio_acousticness: number;
+  audio_danceability: number;
+  audio_energy: number;
+  audio_instrumentalness: number;
+  audio_key: number;
+  audio_liveness: number;
+  audio_loudness: number;
+  audio_mode: number;
+  audio_speechiness: number;
+  audio_tempo: number;
+  audio_time_signature: number;
+  audio_valence: number;
+  primary_artist_followers: number;
+  primary_artist_has_page: boolean;
+  primary_artist_image_url: string;
+  primary_artist_liked_track_count: number;
+  primary_artist_name: string;
+  primary_artist_popularity: number;
+  primary_artist_rank: number;
+  primary_artist_track_count: number;
+  primary_artist_uri: string;
+  track_duration_ms: number;
+  track_explicit: boolean;
+  track_isrc: string;
+  track_liked: boolean;
   track_name: string;
+  track_popularity: number;
   track_rank: number;
-  album_image_url: string;
+  track_uri: string;
 }
 
 export interface TrackRank {

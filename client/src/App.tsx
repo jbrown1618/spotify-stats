@@ -16,6 +16,7 @@ import { ArtistsLineChart } from "./ArtistsLineChart";
 import { AlbumsLineChart } from "./AlbumsLineChart";
 import { YearsBarChart } from "./YearsBarChart";
 import { ArtistsBarChart } from "./ArtistsBarChart";
+import { TrackRow } from "./TrackRow";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -134,7 +135,13 @@ export function App() {
                 : undefined
             }
             getKey={(p) => p.track_uri}
-            renderRow={(p) => <div>{p.track_name}</div>}
+            renderRow={(p) => (
+              <TrackRow
+                track={p}
+                artists_by_track={data!.artists_by_track}
+                artists={data!.artists}
+              />
+            )}
           />
 
           <h2>Labels</h2>

@@ -57,7 +57,7 @@ export function AlbumsLineChart({
       }}
       tooltipProps={{
         content: ({ label, payload }) => (
-          <ArtistsTooltip
+          <AlbumsTooltip
             label={label}
             payload={payload ?? []}
             albums={albums}
@@ -80,7 +80,7 @@ interface TooltipItem {
   color?: string;
 }
 
-function ArtistsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
+function AlbumsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
   return (
     <Paper
       withBorder
@@ -90,7 +90,7 @@ function ArtistsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
       {payload
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
-          const track = item.name ? albums[item.name] : undefined;
+          const album = item.name ? albums[item.name] : undefined;
           return (
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
               <div
@@ -105,10 +105,10 @@ function ArtistsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
                 {item.value}
               </span>
               <img
-                src={track?.album_image_url}
+                src={album?.album_image_url}
                 style={{ height: "1.5em", width: "1.5em" }}
               />
-              <span>{track?.album_name}</span>
+              <span>{album?.album_short_name}</span>
             </div>
           );
         })}

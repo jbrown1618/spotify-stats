@@ -98,6 +98,7 @@ def data():
         "albums": to_json(albums, 'album_uri'),
         "labels": [l for l in labels['album_standardized_label']],
         "genres": [g for g in genres],
+        "artists_by_track": artists_by_track(tracks),
         "playlist_track_counts": playlist_track_counts(playlists, tracks),
         "artist_track_counts": artist_track_counts(artists, tracks),
         "track_rank_history": track_rank_history(tracks),
@@ -164,6 +165,14 @@ def get_filter_options(filters):
         )['album_release_year'].unique()]
     }
 
+def artists_by_track(tracks: pd.DataFrame):
+    out = {}
+    track_artist = RawData()['track_artist']
+    for _, track in tracks.iterrows():
+        artists = track_artist[track_artist['track_uri'] == track['track_uri']]
+        uris = artists.sort_values(by="artist_index", ascending=True)['artist_uri']
+        out[track['track_uri']] = [u for u in uris]
+    return out
 
 def playlist_track_counts(playlists, tracks):
     raw = RawData()
