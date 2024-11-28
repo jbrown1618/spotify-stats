@@ -71,7 +71,7 @@ class DataProvider:
                 .groupby("playlist_uri")\
                 .agg({"track_uri": "count", "track_liked": "sum"})\
                 .reset_index()\
-                .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_track_liked_count"})
+                .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_liked_track_count"})
             
             self._playlists = pd.merge(raw['playlists'], track_counts, on='playlist_uri')
 

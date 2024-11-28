@@ -8,6 +8,7 @@ export interface Summary {
   genres: string[];
   years: Record<string, YearCounts>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
+  artist_track_counts: Record<string, ArtistTrackCount>;
   track_rank_history: TrackRank[];
   artist_rank_history: ArtistRank[];
   album_rank_history: AlbumRank[];
@@ -19,7 +20,7 @@ export interface Playlist {
   playlist_image_url: string;
   playlist_owner: string;
   playlist_collaborative: boolean;
-  playlist_track_liked_count: number;
+  playlist_liked_track_count: number;
   playlist_track_count: number;
 }
 
@@ -28,7 +29,15 @@ export type PlaylistTrackCount = Pick<
   | "playlist_uri"
   | "playlist_name"
   | "playlist_track_count"
-  | "playlist_track_liked_count"
+  | "playlist_liked_track_count"
+>;
+
+export type ArtistTrackCount = Pick<
+  Artist,
+  | "artist_uri"
+  | "artist_name"
+  | "artist_track_count"
+  | "artist_liked_track_count"
 >;
 
 export interface Track {

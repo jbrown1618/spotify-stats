@@ -15,6 +15,7 @@ import { PlaylistsBarChart } from "./PlaylistsBarChart";
 import { ArtistsLineChart } from "./ArtistsLineChart";
 import { AlbumsLineChart } from "./AlbumsLineChart";
 import { YearsBarChart } from "./YearsBarChart";
+import { ArtistsBarChart } from "./ArtistsBarChart";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -57,8 +58,8 @@ export function App() {
               data
                 ? Object.values(data.playlists).sort(
                     (a, b) =>
-                      b.playlist_track_liked_count -
-                      a.playlist_track_liked_count
+                      b.playlist_liked_track_count -
+                      a.playlist_liked_track_count
                   )
                 : undefined
             }
@@ -74,6 +75,10 @@ export function App() {
               ranks={data.artist_rank_history}
               artists={data.artists}
             />
+          )}
+
+          {data && (
+            <ArtistsBarChart counts={Object.values(data.artist_track_counts)} />
           )}
 
           <DisplayGrid

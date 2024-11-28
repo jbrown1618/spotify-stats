@@ -99,6 +99,7 @@ def data():
         "labels": [l for l in labels['album_standardized_label']],
         "genres": [g for g in genres],
         "playlist_track_counts": playlist_track_counts(playlists, tracks),
+        "artist_track_counts": artist_track_counts(artists, tracks),
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
@@ -174,9 +175,24 @@ def playlist_track_counts(playlists, tracks):
         .groupby("playlist_uri")\
         .agg({"track_uri": "count", "track_liked": "sum", "playlist_name": first})\
         .reset_index()\
-        .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_track_liked_count"})
+        .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_liked_track_count"})
     
     return to_json(track_counts, 'playlist_uri')
+
+
+def artist_track_counts(artists, tracks):
+    raw = RawData()
+    track_artist = raw['track_artist']
+    track_artist = pd.merge(track_artist, artists, on="artist_uri")
+    track_artist = pd.merge(track_artist, tracks, on='track_uri')
+
+    track_counts = track_artist\
+        .groupby("artist_uri")\
+        .agg({"track_uri": "count", "track_liked": "sum", "artist_name": first})\
+        .reset_index()\
+        .rename(columns={"track_uri": "artist_track_count", "track_liked": "artist_liked_track_count"})
+    
+    return to_json(track_counts, 'artist_uri')
 
 
 def track_rank_history(tracks):
