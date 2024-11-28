@@ -1,6 +1,6 @@
-import { Playlist } from "./api";
-import { useSetFilters } from "./useSetFilters";
-import { TileDesign } from "./TileDesign";
+import { Playlist } from "../api";
+import { useSetFilters } from "../useSetFilters";
+import { TileDesign } from "../design/TileDesign";
 
 interface PlaylistTileProps {
   playlist: Playlist;

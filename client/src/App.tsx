@@ -4,19 +4,21 @@ import { Header } from "./Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters";
 import "./global.css";
-import { PlaylistTile } from "./PlaylistTile";
-import { Container, Grid, GridCol, Pill, useMantineTheme } from "@mantine/core";
-import { ArtistTile } from "./ArtistTile";
-import { AlbumTile } from "./AlbumTile";
-import { DisplayGrid } from "./DisplayGrid";
+import { PlaylistTile } from "./playlists/PlaylistTile";
+import { Container, Pill, useMantineTheme } from "@mantine/core";
+import { ArtistTile } from "./artists/ArtistTile";
+import { AlbumTile } from "./albums/AlbumTile";
+import { AlbumRow } from "./albums/AlbumRow";
+import { DisplayGrid } from "./design/DisplayGrid";
 import { SetFiltersProvider } from "./useSetFilters";
-import { TracksLineChart } from "./TracksLineChart";
-import { PlaylistsBarChart } from "./PlaylistsBarChart";
-import { ArtistsLineChart } from "./ArtistsLineChart";
-import { AlbumsLineChart } from "./AlbumsLineChart";
+import { TracksLineChart } from "./tracks/TracksLineChart";
+import { PlaylistsBarChart } from "./playlists/PlaylistsBarChart";
+import { ArtistsLineChart } from "./artists/ArtistsLineChart";
+import { AlbumsLineChart } from "./albums/AlbumsLineChart";
 import { YearsBarChart } from "./YearsBarChart";
-import { ArtistsBarChart } from "./ArtistsBarChart";
-import { TrackRow } from "./TrackRow";
+import { ArtistsBarChart } from "./artists/ArtistsBarChart";
+import { TrackRow } from "./tracks/TrackRow";
+import { ArtistRow } from "./artists/ArtistRow";
 
 export function App() {
   const [filters, setFilters] = useState<ActiveFilters>({});
@@ -66,7 +68,6 @@ export function App() {
             }
             getKey={(playlist) => playlist.playlist_uri}
             renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
-            renderRow={(playlist) => <div>{playlist.playlist_name}</div>}
           />
 
           <h2>Artists</h2>
@@ -91,8 +92,28 @@ export function App() {
                 : undefined
             }
             getKey={(artist) => artist.artist_uri}
-            renderTile={(artist) => <ArtistTile artist={artist} />}
-            renderRow={(artist) => <div>{artist.artist_name}</div>}
+            renderTile={(artist) => (
+              <ArtistTile
+                artist={artist}
+                album_by_artist={data!.albums_by_artist}
+                albums={data!.albums}
+              />
+            )}
+            renderLargeTile={(artist) => (
+              <ArtistTile
+                large
+                artist={artist}
+                album_by_artist={data!.albums_by_artist}
+                albums={data!.albums}
+              />
+            )}
+            renderRow={(artist) => (
+              <ArtistRow
+                artist={artist}
+                album_by_artist={data!.albums_by_artist}
+                albums={data!.albums}
+              />
+            )}
           />
 
           <h2>Albums</h2>
@@ -114,7 +135,13 @@ export function App() {
             }
             getKey={(album) => album.album_uri}
             renderTile={(album) => <AlbumTile album={album} />}
-            renderRow={(album) => <div>{album.album_name}</div>}
+            renderRow={(album) => (
+              <AlbumRow
+                album={album}
+                artists={data!.artists}
+                artists_by_album={data!.artists_by_album}
+              />
+            )}
           />
 
           <h2>Tracks</h2>
@@ -144,7 +171,7 @@ export function App() {
             )}
           />
 
-          <h2>Labels</h2>
+          <h2>Record Labels</h2>
           <DisplayGrid
             items={data ? data.labels.sort() : undefined}
             getKey={(label) => label}

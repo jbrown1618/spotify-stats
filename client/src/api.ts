@@ -8,6 +8,8 @@ export interface Summary {
   genres: string[];
   years: Record<string, YearCounts>;
   artists_by_track: Record<string, string[]>;
+  artists_by_album: Record<string, string[]>;
+  albums_by_artist: Record<string, string[]>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
   artist_track_counts: Record<string, ArtistTrackCount>;
   track_rank_history: TrackRank[];

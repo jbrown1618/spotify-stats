@@ -1,16 +1,9 @@
-import { Card } from "@mantine/core";
+import { Card, Text } from "@mantine/core";
 
 interface TileDesignProps {
   title: string;
-  stats?: Stat[];
   src: string;
-  secondarySrc?: string;
   onClick: () => void;
-}
-
-interface Stat {
-  value: number;
-  label: string;
 }
 
 export function TileDesign({ onClick, title, src }: TileDesignProps) {
@@ -29,7 +22,16 @@ export function TileDesign({ onClick, title, src }: TileDesignProps) {
           backgroundPosition: "center",
         }}
       />
-      <div style={{ display: "flex", flexDirection: "column" }}>{title}</div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          paddingTop: 8,
+        }}
+      >
+        <Text fw={700}>{title}</Text>
+      </div>
     </Card>
   );
 }

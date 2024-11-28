@@ -36,10 +36,10 @@ export function DisplayGrid<T>({
   getKey,
 }: DisplayGridProps<T>) {
   const [variant, setVariant] = useState<DisplayVariant>(
-    renderTile
-      ? "tile"
-      : renderRow
+    renderRow
       ? "row"
+      : renderTile
+      ? "tile"
       : renderPill
       ? "pill"
       : renderLargeTile
@@ -97,6 +97,6 @@ const spanByVariant: Record<DisplayVariant, number> = {
 const loadingItemHeights: Record<DisplayVariant, string | number> = {
   row: 70,
   "large-tile": "20vw",
-  pill: 16,
+  pill: 28,
   tile: "15vw",
 };

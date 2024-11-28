@@ -1,28 +1,28 @@
 import { LineChart } from "@mantine/charts";
-import { Album, AlbumRank } from "./api";
+import { Track, TrackRank } from "../api";
 import { Paper } from "@mantine/core";
 
-export function AlbumsLineChart({
+export function TracksLineChart({
   ranks,
-  albums,
+  tracks,
 }: {
-  ranks: AlbumRank[];
-  albums: Record<string, Album>;
+  ranks: TrackRank[];
+  tracks: Record<string, Track>;
 }) {
   const dataPoints = new Map<number, Record<string, number>>();
-  const artistURIs = new Set<string>();
+  const trackURIs = new Set<string>();
 
   for (const rank of ranks) {
-    artistURIs.add(rank.album_uri);
+    trackURIs.add(rank.track_uri);
     const ts = new Date(rank.as_of_date).getTime();
 
     const existing = dataPoints.get(ts);
     if (existing) {
-      existing[rank.album_uri] = rank.album_rank;
+      existing[rank.track_uri] = rank.track_rank;
     } else {
       dataPoints.set(ts, {
         date: ts,
-        [rank.album_uri]: rank.album_rank,
+        [rank.track_uri]: rank.track_rank,
       });
     }
   }
@@ -46,7 +46,7 @@ export function AlbumsLineChart({
         (a, b) => a["date"] - b["date"]
       )}
       dataKey="date"
-      series={Array.from(artistURIs).map((uri, i) => ({
+      series={Array.from(trackURIs).map((uri, i) => ({
         name: uri,
         color: colors[i],
       }))}
@@ -57,10 +57,10 @@ export function AlbumsLineChart({
       }}
       tooltipProps={{
         content: ({ label, payload }) => (
-          <AlbumsTooltip
+          <TracksTooltip
             label={label}
             payload={payload ?? []}
-            albums={albums}
+            tracks={tracks}
           />
         ),
       }}
@@ -68,10 +68,10 @@ export function AlbumsLineChart({
   );
 }
 
-interface ArtistsTooltipProps {
+interface TracksTooltipProps {
   label?: number;
   payload: TooltipItem[];
-  albums: Record<string, Album>;
+  tracks: Record<string, Track>;
 }
 
 interface TooltipItem {
@@ -80,7 +80,7 @@ interface TooltipItem {
   color?: string;
 }
 
-function AlbumsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
+function TracksTooltip({ label, payload, tracks }: TracksTooltipProps) {
   return (
     <Paper
       withBorder
@@ -90,7 +90,7 @@ function AlbumsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
       {payload
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
-          const album = item.name ? albums[item.name] : undefined;
+          const track = item.name ? tracks[item.name] : undefined;
           return (
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
               <div
@@ -105,10 +105,10 @@ function AlbumsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
                 {item.value}
               </span>
               <img
-                src={album?.album_image_url}
+                src={track?.album_image_url}
                 style={{ height: "1.5em", width: "1.5em" }}
               />
-              <span>{album?.album_short_name}</span>
+              <span>{track?.track_name}</span>
             </div>
           );
         })}

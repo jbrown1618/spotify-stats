@@ -1,5 +1,5 @@
 import { LineChart } from "@mantine/charts";
-import { Artist, ArtistRank } from "./api";
+import { Artist, ArtistRank } from "../api";
 import { Paper } from "@mantine/core";
 
 export function ArtistsLineChart({
