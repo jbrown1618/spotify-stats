@@ -37,7 +37,14 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 20, alignItems: "start" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          alignItems: "start",
+          paddingRight: 8,
+        }}
+      >
         <div
           style={{
             display: "flex",
