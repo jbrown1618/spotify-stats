@@ -84,6 +84,7 @@ def save_top_tracks_data(sp: spotipy.Spotify):
             })
             process_track(track)
 
+    return # TODO: spotify deprecated the API I'm using here... find a workaround.
     on_repeat_playlist = get_made_for_you_playlist(sp, on_repeat_playlist_name)
     if on_repeat_playlist is not None:
         print('Fetching tracks in the On Repeat playlist...')
@@ -149,6 +150,8 @@ def save_playlists_data(sp: spotipy.Spotify):
         print(f'Fetching {page_size} playlists...')
         playlists = sp.current_user_playlists(limit=page_size, offset=offset)
         for playlist in playlists["items"]:
+            if playlist is None:
+                continue # This just started happening around 2024-11-28
             process_playlist(playlist)
             save_playlist_tracks_data(sp, playlist["uri"])
 
