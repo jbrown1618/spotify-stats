@@ -43,7 +43,7 @@ export function ArtistTile({
     <LargeTileDesign
       title={artist.artist_name}
       src={artist.artist_image_url}
-      secondarySrc={highestRankedAlbum.album_image_url}
+      secondarySrc={highestRankedAlbum?.album_image_url}
       onClick={onClick}
       stats={[
         { label: "Rank", value: artist.artist_rank },

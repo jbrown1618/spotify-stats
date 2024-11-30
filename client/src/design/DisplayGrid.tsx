@@ -1,4 +1,5 @@
 import {
+  Button,
   Grid,
   GridCol,
   SegmentedControl,
@@ -24,7 +25,8 @@ interface DisplayGridProps<T> {
 
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
 
-const defaultGridCount = 24;
+const defaultGridCount = 12;
+const defaultRowCount = 10;
 const loadingItems = Array.from(Array(defaultGridCount).keys());
 
 export function DisplayGrid<T>({
@@ -46,8 +48,14 @@ export function DisplayGrid<T>({
       ? "large-tile"
       : "tile"
   );
-  const displayOptions: SegmentedControlItem[] = [];
 
+  const [count, setCount] = useState(
+    variant === "row" ? defaultRowCount : defaultGridCount
+  );
+
+  const onMore = () => setCount((count) => count * 2);
+
+  const displayOptions: SegmentedControlItem[] = [];
   if (renderRow) displayOptions.push({ label: <IconList />, value: "row" });
   if (renderPill) displayOptions.push({ label: <IconPill />, value: "pill" });
   if (renderTile)
@@ -69,7 +77,7 @@ export function DisplayGrid<T>({
       )}
       <Grid>
         {items
-          ? items.slice(0, defaultGridCount).map((item) => (
+          ? items.slice(0, count).map((item) => (
               <GridCol span={spanByVariant[variant]} key={getKey(item)}>
                 {variant === "row" && renderRow?.(item)}
                 {variant === "large-tile" && renderLargeTile?.(item)}
@@ -83,6 +91,11 @@ export function DisplayGrid<T>({
               </GridCol>
             ))}
       </Grid>
+      {count < (items?.length ?? 0) ? (
+        <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
+          More
+        </Button>
+      ) : null}
     </>
   );
 }

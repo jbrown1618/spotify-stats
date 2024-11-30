@@ -33,7 +33,7 @@ export function ArtistRow({
       onClick={onClick}
       primaryText={artist.artist_name}
       src={artist.artist_image_url}
-      secondarySrc={highestRankedAlbum.album_image_url}
+      secondarySrc={highestRankedAlbum?.album_image_url}
       stats={[
         { label: "Rank", value: artist.artist_rank },
         { label: "Popularity", value: artist.artist_popularity },
