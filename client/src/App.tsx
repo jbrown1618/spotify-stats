@@ -67,7 +67,12 @@ export function App() {
                 : undefined
             }
             getKey={(playlist) => playlist.playlist_uri}
-            renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
+            renderTile={(playlist) => (
+              <PlaylistTile
+                playlist={playlist}
+                playlist_images={data?.playlist_images ?? {}}
+              />
+            )}
           />
 
           <h2>Artists</h2>

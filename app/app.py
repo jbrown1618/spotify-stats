@@ -102,6 +102,7 @@ def data():
         "artists_by_album": artists_by_album(albums),
         "albums_by_artist": albums_by_artist(artists),
         "playlist_track_counts": playlist_track_counts(playlists, tracks),
+        "playlist_images": playlist_images(playlists),
         "artist_track_counts": artist_track_counts(artists, tracks),
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
@@ -211,6 +212,23 @@ def playlist_track_counts(playlists, tracks):
         .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_liked_track_count"})
     
     return to_json(track_counts, 'playlist_uri')
+
+
+# Now, the Spotify API does not always return playlist images. So we have to make them ourselves.
+def playlist_images(playlists):
+    out = {}
+
+    raw = RawData()
+    joined = pd.merge(raw['albums'], raw['tracks'], on='album_uri')
+    playlist_track = raw['playlist_track']
+
+    for _, playlist in playlists.iterrows():
+        tracks = pd.merge(playlist_track[playlist_track['playlist_uri'] == playlist['playlist_uri']], joined, on='track_uri')
+        grouped = tracks.groupby('album_image_url').agg({'track_uri': 'count'}).reset_index()
+        top = grouped.sort_values('track_uri', ascending=False).head(4)
+        out[playlist['playlist_uri']] = [url for url in top['album_image_url']]
+
+    return out
 
 
 def artist_track_counts(artists, tracks):
