@@ -5,16 +5,13 @@ from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.labels_bar_chart import labels_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.years_bar_chart import years_bar_chart
-from summarize.pages.track_features import make_track_features_page
-from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table
-from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
-from utils.markdown import md_link, md_truncated_table
+from utils.markdown import md_truncated_table
 import utils.path as p
 
 def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
@@ -23,9 +20,6 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
     content = []
     content += title(genre_name)
     content += [f"{len(tracks)} songs", ""]
-    if len(tracks) > 10:
-        content += [md_link(f"See Track Features", p.genre_audio_features_path(genre_name, p.genre_path(genre_name))), ""]
-        content += [md_link(f"See Clusters", p.genre_clusters_path(genre_name, p.genre_path(genre_name))), ""]
     content += artists_section(genre_name, tracks)
     content += most_and_least_listened_tracks_section(genre_name, tracks)
     content += albums_section(genre_name, tracks)
@@ -35,9 +29,6 @@ def make_genre_summary(genre_name: str, tracks: pd.DataFrame):
 
     with open(p.genre_overview_path(genre_name), "w") as f:
         f.write("\n".join(content))
-
-    if len(tracks) > 10:
-        make_track_features_page(tracks, genre_name, p.genre_audio_features_path(genre_name), p.genre_audio_features_chart_path(genre_name))
 
 
 def title(genre_name):
@@ -55,15 +46,7 @@ def artists_section(genre_name, tracks: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    scatterplot = comparison_scatter_plot(
-        tracks, 
-        tracks["primary_artist_name"], 
-        "Artist", 
-        p.genre_artist_comparison_scatterplot_path(genre_name), 
-        p.genre_artist_comparison_scatterplot_path(genre_name, p.genre_path(genre_name))
-    )
-
-    return ["## Top Artists", "", full_list, "", img, "", scatterplot]
+    return ["## Top Artists", "", full_list, "", img]
 
 
 def most_and_least_listened_tracks_section(genre_name: str, tracks: pd.DataFrame):

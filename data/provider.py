@@ -4,8 +4,7 @@ import pandas as pd
 from data.raw import RawData
 from utils.album import short_album_name
 from utils.date import release_year
-from utils.machine_learning import prepare_ml_data
-from utils.ranking import current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
+from utils.ranking import current_album_ranks, current_artist_ranks, current_track_ranks
 from utils.record_label import standardize_record_labels
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
@@ -41,13 +40,14 @@ class DataProvider:
         self._genres_with_page = None
         self._track_artist = None
         self._liked_tracks_sample = None
-        self._ml_data = None
         self._track_credits = None
         self._producers_with_page = None
         self._owned_track_uris = None
         self._owned_album_uris = None
 
         self._initialized = True
+
+        self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
 
     def playlist(self, uri: str) -> pd.Series:
@@ -103,8 +103,6 @@ class DataProvider:
             out = out[out['playlist_uri'].isin(uris)]
 
         if labels is not None:
-            if self._album_label is None:
-                self._album_label = standardize_record_labels(self.albums(), self.tracks())
             album_uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
             track_uris = set(self.tracks(album_uris==album_uris)['track_uri'])
             uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
@@ -194,8 +192,7 @@ class DataProvider:
         raw = RawData()
 
         if self._tracks is None:
-            tracks = pd.merge(raw["tracks"], raw["audio_features"], on="track_uri")
-            tracks = pd.merge(tracks, self.albums(), on="album_uri")
+            tracks = pd.merge(raw['tracks'], self.albums(), on="album_uri")
 
             liked_track_uris = set(raw["liked_tracks"]["track_uri"])
             tracks["track_liked"] = tracks["track_uri"].isin(liked_track_uris)
@@ -363,19 +360,6 @@ class DataProvider:
             out = out[out['track_uri'].isin(track_uris)]
 
         return out.copy()
-
-
-    def ml_data(self, track_uris: typing.Iterable[str] = None):
-        if self._ml_data is None:
-            self._ml_data = prepare_ml_data(self.tracks(), self.track_genre(), self.album_label())
-
-        out = self._ml_data
-
-        if track_uris is not None:
-            track_uris = [uri for uri in track_uris if uri in out.index]
-            out = out.loc[track_uris]
-
-        return out
     
     
     def liked_tracks_sample(self):

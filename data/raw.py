@@ -198,7 +198,6 @@ data_sources: dict[str, DataSource] = {}
 DataSource('spotify', 'playlists',      index=["uri"],       prefix="playlist_")
 DataSource('spotify', 'tracks',         index=["uri"],       prefix="track_")
 DataSource('spotify', 'albums',         index=["uri"],       prefix="album_")
-DataSource('spotify', 'audio_features', index=["track_uri"], prefix="audio_")
 DataSource('spotify', 'artists',        index=["uri"],       prefix="artist_")
 
 DataSource('spotify', 'album_artist',   index=["artist_uri", "album_uri"])

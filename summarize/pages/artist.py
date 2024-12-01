@@ -6,8 +6,6 @@ from summarize.figures.artist_top_tracks_time_series import artist_top_tracks_ti
 from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.top_albums_score_time_series import top_albums_score_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
-from summarize.pages.track_features import make_track_features_page
-from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 
 from summarize.tables.labels_table import labels_table
@@ -35,9 +33,6 @@ def make_artist_summary(artist_uri: str):
 
     content += title(artist_name)
     content += image(artist_name, artist_image_url)
-    if len(tracks) > 10:
-        content += [md_link(f"See Track Features", p.artist_audio_features_path(artist_name, p.artist_path(artist_name))), ""]
-        content += [md_link(f"See Clusters", p.artist_clusters_path(artist_name, p.artist_path(artist_name))), ""]
     content += relationships_section(artist_name, artist_uri)
     content += top_artists_rank_section(artist_name, artist_uri, artist['artist_rank'])
     content += top_tracks_section(artist_name, artist_uri)
@@ -51,12 +46,6 @@ def make_artist_summary(artist_uri: str):
 
     with open(p.artist_overview_path(artist_name), "w") as f:
         f.write("\n".join(content))
-
-    if len(tracks) > 10:
-        make_track_features_page(tracks, artist_name, p.artist_audio_features_path(artist_name), p.artist_audio_features_chart_path(artist_name))
-
-    if len(tracks) > 50:
-        make_clusters_page(tracks, artist_name, p.artist_clusters_path(artist_name), p.artist_clusters_figure_path(artist_name))
 
 
 def title(artist_name):

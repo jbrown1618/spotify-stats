@@ -11,8 +11,6 @@ from summarize.figures.top_artists_score_time_series import top_artists_score_ti
 from summarize.figures.top_artists_time_series import top_artists_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.figures.top_tracks_time_series import top_tracks_time_series
-from summarize.pages.track_features import make_track_features_page
-from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
@@ -20,10 +18,9 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.playlists_table import playlists_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_artists_table import top_artists_table
-from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table, top_tracks_table
+from summarize.tables.top_tracks_table import top_tracks_table
 from summarize.tables.tracks_table import tracks_table
 from utils.top_lists import get_term_length_phrase, graphable_top_list_terms_for_tracks, graphable_top_list_terms_for_artists
-from utils.track_features import comparison_scatter_plot
 from utils.markdown import md_link, md_summary_details, md_table, md_truncated_table
 import utils.path as p
 from utils.settings import output_dir
@@ -36,8 +33,6 @@ def make_overview(tracks_full: pd.DataFrame):
 
     content += title("jbrown1618")
     content += byline()
-    content += [md_link(f"See Track Features", p.overview_audio_features_path(output_dir())), ""]
-    content += [md_link(f"See Clusters", p.overview_clusters_path(output_dir())), ""]
     content += playlists_section()
     content += artists_section(tracks_full)
     content += tracks_section(tracks_full)
@@ -49,9 +44,6 @@ def make_overview(tracks_full: pd.DataFrame):
 
     with open(p.overview_path(), "w") as f:
         f.write("\n".join(content))
-
-    make_track_features_page(tracks_full, "All Tracks", p.overview_audio_features_path(), p.overview_audio_features_figure_path())
-    make_clusters_page(tracks_full, "All tracks", p.overview_clusters_path(), p.overview_clusters_figure_path())
 
 
 def title(user: str):
@@ -100,22 +92,12 @@ def tracks_section(tracks: pd.DataFrame):
 
 
 def playlists_section():
-    dp = DataProvider()
-    table = md_truncated_table(playlists_table(output_dir()), 10)
-
-    playlists_sorted_by_track_count = dp.playlists().sort_values(by="playlist_track_count", ascending=False)["playlist_uri"]
-
-    main_playlist_col = dp.tracks()["track_uri"]\
-        .apply(lambda track_uri: get_main_playlist(track_uri, playlists_sorted_by_track_count))
-    
-    scatter = comparison_scatter_plot(dp.tracks(), main_playlist_col, "Playlist", p.overview_playlists_scatterplot_path(), p.overview_playlists_scatterplot_path(output_dir()))
+    table = md_truncated_table(playlists_table(output_dir()), 10)  
     
     return [
         "## Playlists", 
         "", 
         table, 
-        "", 
-        scatter, 
         ""
     ]
 
@@ -192,8 +174,6 @@ def albums_section(tracks: pd.DataFrame):
 
 def genres_section(tracks: pd.DataFrame):
     img = genres_bar_chart(tracks, p.overview_genre_graph_path(), p.overview_genre_graph_path(output_dir()))
-    main_genre_col = tracks["track_uri"].apply(get_main_genre)
-    scatter = comparison_scatter_plot(tracks, main_genre_col, "Genre", p.overview_genres_scatterplot_path(), p.overview_genres_scatterplot_path(output_dir()))
 
     table_data = genres_table(tracks, output_dir())
     
@@ -204,7 +184,7 @@ def genres_section(tracks: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    return ["## Genres", "", full_list, "", img, "", scatter, ""]
+    return ["## Genres", "", full_list, "", img, ""]
 
 
 def get_main_genre(track_uri: str):

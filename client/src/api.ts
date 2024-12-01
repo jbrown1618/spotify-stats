@@ -44,18 +44,6 @@ export type ArtistTrackCount = Pick<
 >;
 
 export interface Track extends Album {
-  audio_acousticness: number;
-  audio_danceability: number;
-  audio_energy: number;
-  audio_instrumentalness: number;
-  audio_key: number;
-  audio_liveness: number;
-  audio_loudness: number;
-  audio_mode: number;
-  audio_speechiness: number;
-  audio_tempo: number;
-  audio_time_signature: number;
-  audio_valence: number;
   primary_artist_followers: number;
   primary_artist_has_page: boolean;
   primary_artist_image_url: string;

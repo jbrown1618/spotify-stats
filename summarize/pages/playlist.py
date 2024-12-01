@@ -9,8 +9,6 @@ from summarize.figures.producers_bar_chart import producers_bar_chart
 from summarize.figures.top_albums_score_time_series import top_albums_score_time_series
 from summarize.figures.top_tracks_score_time_series import top_tracks_score_time_series
 from summarize.figures.years_bar_chart import years_bar_chart
-from summarize.pages.track_features import make_track_features_page
-from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
@@ -18,7 +16,6 @@ from summarize.tables.labels_table import labels_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.top_tracks_table import most_and_least_listened_tracks_table
 from summarize.tables.tracks_table import tracks_table
-from utils.track_features import comparison_scatter_plot
 from utils.date import newest_and_oldest_albums
 from utils.markdown import md_link, md_table, md_image, md_summary_details, md_truncated_table
 import utils.path as p
@@ -36,9 +33,6 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
     content += title(playlist_name)
     content += image(playlist_name, playlist_image_url)
     content += tracks_link(playlist_uri, tracks)
-    if len(tracks) > 10:
-        content += [md_link(f"See Track Features", p.playlist_audio_features_path(playlist_name, p.playlist_path(playlist_name))), ""]
-        content += [md_link(f"See Clusters", p.playlist_clusters_path(playlist_name, p.playlist_path(playlist_name))), ""]
     content += artists_section(playlist_name, tracks)
     content += tracks_section(playlist_name, tracks)
     content += albums_section(playlist_name, tracks)
@@ -49,12 +43,6 @@ def make_playlist_summary(playlist_uri: str, tracks: pd.DataFrame):
 
     with open(p.playlist_overview_path(playlist_name), "w") as f:
         f.write("\n".join(content))
-
-    if len(tracks) > 10:
-        make_track_features_page(tracks, playlist_name, p.playlist_audio_features_path(playlist_name), p.playlist_audio_features_figure_path(playlist_name))
-
-    if len(tracks) > 50:
-        make_clusters_page(tracks, playlist_name, p.playlist_clusters_path(playlist_name), p.playlist_clusters_figure_path(playlist_name))
 
 
 def title(playlist_name):
@@ -91,18 +79,7 @@ def artists_section(playlist_name, playlist_full: pd.DataFrame):
 
     full_list = md_truncated_table(table_data, 10, summary)
 
-    if len(table_data) >= 10:
-        scatterplot = comparison_scatter_plot(
-            playlist_full, 
-            playlist_full["primary_artist_name"], 
-            "Artist", 
-            p.playlist_artist_comparison_scatterplot_path(playlist_name), 
-            p.playlist_artist_comparison_scatterplot_path(playlist_name, p.playlist_path(playlist_name))
-        )
-    else:
-        scatterplot = ""
-
-    return ["## Top Artists", "", full_list, "", img, "", scatterplot , ""]
+    return ["## Top Artists", "", full_list, "", img, ""]
 
 
 def albums_section(playlist_name, playlist_full: pd.DataFrame):

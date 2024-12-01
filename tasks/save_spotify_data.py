@@ -24,7 +24,6 @@ playlists_data = []
 tracks_data = []
 artists_data = []
 albums_data = []
-audio_features = []
 
 liked_tracks = []
 top_tracks = []
@@ -53,7 +52,6 @@ def save_spotify_data():
     save_liked_tracks_data(sp)
     save_albums_data(sp)
     save_artists_data(sp)
-    save_audio_features_data(sp)
 
     raw_data = RawData()
     raw_data["top_tracks"] = pd.DataFrame(top_tracks)
@@ -66,7 +64,6 @@ def save_spotify_data():
     raw_data["playlist_track"] = pd.DataFrame(playlist_track)
     raw_data["track_artist"] = pd.DataFrame(track_artist)
     raw_data["album_artist"] = pd.DataFrame(album_artist)
-    raw_data["audio_features"] = pd.DataFrame(audio_features)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
     DataProvider().correct_orphan_tracks()
@@ -80,33 +77,6 @@ def save_top_tracks_data(sp: spotipy.Spotify):
             top_tracks.append({
                 "track_uri": track["uri"],
                 "term": term,
-                "index": i + 1
-            })
-            process_track(track)
-
-    return # TODO: spotify deprecated the API I'm using here... find a workaround.
-    on_repeat_playlist = get_made_for_you_playlist(sp, on_repeat_playlist_name)
-    if on_repeat_playlist is not None:
-        print('Fetching tracks in the On Repeat playlist...')
-        tracks = sp.playlist_tracks(on_repeat_playlist['uri'], limit=page_size)
-        for i, item in enumerate(tracks["items"]):
-            track = item["track"]
-            top_tracks.append({
-                "track_uri": track["uri"],
-                "term": 'on_repeat',
-                "index": i + 1
-            })
-            process_track(track)
-
-    repeat_rewind_playlist = get_made_for_you_playlist(sp, repeat_rewind_playlist_name)
-    if repeat_rewind_playlist is not None:
-        print('Fetching tracks in the Repeat Rewind playlist...')
-        tracks = sp.playlist_tracks(repeat_rewind_playlist['uri'], limit=page_size)
-        for i, item in enumerate(tracks["items"]):
-            track = item["track"]
-            top_tracks.append({
-                "track_uri": track["uri"],
-                "term": 'repeat_rewind',
                 "index": i + 1
             })
             process_track(track)
@@ -311,27 +281,4 @@ def artist_data(artist):
     if artist["images"] is not None and len(artist["images"]) > 0:
         data["image_url"] = artist["images"][0]["url"]
 
-    return data
-
-
-def save_audio_features_data(sp: spotipy.Spotify):
-    queue = [track_uri for track_uri in processed_tracks]
-    while len(queue) > 0:
-        next = queue[0:page_size]
-        queue = queue[page_size:]
-
-        print(f'Fetching {len(next)} audio features...')
-        features = sp.audio_features(tracks=next)
-        for track_features in features:
-            process_audio_features(track_features)
-
-
-def process_audio_features(features):
-    audio_features.append(audio_features_data(features))
-
-
-def audio_features_data(features):
-    fields = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "time_signature"]
-    data = {field: features[field] for field in fields}
-    data["track_uri"] = features["uri"]
     return data

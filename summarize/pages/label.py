@@ -3,14 +3,12 @@ from summarize.figures.albums_bar_chart import albums_bar_chart
 from summarize.figures.artists_bar_chart import artists_bar_chart
 from summarize.figures.genres_bar_chart import genres_bar_chart
 from summarize.figures.producers_bar_chart import producers_bar_chart
-from summarize.pages.track_features import make_track_features_page
-from summarize.pages.clusters import make_clusters_page
 from summarize.tables.albums_table import albums_table
 from summarize.tables.artists_table import artists_table
 from summarize.tables.genres_table import genres_table
 from summarize.tables.producers_table import producers_table
 from summarize.tables.tracks_table import tracks_table
-from utils.markdown import md_link, md_truncated_table
+from utils.markdown import md_truncated_table
 import utils.path as p
 
 def make_label_summary(label_name: str, tracks: pd.DataFrame):
@@ -19,9 +17,6 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
     content = []
     content += title(label_name)
     content += [f"{len(tracks)} songs", ""]
-    if len(tracks) > 10:
-        content += [md_link(f"See Track Features", p.label_audio_features_path(label_name, p.label_path(label_name))), ""]
-        content += [md_link(f"See Clusters", p.label_clusters_path(label_name, p.label_path(label_name))), ""]
     content += aliases(tracks)
     content += artists_section(label_name, tracks)
     content += albums_section(label_name, tracks)
@@ -31,9 +26,6 @@ def make_label_summary(label_name: str, tracks: pd.DataFrame):
 
     with open(p.label_overview_path(label_name), "w") as f:
         f.write("\n".join(content))
-
-    if len(tracks) > 10:
-        make_track_features_page(tracks, label_name, p.label_audio_features_path(label_name), p.label_audio_features_chart_path(label_name))
 
 
 
