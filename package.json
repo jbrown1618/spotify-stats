@@ -1,7 +1,7 @@
 {
   "name": "spotify-stats",
   "scripts": {
-    "ci": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build"
   },
   "engines": {
     "npm": "10.7.x",
