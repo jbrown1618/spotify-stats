@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tcm src -w -p '**/*.module.css' & vite",
-    "build": "tcm src -p '**/*.module.css' && tsc -b && vite build --base=static --emptyOutDir",
+    "build": "npx typed-css-modules src -p '**/*.module.css' && tsc -b && vite build --base=static --emptyOutDir",
     "lint": "eslint .",
     "preview": "vite preview"
   },
