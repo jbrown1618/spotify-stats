@@ -5,6 +5,7 @@ click==8.1.7
 cycler==0.11.0
 Flask==3.0.3
 fonttools==4.31.2
+gunicorn==23.0.0
 idna==3.3
 importlib_metadata==7.1.0
 itsdangerous==2.2.0
