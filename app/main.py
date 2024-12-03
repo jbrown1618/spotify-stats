@@ -18,7 +18,7 @@ def index():
     return send_file("./static/index.html")
 
 
-@app.route("/api/summary")
+@app.route("/api/v1/summary")
 def data():
     dp = DataProvider()
 

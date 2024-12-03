@@ -147,7 +147,7 @@ export const defaultFilterOptions: FilterOptions = {
 
 export async function getData(query: string): Promise<Summary> {
   try {
-    const res = await fetch("/api/summary?" + query.toString());
+    const res = await fetch("/v1/api/summary?" + query.toString());
     if (!res.ok)
       throw new Error(
         `Error fetching tracks summary: ${res.status}: ${res.statusText}`
