@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS mb_artist_relationship (
 
 CREATE TABLE IF NOT EXISTS mb_artist (
     id SERIAL PRIMARY KEY,
-    artist_mbid TEXT NOT NULL,
+    artist_mbid TEXT NOT NULL UNIQUE,
     artist_mb_name TEXT,
     artist_sort_name TEXT,
     artist_disambiguation TEXT,
@@ -119,30 +119,33 @@ CREATE TABLE IF NOT EXISTS mb_recording_credit (
     recording_mbid TEXT NOT NULL,
     artist_mbid TEXT NOT NULL,
     credit_type TEXT,
-    credit_details TEXT
+    credit_details TEXT,
+    UNIQUE(recording_mbid, artist_mbid, credit_type)
 );
 
 CREATE TABLE IF NOT EXISTS mb_recording (
     id SERIAL PRIMARY KEY,
-    recording_mbid TEXT NOT NULL,
+    recording_mbid TEXT NOT NULL UNIQUE,
     recording_title TEXT NOT NULL,
     recording_language TEXT
 );
 
 CREATE TABLE IF NOT EXISTS mb_unfetchable_isrc (
-    isrc TEXT NOT NULL
+    isrc TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS mb_unmatchable_artist (
-    artist_uri TEXT NOT NULL
+    artist_uri TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sp_artist_mb_artist (
     spotify_artist_uri TEXT NOT NULL,
-    artist_mbid TEXT NOT NULL
+    artist_mbid TEXT NOT NULL,
+    UNIQUE(spotify_artist_uri, artist_mbid)
 );
 
 CREATE TABLE IF NOT EXISTS sp_track_mb_recording (
     spotify_track_uri TEXT NOT NULL,
-    recording_mbid TEXT NOT NULL
+    recording_mbid TEXT NOT NULL,
+    UNIQUE(spotify_track_uri, recording_mbid)
 );

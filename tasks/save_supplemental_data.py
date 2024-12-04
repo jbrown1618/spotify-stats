@@ -9,7 +9,6 @@ recordings = []
 credits = []
 artists = []
 artist_relationships = []
-tags = []
 sp_track_recording = []
 sp_artist_artist = []
 
@@ -73,9 +72,6 @@ def write_data():
 
     if len(artist_relationships) > 0:
         raw['mb_artist_relationships'] = pd.DataFrame(artist_relationships)
-
-    if len(tags) > 0:
-        raw['mb_tags'] = pd.DataFrame(tags)
 
     if len(sp_track_recording) > 0:
         raw['sp_track_mb_recording'] = pd.DataFrame(sp_track_recording)
@@ -185,7 +181,7 @@ def flush_artist_queue():
 
 
 def save_supplemental_data_for_artist(mbid):
-    artist = mb.get_artist_by_id(mbid, includes=['artist-rels', 'tags', 'aliases'])['artist']
+    artist = mb.get_artist_by_id(mbid, includes=['artist-rels', 'aliases'])['artist']
     print(f'Fetching supplemental data for artist {artist["name"]}')
     artists.append({
         "artist_mbid": mbid,
@@ -212,12 +208,6 @@ def save_supplemental_data_for_artist(mbid):
         })
     elif len(matching_artists) > 1:
         print(f'Found multiple artists matching {artist["name"]} - find a way to disambiguate')
-
-    for tag in artist.get('tag-list', []):
-        tags.append({
-            "mb_tag": tag["name"],
-            "artist_mbid": mbid
-        })
 
     for artist_relation in artist.get('artist-relation-list', []):
         if not should_record_relationship(artist, artist_relation):
