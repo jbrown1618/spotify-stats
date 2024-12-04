@@ -32,6 +32,22 @@ def output_dir() -> str:
     return get_setting("OUTPUT_DIR", "./output")
 
 
+def postgres_host() -> str:
+    return get_setting("POSTGRES_HOST", "127.0.0.1")
+
+
+def postgres_user() -> str:
+    return get_setting("POSTGRES_USER", "postgres")
+
+
+def postgres_password() -> str:
+    return get_setting("POSTGRES_PASS", "password")
+
+
+def postgres_port() -> str:
+    return get_setting("POSTGRES_PORT", 5432)
+
+
 def spotify_client_id() -> str:
     return get_setting("SPOTIFY_CLIENT_ID", None)
     
