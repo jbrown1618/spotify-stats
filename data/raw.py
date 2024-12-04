@@ -1,10 +1,14 @@
 import os
 from datetime import datetime
 import pandas as pd
+import sqlalchemy
 
 from utils.date import this_date, this_year
 import utils.path as p
+from utils.settings import data_mode, postgres_host, postgres_password, postgres_user
 
+
+engine = sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
 
 class RawData:
     _instance = None
@@ -60,7 +64,11 @@ class DataSource:
             return self._value
         
         print(f'Loading {self.key} data')
-        if self.persistent:
+        if data_mode() == "sql":
+            table_name = self.key[0:-1] if self.key.endswith("s") else self.key
+            with engine.begin() as conn:
+                df = pd.read_sql_table(table_name, conn)
+        elif self.persistent:
             df = self._merge_all_years()
         else:
             df = pd.read_csv(p.data_path(self.source, self.key))
