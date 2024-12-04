@@ -13,6 +13,15 @@
       "justMyCode": true
     },
     {
+      "name": "Python: current",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": { "PYTHONPATH": "${workspaceRoot}" }
+    },
+    {
       "name": "Python Debugger: Flask",
       "type": "debugpy",
       "request": "launch",
