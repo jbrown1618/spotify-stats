@@ -1,14 +1,24 @@
 import os
 from datetime import datetime
 import pandas as pd
+import psycopg2
 import sqlalchemy
+import sqlalchemy.dialects
+import sqlalchemy.dialects.postgresql
 
 from utils.date import this_date, this_year
 import utils.path as p
-from utils.settings import data_mode, postgres_host, postgres_password, postgres_user
+from utils.settings import data_mode, postgres_host, postgres_password, postgres_port, postgres_user
 
 
 engine = sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
+
+def get_connection():
+    return psycopg2.connect(database="spotifystats",
+                            host=postgres_host(),
+                            user=postgres_user(),
+                            password=postgres_password(),
+                            port=postgres_port())
 
 class RawData:
     _instance = None
@@ -46,13 +56,14 @@ class RawData:
 
 
 class DataSource:
-    def __init__(self, source: str, key: str, index: list[str], prefix: str = None, persistent: bool = False, merge_on_set: bool = False):
+    def __init__(self, source: str, key: str, index: list[str], prefix: str = None, persistent: bool = False, merge_on_set: bool = False, delete_before_set: bool = False):
         self.source = source
         self.key = key
         self.index = index
         self.prefix = prefix
         self.persistent = persistent
         self.merge_on_set = merge_on_set
+        self.delete_before_set = delete_before_set
 
         self._value: pd.DataFrame = None
 
@@ -65,9 +76,8 @@ class DataSource:
         
         print(f'Loading {self.key} data')
         if data_mode() == "sql":
-            table_name = self.key[0:-1] if self.key.endswith("s") else self.key
             with engine.begin() as conn:
-                df = pd.read_sql_table(table_name, conn)
+                df = pd.read_sql_table(self._table_name(), conn)
         elif self.persistent:
             df = self._merge_all_years()
         else:
@@ -83,6 +93,10 @@ class DataSource:
         path = p.data_path(self.source, self.key)
 
         if value is None:
+            if data_mode() == 'sql':
+                # We don't delete our database tables
+                return
+            
             if self.persistent:
                 raise ValueError("Cannot delete persistent data source")
             
@@ -101,6 +115,52 @@ class DataSource:
 
             
         print(f'Updating {self.key} data')
+        
+        if data_mode() == 'sql':
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            if self.delete_before_set:
+                cursor.execute(f'TRUNCATE {self._table_name()};')
+
+            if self.persistent and 'as_of_date' not in value.columns:
+                value['as_of_date'] = this_date()
+
+            placeholders = [f"%({col})s" for col in value.columns]
+
+            conflict_keys = self.index + ["as_of_date"] if self.persistent else self.index
+
+            non_conflict_keys = [col for col in value.columns if col not in conflict_keys]
+            non_conflict_placeholders = [f"%({col})s" for col in non_conflict_keys]
+
+            conflict_operation = f"""
+                ON CONFLICT ({", ".join(conflict_keys)}) DO UPDATE
+                SET ({", ".join(non_conflict_keys)}) = (SELECT {", ".join(non_conflict_placeholders)});
+            """ if len(non_conflict_keys) > 0 else """
+                ON CONFLICT DO NOTHING
+            """
+
+            insert_statement = f"""
+                INSERT INTO {self._table_name()}
+                ({", ".join(value.columns)})
+                VALUES
+                ({", ".join(placeholders)})
+                {conflict_operation}
+            """
+
+            for _, row in value.iterrows():
+                value_map = {
+                    col: row[col]
+                    for col in value.columns
+                }
+
+                cursor.execute(insert_statement, value_map)
+
+            conn.commit()
+
+            self.data()
+            return
+
         value = value.sort_values(by=self.index)
 
         if self.persistent and 'as_of_date' not in value.columns:
@@ -136,6 +196,9 @@ class DataSource:
 
         self._value = value
 
+
+    def _table_name(self) -> str:
+        return self.key[0:-1] if self.key.endswith("s") else self.key
 
     def _merge_all_years(self) -> pd.DataFrame:
         year = this_year()
@@ -210,8 +273,8 @@ DataSource('spotify', 'artists',        index=["uri"],       prefix="artist_")
 
 DataSource('spotify', 'album_artist',   index=["artist_uri", "album_uri"])
 DataSource('spotify', 'artist_genre',   index=["artist_uri", "genre"])
-DataSource('spotify', 'liked_tracks',   index=["track_uri"])
-DataSource('spotify', 'playlist_track', index=["playlist_uri", "track_uri"])
+DataSource('spotify', 'liked_tracks',   index=["track_uri"], delete_before_set=True)
+DataSource('spotify', 'playlist_track', index=["playlist_uri", "track_uri"], delete_before_set=True)
 DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 
 DataSource('spotify', 'top_artists',    index=["term", "index"], persistent=True)
