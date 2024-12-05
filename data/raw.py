@@ -170,10 +170,10 @@ class DataSource:
                 cursor.execute(insert_statement, value_map)
 
                 if i > 0 and i % update_batch_size == 0:
+                    # Prevent timeouts by getting a new connection every so often
                     conn.commit()
                     conn = get_connection()
                     cursor = get_connection().cursor()
-
 
             conn.commit()
 
