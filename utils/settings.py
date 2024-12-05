@@ -32,6 +32,10 @@ def output_dir() -> str:
     return get_setting("OUTPUT_DIR", "./output")
 
 
+def postgres_url() -> str:
+    return get_setting("DATABASE_URL", None)
+
+
 def postgres_host() -> str:
     return get_setting("POSTGRES_HOST", "127.0.0.1")
 
@@ -49,6 +53,9 @@ def postgres_port() -> str:
 
 
 def data_mode() -> str:
+    if postgres_url() is not None:
+        return "sql"
+
     return get_setting("DATA_MODE", "csv").lower()
 
 

@@ -1,3 +1,8 @@
+"""
+A script for seeding a postgres database from a collection of csv files (the old storage format)
+
+The data mode setting should be "sql"
+"""
 import pandas as pd
 
 from data.raw import RawData

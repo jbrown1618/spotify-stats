@@ -1,13 +1,6 @@
-import psycopg2
+from data.raw import get_connection
 
-from utils.settings import postgres_host, postgres_password, postgres_port, postgres_user
-
-conn = psycopg2.connect(database="spotifystats",
-                        host=postgres_host(),
-                        user=postgres_user(),
-                        password=postgres_password(),
-                        port=postgres_port())
-
+conn = get_connection()
 cursor = conn.cursor()
 
 with open("./data/sql/schema.sql") as f:
