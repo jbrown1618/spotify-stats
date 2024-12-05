@@ -8,17 +8,30 @@ import sqlalchemy.dialects.postgresql
 
 from utils.date import this_date, this_year
 import utils.path as p
-from utils.settings import data_mode, postgres_host, postgres_password, postgres_port, postgres_user
+from utils.settings import data_mode, postgres_host, postgres_password, postgres_port, postgres_url, postgres_user
 
+def get_engine():
+    url = postgres_url()
+    if url is not None:
+        if url.startswith("postgres") and not url.startswith("postgresql+psycopg2"):
+            url = "postgresql+psycopg2" + url[len("postgres"):]
+        return sqlalchemy.create_engine(url)
+    else:
+        return sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
 
-engine = sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
 
 def get_connection():
-    return psycopg2.connect(database="spotifystats",
-                            host=postgres_host(),
-                            user=postgres_user(),
-                            password=postgres_password(),
-                            port=postgres_port())
+    url = postgres_url()
+    if url is not None:
+        return psycopg2.connect(url, sslmode="require")
+    else:
+        return psycopg2.connect(database="spotifystats",
+                                host=postgres_host(),
+                                user=postgres_user(),
+                                password=postgres_password(),
+                                port=postgres_port())
+    
+update_batch_size = 500
 
 class RawData:
     _instance = None
@@ -76,7 +89,7 @@ class DataSource:
         
         print(f'Loading {self.key} data')
         if data_mode() == "sql":
-            with engine.begin() as conn:
+            with get_engine().begin() as conn:
                 df = pd.read_sql_table(self._table_name(), conn)
         elif self.persistent:
             df = self._merge_all_years()
@@ -118,7 +131,7 @@ class DataSource:
         
         if data_mode() == 'sql':
             conn = get_connection()
-            cursor = conn.cursor()
+            cursor = get_connection().cursor()
 
             if self.delete_before_set:
                 cursor.execute(f'TRUNCATE {self._table_name()};')
@@ -148,13 +161,19 @@ class DataSource:
                 {conflict_operation}
             """
 
-            for _, row in value.iterrows():
+            for i, row in value.iterrows():
                 value_map = {
                     col: row[col]
                     for col in value.columns
                 }
 
                 cursor.execute(insert_statement, value_map)
+
+                if i > 0 and i % update_batch_size == 0:
+                    conn.commit()
+                    conn = get_connection()
+                    cursor = get_connection().cursor()
+
 
             conn.commit()
 
