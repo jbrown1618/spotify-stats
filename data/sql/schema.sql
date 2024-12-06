@@ -68,6 +68,30 @@ CREATE TABLE IF NOT EXISTS top_artist (
     UNIQUE (index, term, as_of_date)
 );
 
+CREATE TABLE IF NOT EXISTS track_ranks (
+    id SERIAL PRIMARY KEY,
+    track_uri TEXT NOT NULL,
+    rank INT NOT NULL,
+    as_of_date DATE NOT NULL,
+    UNIQUE (rank, as_of_date)
+);
+
+CREATE TABLE IF NOT EXISTS artist_ranks (
+    id SERIAL PRIMARY KEY,
+    artist_uri TEXT NOT NULL,
+    rank INT NOT NULL,
+    as_of_date DATE NOT NULL,
+    UNIQUE (rank, as_of_date)
+);
+
+CREATE TABLE IF NOT EXISTS album_ranks (
+    id SERIAL PRIMARY KEY,
+    album_uri TEXT NOT NULL,
+    rank INT NOT NULL,
+    as_of_date DATE NOT NULL,
+    UNIQUE (rank, as_of_date)
+);
+
 CREATE TABLE IF NOT EXISTS album_artist (
     album_uri TEXT NOT NULL,
     artist_uri TEXT NOT NULL,
