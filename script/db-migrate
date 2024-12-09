@@ -1,0 +1,5 @@
+source ./venv/bin/activate
+
+export PYTHONPATH=.
+
+python data/sql/migrations/migrations.py
