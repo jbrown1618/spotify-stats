@@ -1,7 +1,7 @@
 from data.sql.migrations.migration import Migration
 
 add_rank_tables = """
-CREATE TABLE track_ranks (
+CREATE TABLE track_rank (
     id SERIAL PRIMARY KEY,
     track_uri TEXT NOT NULL,
     rank INT NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE track_ranks (
     UNIQUE (rank, as_of_date)
 );
 
-CREATE TABLE artist_ranks (
+CREATE TABLE artist_rank (
     id SERIAL PRIMARY KEY,
     artist_uri TEXT NOT NULL,
     rank INT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE artist_ranks (
     UNIQUE (rank, as_of_date)
 );
 
-CREATE TABLE album_ranks (
+CREATE TABLE album_rank (
     id SERIAL PRIMARY KEY,
     album_uri TEXT NOT NULL,
     rank INT NOT NULL,
@@ -27,9 +27,9 @@ CREATE TABLE album_ranks (
 """
 
 remove_rank_tables = """
-DROP TABLE IF EXISTS track_ranks;
-DROP TABLE IF EXISTS artist_ranks;
-DROP TABLE IF EXISTS album_ranks;
+DROP TABLE IF EXISTS track_rank;
+DROP TABLE IF EXISTS artist_rank;
+DROP TABLE IF EXISTS album_rank;
 """
 
 class AddTrackRanks(Migration):

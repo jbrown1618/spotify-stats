@@ -298,6 +298,9 @@ DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 
 DataSource('spotify', 'top_artists',    index=["term", "index"], persistent=True)
 DataSource('spotify', 'top_tracks',     index=["term", "index"], persistent=True)
+DataSource('spotify', 'track_ranks',    index=["term", "index"], persistent=True)
+DataSource('spotify', 'artist_ranks',   index=["rank"], persistent=True)
+DataSource('spotify', 'album_ranks',    index=["rank"], persistent=True)
 
 DataSource('musicbrainz', 'mb_recordings', index=['recording_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_artists', index=['artist_mbid'], merge_on_set=True)
