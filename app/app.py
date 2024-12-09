@@ -6,11 +6,17 @@ from flask import Flask, send_file, request
 
 from data.provider import DataProvider
 from data.raw import RawData
-from utils.ranking import album_ranks_over_time, artist_ranks_over_time, track_ranks_over_time
+from data.sql.migrations.migrations import perform_all_migrations
+from utils.ranking import album_ranks_over_time, artist_ranks_over_time, ensure_ranks, track_ranks_over_time
 from utils.util import first
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
+
+
+with app.app_context():
+    perform_all_migrations()
+    ensure_ranks()
 
 
 @app.route("/")
