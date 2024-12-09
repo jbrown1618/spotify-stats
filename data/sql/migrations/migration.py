@@ -1,6 +1,4 @@
-
 from data.raw import get_connection
-
 
 get_latest_version = """
 SELECT v.version FROM version v
