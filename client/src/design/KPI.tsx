@@ -14,9 +14,13 @@ export function KPI({ label, value }: KPIProps) {
         alignItems: "center",
       }}
     >
-      <Text c="dimmed">{label}</Text>
+      <Text c="dimmed" style={{ textWrap: "nowrap" }}>
+        {label}
+      </Text>
       {typeof value === "string" || typeof value === "number" ? (
-        <Text size={"xl"}>{value}</Text>
+        <Text size={"xl"} style={{ textWrap: "nowrap" }}>
+          {value}
+        </Text>
       ) : (
         value
       )}

@@ -1,7 +1,5 @@
 import {
   Button,
-  Grid,
-  GridCol,
   SegmentedControl,
   SegmentedControlItem,
   Skeleton,
@@ -75,22 +73,31 @@ export function DisplayGrid<T>({
           data={displayOptions}
         />
       )}
-      <Grid>
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          flexDirection: variant === "row" ? "column" : "row",
+          flexWrap: variant === "row" ? undefined : "wrap",
+          gap: 16,
+          justifyContent: variant === "row" ? "left" : "center",
+        }}
+      >
         {items
           ? items.slice(0, count).map((item) => (
-              <GridCol span={spanByVariant[variant]} key={getKey(item)}>
+              <div key={getKey(item)}>
                 {variant === "row" && renderRow?.(item)}
                 {variant === "large-tile" && renderLargeTile?.(item)}
                 {variant === "tile" && renderTile?.(item)}
                 {variant === "pill" && renderPill?.(item)}
-              </GridCol>
+              </div>
             ))
           : loadingItems.map((i) => (
-              <GridCol span={spanByVariant[variant]} key={i}>
+              <div key={i}>
                 <Skeleton width="100%" height={loadingItemHeights[variant]} />
-              </GridCol>
+              </div>
             ))}
-      </Grid>
+      </div>
       {count < (items?.length ?? 0) ? (
         <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
           More
@@ -99,13 +106,6 @@ export function DisplayGrid<T>({
     </>
   );
 }
-
-const spanByVariant: Record<DisplayVariant, number> = {
-  "large-tile": 4,
-  tile: 2,
-  pill: 3,
-  row: 12,
-};
 
 const loadingItemHeights: Record<DisplayVariant, string | number> = {
   row: 70,

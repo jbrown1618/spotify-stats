@@ -2,6 +2,7 @@ import { Text } from "@mantine/core";
 import { Artist, Track } from "../api";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { RowDesign } from "../design/RowDesign";
+import { useIsMobile } from "../useIsMobile";
 
 interface TrackRowProps {
   track: Track;
@@ -10,6 +11,7 @@ interface TrackRowProps {
 }
 
 export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
+  const isMobile = useIsMobile();
   return (
     <RowDesign
       src={track.album_image_url}
@@ -27,7 +29,9 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
       }
       stats={[
         { label: "Rank", value: track.track_rank },
-        { label: "Popularity", value: track.track_popularity },
+        isMobile
+          ? null
+          : { label: "Popularity", value: track.track_popularity },
         {
           label: "Liked",
           value: track.track_liked ? (

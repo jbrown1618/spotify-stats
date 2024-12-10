@@ -2,6 +2,7 @@ import { Text } from "@mantine/core";
 import { Album, Artist } from "../api";
 import { useSetFilters } from "../useSetFilters";
 import { RowDesign } from "../design/RowDesign";
+import { useIsMobile } from "../useIsMobile";
 
 interface AlbumTileProps {
   album: Album;
@@ -10,6 +11,7 @@ interface AlbumTileProps {
 }
 
 export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
+  const isMobile = useIsMobile();
   const setFilters = useSetFilters();
   return (
     <RowDesign
@@ -34,10 +36,12 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
       }
       stats={[
         { label: "Rank", value: album.album_rank },
-        {
-          label: "Popularity",
-          value: album.album_popularity,
-        },
+        isMobile
+          ? null
+          : {
+              label: "Popularity",
+              value: album.album_popularity,
+            },
         {
           label: "Tracks",
           value: album.album_total_tracks,

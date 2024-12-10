@@ -9,6 +9,7 @@ interface TileDesignProps {
 export function TileDesign({ onClick, title, src }: TileDesignProps) {
   return (
     <Card
+      w={150}
       shadow="md"
       withBorder
       style={{ padding: 10, cursor: "pointer" }}

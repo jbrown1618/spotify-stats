@@ -8,7 +8,7 @@ interface RowDesignProps {
   secondaryText?: string | JSX.Element;
   tertiaryText?: string | JSX.Element;
   labels?: string[];
-  stats?: KPIProps[];
+  stats?: (KPIProps | null)[];
   onClick?: () => void;
 }
 
@@ -26,8 +26,10 @@ export function RowDesign({
     <Paper
       onClick={onClick}
       style={{
+        width: "100%",
         position: "relative",
         display: "flex",
+        gap: 16,
         justifyContent: "space-between",
         alignItems: "center",
         padding: 4,
@@ -48,10 +50,33 @@ export function RowDesign({
           backgroundPosition: "center",
         }}
       />
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          flexShrink: 1,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
         <img src={src} style={{ height: 70 }} />
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             <Text fw={700}>{primaryText}</Text>
             {labels?.map((labelText) => (
               <Pill bg="gray">{labelText}</Pill>
@@ -72,15 +97,16 @@ export function RowDesign({
 
       <div
         style={{
+          flexShrink: 0,
           display: "flex",
           gap: 16,
           alignItems: "start",
           paddingRight: 8,
         }}
       >
-        {stats?.map((stat) => (
-          <KPI {...stat} />
-        ))}
+        {stats?.map((stat) =>
+          stat ? <KPI key={stat.label} {...stat} /> : null
+        )}
       </div>
     </Paper>
   );

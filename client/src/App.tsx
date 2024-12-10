@@ -19,8 +19,10 @@ import { YearsBarChart } from "./YearsBarChart";
 import { ArtistsBarChart } from "./artists/ArtistsBarChart";
 import { TrackRow } from "./tracks/TrackRow";
 import { ArtistRow } from "./artists/ArtistRow";
+import { useIsMobile } from "./useIsMobile";
 
 export function App() {
+  const isMobile = useIsMobile();
   const [filters, setFilters] = useState<ActiveFilters>({});
   const { data } = useData(filters);
   const t = useMantineTheme();
@@ -30,7 +32,7 @@ export function App() {
       <div
         style={{
           width: "100%",
-          height: 170,
+          height: isMobile ? 100 : 170,
           backgroundColor: t.colors.green[9],
           position: "absolute",
           zIndex: -1,

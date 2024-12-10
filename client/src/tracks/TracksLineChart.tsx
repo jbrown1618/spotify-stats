@@ -1,6 +1,7 @@
 import { LineChart } from "@mantine/charts";
 import { Track, TrackRank } from "../api";
 import { Paper } from "@mantine/core";
+import { useIsMobile } from "../useIsMobile";
 
 export function TracksLineChart({
   ranks,
@@ -9,6 +10,7 @@ export function TracksLineChart({
   ranks: TrackRank[];
   tracks: Record<string, Track>;
 }) {
+  const isMobile = useIsMobile();
   const dataPoints = new Map<number, Record<string, number>>();
   const trackURIs = new Set<string>();
 
@@ -55,6 +57,14 @@ export function TracksLineChart({
       xAxisProps={{
         tickFormatter: formatDate,
       }}
+      withLegend={isMobile}
+      legendProps={{
+        verticalAlign: "bottom",
+        content: ({ payload }) => (
+          <TracksLegend payload={payload} tracks={tracks} />
+        ),
+      }}
+      withTooltip={!isMobile}
       tooltipProps={{
         content: ({ label, payload }) => (
           <TracksTooltip
@@ -113,6 +123,73 @@ function TracksTooltip({ label, payload, tracks }: TracksTooltipProps) {
           );
         })}
     </Paper>
+  );
+}
+
+interface TracksLegendProps {
+  payload?: LegendItem[];
+  tracks: Record<string, Track>;
+}
+
+interface LegendItem {
+  color?: string;
+  value: string;
+}
+
+function TracksLegend({ payload, tracks }: TracksLegendProps) {
+  if (!payload) return null;
+  return (
+    <div
+      style={{
+        margin: 16,
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+      }}
+    >
+      {payload
+        .map((item) => {
+          const track = tracks[item.value];
+          return { item, track };
+        })
+        .sort((a, b) => a.track.track_rank - b.track.track_rank)
+        .map(({ item, track }) => {
+          return (
+            <div
+              style={{
+                width: 140,
+                display: "flex",
+                flexDirection: "row",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: item.color,
+                  height: "1em",
+                  width: "1em",
+                  borderRadius: "0.5em",
+                }}
+              />
+              <img
+                src={track?.album_image_url}
+                style={{ height: "1.5em", width: "1.5em" }}
+              />
+              <span
+                style={{
+                  width: "20vw",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {track?.track_name}
+              </span>
+            </div>
+          );
+        })}
+    </div>
   );
 }
 

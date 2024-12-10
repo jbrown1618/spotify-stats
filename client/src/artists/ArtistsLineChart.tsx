@@ -1,6 +1,7 @@
 import { LineChart } from "@mantine/charts";
 import { Artist, ArtistRank } from "../api";
 import { Paper } from "@mantine/core";
+import { useIsMobile } from "../useIsMobile";
 
 export function ArtistsLineChart({
   ranks,
@@ -9,6 +10,7 @@ export function ArtistsLineChart({
   ranks: ArtistRank[];
   artists: Record<string, Artist>;
 }) {
+  const isMobile = useIsMobile();
   const dataPoints = new Map<number, Record<string, number>>();
   const artistURIs = new Set<string>();
 
@@ -41,7 +43,7 @@ export function ArtistsLineChart({
 
   return (
     <LineChart
-      h={500}
+      h="80vh"
       data={Array.from(dataPoints.values()).sort(
         (a, b) => a["date"] - b["date"]
       )}
@@ -55,6 +57,14 @@ export function ArtistsLineChart({
       xAxisProps={{
         tickFormatter: formatDate,
       }}
+      withLegend={isMobile}
+      legendProps={{
+        verticalAlign: "bottom",
+        content: ({ payload }) => (
+          <ArtistsLegend payload={payload} artists={artists} />
+        ),
+      }}
+      withTooltip={!isMobile}
       tooltipProps={{
         content: ({ label, payload }) => (
           <ArtistsTooltip
@@ -90,7 +100,7 @@ function ArtistsTooltip({ label, payload, artists }: ArtistsTooltipProps) {
       {payload
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
-          const track = item.name ? artists[item.name] : undefined;
+          const artist = item.name ? artists[item.name] : undefined;
           return (
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
               <div
@@ -105,14 +115,81 @@ function ArtistsTooltip({ label, payload, artists }: ArtistsTooltipProps) {
                 {item.value}
               </span>
               <img
-                src={track?.artist_image_url}
+                src={artist?.artist_image_url}
                 style={{ height: "1.5em", width: "1.5em" }}
               />
-              <span>{track?.artist_name}</span>
+              <span>{artist?.artist_name}</span>
             </div>
           );
         })}
     </Paper>
+  );
+}
+
+interface ArtistsLegendProps {
+  payload?: LegendItem[];
+  artists: Record<string, Artist>;
+}
+
+interface LegendItem {
+  color?: string;
+  value: string;
+}
+
+function ArtistsLegend({ payload, artists }: ArtistsLegendProps) {
+  if (!payload) return null;
+  return (
+    <div
+      style={{
+        margin: 16,
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+      }}
+    >
+      {payload
+        .map((item) => {
+          const artist = artists[item.value];
+          return { item, artist };
+        })
+        .sort((a, b) => a.artist.artist_rank - b.artist.artist_rank)
+        .map(({ item, artist }) => {
+          return (
+            <div
+              style={{
+                width: 140,
+                display: "flex",
+                flexDirection: "row",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: item.color,
+                  height: "1em",
+                  width: "1em",
+                  borderRadius: "0.5em",
+                }}
+              />
+              <img
+                src={artist?.artist_image_url}
+                style={{ height: "1.5em", width: "1.5em" }}
+              />
+              <span
+                style={{
+                  width: "20vw",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {artist?.artist_name}
+              </span>
+            </div>
+          );
+        })}
+    </div>
   );
 }
 

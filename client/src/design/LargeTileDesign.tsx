@@ -18,6 +18,7 @@ export function LargeTileDesign({
 }: LargeTileDesignProps) {
   return (
     <Card
+      w={300}
       shadow="md"
       withBorder
       style={{ padding: 10, cursor: "pointer" }}

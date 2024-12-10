@@ -1,5 +1,6 @@
 import { Album, Artist } from "../api";
 import { RowDesign } from "../design/RowDesign";
+import { useIsMobile } from "../useIsMobile";
 import { useSetFilters } from "../useSetFilters";
 
 interface ArtistTileProps {
@@ -14,6 +15,7 @@ export function ArtistRow({
   album_by_artist,
   albums,
 }: ArtistTileProps) {
+  const isMobile = useIsMobile();
   const setFilters = useSetFilters();
   const onClick = () =>
     setFilters((filters) => ({
@@ -36,11 +38,15 @@ export function ArtistRow({
       secondarySrc={highestRankedAlbum?.album_image_url}
       stats={[
         { label: "Rank", value: artist.artist_rank },
-        { label: "Popularity", value: artist.artist_popularity },
-        {
-          label: "Liked Tracks",
-          value: `${artist.artist_liked_track_count} / ${artist.artist_track_count}`,
-        },
+        isMobile
+          ? null
+          : { label: "Popularity", value: artist.artist_popularity },
+        isMobile
+          ? null
+          : {
+              label: "Liked Tracks",
+              value: `${artist.artist_liked_track_count} / ${artist.artist_track_count}`,
+            },
       ]}
     />
   );

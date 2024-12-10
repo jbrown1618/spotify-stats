@@ -1,6 +1,7 @@
 import { LineChart } from "@mantine/charts";
 import { Album, AlbumRank } from "../api";
 import { Paper } from "@mantine/core";
+import { useIsMobile } from "../useIsMobile";
 
 export function AlbumsLineChart({
   ranks,
@@ -9,6 +10,7 @@ export function AlbumsLineChart({
   ranks: AlbumRank[];
   albums: Record<string, Album>;
 }) {
+  const isMobile = useIsMobile();
   const dataPoints = new Map<number, Record<string, number>>();
   const artistURIs = new Set<string>();
 
@@ -55,6 +57,14 @@ export function AlbumsLineChart({
       xAxisProps={{
         tickFormatter: formatDate,
       }}
+      withLegend={isMobile}
+      legendProps={{
+        verticalAlign: "bottom",
+        content: ({ payload }) => (
+          <AlbumsLegend payload={payload} albums={albums} />
+        ),
+      }}
+      withTooltip={!isMobile}
       tooltipProps={{
         content: ({ label, payload }) => (
           <AlbumsTooltip
@@ -113,6 +123,72 @@ function AlbumsTooltip({ label, payload, albums }: ArtistsTooltipProps) {
           );
         })}
     </Paper>
+  );
+}
+
+interface AlbumsLegendProps {
+  payload?: LegendItem[];
+  albums: Record<string, Album>;
+}
+
+interface LegendItem {
+  color?: string;
+  value: string;
+}
+
+function AlbumsLegend({ payload, albums }: AlbumsLegendProps) {
+  if (!payload) return null;
+  return (
+    <div
+      style={{
+        margin: 16,
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+      }}
+    >
+      {payload
+        .map((item) => {
+          const album = albums[item.value];
+          return { item, album };
+        })
+        .sort((a, b) => a.album.album_rank - b.album.album_rank)
+        .map(({ item, album }) => {
+          return (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: item.color,
+                  height: "1em",
+                  width: "1em",
+                  borderRadius: "0.5em",
+                }}
+              />
+              <img
+                src={album?.album_image_url}
+                style={{ height: "1.5em", width: "1.5em" }}
+              />
+              <span
+                style={{
+                  width: "20vw",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {album?.album_short_name}
+              </span>
+            </div>
+          );
+        })}
+    </div>
   );
 }
 
