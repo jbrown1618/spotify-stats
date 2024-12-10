@@ -61,6 +61,3 @@ class AddTrackRanks(Migration):
 
     def reverse(self, cursor):
         cursor.execute(remove_rank_tables)
-
-if __name__ == '__main__':
-    AddTrackRanks().perform_migration()

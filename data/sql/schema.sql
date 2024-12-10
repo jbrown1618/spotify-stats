@@ -4,6 +4,17 @@ CREATE TABLE IF NOT EXISTS version (
     timestamp timestamp default current_timestamp  
 );
 
+CREATE TABLE IF NOT EXISTS job (
+    id SERIAL PRIMARY KEY,
+    type TEXT NOT NULL,
+    arguments TEXT NOT NULL,
+    status TEXT DEFAULT 'NOT_STARTED',
+    error TEXT,
+    queue_time timestamp DEFAULT current_timestamp,
+    start_time timestamp,
+    end_time timestamp,
+);
+
 CREATE TABLE IF NOT EXISTS album (
     id SERIAL PRIMARY KEY,
     uri TEXT NOT NULL UNIQUE,
