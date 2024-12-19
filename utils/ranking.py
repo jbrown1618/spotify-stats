@@ -244,21 +244,34 @@ def __placement_score(index, term):
 def ensure_ranks():
     cursor = get_connection().cursor()
     cursor.execute('''
-        SELECT as_of_date
+        SELECT DISTINCT as_of_date
         FROM top_track
         WHERE as_of_date NOT IN (
-            SELECT as_of_date FROM track_rank
+            SELECT DISTINCT as_of_date FROM track_rank
         );
     ''')
-    unranked_dates = [row[0] for row in cursor.fetchall()]
+    unranked_track_dates = [row[0] for row in cursor.fetchall()]
 
-    for date in unranked_dates:
-        print(f'Populating ranks for {date}')
+    cursor.execute('''
+        SELECT DISTINCT as_of_date
+        FROM top_artist
+        WHERE as_of_date NOT IN (
+            SELECT DISTINCT as_of_date FROM artist_rank
+        );
+    ''')
+    unranked_artist_dates = [row[0] for row in cursor.fetchall()]
+
+    for date in unranked_track_dates:
+        print(f'Populating track ranks for {date}')
         cursor.execute(populate_track_ranks, {"as_of_date": date})
-        cursor.execute(populate_artist_ranks, {"as_of_date": date})
+
+    for date in unranked_track_dates:
+        print(f'Populating album ranks for {date}')
         cursor.execute(populate_album_ranks, {"as_of_date": date})
-    else:
-        print('Ranks up to date')
+    
+    for date in unranked_artist_dates:
+        print(f'Populating artist ranks for {date}')
+        cursor.execute(populate_artist_ranks, {"as_of_date": date})
 
 
 track_scores = '''
