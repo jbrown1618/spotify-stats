@@ -67,6 +67,10 @@ def spotify_client_secret() -> str:
     return get_setting("SPOTIFY_CLIENT_SECRET", None)
 
 
+def spotify_cache() -> str:
+    return get_setting("SPOTIFY_CACHE", None)
+
+
 def musicbrainz_useragent() -> str:
     return get_setting("MUSICBRAINZ_USERAGENT", "jbrown1618/spotify-stats")
 

@@ -1,9 +1,10 @@
+import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 from data.provider import DataProvider
 from data.raw import RawData
-from utils.settings import spotify_client_id, spotify_client_secret
+from utils.settings import spotify_cache, spotify_client_id, spotify_client_secret
 
 page_size = 50
 small_page_size = 20
@@ -34,6 +35,11 @@ album_artist = []
 artist_genre = []
 
 def save_spotify_data():
+    if not os.path.exists('.cache'):
+        cache = spotify_cache()
+        with open(".cache", "w") as f:
+            f.write(cache)
+
     auth_manager = SpotifyOAuth(
         client_id=spotify_client_id(), 
         client_secret=spotify_client_secret(), 
