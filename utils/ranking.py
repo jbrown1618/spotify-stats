@@ -242,7 +242,8 @@ def __placement_score(index, term):
 
 
 def ensure_ranks():
-    cursor = get_connection().cursor()
+    conn = get_connection()
+    cursor = conn.cursor()
     cursor.execute('''
         SELECT DISTINCT as_of_date
         FROM top_track
@@ -272,6 +273,8 @@ def ensure_ranks():
     for date in unranked_artist_dates:
         print(f'Populating artist ranks for {date}')
         cursor.execute(populate_artist_ranks, {"as_of_date": date})
+    
+    conn.commit()
 
 
 track_scores = '''
