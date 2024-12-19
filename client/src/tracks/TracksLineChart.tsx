@@ -2,6 +2,7 @@ import { LineChart } from "@mantine/charts";
 import { Track, TrackRank } from "../api";
 import { Paper } from "@mantine/core";
 import { useIsMobile } from "../useIsMobile";
+import { formatDate } from "../utils";
 
 export function TracksLineChart({
   ranks,
@@ -191,10 +192,4 @@ function TracksLegend({ payload, tracks }: TracksLegendProps) {
         })}
     </div>
   );
-}
-
-function formatDate(ts: number | undefined) {
-  if (!ts) return "Unknown Date";
-  const date = new Date(ts);
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`;
 }
