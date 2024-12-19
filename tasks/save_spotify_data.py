@@ -37,6 +37,7 @@ artist_genre = []
 def save_spotify_data():
     if not os.path.exists('.cache'):
         cache = spotify_cache()
+        print('Saving cache: ', cache)
         with open(".cache", "w") as f:
             f.write(cache)
 
