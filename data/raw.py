@@ -131,7 +131,7 @@ class DataSource:
         
         if data_mode() == 'sql':
             conn = get_connection()
-            cursor = get_connection().cursor()
+            cursor = conn.cursor()
 
             if self.delete_before_set:
                 cursor.execute(f'TRUNCATE {self._table_name()};')
@@ -167,13 +167,14 @@ class DataSource:
                     for col in value.columns
                 }
 
+                print(insert_statement, value_map)
                 cursor.execute(insert_statement, value_map)
 
                 if i > 0 and i % update_batch_size == 0:
                     # Prevent timeouts by getting a new connection every so often
                     conn.commit()
                     conn = get_connection()
-                    cursor = get_connection().cursor()
+                    cursor = conn.cursor()
 
             conn.commit()
 
