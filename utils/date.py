@@ -5,10 +5,8 @@ from utils.markdown import empty_header, md_table, md_image
 
 from utils.util import first
 
-__today = datetime.today()
 def today():
-    global __today
-    return __today
+    return datetime.today()
 
 def this_year():
     return today().strftime('%Y')
