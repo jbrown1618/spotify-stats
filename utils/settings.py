@@ -76,7 +76,7 @@ def musicbrainz_useragent() -> str:
 
 
 def musicbrainz_version() -> str:
-    return get_setting("MUSIVBRAINZ_VERSION", "1.0.0")
+    return get_setting("MUSICBRAINZ_VERSION", "1.0.0")
 
 
 def musicbrainz_contact() -> str:
