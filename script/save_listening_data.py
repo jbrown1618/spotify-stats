@@ -18,7 +18,7 @@ def save_listening_data():
         plays_data.append({ "track_uri": track_uri, "time": time })
     plays = pd.DataFrame(plays_data)
 
-    current, min_time = get_listening_period(plays['time'].min())
+    current, min_time = get_listening_period(plays['time'].min(), plays['time'].max())
     period_id = current[0]
 
     plays = plays[plays['time'] >= min_time]
@@ -31,29 +31,28 @@ def save_listening_data():
     update_play_counts(period_id, play_counts)
 
 
-def get_listening_period(min_time: float):
-    now = datetime.now().timestamp()
+def get_listening_period(min_time: float, max_time: float):
     current = get_latest_listening_period()
 
     if current is None:
         # This case should not be hit often; it accounts for the case where
         # there are no listening periods in the database yet.
-        create_listening_period(min_time, now)
+        create_listening_period(min_time, max_time)
         return get_latest_listening_period(), min_time
 
     current_id, current_from, current_to = current
-    if now - current_from.timestamp() > max_listening_period_s:
+    if max_time - current_from.timestamp() > max_listening_period_s:
         # If updating the current listening period would make it longer
         # than the maximum, create a new listening period that starts
         # just after the current one ends
         new_period_start = current_to.timestamp() + 1
-        create_listening_period(new_period_start, now)
+        create_listening_period(new_period_start, max_time)
         return get_latest_listening_period(), new_period_start
     else:
         # Otherwise, update the current listening period to extend to
         # the current time.
-        update_listening_period(current_id, now)
-        return get_latest_listening_period(), current_to.timestamp()
+        update_listening_period(current_id, max_time)
+        return get_latest_listening_period(), current_to.timestamp() + 1
 
 
 
@@ -93,6 +92,7 @@ def get_latest_listening_period():
 
 
 def update_play_counts(period_id: int, play_counts: pd.DataFrame):
+    print('Updating play counts: ', play_counts)
     conn = get_connection()
     cursor = conn.cursor()
     for _, row in play_counts.iterrows():
