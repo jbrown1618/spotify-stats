@@ -1,4 +1,4 @@
-import { ActiveFilters, FilterOptions } from "./api";
+import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import {
   Button,
   Checkbox,
@@ -9,17 +9,24 @@ import {
 } from "@mantine/core";
 import { useSetFilters } from "./useSetFilters";
 import { useIsMobile } from "./useIsMobile";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 
 interface FiltersProps {
   filters: ActiveFilters;
-  options: FilterOptions;
+  options?: FilterOptions;
 }
 
 export function Filters({ filters, options }: FiltersProps) {
   const setFilters = useSetFilters();
   const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const lastOptionsRef = useRef(options ?? defaultFilterOptions);
+  if (options) {
+    lastOptionsRef.current = options;
+  }
+
+  const lastOptions = lastOptionsRef.current;
 
   if (isMobile)
     return (
@@ -29,7 +36,7 @@ export function Filters({ filters, options }: FiltersProps) {
         </Button>
         <FiltersDialog
           filters={filters}
-          options={options}
+          options={lastOptions}
           opened={dialogOpen}
           onClose={(filters) => {
             setFilters(filters);
@@ -46,7 +53,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <PlaylistsFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -54,7 +61,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <ArtistsFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -62,7 +69,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <AlbumsFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -70,7 +77,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <LabelsFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -78,7 +85,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <GenresFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -86,7 +93,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <YearsFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -94,7 +101,7 @@ export function Filters({ filters, options }: FiltersProps) {
         <GridCol span={4}>
           <LikedTracksFilter
             filters={filters}
-            options={options}
+            options={lastOptions}
             onFilterChange={setFilters}
           />
         </GridCol>
@@ -104,6 +111,7 @@ export function Filters({ filters, options }: FiltersProps) {
 }
 
 interface FiltersDialogProps extends FiltersProps {
+  options: NonNullable<FilterOptions>;
   opened: boolean;
   onClose: (filters: ActiveFilters) => void;
 }
@@ -115,6 +123,8 @@ function FiltersDialog({
   onClose,
 }: FiltersDialogProps) {
   const [localFilters, setLocalFilters] = useState(filters);
+
+  useEffect(() => (opened ? setLocalFilters(filters) : undefined), [opened]);
 
   return (
     <Modal
@@ -176,6 +186,7 @@ function FiltersDialog({
 
 interface FilterProps extends FiltersProps {
   onFilterChange: (a: SetStateAction<ActiveFilters>) => void;
+  options: NonNullable<FilterOptions>;
 }
 
 function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {

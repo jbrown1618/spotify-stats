@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActiveFilters, defaultFilterOptions } from "./api";
+import { ActiveFilters } from "./api";
 import { Header } from "./Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters";
@@ -41,17 +41,14 @@ export function App() {
       <Container size="lg">
         <Header />
 
-        <Filters
-          filters={filters}
-          options={data?.filter_options ?? defaultFilterOptions}
-        />
+        <Filters filters={filters} options={data?.filter_options} />
 
         <div>
           <h2>Playlists</h2>
 
           {data && (
             <>
-              <h3>Top Playlists by Liked Tracks</h3>
+              <h3>Top playlists by liked tracks</h3>
               <PlaylistsBarChart
                 counts={Object.values(data.playlist_track_counts)}
               />
@@ -80,14 +77,22 @@ export function App() {
           <h2>Artists</h2>
 
           {data && (
-            <ArtistsLineChart
-              ranks={data.artist_rank_history}
-              artists={data.artists}
-            />
+            <>
+              <h3>Artist ranking over time</h3>
+              <ArtistsLineChart
+                ranks={data.artist_rank_history}
+                artists={data.artists}
+              />
+            </>
           )}
 
           {data && (
-            <ArtistsBarChart counts={Object.values(data.artist_track_counts)} />
+            <>
+              <h3>Top artists by liked tracks</h3>
+              <ArtistsBarChart
+                counts={Object.values(data.artist_track_counts)}
+              />
+            </>
           )}
 
           <DisplayGrid
@@ -126,10 +131,13 @@ export function App() {
           <h2>Albums</h2>
 
           {data && (
-            <AlbumsLineChart
-              ranks={data.album_rank_history}
-              albums={data.albums}
-            />
+            <>
+              <h3>Album ranking over time</h3>
+              <AlbumsLineChart
+                ranks={data.album_rank_history}
+                albums={data.albums}
+              />
+            </>
           )}
 
           <DisplayGrid
@@ -154,10 +162,13 @@ export function App() {
           <h2>Tracks</h2>
 
           {data && (
-            <TracksLineChart
-              ranks={data.track_rank_history}
-              tracks={data.tracks}
-            />
+            <>
+              <h3>Track ranking over time</h3>
+              <TracksLineChart
+                ranks={data.track_rank_history}
+                tracks={data.tracks}
+              />
+            </>
           )}
 
           <DisplayGrid
@@ -215,7 +226,12 @@ export function App() {
           />
 
           <h2>Years</h2>
-          {data && <YearsBarChart counts={Object.values(data.years)} />}
+          {data && (
+            <>
+              <h3>Liked tracks by year</h3>
+              <YearsBarChart counts={Object.values(data.years)} />
+            </>
+          )}
         </div>
       </Container>
     </SetFiltersProvider>
