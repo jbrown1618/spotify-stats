@@ -46,7 +46,7 @@ export function App() {
         <div>
           <h2>Playlists</h2>
 
-          {data && (
+          {data && Object.keys(data.playlist_track_counts).length > 1 && (
             <>
               <h3>Top playlists by liked tracks</h3>
               <PlaylistsBarChart
@@ -76,7 +76,7 @@ export function App() {
 
           <h2>Artists</h2>
 
-          {data && (
+          {data && data.artist_rank_history.length > 1 && (
             <>
               <h3>Artist ranking over time</h3>
               <ArtistsLineChart
@@ -86,7 +86,7 @@ export function App() {
             </>
           )}
 
-          {data && (
+          {data && Object.keys(data.artist_track_counts).length > 1 && (
             <>
               <h3>Top artists by liked tracks</h3>
               <ArtistsBarChart
@@ -130,7 +130,7 @@ export function App() {
 
           <h2>Albums</h2>
 
-          {data && (
+          {data && data.album_rank_history.length > 1 && (
             <>
               <h3>Album ranking over time</h3>
               <AlbumsLineChart
@@ -161,7 +161,7 @@ export function App() {
 
           <h2>Tracks</h2>
 
-          {data && (
+          {data && data.track_rank_history.length > 1 && (
             <>
               <h3>Track ranking over time</h3>
               <TracksLineChart
@@ -226,7 +226,7 @@ export function App() {
           />
 
           <h2>Years</h2>
-          {data && (
+          {data && Object.keys(data.years).length > 1 && (
             <>
               <h3>Liked tracks by year</h3>
               <YearsBarChart counts={Object.values(data.years)} />

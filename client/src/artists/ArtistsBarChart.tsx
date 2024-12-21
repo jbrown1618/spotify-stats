@@ -4,13 +4,15 @@ import { useIsMobile } from "../useIsMobile";
 
 export function ArtistsBarChart({ counts }: { counts: ArtistTrackCount[] }) {
   const isMobile = useIsMobile();
-  const count = isMobile ? 15 : 20;
+  const maxCount = isMobile ? 15 : 20;
+
+  const height = 100 + 30 * Math.min(maxCount, Object.keys(counts).length);
   return (
     <BarChart
-      h="70vh"
+      h={height}
       data={Object.values(counts)
         .sort((a, b) => b.artist_liked_track_count - a.artist_liked_track_count)
-        .slice(0, count)
+        .slice(0, maxCount)
         .map((p) => ({
           Artist: p.artist_name,
           Liked: p.artist_liked_track_count,
