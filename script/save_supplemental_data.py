@@ -1,3 +1,3 @@
-from tasks import save_supplemental_data
+from tasks.save_supplemental_data import save_supplemental_data
 
 save_supplemental_data()

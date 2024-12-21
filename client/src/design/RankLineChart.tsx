@@ -279,7 +279,7 @@ function getAxisRange<TRank>(
   const idealInitialMax = (maxCurrentRank - minCurrentRank) * 3 + min + 1;
   const showSlider = max - maxSliderMin > 20;
 
-  const initialMax = showSlider ? Math.min(idealInitialMax, max) : maxSliderMin;
+  const initialMax = showSlider ? Math.min(idealInitialMax, max) : max;
 
   return {
     min,
