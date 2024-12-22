@@ -661,32 +661,6 @@ def pairplot_path(relative_to=None):
     )
 
 
-def data_path(source=None, table_name=None, relative_to=None):
-    if table_name is  None:
-        return relative_to_path(os.path.join("data", "spotify"), relative_to)
-
-    return relative_to_path(
-        os.path.join(
-            "data",
-            source,
-            table_name + ".csv"
-        ), 
-        relative_to
-    )
-
-
-def persistent_data_path(source, table_name: str, year: str, relative_to=None):
-    return relative_to_path(
-        os.path.join(
-            "data",
-            source,
-            table_name,
-            year + ".csv"
-        ),
-        relative_to
-    )
-
-
 def musicbrainz_data_path(table_name: str, relative_to=None):
     return relative_to_path(
         os.path.join(

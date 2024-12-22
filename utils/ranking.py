@@ -1,9 +1,8 @@
 import pandas as pd
 import sqlalchemy
 
-from data.raw import RawData, get_connection, get_engine
+from data.raw import get_connection, get_engine
 from utils.date import this_date
-from utils.settings import data_mode
 
 track_score_factor = 0.5
 as_of_now = this_date()
@@ -13,232 +12,46 @@ SELECT MAX(tt.as_of_date) AS current_date FROM top_track tt;
 '''
 
 def current_track_ranks():
-    if data_mode() == 'sql':
-        cursor = get_connection().cursor()
-        cursor.execute(get_current_date)
-        current_date = cursor.fetchone()[0]
+    cursor = get_connection().cursor()
+    cursor.execute(get_current_date)
+    current_date = cursor.fetchone()[0]
 
-        with get_engine().begin() as conn:
-            df = pd.read_sql_query(sqlalchemy.text('SELECT track_uri, rank as track_rank, as_of_date  FROM track_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
-            return df
-        
-    out = track_ranks_over_time()
-    out = out[out['as_of_date'] == out['as_of_date'].max()]
-    return out[['track_uri', 'track_rank']].copy()
+    with get_engine().begin() as conn:
+        df = pd.read_sql_query(sqlalchemy.text('SELECT track_uri, rank as track_rank, as_of_date  FROM track_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
+        return df
 
 
-_track_ranks_over_time = None
 def track_ranks_over_time():
-    global _track_ranks_over_time
-
-    if _track_ranks_over_time is None:
-        if data_mode() == 'sql':
-            with get_engine().begin() as conn:
-                _track_ranks_over_time = pd.read_sql_query(sqlalchemy.text('SELECT track_uri, rank as track_rank, as_of_date FROM track_rank;'), conn)
-                return _track_ranks_over_time
-            
-        out = None
-
-        dates = RawData()['top_tracks']['as_of_date'].unique()
-        for as_of_date in dates:
-            scores = __track_ranks(as_of=str(as_of_date))
-            scores['as_of_date'] = as_of_date
-            out = scores if out is None else pd.concat([out, scores])
-        _track_ranks_over_time = out.reset_index()
-
-    return _track_ranks_over_time
-
-
-def __track_ranks(as_of: str=as_of_now):
-    placement_scores = __track_placement_scores(as_of)
-    placement_scores.rename(columns={'track_placement_score': 'track_score'}, inplace=True)
-
-    out = placement_scores.sort_values('track_score', ascending=False)
-    out.fillna(0, inplace=True)
-    out['track_rank'] = [i + 1 for i in range(len(out))]
-
-    return out[['track_uri', 'track_rank']].copy()
-
-
-_track_placement_scores_memo = {}
-def __track_placement_scores(as_of: str=as_of_now):
-    cached = _track_placement_scores_memo.get(as_of, None)
-    if cached is not None:
-        return cached
-    
-    print(f'Calculating track placement scores for {as_of}...')
-
-    top_tracks = RawData()['top_tracks'].copy()
-    top_tracks = top_tracks[top_tracks['as_of_date'] <= as_of]
-
-    top_tracks['track_placement_score'] = top_tracks.apply(lambda row: __placement_score(row['index'], row['term']), axis=1)
-
-    out = top_tracks.groupby('track_uri')\
-        .agg({'track_placement_score': 'sum'})\
-        .reset_index()
-    
-    _track_placement_scores_memo[as_of] = out
-    return out
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(sqlalchemy.text('SELECT track_uri, rank as track_rank, as_of_date FROM track_rank;'), conn)
 
 
 def current_artist_ranks():
-    if data_mode() == 'sql':
-        cursor = get_connection().cursor()
-        cursor.execute(get_current_date)
-        current_date = cursor.fetchone()[0]
+    cursor = get_connection().cursor()
+    cursor.execute(get_current_date)
+    current_date = cursor.fetchone()[0]
 
-        with get_engine().begin() as conn:
-            df = pd.read_sql_query(sqlalchemy.text('SELECT artist_uri, rank as artist_rank, as_of_date FROM artist_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
-            return df
-
-    out = artist_ranks_over_time()
-    out = out[out['as_of_date'] == out['as_of_date'].max()]
-    return out[['artist_uri', 'artist_rank']].copy()
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(sqlalchemy.text('SELECT artist_uri, rank as artist_rank, as_of_date FROM artist_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
 
 
-_artist_ranks_over_time = None
 def artist_ranks_over_time():
-    global _artist_ranks_over_time
-
-    if _artist_ranks_over_time is None:
-        if data_mode() == 'sql':
-            with get_engine().begin() as conn:
-                _artist_ranks_over_time = pd.read_sql_query(sqlalchemy.text('SELECT artist_uri, rank as artist_rank, as_of_date  FROM artist_rank;'), conn)
-                return _artist_ranks_over_time
-            
-        out = None
-
-        dates = RawData()['top_artists']['as_of_date'].unique()
-        for as_of_date in dates:
-            ranks = __artist_ranks(as_of=str(as_of_date))
-            ranks['as_of_date'] = as_of_date
-            out = ranks if out is None else pd.concat([out, ranks])
-        _artist_ranks_over_time = out.reset_index()
-
-    return _artist_ranks_over_time
-
-
-def __artist_ranks(as_of: str=as_of_now):
-    placement_scores = __artist_placement_scores(as_of)
-        
-    track_scores = __track_placement_scores(as_of)
-    track_artist = RawData()['track_artist']
-
-    track_scores_by_artist = pd.merge(track_scores, track_artist, on="track_uri")\
-        .groupby("artist_uri")\
-        .agg({'track_placement_score': 'sum'})
-    
-    all_scores = pd.merge(placement_scores, track_scores_by_artist, on="artist_uri", how="outer")
-    all_scores.fillna(0, inplace=True)
-    all_scores['artist_score'] = all_scores['artist_placement_score'] + all_scores['track_placement_score'] * track_score_factor
-
-    out = all_scores.sort_values('artist_score', ascending=False)
-    out['artist_rank'] = [i + 1 for i in range(len(out))]
-
-    return out[['artist_uri', 'artist_rank']].copy()
-
-
-_artist_placement_scores_memo = {}
-def __artist_placement_scores(as_of: str=as_of_now):
-    cached = _artist_placement_scores_memo.get(as_of, None)
-    if cached is not None:
-        return cached
-    
-    print(f'Calculating artist placement scores for {as_of}...')
-
-    top_artists = RawData()['top_artists'].copy()
-    top_artists = top_artists[top_artists['as_of_date'] <= as_of]
-
-    top_artists['artist_placement_score'] = top_artists.apply(lambda row: __placement_score(row['index'], row['term']), axis=1)
-
-    out = top_artists.groupby('artist_uri')\
-        .agg({'artist_placement_score': 'sum'})\
-        .reset_index()
-
-    _artist_placement_scores_memo[as_of] = out
-    return out
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(sqlalchemy.text('SELECT artist_uri, rank as artist_rank, as_of_date  FROM artist_rank;'), conn)
 
 
 def current_album_ranks():
-    if data_mode() == 'sql':
-        cursor = get_connection().cursor()
-        cursor.execute(get_current_date)
-        current_date = cursor.fetchone()[0]
+    cursor = get_connection().cursor()
+    cursor.execute(get_current_date)
+    current_date = cursor.fetchone()[0]
 
-        with get_engine().begin() as conn:
-            df = pd.read_sql_query(sqlalchemy.text('SELECT album_uri, rank as album_rank, as_of_date FROM album_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
-            return df
-
-    out = album_ranks_over_time()
-    out = out[out['as_of_date'] == out['as_of_date'].max()]
-    return out[['album_uri', 'album_rank']].copy()
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(sqlalchemy.text('SELECT album_uri, rank as album_rank, as_of_date FROM album_rank WHERE as_of_date = :as_of_date;'), conn, params={"as_of_date": str(current_date)})
 
 
-_album_ranks_over_time = None
 def album_ranks_over_time():
-    global _album_ranks_over_time
-
-    if _album_ranks_over_time is None:
-        if data_mode() == 'sql':
-            with get_engine().begin() as conn:
-                _album_ranks_over_time = pd.read_sql_query(sqlalchemy.text('SELECT album_uri, rank as album_rank, as_of_date FROM album_rank;'), conn)
-                return _album_ranks_over_time
-            
-        out = None
-
-        dates = RawData()['top_tracks']['as_of_date'].unique()
-        for as_of_date in dates:
-            ranks = __album_ranks(as_of=str(as_of_date))
-            ranks['as_of_date'] = as_of_date
-            out = ranks if out is None else pd.concat([out, ranks])
-        _album_ranks_over_time = out.reset_index()
-
-    return _album_ranks_over_time
-
-
-def __album_ranks(as_of: str=as_of_now):
-    track_scores = __track_placement_scores(as_of)
-    tracks = RawData()['tracks']
-
-    album_scores = pd.merge(track_scores, tracks, on="track_uri")\
-        .groupby("album_uri")\
-        .agg({'track_placement_score': 'sum'})\
-        .reset_index()
-    
-    album_scores.fillna(0, inplace=True)
-    album_scores['album_score'] = album_scores['track_placement_score']
-
-    out = album_scores.sort_values('album_score', ascending=False)
-    out['album_rank'] = [i + 1 for i in range(len(out))]
-
-    return out[['album_uri', 'album_rank']].copy()
-
-
-def __placement_score(index, term):
-    multiplier = 1
-    total = 50
-
-    if term == 'on_repeat':
-        multiplier = 2
-        total = 30
-
-    if term == 'repeat_rewind':
-        multiplier = 0.5
-        total = 30
-
-    if term == 'short_term':
-        multiplier = 1
-        total = 50
-
-    if term == 'medium_term':
-        multiplier = 4
-        total = 50
-
-    if term == 'long_term':
-        multiplier = 8
-        total = 50
-
-    return multiplier * (total + 1 - index)
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(sqlalchemy.text('SELECT album_uri, rank as album_rank, as_of_date FROM album_rank;'), conn)
 
 
 def ensure_ranks():

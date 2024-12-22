@@ -52,13 +52,6 @@ def postgres_port() -> str:
     return get_setting("POSTGRES_PORT", 5432)
 
 
-def data_mode() -> str:
-    if postgres_url() is not None:
-        return "sql"
-
-    return get_setting("DATA_MODE", "csv").lower()
-
-
 def spotify_client_id() -> str:
     return get_setting("SPOTIFY_CLIENT_ID", None)
     
