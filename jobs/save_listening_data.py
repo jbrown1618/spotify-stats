@@ -107,7 +107,3 @@ def update_play_counts(period_id: int, play_counts: pd.DataFrame):
             "stream_count": row["stream_count"]
         })
     conn.commit()
-
-
-if __name__ == '__main__':
-    save_listening_data()

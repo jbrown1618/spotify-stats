@@ -1,18 +1,11 @@
-import os
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
-from data.provider import DataProvider
 from data.raw import RawData
+from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
-from utils.settings import spotify_cache, spotify_client_id, spotify_client_secret
 
 page_size = 50
 small_page_size = 20
-
-made_for_you_category_id = '0JQ5DAt0tbjZptfcdMSKl3'
-on_repeat_playlist_name = 'On Repeat'
-repeat_rewind_playlist_name = 'Repeat Rewind'
 
 queued_artists = set()
 queued_albums = set()
@@ -57,7 +50,7 @@ def save_spotify_data():
     raw_data["album_artist"] = pd.DataFrame(album_artist)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
-    DataProvider().correct_orphan_tracks()
+    queue_job("ensure_ranks")
 
 
 def save_top_tracks_data(sp: spotipy.Spotify):
@@ -71,24 +64,6 @@ def save_top_tracks_data(sp: spotipy.Spotify):
                 "index": i + 1
             })
             process_track(track)
-
-
-def get_made_for_you_playlist(sp: spotipy.Spotify, playlist_name: str):
-    playlist = None
-    offset = 0
-    has_more = True
-    while has_more and playlist is None:
-        resp = sp.category_playlists(made_for_you_category_id, limit=page_size)['playlists']
-        made_for_you_playlists = resp['items']
-        for playlist in made_for_you_playlists:
-            if playlist['name'] == playlist_name:
-                playlist = playlist
-                break
-
-        has_more = offset + page_size < resp["total"]
-        offset += page_size
-
-    return playlist
 
 
 def save_top_artists_data(sp: spotipy.Spotify):
