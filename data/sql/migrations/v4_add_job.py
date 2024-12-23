@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS job (
 
 class AddJobTable(Migration):
     def __init__(self):
-        super().__init__("v3")
+        super().__init__("v4")
 
 
     def migrate(self, cursor):
@@ -29,3 +29,8 @@ class AddJobTable(Migration):
 
     def reverse(self, cursor):
         cursor.execute(remove_job_table)
+
+
+if __name__ == '__main__':
+    AddJobTable().reverse_migration()
+    AddJobTable().perform_migration()

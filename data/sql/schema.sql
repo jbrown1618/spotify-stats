@@ -128,6 +128,21 @@ CREATE TABLE IF NOT EXISTS track_artist (
     UNIQUE(track_uri, artist_uri)
 );
 
+CREATE TABLE IF NOT EXISTS listening_period (
+    id SERIAL PRIMARY KEY,
+    from_time TIMESTAMP NOT NULL,
+    to_time TIMESTAMP NOT NULL,
+    UNIQUE (from_time, to_time)
+);
+
+CREATE TABLE IF NOT EXISTS listening_history (
+    id SERIAL PRIMARY KEY,
+    listening_period_id INTEGER REFERENCES listening_period (id),
+    track_uri TEXT NOT NULL,
+    stream_count INTEGER DEFAULT 0,
+    UNIQUE(listening_period_id, track_uri)
+);
+
 CREATE TABLE IF NOT EXISTS mb_artist_relationship (
     id SERIAL PRIMARY KEY,
     artist_mbid TEXT NOT NULL,

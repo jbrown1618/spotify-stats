@@ -52,13 +52,6 @@ def postgres_port() -> str:
     return get_setting("POSTGRES_PORT", 5432)
 
 
-def data_mode() -> str:
-    if postgres_url() is not None:
-        return "sql"
-
-    return get_setting("DATA_MODE", "csv").lower()
-
-
 def spotify_client_id() -> str:
     return get_setting("SPOTIFY_CLIENT_ID", None)
     
@@ -67,12 +60,16 @@ def spotify_client_secret() -> str:
     return get_setting("SPOTIFY_CLIENT_SECRET", None)
 
 
+def spotify_cache() -> str:
+    return get_setting("SPOTIFY_CACHE", None)
+
+
 def musicbrainz_useragent() -> str:
     return get_setting("MUSICBRAINZ_USERAGENT", "jbrown1618/spotify-stats")
 
 
 def musicbrainz_version() -> str:
-    return get_setting("MUSIVBRAINZ_VERSION", "1.0.0")
+    return get_setting("MUSICBRAINZ_VERSION", "1.0.0")
 
 
 def musicbrainz_contact() -> str:
