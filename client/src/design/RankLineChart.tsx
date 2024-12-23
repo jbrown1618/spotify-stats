@@ -5,15 +5,16 @@ import { formatDate } from "../utils";
 import { useState } from "react";
 
 const colors = [
-  "#ea5545",
-  "#f46a9b",
-  "#ef9b20",
-  "#edbf33",
-  "#ede15b",
-  "#bdcf32",
-  "#87bc45",
-  "#27aeef",
-  "#b33dc6",
+  "#6aff00", // Lime
+  "#ff8000", // Orange
+  "#ff00bb", // Magenta
+  "#002aff", // Blue
+  "#ff0000", // Red
+  "#9900ff", // Purple
+  "#00ffff", // Cyan
+  "#ffea00", // Yellow
+  "#00ff77", // Green
+  "#fa6e6e", // Light Red
 ];
 
 interface RankLineChartProps<TRank> {
