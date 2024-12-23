@@ -19,6 +19,8 @@ def repair_orphan_tracks():
         print('Recalculating track and album ranks...')
         recalculate_ranks()
 
+    delete_orphan_albums()
+    delete_orphan_artists()
     print('Done repairing orphan tracks')
 
 
@@ -74,6 +76,32 @@ def repair_orphan(orphan_uri, replacement_uri):
         DELETE FROM track_artist
         WHERE track_uri = %(orphan_uri)s;
     """, {"orphan_uri": orphan_uri, "replacement_uri": replacement_uri})
+    conn.commit()
+
+
+def delete_orphan_albums():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM album
+        WHERE uri NOT IN (
+            SELECT DISTINCT album_uri
+            FROM track
+        );
+    """)
+    conn.commit()
+
+
+def delete_orphan_artists():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM artist
+        WHERE uri NOT IN (
+            SELECT DISTINCT artist_uri
+            FROM track_artist
+        );
+    """)
     conn.commit()
 
 
