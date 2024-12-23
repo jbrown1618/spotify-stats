@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS job (
     id SERIAL PRIMARY KEY,
     type TEXT NOT NULL,
     arguments TEXT NOT NULL,
-    status TEXT DEFAULT 'NOT_STARTED',
+    status TEXT DEFAULT 'QUEUED',
     error TEXT,
     queue_time timestamp DEFAULT current_timestamp,
     start_time timestamp,
