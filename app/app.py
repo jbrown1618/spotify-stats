@@ -32,7 +32,7 @@ def index():
 __cache_no_filters = None
 __cache_liked = None
 __last_cached = None
-cache_seconds = 60
+cache_seconds = 60 * 60 * 6
 
 @app.route("/api/summary")
 def data():
