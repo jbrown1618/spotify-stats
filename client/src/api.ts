@@ -170,7 +170,7 @@ const arrayKeys = [
   "years",
 ] as const;
 
-export function filtersQuery(filters: ActiveFilters) {
+export function toFiltersQuery(filters: ActiveFilters) {
   const query = new URLSearchParams();
   for (const key of arrayKeys) {
     const value = filters[key];
@@ -182,4 +182,26 @@ export function filtersQuery(filters: ActiveFilters) {
     query.append("liked", "true");
   }
   return query.toString();
+}
+
+export function fromFiltersQuery(q: string): ActiveFilters {
+  if (q.startsWith("?")) {
+    q = q.substring(1);
+  }
+  const out: ActiveFilters = {};
+
+  const pairs = q.split("&");
+  for (const pair of pairs) {
+    const [key, value] = pair.split("=");
+    if (
+      arrayKeys.includes(key as (typeof arrayKeys)[number]) ||
+      key === "liked"
+    ) {
+      (out as any)[key] = JSON.parse(
+        decodeURIComponent(decodeURIComponent(value))
+      );
+    }
+  }
+
+  return out;
 }

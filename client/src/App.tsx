@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { ActiveFilters } from "./api";
 import { Header } from "./Header";
 import { useData } from "./useData";
 import { Filters } from "./Filters";
@@ -10,7 +8,6 @@ import { ArtistTile } from "./artists/ArtistTile";
 import { AlbumTile } from "./albums/AlbumTile";
 import { AlbumRow } from "./albums/AlbumRow";
 import { DisplayGrid } from "./design/DisplayGrid";
-import { SetFiltersProvider } from "./useSetFilters";
 import { TracksLineChart } from "./tracks/TracksLineChart";
 import { PlaylistsBarChart } from "./playlists/PlaylistsBarChart";
 import { ArtistsLineChart } from "./artists/ArtistsLineChart";
@@ -20,15 +17,17 @@ import { ArtistsBarChart } from "./artists/ArtistsBarChart";
 import { TrackRow } from "./tracks/TrackRow";
 import { ArtistRow } from "./artists/ArtistRow";
 import { useIsMobile } from "./useIsMobile";
+import { useFilters, useSetFilters } from "./useFilters";
 
 export function App() {
   const isMobile = useIsMobile();
-  const [filters, setFilters] = useState<ActiveFilters>({});
+  const filters = useFilters();
+  const setFilters = useSetFilters();
   const { data } = useData(filters);
   const t = useMantineTheme();
 
   return (
-    <SetFiltersProvider value={setFilters}>
+    <>
       <div
         style={{
           width: "100%",
@@ -234,6 +233,6 @@ export function App() {
           )}
         </div>
       </Container>
-    </SetFiltersProvider>
+    </>
   );
 }

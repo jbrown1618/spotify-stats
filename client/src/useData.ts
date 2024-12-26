@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { ActiveFilters, filtersQuery, getData } from "./api";
+import { ActiveFilters, toFiltersQuery, getData } from "./api";
 
 export function useData(filters: ActiveFilters) {
-  const query = filtersQuery(filters);
+  const query = toFiltersQuery(filters);
   return useQuery({
     queryKey: ["data", query],
     queryFn: async () => getData(query),

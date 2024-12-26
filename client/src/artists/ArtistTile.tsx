@@ -1,5 +1,5 @@
 import { Album, Artist } from "../api";
-import { useSetFilters } from "../useSetFilters";
+import { useSetFilters } from "../useFilters";
 import { TileDesign } from "../design/TileDesign";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 

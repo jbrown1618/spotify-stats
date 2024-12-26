@@ -1,6 +1,6 @@
 import { Text } from "@mantine/core";
 import { Album, Artist } from "../api";
-import { useSetFilters } from "../useSetFilters";
+import { useSetFilters } from "../useFilters";
 import { RowDesign } from "../design/RowDesign";
 import { useIsMobile } from "../useIsMobile";
 

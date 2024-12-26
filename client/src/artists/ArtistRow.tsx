@@ -1,7 +1,7 @@
 import { Album, Artist } from "../api";
 import { RowDesign } from "../design/RowDesign";
 import { useIsMobile } from "../useIsMobile";
-import { useSetFilters } from "../useSetFilters";
+import { useSetFilters } from "../useFilters";
 
 interface ArtistTileProps {
   artist: Artist;

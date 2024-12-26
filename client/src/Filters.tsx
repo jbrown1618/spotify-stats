@@ -7,7 +7,7 @@ import {
   Modal,
   MultiSelect,
 } from "@mantine/core";
-import { useSetFilters } from "./useSetFilters";
+import { useSetFilters } from "./useFilters";
 import { useIsMobile } from "./useIsMobile";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
