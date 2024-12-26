@@ -16,10 +16,9 @@ export function PlaylistTile({ playlist, playlist_images }: PlaylistTileProps) {
         playlist.playlist_image_url ?? playlist_images[playlist.playlist_uri]
       }
       onClick={() =>
-        setFilters((filters) => ({
-          ...filters,
+        setFilters({
           playlists: [playlist.playlist_uri],
-        }))
+        })
       }
     />
   );

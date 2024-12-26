@@ -13,10 +13,9 @@ export function AlbumTile({ album }: AlbumTileProps) {
       title={album.album_name}
       src={album.album_image_url}
       onClick={() =>
-        setFilters((filters) => ({
-          ...filters,
+        setFilters({
           albums: [album.album_uri],
-        }))
+        })
       }
     />
   );

@@ -19,10 +19,9 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
       tertiaryText={album.album_release_date}
       src={album.album_image_url}
       onClick={() =>
-        setFilters((filters) => ({
-          ...filters,
+        setFilters({
           albums: [album.album_uri],
-        }))
+        })
       }
       secondaryText={
         <>

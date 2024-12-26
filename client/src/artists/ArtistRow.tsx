@@ -18,10 +18,9 @@ export function ArtistRow({
   const isMobile = useIsMobile();
   const setFilters = useSetFilters();
   const onClick = () =>
-    setFilters((filters) => ({
-      ...filters,
+    setFilters({
       artists: [artist.artist_uri],
-    }));
+    });
 
   const artistAlbums = album_by_artist[artist.artist_uri].map(
     (uri) => albums[uri]

@@ -18,10 +18,9 @@ export function ArtistTile({
 }: ArtistTileProps) {
   const setFilters = useSetFilters();
   const onClick = () =>
-    setFilters((filters) => ({
-      ...filters,
+    setFilters({
       artists: [artist.artist_uri],
-    }));
+    });
 
   if (!large)
     return (
