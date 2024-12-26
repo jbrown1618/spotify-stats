@@ -19,6 +19,7 @@ import { ArtistRow } from "./artists/ArtistRow";
 import { useIsMobile } from "./useIsMobile";
 import { useFilters, useSetFilters } from "./useFilters";
 import { ChartSkeleton } from "./design/ChartSkeleton";
+import { Summary } from "./api";
 
 export function App() {
   const isMobile = useIsMobile();
@@ -46,21 +47,18 @@ export function App() {
         <div>
           <h2>Playlists</h2>
 
-          {!data && (
-            <>
-              <h3>Top playlists by liked tracks</h3>
-              <ChartSkeleton />
-            </>
-          )}
-
-          {data && Object.keys(data.playlist_track_counts).length > 1 && (
-            <>
-              <h3>Top playlists by liked tracks</h3>
+          <ChartWithFallback
+            title="Top playlists by liked tracks"
+            data={data}
+            shouldRender={(d) =>
+              Object.keys(d.playlist_track_counts).length > 1
+            }
+            renderChart={(d) => (
               <PlaylistsBarChart
-                counts={Object.values(data.playlist_track_counts)}
+                counts={Object.values(d.playlist_track_counts)}
               />
-            </>
-          )}
+            )}
+          />
 
           <DisplayGrid
             items={
@@ -83,38 +81,26 @@ export function App() {
 
           <h2>Artists</h2>
 
-          {!data && (
-            <>
-              <h3>Artist ranking over time</h3>
-              <ChartSkeleton />
-            </>
-          )}
-
-          {data && data.artist_rank_history.length > 1 && (
-            <>
-              <h3>Artist ranking over time</h3>
+          <ChartWithFallback
+            title="Artist ranking over time"
+            data={data}
+            shouldRender={(d) => d.artist_rank_history.length > 1}
+            renderChart={(d) => (
               <ArtistsLineChart
-                ranks={data.artist_rank_history}
-                artists={data.artists}
+                ranks={d.artist_rank_history}
+                artists={d.artists}
               />
-            </>
-          )}
+            )}
+          />
 
-          {!data && (
-            <>
-              <h3>Top artists by liked tracks</h3>
-              <ChartSkeleton />
-            </>
-          )}
-
-          {data && Object.keys(data.artist_track_counts).length > 1 && (
-            <>
-              <h3>Top artists by liked tracks</h3>
-              <ArtistsBarChart
-                counts={Object.values(data.artist_track_counts)}
-              />
-            </>
-          )}
+          <ChartWithFallback
+            title="Top artists by liked tracks"
+            data={data}
+            shouldRender={(d) => Object.keys(d.artist_track_counts).length > 1}
+            renderChart={(d) => (
+              <ArtistsBarChart counts={Object.values(d.artist_track_counts)} />
+            )}
+          />
 
           <DisplayGrid
             items={
@@ -150,21 +136,15 @@ export function App() {
           />
 
           <h2>Albums</h2>
-          {!data && (
-            <>
-              <h3>Album ranking over time</h3>
-              <ChartSkeleton />
-            </>
-          )}
-          {data && data.album_rank_history.length > 1 && (
-            <>
-              <h3>Album ranking over time</h3>
-              <AlbumsLineChart
-                ranks={data.album_rank_history}
-                albums={data.albums}
-              />
-            </>
-          )}
+
+          <ChartWithFallback
+            title="Album ranking over time"
+            data={data}
+            shouldRender={(d) => d.album_rank_history.length > 1}
+            renderChart={(d) => (
+              <AlbumsLineChart ranks={d.album_rank_history} albums={d.albums} />
+            )}
+          />
 
           <DisplayGrid
             items={
@@ -186,21 +166,15 @@ export function App() {
           />
 
           <h2>Tracks</h2>
-          {!data && (
-            <>
-              <h3>Track ranking over time</h3>
-              <ChartSkeleton />
-            </>
-          )}
-          {data && data.track_rank_history.length > 1 && (
-            <>
-              <h3>Track ranking over time</h3>
-              <TracksLineChart
-                ranks={data.track_rank_history}
-                tracks={data.tracks}
-              />
-            </>
-          )}
+
+          <ChartWithFallback
+            title="Track ranking over time"
+            data={data}
+            shouldRender={(d) => d.track_rank_history.length > 1}
+            renderChart={(d) => (
+              <TracksLineChart ranks={d.track_rank_history} tracks={d.tracks} />
+            )}
+          />
 
           <DisplayGrid
             items={
@@ -257,20 +231,47 @@ export function App() {
           />
 
           <h2>Years</h2>
-          {!data && (
-            <>
-              <h3>Liked tracks by year</h3>
-              <ChartSkeleton />
-            </>
-          )}
-          {data && Object.keys(data.years).length > 1 && (
-            <>
-              <h3>Liked tracks by year</h3>
-              <YearsBarChart counts={Object.values(data.years)} />
-            </>
-          )}
+
+          <ChartWithFallback
+            title="Liked tracks by year"
+            data={data}
+            shouldRender={(d) => Object.keys(d.years).length > 1}
+            renderChart={(d) => (
+              <YearsBarChart counts={Object.values(d.years)} />
+            )}
+          />
         </div>
       </Container>
+    </>
+  );
+}
+
+interface ChartWithFallbackProps {
+  data: Summary | undefined;
+  title: string;
+  shouldRender: (data: Summary) => boolean;
+  renderChart: (data: Summary) => JSX.Element;
+}
+function ChartWithFallback({
+  title,
+  data,
+  shouldRender,
+  renderChart,
+}: ChartWithFallbackProps) {
+  if (!data)
+    return (
+      <>
+        <h3>{title}</h3>
+        <ChartSkeleton />
+      </>
+    );
+
+  if (!shouldRender(data)) return null;
+
+  return (
+    <>
+      <h3>{title}</h3>
+      {renderChart(data)}
     </>
   );
 }
