@@ -1,4 +1,4 @@
-import { Card, Text } from "@mantine/core";
+import { Card, Skeleton, Text } from "@mantine/core";
 import { KPI, KPIProps } from "./KPI";
 
 interface LargeTileDesignProps {
@@ -71,4 +71,8 @@ export function LargeTileDesign({
       </div>
     </Card>
   );
+}
+
+export function LargeTileSkeleton() {
+  return <Skeleton w={300} h={350} />;
 }

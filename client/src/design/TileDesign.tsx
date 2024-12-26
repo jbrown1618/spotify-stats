@@ -1,4 +1,4 @@
-import { Card, Text } from "@mantine/core";
+import { Card, Skeleton, Text } from "@mantine/core";
 
 interface TileDesignProps {
   title: string;
@@ -53,4 +53,8 @@ export function TileDesign({ onClick, title, src }: TileDesignProps) {
       </div>
     </Card>
   );
+}
+
+export function TileSkeleton() {
+  return <Skeleton w={150} h={175} />;
 }

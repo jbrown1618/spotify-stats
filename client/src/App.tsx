@@ -18,6 +18,7 @@ import { TrackRow } from "./tracks/TrackRow";
 import { ArtistRow } from "./artists/ArtistRow";
 import { useIsMobile } from "./useIsMobile";
 import { useFilters, useSetFilters } from "./useFilters";
+import { ChartSkeleton } from "./design/ChartSkeleton";
 
 export function App() {
   const isMobile = useIsMobile();
@@ -44,6 +45,13 @@ export function App() {
 
         <div>
           <h2>Playlists</h2>
+
+          {!data && (
+            <>
+              <h3>Top playlists by liked tracks</h3>
+              <ChartSkeleton />
+            </>
+          )}
 
           {data && Object.keys(data.playlist_track_counts).length > 1 && (
             <>
@@ -75,6 +83,13 @@ export function App() {
 
           <h2>Artists</h2>
 
+          {!data && (
+            <>
+              <h3>Artist ranking over time</h3>
+              <ChartSkeleton />
+            </>
+          )}
+
           {data && data.artist_rank_history.length > 1 && (
             <>
               <h3>Artist ranking over time</h3>
@@ -82,6 +97,13 @@ export function App() {
                 ranks={data.artist_rank_history}
                 artists={data.artists}
               />
+            </>
+          )}
+
+          {!data && (
+            <>
+              <h3>Top artists by liked tracks</h3>
+              <ChartSkeleton />
             </>
           )}
 
@@ -128,7 +150,12 @@ export function App() {
           />
 
           <h2>Albums</h2>
-
+          {!data && (
+            <>
+              <h3>Album ranking over time</h3>
+              <ChartSkeleton />
+            </>
+          )}
           {data && data.album_rank_history.length > 1 && (
             <>
               <h3>Album ranking over time</h3>
@@ -159,7 +186,12 @@ export function App() {
           />
 
           <h2>Tracks</h2>
-
+          {!data && (
+            <>
+              <h3>Track ranking over time</h3>
+              <ChartSkeleton />
+            </>
+          )}
           {data && data.track_rank_history.length > 1 && (
             <>
               <h3>Track ranking over time</h3>

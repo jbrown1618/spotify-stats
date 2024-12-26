@@ -1,9 +1,4 @@
-import {
-  Button,
-  SegmentedControl,
-  SegmentedControlItem,
-  Skeleton,
-} from "@mantine/core";
+import { Button, SegmentedControl, SegmentedControlItem } from "@mantine/core";
 import {
   IconGridDots,
   IconLayoutGridFilled,
@@ -11,6 +6,10 @@ import {
   IconPill,
 } from "@tabler/icons-react";
 import { useState } from "react";
+import { RowSkeleton } from "./RowDesign";
+import { PillSkeleton } from "./PillDesign";
+import { TileSkeleton } from "./TileDesign";
+import { LargeTileSkeleton } from "./LargeTileDesign";
 
 interface DisplayGridProps<T> {
   items: T[] | undefined;
@@ -94,7 +93,10 @@ export function DisplayGrid<T>({
             ))
           : loadingItems.map((i) => (
               <div key={i}>
-                <Skeleton width="100%" height={loadingItemHeights[variant]} />
+                {variant === "row" && <RowSkeleton />}
+                {variant === "large-tile" && <LargeTileSkeleton />}
+                {variant === "tile" && <TileSkeleton />}
+                {variant === "pill" && <PillSkeleton />}
               </div>
             ))}
       </div>
@@ -106,10 +108,3 @@ export function DisplayGrid<T>({
     </>
   );
 }
-
-const loadingItemHeights: Record<DisplayVariant, string | number> = {
-  row: 70,
-  "large-tile": "20vw",
-  pill: 28,
-  tile: "15vw",
-};

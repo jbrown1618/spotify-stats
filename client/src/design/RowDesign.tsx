@@ -1,4 +1,4 @@
-import { Paper, Pill, Text } from "@mantine/core";
+import { Paper, Pill, Skeleton, Text } from "@mantine/core";
 import { KPI, KPIProps } from "./KPI";
 
 interface RowDesignProps {
@@ -110,4 +110,8 @@ export function RowDesign({
       </div>
     </Paper>
   );
+}
+
+export function RowSkeleton() {
+  return <Skeleton w={"100%"} h={80} />;
 }
