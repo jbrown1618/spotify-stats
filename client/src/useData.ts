@@ -6,5 +6,7 @@ export function useData(filters: ActiveFilters) {
   return useQuery({
     queryKey: ["data", query],
     queryFn: async () => getData(query),
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,
   });
 }
