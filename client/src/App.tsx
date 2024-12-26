@@ -257,6 +257,12 @@ export function App() {
           />
 
           <h2>Years</h2>
+          {!data && (
+            <>
+              <h3>Liked tracks by year</h3>
+              <ChartSkeleton />
+            </>
+          )}
           {data && Object.keys(data.years).length > 1 && (
             <>
               <h3>Liked tracks by year</h3>
