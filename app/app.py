@@ -1,3 +1,4 @@
+import datetime
 import json
 import typing
 import urllib
@@ -26,12 +27,34 @@ with app.app_context():
 def index():
     return send_file("./static/index.html")
 
+# These values will only update when we refetch data, which is only once a day.
+# Being a little out of date on these larger requests is fine in order to keep them fast.
+__cache_no_filters = None
+__cache_liked = None
+__last_cached = None
+cache_seconds = 60
 
 @app.route("/api/summary")
 def data():
-    dp = DataProvider()
+    global __cache_no_filters
+    global __cache_liked
+    global __last_cached
+    now = datetime.datetime.now()
 
     filters = to_filters(request.args)
+
+    if is_empty_filter(filters) and __cache_no_filters is not None:
+        if (now - __last_cached).seconds < cache_seconds:
+            return __cache_no_filters
+        else:
+            __cache_no_filters = None
+    
+    if is_liked_filter(filters) and __cache_liked is not None:
+        if (now - __last_cached).seconds < cache_seconds:
+            return __cache_liked
+        else:
+            __cache_liked = None
+    
     artist_uris = filters.get('artists', None)
     album_uris = filters.get('albums', None)
     playlist_uris = filters.get('playlists', None)
@@ -39,6 +62,8 @@ def data():
     genre_names = filters.get('genres', None)
     release_years = filters.get('years', None)
     liked = filters.get('liked', None)
+
+    dp = DataProvider()
 
     playlists = dp.playlists(
         uris=playlist_uris, 
@@ -99,7 +124,7 @@ def data():
         with_liked_tracks=liked
     )
 
-    return {
+    summary_payload = {
         "filter_options": get_filter_options(filters),
         "playlists": to_json(playlists, 'playlist_uri'),
         "tracks": to_json(tracks, 'track_uri'),
@@ -118,6 +143,15 @@ def data():
         "album_rank_history": album_rank_history(albums),
         "years": years(tracks)
     }
+
+    if is_liked_filter(filters):
+        __cache_liked = summary_payload
+        __last_cached = now
+    elif is_empty_filter(filters):
+        __cache_no_filters = summary_payload
+        __last_cached = now
+
+    return summary_payload
 
 
 def get_filter_options(filters):
@@ -316,18 +350,26 @@ def years(tracks: pd.DataFrame):
     return years_dict
 
 
+def is_empty_filter(filters):
+    return len(filters) == 0
+
+
+def is_liked_filter(filters):
+    return len(filters) == 1 and "liked" in filters
+
 
 array_filter_keys = ["artists", "albums", "playlists", "labels", "genres", "years"]
 def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Iterable[str]]:
     filters = {
         key: to_array_filter(args.get(key, None))
         for key in array_filter_keys
+        if args.get(key, None) is not None
     }
 
     liked = args.get("liked", None)
     if liked is not None:
         liked = liked.lower() == "true"
-    filters["liked"] = liked
+        filters["liked"] = liked
 
     return filters
 
