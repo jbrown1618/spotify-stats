@@ -107,11 +107,9 @@ def get_listening_period_id(from_time: float):
 
 
 if __name__ == '__main__':
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        TRUNCATE track_rank;
-        TRUNCATE album_rank;
-    """)
-    conn.commit()
-    ensure_ranks()
+    min_date = sys.argv[1]
+    max_date = sys.argv[2]
+    filenames = sys.argv[3:]
+    import_extended_listening_history(datetime.strptime(min_date, "%Y-%m-%d").timestamp(), datetime.strptime(max_date, "%Y-%m-%d").timestamp(), filenames)
+    import_missing_tracks()
+    repair_orphan_tracks()
