@@ -124,7 +124,9 @@ def get_latest_listening_period():
 
 
 def update_play_counts(period_id: int, play_counts: pd.DataFrame):
-    print('Updating play counts: ', play_counts)
+    print('Updating play counts: ')
+    print(play_counts)
+    
     conn = get_connection()
     cursor = conn.cursor()
     for _, row in play_counts.iterrows():
