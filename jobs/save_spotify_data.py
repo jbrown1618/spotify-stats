@@ -53,6 +53,28 @@ def save_spotify_data():
     queue_job("ensure_ranks")
 
 
+def save_tracks_by_uri(uris):
+    sp = get_spotify_client()
+    while len(uris) > 0:
+        print(f'Fetching {page_size} tracks...')
+
+        uris_page = uris[0:page_size]
+        uris = uris[page_size:]
+        tracks = sp.tracks(uris_page)
+        for track in tracks["tracks"]:
+            process_track(track)
+    save_albums_data(sp)
+    save_artists_data(sp)
+
+    raw_data = RawData()
+    raw_data["tracks"] = pd.DataFrame(tracks_data)
+    raw_data["artists"] = pd.DataFrame(artists_data)
+    raw_data["albums"] = pd.DataFrame(albums_data)
+    raw_data["track_artist"] = pd.DataFrame(track_artist)
+    raw_data["album_artist"] = pd.DataFrame(album_artist)
+    raw_data["artist_genre"] = pd.DataFrame(artist_genre)
+
+
 def save_top_tracks_data(sp: spotipy.Spotify):
     for term in ["short_term", "medium_term", "long_term"]:
         print(f'Fetching {term} top tracks...')
@@ -162,7 +184,7 @@ def track_data(track):
     fields = ["name", "popularity", "explicit", "duration_ms", "uri"]
     data = {field: track[field] for field in fields}
     data["album_uri"] = track["album"]["uri"]
-    data["isrc"] = track["external_ids"]["isrc"]
+    data["isrc"] = track["external_ids"].get("isrc", None)
 
     return data
 

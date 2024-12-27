@@ -6,7 +6,10 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from data.raw import get_connection
+from jobs.repair_orphan_tracks import repair_orphan_tracks
 from jobs.save_listening_data import create_listening_period, update_play_counts
+from jobs.save_spotify_data import save_tracks_by_uri
+from utils.ranking import ensure_ranks
 
 """
 This script imports extended listening history from a Spotify data request.
@@ -79,6 +82,19 @@ def make_periods(min_time: float, max_time: float):
     return periods
 
 
+def import_missing_tracks():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT track_uri
+        FROM listening_history h
+        LEFT JOIN track t ON t.uri = h.track_uri
+        WHERE t.name IS NULL
+    """)
+    missing_uris = [row[0] for row in cursor.fetchall()]
+    save_tracks_by_uri(missing_uris)
+
+
 def get_listening_period_id(from_time: float):
     conn = get_connection()
     cursor = conn.cursor()
@@ -91,7 +107,11 @@ def get_listening_period_id(from_time: float):
 
 
 if __name__ == '__main__':
-    min_date = sys.argv[1]
-    max_date = sys.argv[2]
-    filenames = sys.argv[3:]
-    import_extended_listening_history(datetime.strptime(min_date, "%Y-%m-%d").timestamp(), datetime.strptime(max_date, "%Y-%m-%d").timestamp(), filenames)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        TRUNCATE track_rank;
+        TRUNCATE album_rank;
+    """)
+    conn.commit()
+    ensure_ranks()

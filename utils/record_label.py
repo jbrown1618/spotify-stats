@@ -87,6 +87,9 @@ def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
         if all_labels.startswith('Republic Records - '):
             all_labels = 'Republic Records'
         
+        if all_labels not in all_standardized_by_all_labels:
+            continue
+        
         standardized_labels = all_standardized_by_all_labels[all_labels]
         labels = [most_common_by_standardized[standardized] for standardized in standardized_labels]
         for label in labels:

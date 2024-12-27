@@ -4,10 +4,9 @@ from utils.ranking import ensure_ranks
 def repair_orphan_tracks():
     did_update = False
     print('Identifying orphan tracks...')
-    for orphan_uri, orphan_name in get_orphan_tracks():
+    for orphan_uri in get_orphan_tracks():
         matching_track = get_matching_track(orphan_uri)
         if matching_track is None:
-            print(f"No match found for '{orphan_name}'")
             continue
 
         matching_uri, matching_name = matching_track
@@ -66,17 +65,29 @@ def repair_orphan(orphan_uri, replacement_uri):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE listening_history
+        UPDATE listening_history h
         SET track_uri = %(replacement_uri)s
-        WHERE track_uri = %(orphan_uri)s;
+        WHERE h.track_uri = %(orphan_uri)s
+        AND NOT EXISTS (
+            SELECT track_uri
+            FROM listening_history
+            WHERE track_uri = h.track_uri
+            AND listening_period_id = h.listening_period_id
+        );;
 
         UPDATE top_track
         SET track_uri = %(replacement_uri)s
         WHERE track_uri = %(orphan_uri)s;
 
-        UPDATE sp_track_mb_recording
+        UPDATE sp_track_mb_recording r
         SET spotify_track_uri = %(replacement_uri)s
-        WHERE spotify_track_uri = %(orphan_uri)s;
+        WHERE r.spotify_track_uri = %(orphan_uri)s
+        AND NOT EXISTS (
+            SELECT spotify_track_uri
+            FROM sp_track_mb_recording
+            WHERE spotify_track_uri = r.spotify_track_uri
+            AND recording_mbid = r.recording_mbid
+        );
 
         DELETE FROM track
         WHERE uri = %(orphan_uri)s;
