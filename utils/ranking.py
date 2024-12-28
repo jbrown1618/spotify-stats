@@ -10,10 +10,10 @@ as_of_now = this_date()
 def current_track_ranks():
     with get_engine().begin() as conn:
         df = pd.read_sql_query(sqlalchemy.text('''
-            SELECT track_uri, rank as track_rank, stream_count, as_of_date
+            SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
             FROM track_rank
             WHERE as_of_date = (
-                SELECT MAX(to_time) FROM listening_period
+                SELECT MAX(as_of_date) FROM track_rank
             );
         '''), conn)
         return df
@@ -22,7 +22,7 @@ def current_track_ranks():
 def track_ranks_over_time():
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
-            SELECT track_uri, rank as track_rank, stream_count, as_of_date
+            SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
             FROM track_rank;
         '''), conn)
 
@@ -30,10 +30,10 @@ def track_ranks_over_time():
 def current_artist_ranks():
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
-            SELECT artist_uri, rank as artist_rank, stream_count, as_of_date
+            SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
             FROM artist_rank
             WHERE as_of_date = (
-                SELECT MAX(to_time) FROM listening_period
+                SELECT MAX(as_of_date) FROM artist_rank
             );
         '''), conn)
 
@@ -41,7 +41,7 @@ def current_artist_ranks():
 def artist_ranks_over_time():
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
-            SELECT artist_uri, rank as artist_rank, stream_count, as_of_date
+            SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
             FROM artist_rank;
         '''), conn)
 
@@ -49,10 +49,10 @@ def artist_ranks_over_time():
 def current_album_ranks():
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
-            SELECT album_uri, rank as album_rank, stream_count, as_of_date
+            SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date
             FROM album_rank
             WHERE as_of_date = (
-                SELECT MAX(to_time) FROM listening_period
+                SELECT MAX(as_of_date) FROM album_rank
             );
         '''), conn)
 
@@ -60,7 +60,7 @@ def current_album_ranks():
 def album_ranks_over_time():
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
-            SELECT album_uri, rank as album_rank, stream_count, as_of_date
+            SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date
             FROM album_rank;
         '''), conn)
 
@@ -99,7 +99,7 @@ SELECT h.track_uri,
        SUM(stream_count) as stream_count
 FROM listening_history h
 INNER JOIN listening_period p ON p.id = h.listening_period_id
-WHERE p.from_time < %(as_of_date)s
+WHERE p.from_time <= %(as_of_date)s
 GROUP BY h.track_uri;
 
 INSERT INTO track_rank (track_uri, stream_count, rank, as_of_date)
@@ -119,7 +119,7 @@ SELECT ta.artist_uri,
 FROM listening_history h
 INNER JOIN listening_period p ON p.id = h.listening_period_id
 INNER JOIN track_artist ta ON ta.track_uri = h.track_uri
-WHERE p.from_time < %(as_of_date)s
+WHERE p.from_time <= %(as_of_date)s
 GROUP BY ta.artist_uri;
 
 INSERT INTO artist_rank (artist_uri, stream_count, rank, as_of_date)
@@ -139,7 +139,7 @@ SELECT t.album_uri,
 FROM listening_history h
 INNER JOIN listening_period p ON p.id = h.listening_period_id
 INNER JOIN track t ON t.uri = h.track_uri
-WHERE p.from_time < %(as_of_date)s
+WHERE p.from_time <= %(as_of_date)s
 GROUP BY t.album_uri;
 
 INSERT INTO album_rank (album_uri, stream_count, rank, as_of_date)

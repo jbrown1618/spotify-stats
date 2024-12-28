@@ -35,6 +35,7 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
       }
       stats={[
         { label: "Rank", value: album.album_rank },
+        { label: "Streams", value: album.album_stream_count },
         isMobile
           ? null
           : {

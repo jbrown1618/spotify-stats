@@ -29,6 +29,7 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
       }
       stats={[
         { label: "Rank", value: track.track_rank },
+        { label: "Streams", value: track.track_stream_count },
         isMobile
           ? null
           : { label: "Popularity", value: track.track_popularity },
