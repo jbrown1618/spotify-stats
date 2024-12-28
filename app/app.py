@@ -17,10 +17,6 @@ app = Flask(__name__)
 
 with app.app_context():
     perform_all_migrations()
-    try:
-        ensure_ranks()
-    except Exception as e:
-        print('Error populating rank information', e)
 
 
 @app.route("/")

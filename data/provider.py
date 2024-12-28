@@ -488,7 +488,6 @@ class DataProvider:
 
         return out
     
-
     def mb_artist(self, mbid: str) -> pd.Series:
         return self.mb_artists(mbids = {mbid}).iloc[0]
     

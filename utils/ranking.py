@@ -68,6 +68,8 @@ def album_ranks_over_time():
 def ensure_ranks():
     conn = get_connection()
     cursor = conn.cursor()
+
+    print('Getting dates to populate ranks...')
     cursor.execute('''
         SELECT DISTINCT to_time
         FROM listening_period

@@ -4,7 +4,7 @@ from utils.ranking import ensure_ranks
 def repair_orphan_tracks():
     did_update = False
     print('Identifying orphan tracks...')
-    for orphan_uri in get_orphan_tracks():
+    for orphan_uri, _ in get_orphan_tracks():
         matching_track = get_matching_track(orphan_uri)
         if matching_track is None:
             continue
@@ -71,9 +71,40 @@ def repair_orphan(orphan_uri, replacement_uri):
         AND NOT EXISTS (
             SELECT track_uri
             FROM listening_history
-            WHERE track_uri = h.track_uri
+            WHERE track_uri = %(replacement_uri)s
             AND listening_period_id = h.listening_period_id
         );
+
+        -- If the listening period has both the orphan and replacement
+        -- version of the track, add the orphan totals to the
+        -- replacement version.      
+        UPDATE listening_history h
+        SET stream_count = h.stream_count + (
+            SELECT stream_count
+            FROM listening_history
+            WHERE track_uri = %(orphan_uri)s
+            AND listening_period_id = h.listening_period_id
+        )
+        WHERE h.track_uri = %(replacement_uri)s
+        AND EXISTS (
+            SELECT track_uri
+            FROM listening_history
+            WHERE track_uri = %(orphan_uri)s
+            AND listening_period_id = h.listening_period_id
+        );
+
+        -- If the listening period has both the orphan and replacement
+        -- version of the track, we have merged them above so we can
+        -- now delete the orphan version.
+        DELETE FROM listening_history h
+        WHERE track_uri = %(orphan_uri)s
+        AND EXISTS (
+            SELECT track_uri
+            FROM listening_history
+            WHERE track_uri = %(replacement_uri)s
+            AND listening_period_id = h.listening_period_id   
+        );
+        
 
         UPDATE top_track
         SET track_uri = %(replacement_uri)s

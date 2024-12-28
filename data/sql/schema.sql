@@ -84,7 +84,8 @@ CREATE TABLE IF NOT EXISTS track_rank (
     track_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
-    UNIQUE (rank, as_of_date)
+    UNIQUE (rank, as_of_date),
+    UNIQUE (track_uri, as_of_date)
 );
 
 CREATE TABLE IF NOT EXISTS artist_rank (
@@ -92,7 +93,8 @@ CREATE TABLE IF NOT EXISTS artist_rank (
     artist_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
-    UNIQUE (rank, as_of_date)
+    UNIQUE (rank, as_of_date),
+    UNIQUE (artist_uri, as_of_date)
 );
 
 CREATE TABLE IF NOT EXISTS album_rank (
@@ -100,7 +102,8 @@ CREATE TABLE IF NOT EXISTS album_rank (
     album_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
-    UNIQUE (rank, as_of_date)
+    UNIQUE (rank, as_of_date),
+    UNIQUE (album_uri, as_of_date)
 );
 
 CREATE TABLE IF NOT EXISTS album_artist (
