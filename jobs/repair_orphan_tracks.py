@@ -73,7 +73,7 @@ def repair_orphan(orphan_uri, replacement_uri):
             FROM listening_history
             WHERE track_uri = h.track_uri
             AND listening_period_id = h.listening_period_id
-        );;
+        );
 
         UPDATE top_track
         SET track_uri = %(replacement_uri)s
