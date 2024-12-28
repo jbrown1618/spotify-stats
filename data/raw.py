@@ -6,8 +6,7 @@ import sqlalchemy
 import sqlalchemy.dialects
 import sqlalchemy.dialects.postgresql
 
-from utils.date import this_date, this_year
-import utils.path as p
+from utils.date import this_date
 from utils.settings import postgres_host, postgres_password, postgres_port, postgres_url, postgres_user
 
 def get_engine():
@@ -156,52 +155,6 @@ class DataSource:
 
     def _table_name(self) -> str:
         return self.key[0:-1] if self.key.endswith("s") else self.key
-
-    def _merge_all_years(self) -> pd.DataFrame:
-        year = this_year()
-        merged = None
-
-        while True:
-            df_path = p.persistent_data_path(self.source, self.key, year)
-            if not os.path.isfile(df_path):
-                return merged
-            
-            df_for_year = pd.read_csv(df_path)
-            if merged is None:
-                merged = df_for_year
-            else:
-                merged = pd.concat([merged, df_for_year], axis=0).reset_index(drop=True)
-
-            year = str(int(year) - 1)
-    
-
-    def _merge_into_current_year_data_source(self, value: pd.DataFrame) -> pd.DataFrame:
-        value['as_of_date'] = this_date()
-        
-        current_file = p.persistent_data_path(self.source, self.key, this_year())
-        if not os.path.isfile(current_file):
-            return value
-        
-        current_df = pd.read_csv(current_file)
-        date_strings = [d for d in current_df['as_of_date'].unique()]
-        date_strings.sort()
-
-        latest_date_str = date_strings[-1]
-        should_replace_latest = this_date() == latest_date_str
-
-        if len(date_strings) > 1 and not should_replace_latest:
-            next_latest_date_str = date_strings[-2]
-
-            # Replace the most recent day of data if it is fewer than three days away from the previous day
-            days_diff = (datetime.strptime(latest_date_str, '%Y-%m-%d') - datetime.strptime(next_latest_date_str, '%Y-%m-%d')).days
-            should_replace_latest = days_diff < 3
-
-        if should_replace_latest:
-            current_df = current_df[current_df['as_of_date'] != latest_date_str]
-
-        value = pd.concat([value, current_df], axis=0).reset_index(drop=True)
-
-        return value
 
 
     def _prefix_df(self, df: pd.DataFrame):

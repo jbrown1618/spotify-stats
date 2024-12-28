@@ -1,3 +1,4 @@
+import typing
 import pandas as pd
 import sqlalchemy
 
@@ -7,62 +8,74 @@ from utils.date import this_date
 track_score_factor = 0.5
 as_of_now = this_date()
 
-def current_track_ranks():
+def current_track_ranks(track_uris: typing.Iterable[str]):
+    track_uris = tuple(track_uris)
     with get_engine().begin() as conn:
         df = pd.read_sql_query(sqlalchemy.text('''
             SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
             FROM track_rank
             WHERE as_of_date = (
                 SELECT MAX(as_of_date) FROM track_rank
-            );
-        '''), conn)
+            )
+            AND track_uri IN :track_uris;
+        '''), conn, params={"track_uris": track_uris})
         return df
 
 
-def track_ranks_over_time():
+def track_ranks_over_time(track_uris: typing.Iterable[str]):
+    track_uris = tuple(track_uris)
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
-            FROM track_rank;
-        '''), conn)
+            FROM track_rank
+            WHERE track_uri IN :track_uris;
+        '''), conn, params={"track_uris": track_uris})
 
 
-def current_artist_ranks():
+def current_artist_ranks(artist_uris: typing.Iterable[str]):
+    artist_uris = tuple(artist_uris)
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
             FROM artist_rank
             WHERE as_of_date = (
                 SELECT MAX(as_of_date) FROM artist_rank
-            );
-        '''), conn)
+            )
+            AND artist_uri IN :artist_uris;
+        '''), conn, params={"artist_uris": artist_uris})
 
 
-def artist_ranks_over_time():
+def artist_ranks_over_time(artist_uris: typing.Iterable[str]):
+    artist_uris = tuple(artist_uris)
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
-            FROM artist_rank;
-        '''), conn)
+            FROM artist_rank
+            WHERE artist_uri IN :artist_uris;
+        '''), conn, params={"artist_uris": artist_uris})
 
 
-def current_album_ranks():
+def current_album_ranks(album_uris: typing.Iterable[str]):
+    album_uris = tuple(album_uris)
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date
             FROM album_rank
             WHERE as_of_date = (
                 SELECT MAX(as_of_date) FROM album_rank
-            );
-        '''), conn)
+            )
+            AND album_uri IN :album_uris;
+        '''), conn, params={"album_uris": album_uris})
 
 
-def album_ranks_over_time():
+def album_ranks_over_time(album_uris: typing.Iterable[str]):
+    album_uris = tuple(album_uris)
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date
-            FROM album_rank;
-        '''), conn)
+            FROM album_rank
+            WHERE album_uri IN :album_uris;
+        '''), conn, params={"album_uris": album_uris})
 
 
 def ensure_ranks():
@@ -107,7 +120,7 @@ GROUP BY h.track_uri;
 INSERT INTO track_rank (track_uri, stream_count, rank, as_of_date)
 SELECT track_uri,
        stream_count,
-       ROW_NUMBER() OVER(ORDER BY stream_count DESC) AS rank,
+       ROW_NUMBER() OVER(ORDER BY stream_count DESC, track_uri ASC) AS rank,
        %(as_of_date)s as as_of_date
 FROM total_track_streams_for_date
 ON CONFLICT DO NOTHING;
@@ -127,7 +140,7 @@ GROUP BY ta.artist_uri;
 INSERT INTO artist_rank (artist_uri, stream_count, rank, as_of_date)
 SELECT artist_uri,
        stream_count,
-       ROW_NUMBER() OVER(ORDER BY stream_count DESC) AS rank,
+       ROW_NUMBER() OVER(ORDER BY stream_count DESC, artist_uri ASC) AS rank,
        %(as_of_date)s as as_of_date
 FROM total_artist_streams_for_date
 ON CONFLICT DO NOTHING;
@@ -147,7 +160,7 @@ GROUP BY t.album_uri;
 INSERT INTO album_rank (album_uri, stream_count, rank, as_of_date)
 SELECT album_uri,
        stream_count,
-       ROW_NUMBER() OVER(ORDER BY stream_count DESC) AS rank,
+       ROW_NUMBER() OVER(ORDER BY stream_count DESC, album_uri ASC) AS rank,
        %(as_of_date)s as as_of_date
 FROM total_album_streams_for_date
 ON CONFLICT DO NOTHING;

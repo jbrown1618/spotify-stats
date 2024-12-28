@@ -132,7 +132,7 @@ class DataProvider:
             albums['album_release_year'] = albums['album_release_date'].apply(release_year)
             albums['album_short_name'] = albums['album_name'].apply(short_album_name)
 
-            ranks = current_album_ranks()
+            ranks = current_album_ranks(albums['album_uri'])
             albums = pd.merge(albums, ranks, on="album_uri", how="left")
             albums['album_rank'].fillna(albums['album_rank'].max() + 1, inplace=True)
             
@@ -205,7 +205,7 @@ class DataProvider:
             tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
             tracks = pd.merge(tracks, artists, on="primary_artist_uri")
             
-            ranks = current_track_ranks()
+            ranks = current_track_ranks(tracks['track_uri'])
             tracks = pd.merge(tracks, ranks, on='track_uri', how="left")
             tracks['track_rank'].fillna(tracks['track_rank'].max() + 1, inplace=True)
 
@@ -420,7 +420,7 @@ class DataProvider:
                 | ((artists["artist_track_count"] >= 10) & (artists["artist_liked_track_count"] > 0)) \
                 | (artists["artist_liked_track_count"] >= 5)
             
-            ranks = current_artist_ranks()
+            ranks = current_artist_ranks(artists['artist_uri'])
             artists = pd.merge(artists, ranks, on="artist_uri", how="left")
             artists['artist_rank'].fillna(artists['artist_rank'].max() + 1, inplace=True)
 

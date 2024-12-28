@@ -8,7 +8,7 @@ from flask import Flask, send_file, request
 from data.provider import DataProvider
 from data.raw import RawData
 from data.sql.migrations.migrations import perform_all_migrations
-from utils.ranking import album_ranks_over_time, artist_ranks_over_time, ensure_ranks, track_ranks_over_time
+from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
 from utils.util import first
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -286,43 +286,25 @@ def artist_track_counts(artists, tracks):
 
 
 def track_rank_history(tracks):
-    ranks = track_ranks_over_time()
-    ranks = ranks[ranks['track_uri'].isin(tracks['track_uri'])]
-
-    max_date = ranks['as_of_date'].max()
-    current_top_tracks = ranks[
-        (ranks['as_of_date'] == max_date)
-    ].head(10)['track_uri']
-
-    ranks = ranks[ranks['track_uri'].isin(current_top_tracks)]
+    current_ranks = current_track_ranks(tracks['track_uri'])
+    top_track_uris = current_ranks.sort_values('track_rank').head(10)['track_uri']
+    ranks = track_ranks_over_time(top_track_uris)
 
     return to_json(ranks[['track_uri', 'track_rank', 'as_of_date']])
 
 
 def artist_rank_history(artists):
-    ranks = artist_ranks_over_time()
-    ranks = ranks[ranks['artist_uri'].isin(artists['artist_uri'])]
-
-    max_date = ranks['as_of_date'].max()
-    current_top_artists = ranks[
-        (ranks['as_of_date'] == max_date)
-    ].head(10)['artist_uri']
-
-    ranks = ranks[ranks['artist_uri'].isin(current_top_artists)]
+    current_ranks = current_artist_ranks(artists['artist_uri'])
+    top_track_uris = current_ranks.sort_values('artist_rank').head(10)['artist_uri']
+    ranks = artist_ranks_over_time(top_track_uris)
 
     return to_json(ranks[['artist_uri', 'artist_rank', 'as_of_date']])
 
 
 def album_rank_history(albums):
-    ranks = album_ranks_over_time()
-    ranks = ranks[ranks['album_uri'].isin(albums['album_uri'])]
-
-    max_date = ranks['as_of_date'].max()
-    current_top_albums = ranks[
-        (ranks['as_of_date'] == max_date)
-    ].head(10)['album_uri']
-
-    ranks = ranks[ranks['album_uri'].isin(current_top_albums)]
+    current_ranks = current_album_ranks(albums['album_uri'])
+    top_album_uris = current_ranks.sort_values('album_rank').head(10)['album_uri']
+    ranks = album_ranks_over_time(top_album_uris)
 
     return to_json(ranks[['album_uri', 'album_rank', 'as_of_date']])
 
