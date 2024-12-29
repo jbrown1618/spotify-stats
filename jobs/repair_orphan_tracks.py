@@ -1,5 +1,5 @@
 from data.raw import get_connection
-from utils.ranking import ensure_ranks
+from jobs.queue import queue_job
 
 def repair_orphan_tracks():
     did_update = False
@@ -16,7 +16,7 @@ def repair_orphan_tracks():
     
     if did_update:
         print('Recalculating track and album ranks...')
-        recalculate_ranks()
+        queue_job("ensure_ranks", { "force": True })
 
     delete_orphan_albums()
     delete_orphan_artists()
@@ -153,18 +153,6 @@ def delete_orphan_artists():
         );
     """)
     conn.commit()
-
-
-def recalculate_ranks():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        TRUNCATE track_rank;
-        TRUNCATE album_rank;
-    """)
-    conn.commit()
-
-    ensure_ranks()
 
 
 if __name__ == '__main__':

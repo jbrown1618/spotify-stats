@@ -26,6 +26,8 @@ def execute_next_job() -> bool:
 
     execute = job_types.get(job_type, None)
     if execute is None:
+        message = f"No registered job type for {job_type}"
+        print("Job failed", message)
         cursor.execute("""
             UPDATE job
             SET (status, error, end_time) = (SELECT %(status)s, %(err)s, CURRENT_TIMESTAMP)
@@ -33,7 +35,7 @@ def execute_next_job() -> bool:
         """, {
             "id": id,
             "status": JobStatus.FAILURE.value,
-            "err": f"No registered job type for {job_type}"
+            "err": message
         })
         conn.commit()
         return True
@@ -59,6 +61,7 @@ def execute_next_job() -> bool:
         })
         conn.commit()
     except Exception as e:
+        print("Job failed", str(e))
         cursor.execute("""
             UPDATE job
             SET (status, error, end_time) = (SELECT %(status)s, %(err)s, CURRENT_TIMESTAMP)

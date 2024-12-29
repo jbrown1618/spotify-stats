@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import pandas as pd
 from data.raw import get_connection
+from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
 
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -8,6 +9,7 @@ max_listening_period_s = 7 * 24 * 60 * 60  # 7 days
 
 def save_listening_data():
     sp = get_spotify_client()
+    print("Fetching recent listening history...")
     recents = sp.current_user_recently_played(limit=50)
 
     plays_data = []
@@ -28,12 +30,16 @@ def save_listening_data():
                 if new_min is not None \
                 else plays.head(0)
 
-    current_play_counts = current_plays.groupby('track_uri')\
-        .agg({"time": "count"})\
-        .reset_index()\
-        .rename(columns={"time": "stream_count"})
-    
-    update_play_counts(current_id, current_play_counts)
+    should_re_rank = False
+
+    if len(current_plays) > 0:
+        current_play_counts = current_plays.groupby('track_uri')\
+            .agg({"time": "count"})\
+            .reset_index()\
+            .rename(columns={"time": "stream_count"})
+        
+        update_play_counts(current_id, current_play_counts)
+        should_re_rank = True
     
     if len(new_plays) > 0:
         new_play_counts = new_plays.groupby('track_uri')\
@@ -41,6 +47,10 @@ def save_listening_data():
             .reset_index()\
             .rename(columns={"time": "stream_count"})
         update_play_counts(new_id, new_play_counts)
+        should_re_rank = True
+    
+    if should_re_rank:
+        queue_job("ensure_ranks", { "force": True })
 
 
 
@@ -89,6 +99,7 @@ def get_listening_period(min_time: float, max_time: float):
 
 
 def create_listening_period(from_time: float, to_time: float):
+    print(f'Creating listening period from {from_time} to {to_time}')
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -99,6 +110,7 @@ def create_listening_period(from_time: float, to_time: float):
 
 
 def update_listening_period(id, to_time: float):
+    print(f'Updating the end of listening period {id} to {to_time}')
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -126,7 +138,7 @@ def get_latest_listening_period():
 def update_play_counts(period_id: int, play_counts: pd.DataFrame):
     print('Updating play counts: ')
     print(play_counts)
-    
+
     conn = get_connection()
     cursor = conn.cursor()
     for _, row in play_counts.iterrows():

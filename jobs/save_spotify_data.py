@@ -50,8 +50,6 @@ def save_spotify_data():
     raw_data["album_artist"] = pd.DataFrame(album_artist)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
-    queue_job("ensure_ranks")
-
 
 def save_tracks_by_uri(uris):
     sp = get_spotify_client()

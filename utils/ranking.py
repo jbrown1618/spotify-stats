@@ -78,9 +78,18 @@ def album_ranks_over_time(album_uris: typing.Iterable[str]):
         '''), conn, params={"album_uris": album_uris})
 
 
-def ensure_ranks():
+def ensure_ranks(force: bool = False):
     conn = get_connection()
     cursor = conn.cursor()
+
+    if force:
+        print('Clearing existing ranks...')
+        cursor.execute("""
+            TRUNCATE track_rank;
+            TRUNCATE album_rank;
+            TRUNCATE artist_rank;
+        """)
+        conn.commit()
 
     print('Getting dates to populate ranks...')
     cursor.execute('''
