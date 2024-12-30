@@ -70,7 +70,7 @@ def data():
         years=release_years
     )
 
-    tracks = dp.tracks_alternate(
+    tracks = dp.tracks(
         playlist_uris=playlist_uris, 
         artist_uris=artist_uris, 
         album_uris=album_uris,
@@ -80,15 +80,7 @@ def data():
         liked=liked
     )
 
-    artists = dp.artists(
-        uris=artist_uris,
-        album_uris=album_uris,
-        playlist_uris=playlist_uris,
-        labels=label_names,
-        genres=genre_names,
-        years=release_years,
-        with_liked_tracks=liked
-    )
+    artists = dp.artists_alternate(track_uris=tracks['track_uri'])
     
     albums = dp.albums(
         owned=True,

@@ -29,7 +29,6 @@ class DataProvider:
         self._albums = None
         self._owned_albums = None
         self._playlists = None
-        self._tracks = None
         self._owned_tracks = None
 
         self._album_label = None
@@ -40,7 +39,6 @@ class DataProvider:
         self._track_genre = None
         self._genres_with_page = None
         self._track_artist = None
-        self._liked_tracks_sample = None
         self._track_credits = None
         self._producers_with_page = None
         self._owned_track_uris = None
@@ -50,10 +48,6 @@ class DataProvider:
 
         self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
-
-    def playlist(self, uri: str) -> pd.Series:
-        return self.playlists(uris={uri}).iloc[0]
-    
 
     def playlists(self, 
                   uris: typing.Iterable[str] = None, 
@@ -176,10 +170,6 @@ class DataProvider:
         return out
     
 
-    def track(self, uri: str):
-        return self.tracks(uris=[uri]).iloc[0]
-        
-    
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
                liked: bool = None, 
@@ -207,7 +197,8 @@ class DataProvider:
                 "filter_years": years is not None,
                 "years": tuple([0]) if years is None else tuple(years)
             })
-        
+
+
     def track_credits(self, 
                       track_uris: typing.Iterable[str] = None, 
                       artist_uri: str = None, 
@@ -283,54 +274,6 @@ class DataProvider:
                         ]['artist_mbid']
 
         return {own_mbid}.union(forward_aliases).union(backward_aliases)
-    
-
-    def top_tracks(self, 
-                   current: bool = None, 
-                   top: int = None, 
-                   min_occurrences: int = None, 
-                   term: str = None, 
-                   track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
-        out = RawData()['top_tracks']
-
-        if term is not None:
-            out = out[out['term'] == term]
-
-        if min_occurrences is not None:
-            grouped = out.groupby('track_uri').agg({'as_of_date': 'count'}).reset_index()
-            grouped = grouped[grouped['as_of_date'] >= min_occurrences]
-            uris = grouped['track_uri'].unique()
-            out = out[out['track_uri'].isin(uris)]
-            
-        if current:
-            if len(out) == 0:
-                return out
-            
-            most_recent_date = out['as_of_date'].iloc[0]
-            out = out[out['as_of_date'] == most_recent_date]
-            out = out.drop(columns=['as_of_date'])
-
-        if top is not None:
-            out = out[out['index'] <= top]
-
-        if track_uris is not None:
-            out = out[out['track_uri'].isin(track_uris)]
-
-        return out.copy()
-    
-    
-    def liked_tracks_sample(self):
-        if self._liked_tracks_sample is None:
-            self._liked_tracks_sample = self.tracks(liked=True)
-            if len(self._liked_tracks_sample) > 200:
-                self._liked_tracks_sample = self._liked_tracks_sample.sample(200, random_state=0)
-        return self._liked_tracks_sample
-
-
-    def primary_artist(self, track_uri: str) -> pd.Series:
-        track_artist = RawData()['track_artist']
-        artist_uri = track_artist[(track_artist['track_uri'] == track_uri) & (track_artist['artist_index'] == 0)].iloc[0]['artist_uri']
-        return self.artist(artist_uri)
     
 
     def artist(self, uri: str = None, mbid: str = None) -> pd.Series:
@@ -444,6 +387,21 @@ class DataProvider:
             out = out[out['artist_uri'].isin(uris)]
 
         return out
+
+
+    def artists_alternate(self, 
+                          uris: typing.Iterable[str] = None, 
+                          track_uris: typing.Iterable[str] = None, 
+                          mbids: typing.Iterable[str] = None):
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(select_artists), conn, params={
+                "filter_tracks": uris is not None,
+                "track_uris": tuple(['']) if uris is None else tuple(track_uris),
+                "filter_artists": uris is not None,
+                "artist_uris": tuple(['']) if uris is None else tuple(uris),
+                "filter_mbids": mbids is not None,
+                "mbids": tuple(['']) if mbids is None else tuple(mbids),
+            })
 
 
     def mb_artist(self, mbid: str) -> pd.Series:
@@ -858,4 +816,60 @@ group by
     pa.image_url
 
 order by tr.rank asc nulls last;
+"""
+
+select_artists = """
+select
+    a.uri as artist_uri,
+    a.name as artist_name,
+    a.popularity as artist_popularity,
+    a.followers as artist_followers,
+    a.image_url as artist_image_url,
+    ar.rank as artist_rank,
+    ar.stream_count as artist_stream_count,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            inner join liked_track ilt on ilt.track_uri = ita.track_uri
+            where ita.artist_uri = a.uri
+            and ita.track_uri in (
+                select track_uri from playlist_track
+            )
+        )
+    ) as artist_liked_track_count,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            where ita.artist_uri = a.uri
+            and ita.track_uri in (
+                select track_uri from playlist_track
+            )
+        )
+    ) as artist_track_count
+
+from artist a
+    inner join track_artist ta on ta.artist_uri = a.uri
+    inner join playlist_track pt on ta.track_uri = pt.track_uri
+    left join artist_rank ar on ar.artist_uri = a.uri and ar.as_of_date = (select max(as_of_date) from artist_rank)
+    left join sp_artist_mb_artist sp_mb_a on sp_mb_a.spotify_artist_uri = a.uri
+    left join mb_artist mba on mba.artist_mbid = sp_mb_a.artist_mbid
+WHERE
+    (:filter_artists = false or a.uri in :artist_uris)
+    AND
+    (:filter_tracks = false or ta.track_uri in :track_uris)
+    AND
+    (:filter_mbids = false or mba.artist_mbid in :mbids)
+group by
+    a.uri,
+    a.name,
+    a.popularity,
+    a.followers,
+    a.image_url,
+    ar.rank,
+    ar.stream_count
+order by ar.rank asc nulls last;
 """
