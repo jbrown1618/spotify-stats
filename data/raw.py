@@ -1,5 +1,3 @@
-import os
-from datetime import datetime
 import pandas as pd
 import psycopg2
 import sqlalchemy
@@ -144,10 +142,12 @@ class DataSource:
             if i > 0 and i % update_batch_size == 0:
                 # Prevent timeouts by getting a new connection every so often
                 conn.commit()
+                conn.close()
                 conn = get_connection()
                 cursor = conn.cursor()
 
         conn.commit()
+        conn.close()
 
         self.data()
         return

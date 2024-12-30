@@ -79,41 +79,41 @@ def album_ranks_over_time(album_uris: typing.Iterable[str]):
 
 
 def ensure_ranks(force: bool = False):
-    conn = get_connection()
-    cursor = conn.cursor()
+    with get_connection() as conn:
+        cursor = conn.cursor()
 
-    if force:
-        print('Clearing existing ranks...')
-        cursor.execute("""
-            TRUNCATE track_rank;
-            TRUNCATE album_rank;
-            TRUNCATE artist_rank;
-        """)
+        if force:
+            print('Clearing existing ranks...')
+            cursor.execute("""
+                TRUNCATE track_rank;
+                TRUNCATE album_rank;
+                TRUNCATE artist_rank;
+            """)
+            conn.commit()
+
+        print('Getting dates to populate ranks...')
+        cursor.execute('''
+            SELECT DISTINCT to_time
+            FROM listening_period
+            WHERE to_time NOT IN (
+                SELECT DISTINCT as_of_date FROM track_rank
+            );
+        ''')
+        unranked_dates = [row[0] for row in cursor.fetchall()]
+
+        for date in unranked_dates:
+            print(f'Populating track ranks for {date}')
+            cursor.execute(populate_track_ranks, {"as_of_date": date})
+
+        for date in unranked_dates:
+            print(f'Populating album ranks for {date}')
+            cursor.execute(populate_album_ranks, {"as_of_date": date})
+        
+        for date in unranked_dates:
+            print(f'Populating artist ranks for {date}')
+            cursor.execute(populate_artist_ranks, {"as_of_date": date})
+        
         conn.commit()
-
-    print('Getting dates to populate ranks...')
-    cursor.execute('''
-        SELECT DISTINCT to_time
-        FROM listening_period
-        WHERE to_time NOT IN (
-            SELECT DISTINCT as_of_date FROM track_rank
-        );
-    ''')
-    unranked_dates = [row[0] for row in cursor.fetchall()]
-
-    for date in unranked_dates:
-        print(f'Populating track ranks for {date}')
-        cursor.execute(populate_track_ranks, {"as_of_date": date})
-
-    for date in unranked_dates:
-        print(f'Populating album ranks for {date}')
-        cursor.execute(populate_album_ranks, {"as_of_date": date})
-    
-    for date in unranked_dates:
-        print(f'Populating artist ranks for {date}')
-        cursor.execute(populate_artist_ranks, {"as_of_date": date})
-    
-    conn.commit()
 
 
 populate_track_ranks = '''

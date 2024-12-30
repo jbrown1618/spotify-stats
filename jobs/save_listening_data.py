@@ -100,59 +100,59 @@ def get_listening_period(min_time: float, max_time: float):
 
 def create_listening_period(from_time: float, to_time: float):
     print(f'Creating listening period from {from_time} to {to_time}')
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO listening_period (from_time, to_time)
-        VALUES (TO_TIMESTAMP(%(ft)s), TO_TIMESTAMP(%(tt)s))
-    """, {"ft": from_time, "tt": to_time})
-    conn.commit()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO listening_period (from_time, to_time)
+            VALUES (TO_TIMESTAMP(%(ft)s), TO_TIMESTAMP(%(tt)s))
+        """, {"ft": from_time, "tt": to_time})
+        conn.commit()
 
 
 def update_listening_period(id, to_time: float):
     print(f'Updating the end of listening period {id} to {to_time}')
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE listening_period
-        SET to_time = TO_TIMESTAMP(%(tt)s)
-        WHERE id = %(period_id)s
-    """, {"period_id": id, "tt": to_time})
-    conn.commit()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE listening_period
+            SET to_time = TO_TIMESTAMP(%(tt)s)
+            WHERE id = %(period_id)s
+        """, {"period_id": id, "tt": to_time})
+        conn.commit()
 
 
 def get_latest_listening_period():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, from_time, to_time
-        FROM listening_period
-        WHERE to_time = (
-            SELECT MAX(to_time) from listening_period
-        )
-        LIMIT 1
-    """)
-    return cursor.fetchone()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, from_time, to_time
+            FROM listening_period
+            WHERE to_time = (
+                SELECT MAX(to_time) from listening_period
+            )
+            LIMIT 1
+        """)
+        return cursor.fetchone()
 
 
 def update_play_counts(period_id: int, play_counts: pd.DataFrame):
     print('Updating play counts: ')
     print(play_counts)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    for _, row in play_counts.iterrows():
-        cursor.execute("""
-        INSERT INTO listening_history (listening_period_id, track_uri, stream_count)
-        VALUES (%(period_id)s, %(track_uri)s, %(stream_count)s)
-        ON CONFLICT (listening_period_id, track_uri) DO UPDATE
-        SET stream_count = listening_history.stream_count + %(stream_count)s;
-        """, {
-            "period_id": period_id,
-            "track_uri": row["track_uri"],
-            "stream_count": row["stream_count"]
-        })
-    conn.commit()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        for _, row in play_counts.iterrows():
+            cursor.execute("""
+            INSERT INTO listening_history (listening_period_id, track_uri, stream_count)
+            VALUES (%(period_id)s, %(track_uri)s, %(stream_count)s)
+            ON CONFLICT (listening_period_id, track_uri) DO UPDATE
+            SET stream_count = listening_history.stream_count + %(stream_count)s;
+            """, {
+                "period_id": period_id,
+                "track_uri": row["track_uri"],
+                "stream_count": row["stream_count"]
+            })
+        conn.commit()
 
 
 if __name__ == '__main__':

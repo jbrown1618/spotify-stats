@@ -83,27 +83,27 @@ def make_periods(min_time: float, max_time: float):
 
 
 def import_missing_tracks():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT track_uri
-        FROM listening_history h
-        LEFT JOIN track t ON t.uri = h.track_uri
-        WHERE t.name IS NULL
-    """)
-    missing_uris = [row[0] for row in cursor.fetchall()]
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT track_uri
+            FROM listening_history h
+            LEFT JOIN track t ON t.uri = h.track_uri
+            WHERE t.name IS NULL
+        """)
+        missing_uris = [row[0] for row in cursor.fetchall()]
     save_tracks_by_uri(missing_uris)
 
 
 def get_listening_period_id(from_time: float):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id
-        FROM listening_period
-        WHERE from_time = TO_TIMESTAMP(%(ft)s)
-    """, {"ft": from_time})
-    return cursor.fetchone()[0]
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id
+            FROM listening_period
+            WHERE from_time = TO_TIMESTAMP(%(ft)s)
+        """, {"ft": from_time})
+        return cursor.fetchone()[0]
 
 
 if __name__ == '__main__':
