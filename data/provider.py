@@ -1,7 +1,8 @@
 import typing
 import pandas as pd
+import sqlalchemy
 
-from data.raw import RawData
+from data.raw import RawData, get_engine
 from utils.album import short_album_name
 from utils.date import release_year
 from utils.ranking import current_album_ranks, current_artist_ranks, current_track_ranks
@@ -178,7 +179,7 @@ class DataProvider:
     def track(self, uri: str):
         return self.tracks(uris=[uri]).iloc[0]
         
-
+    
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
                liked: bool = None, 
@@ -187,70 +188,26 @@ class DataProvider:
                years: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None,
-               owned: bool = False) -> pd.DataFrame:
-        raw = RawData()
-
-        if self._tracks is None:
-            tracks = pd.merge(raw['tracks'], self.albums(), on="album_uri")
-
-            liked_track_uris = set(raw["liked_tracks"]["track_uri"])
-            tracks["track_liked"] = tracks["track_uri"].isin(liked_track_uris)
-
-            artists = add_primary_prefix(self.artists().copy())
-            track_artist = raw['track_artist']
-            track_primary_artist = track_artist[track_artist['artist_index'] == 0][['track_uri', 'artist_uri']]
-            track_primary_artist.rename(columns={'artist_uri': 'primary_artist_uri'}, inplace=True)
-
-            tracks = pd.merge(tracks, track_primary_artist, on="track_uri")
-            tracks = pd.merge(tracks, artists, on="primary_artist_uri")
-            
-            ranks = current_track_ranks(tracks['track_uri'])
-            tracks = pd.merge(tracks, ranks, on='track_uri', how="left")
-            tracks['track_rank'].fillna(tracks['track_rank'].max() + 1, inplace=True)
-
-            self._tracks = tracks
-            self._owned_tracks = tracks[tracks['track_uri'].isin(self.__owned_track_uris())]
-
-        out = self._owned_tracks if owned else self._tracks
-
-        if uris is not None:
-            out = out[out["track_uri"].isin(uris)]
-
-        if liked is not None:
-            out = out[out["track_liked"] == liked]
-
-        if labels is not None:
-            if self._album_label is None:
-                self._album_label = standardize_record_labels(self.albums(), self.tracks())
-
-            albums_uris = self._album_label[self._album_label["album_standardized_label"].isin(labels)]["album_uri"]
-            out = out[out['album_uri'].isin(albums_uris)]
-
-        if genres is not None:
-            track_genre = self.track_genre()
-            tracks_in_genre = set(track_genre[track_genre['genre'].isin(genres)]['track_uri'])
-            out = out[out["track_uri"].isin(tracks_in_genre)]
-
-        if years is not None:
-            out = out[out['album_release_year'].isin(years)]
-
-        if album_uris is not None:
-            out = out[out['album_uri'].isin(album_uris)]
-
-        if playlist_uris is not None:
-            playlist_track = raw['playlist_track']
-            track_uris = set(playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri'])
-            out = out[out["track_uri"].isin(track_uris)]
-
-        if artist_uris is not None:
-            track_artist = raw['track_artist']
-            track_uris = set(track_artist[track_artist['artist_uri'].isin(artist_uris)]['track_uri'])
-            out = out[out["track_uri"].isin(track_uris)]
-
-        return out
-    
-
+               artist_uris: typing.Iterable[str] = None):
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(select_tracks), conn, params={
+                "filter_tracks": uris is not None,
+                "track_uris": tuple(['']) if uris is None else tuple(uris),
+                "liked": bool(liked),
+                "filter_playlists": playlist_uris is not None,
+                "playlist_uris": tuple(['']) if playlist_uris is None else tuple(playlist_uris),
+                "filter_artists": artist_uris is not None,
+                "artist_uris": tuple(['']) if artist_uris is None else tuple(artist_uris),
+                "filter_albums": album_uris is not None,
+                "album_uris": tuple(['']) if album_uris is None else tuple(album_uris),
+                "filter_labels": labels is not None,
+                "labels": tuple(['']) if labels is None else tuple(labels),
+                "filter_genres": genres is not None,
+                "genres": tuple(['']) if genres is None else tuple(genres),
+                "filter_years": years is not None,
+                "years": tuple([0]) if years is None else tuple(years)
+            })
+        
     def track_credits(self, 
                       track_uris: typing.Iterable[str] = None, 
                       artist_uri: str = None, 
@@ -487,7 +444,8 @@ class DataProvider:
             out = out[out['artist_uri'].isin(uris)]
 
         return out
-    
+
+
     def mb_artist(self, mbid: str) -> pd.Series:
         return self.mb_artists(mbids = {mbid}).iloc[0]
     
@@ -765,3 +723,139 @@ def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]
     return artists
     
+
+select_tracks = """
+select
+    t.uri as track_uri,
+    t.name as track_name,
+    t.popularity as track_popularity,
+    t.explicit as track_explicit,
+    t.duration_ms as track_duration_ms,
+    t.isrc as track_isrc,
+    t.uri in (select track_uri from liked_track) as track_liked,
+    tr.rank as track_rank,
+    coalesce(tr.stream_count, 0) as track_stream_count,
+
+    al.uri as album_uri,
+    al.name as album_name,
+    al.album_type,
+    al.label as album_label,
+    al.popularity as album_popularity,
+    al.release_date as album_release_date,
+    al.image_url as album_image_url,
+    alr.rank as album_rank,
+    alr.stream_count as album_stream_count,
+    (
+        case
+        when length(al.release_date) = 10
+            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
+        when length(al.release_date) = 7
+            then extract(year from to_date(al.release_date, 'YYYY-MM'))
+        when length(al.release_date) = 4
+            then extract(year from to_date(al.release_date, 'YYYY'))
+        else 0
+        end
+    ) as album_release_year,
+
+    pa.uri as primary_artist_uri,
+    pa.name as primary_artist_name,
+    pa.popularity as primary_artist_popularity,
+    pa.followers as primary_artist_followers,
+    pa.image_url as primary_artist_image_url,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            inner join liked_track ilt on ilt.track_uri = ita.track_uri
+            where ita.artist_uri = pa.uri
+            and ita.track_uri in (
+                select track_uri from playlist_track
+            )
+        )
+    ) as primary_artist_liked_track_count,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            where ita.artist_uri = pa.uri
+            and ita.track_uri in (
+                select track_uri from playlist_track
+            )
+        )
+    ) as primary_artist_track_count
+
+from track t
+    inner join playlist_track pt on pt.track_uri = t.uri
+    inner join album al on al.uri = t.album_uri
+    inner join track_artist ta on ta.track_uri = t.uri
+    inner join artist a on a.uri = ta.artist_uri
+    inner join artist pa on pa.uri = ta.artist_uri and ta.artist_index = 0
+    left join artist_genre ag on ag.artist_uri = a.uri
+    left join track_rank tr
+        on tr.track_uri = t.uri
+        and tr.as_of_date = (select max(as_of_date) from track_rank)
+    left join album_rank alr
+        on alr.album_uri = al.uri
+        and alr.as_of_date = (select max(as_of_date) from album_rank)
+    left join artist_rank ar
+        on ar.artist_uri = a.uri
+        and ar.as_of_date = (select max(as_of_date) from artist_rank)
+
+where
+    (:filter_tracks = false or t.uri in :track_uris)
+    and
+    (:liked = false or t.uri in (select track_uri from liked_track))
+    and
+    (:filter_playlists = false or pt.playlist_uri in :playlist_uris)
+    and
+    (:filter_artists = false or a.uri in :artist_uris)
+    and
+    (:filter_albums = false or al.uri in :album_uris)
+    and
+    (:filter_labels = false or al.label in (:labels))
+    and
+    (:filter_genres = false or ag.genre in (:genres))
+    and
+    (:filter_years = false or (
+        case
+        when length(al.release_date) = 10
+            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
+        when length(al.release_date) = 7
+            then extract(year from to_date(al.release_date, 'YYYY-MM'))
+        when length(al.release_date) = 4
+            then extract(year from to_date(al.release_date, 'YYYY'))
+        else 0
+        end
+        ) in :years
+    )
+
+group by
+    t.uri,
+    t.name,
+    t.popularity,
+    t.explicit,
+    t.duration_ms,
+    t.isrc,
+    tr.rank,
+    tr.stream_count,
+
+    al.uri,
+    al.name,
+    al.album_type,
+    al.label,
+    al.popularity,
+    al.release_date,
+    al.image_url,
+    alr.rank,
+    alr.stream_count,
+
+    pa.uri,
+    pa.name,
+    pa.popularity,
+    pa.followers,
+    pa.image_url
+
+order by tr.rank asc nulls last;
+"""
