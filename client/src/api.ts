@@ -97,9 +97,8 @@ export interface Album {
   album_label: string;
   album_popularity: number;
   album_release_date: string;
-  album_release_year: string;
+  album_release_year: number;
   album_short_name: string;
-  album_total_tracks: number;
   album_type: string;
   album_stream_count: number;
 }
@@ -117,7 +116,7 @@ export interface Label {
 export interface YearCounts {
   liked: number;
   total: number;
-  year: string;
+  year: number;
 }
 
 export interface ActiveFilters {
@@ -127,7 +126,7 @@ export interface ActiveFilters {
   albums?: string[];
   playlists?: string[];
   genres?: string[];
-  years?: string[];
+  years?: number[];
 }
 
 export interface FilterOptions {
@@ -136,7 +135,7 @@ export interface FilterOptions {
   playlists: Record<string, Pick<Playlist, "playlist_uri" | "playlist_name">>;
   labels: string[];
   genres: string[];
-  years: string[];
+  years: number[];
 }
 
 export const defaultFilterOptions: FilterOptions = {

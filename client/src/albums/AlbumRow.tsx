@@ -42,12 +42,6 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
               label: "Popularity",
               value: album.album_popularity,
             },
-        isMobile
-          ? null
-          : {
-              label: "Tracks",
-              value: album.album_total_tracks,
-            },
       ]}
     />
   );

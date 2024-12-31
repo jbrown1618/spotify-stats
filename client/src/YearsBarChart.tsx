@@ -4,14 +4,14 @@ import { YearCounts } from "./api";
 export function YearsBarChart({ counts }: { counts: YearCounts[] }) {
   const data = [...counts];
 
-  const distinctYears = counts.map((c) => parseInt(c.year));
+  const distinctYears = counts.map((c) => c.year);
   const minYear = Math.min(...distinctYears);
   const maxYear = Math.max(...distinctYears);
 
   for (let y = minYear + 1; y < maxYear; y++) {
     if (!distinctYears.includes(y)) {
       data.push({
-        year: String(y),
+        year: y,
         liked: 0,
         total: 0,
       });

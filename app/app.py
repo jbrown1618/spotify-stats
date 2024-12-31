@@ -61,14 +61,6 @@ def data():
 
     dp = DataProvider()
 
-    playlists = dp.playlists(
-        uris=playlist_uris, 
-        artist_uris=artist_uris,
-        album_uris=album_uris,
-        labels=label_names,
-        genres=genre_names,
-        years=release_years
-    )
 
     tracks = dp.tracks(
         playlist_uris=playlist_uris, 
@@ -80,17 +72,10 @@ def data():
         liked=liked
     )
 
-    artists = dp.artists_alternate(track_uris=tracks['track_uri'])
-    
-    albums = dp.albums(
-        owned=True,
-        uris=album_uris,
-        artist_uris=artist_uris,
-        playlist_uris=playlist_uris,
-        labels=label_names,
-        genres=genre_names,
-        years=release_years
-    )
+    playlists = dp.playlists(track_uris=tracks['track_uri'])
+    artists = dp.artists(track_uris=tracks['track_uri'])
+    albums = dp.albums(track_uris=tracks['track_uri'])
+    genres = dp.genres(artist_uris=artists['artist_uri'])
 
     labels = dp.labels(
         label_names=label_names,
@@ -101,24 +86,13 @@ def data():
         liked=liked
     )
 
-    genres = dp.genres(
-        names=genre_names,
-        playlist_uris=playlist_uris,
-        artist_uris=artist_uris,
-        album_uris=album_uris,
-        labels=label_names,
-        years=release_years,
-        with_liked_tracks=liked
-    )
-
     summary_payload = {
-        "filter_options": get_filter_options(filters),
         "playlists": to_json(playlists, 'playlist_uri'),
         "tracks": to_json(tracks, 'track_uri'),
         "artists": to_json(artists, 'artist_uri'),
         "albums": to_json(albums, 'album_uri'),
         "labels": [l for l in labels['album_standardized_label']],
-        "genres": [g for g in genres],
+        "genres": genres,
         "artists_by_track": artists_by_track(tracks),
         "artists_by_album": artists_by_album(albums),
         "albums_by_artist": albums_by_artist(artists),
@@ -128,7 +102,15 @@ def data():
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
-        "years": years(tracks)
+        "years": years(tracks),
+        "filter_options": {
+            "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
+            "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),
+            "playlists": to_json(playlists[['playlist_uri', 'playlist_name']], 'playlist_uri'),
+            "labels": [l for l in labels['album_standardized_label']],
+            "genres": dp.genres(artist_uris=artists['artist_uri']),
+            "years": [y for y in albums['album_release_year'].unique()]
+        },
     }
 
     if is_liked_filter(filters):
@@ -139,64 +121,6 @@ def data():
         __last_cached = now
 
     return summary_payload
-
-
-def get_filter_options(filters):
-    dp = DataProvider()
-    artist_uris = filters.get('artists', None)
-    album_uris = filters.get('albums', None)
-    playlist_uris = filters.get('playlists', None)
-    labels = filters.get('labels', None)
-    genres = filters.get('genres', None)
-    liked = filters.get('liked', None)
-    release_years = filters.get('years', None)
-
-    return {
-        "artists": to_json(dp.artists(
-            album_uris=album_uris, 
-            playlist_uris=playlist_uris,
-            labels=labels,
-            genres=genres,
-            years=release_years,
-            with_liked_tracks=liked
-        )[['artist_uri', 'artist_name']], 'artist_uri'),
-        "albums": to_json(dp.albums(
-            artist_uris=artist_uris, 
-            playlist_uris=playlist_uris,
-            labels=labels,
-            genres=genres,
-            years=release_years
-        )[['album_uri', 'album_name']], 'album_uri'),
-        "playlists": to_json(dp.playlists(
-            artist_uris=artist_uris, 
-            album_uris=album_uris,
-            labels=labels,
-            genres=genres,
-            years=release_years
-        )[['playlist_uri', 'playlist_name']], 'playlist_uri'),
-        "labels": [l for l in dp.labels(
-            album_uris=album_uris,
-            artist_uris=artist_uris,
-            playlist_uris=playlist_uris,
-            genres=genres,
-            years=release_years,
-            liked=liked
-        )['album_standardized_label']],
-        "genres": [g for g in dp.genres(
-            playlist_uris=playlist_uris,
-            artist_uris=artist_uris,
-            album_uris=album_uris,
-            labels=labels,
-            years=release_years,
-            with_liked_tracks=liked
-        )],
-        "years": [y for y in dp.albums(
-            artist_uris=artist_uris, 
-            playlist_uris=playlist_uris,
-            labels=labels,
-            genres=genres
-        )['album_release_year'].unique()]
-    }
 
 
 def artists_by_track(tracks: pd.DataFrame):

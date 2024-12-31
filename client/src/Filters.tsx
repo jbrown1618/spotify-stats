@@ -311,16 +311,16 @@ function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
         .reverse()
         .map((year) => {
           return {
-            label: year,
-            value: year,
+            label: "" + year,
+            value: "" + year,
           };
         })}
-      value={filters.years}
+      value={filters.years?.map((y) => "" + y)}
       searchable
       onChange={(years) =>
         onFilterChange((filters) => ({
           ...filters,
-          years,
+          years: years.map((y) => parseInt(y)),
         }))
       }
     />

@@ -5,7 +5,6 @@ import sqlalchemy
 from data.raw import RawData, get_engine
 from utils.album import short_album_name
 from utils.date import release_year
-from utils.ranking import current_album_ranks, current_artist_ranks, current_track_ranks
 from utils.record_label import standardize_record_labels
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
@@ -25,10 +24,7 @@ class DataProvider:
         if self._initialized:
             return
         
-        self._artists = None
-        self._albums = None
         self._owned_albums = None
-        self._playlists = None
         self._owned_tracks = None
 
         self._album_label = None
@@ -49,127 +45,6 @@ class DataProvider:
         self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
 
-    def playlists(self, 
-                  uris: typing.Iterable[str] = None, 
-                  track_uri: str = None, 
-                  album_uris: typing.Iterable[str] = None,
-                  artist_uris: typing.Iterable[str] = None,
-                  labels: typing.Iterable[str] = None,
-                  genres: typing.Iterable[str] = None,
-                  years: typing.Iterable[str] = None) -> pd.DataFrame:
-        raw = RawData()
-        playlist_track = raw['playlist_track']
-
-        if self._playlists is None:
-            playlist_track_full = pd.merge(playlist_track, self.tracks(), on='track_uri')
-            track_counts = playlist_track_full\
-                .groupby("playlist_uri")\
-                .agg({"track_uri": "count", "track_liked": "sum"})\
-                .reset_index()\
-                .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_liked_track_count"})
-            
-            self._playlists = pd.merge(raw['playlists'], track_counts, on='playlist_uri')
-
-        out = self._playlists
-
-        if uris is not None:
-            out = out[out['playlist_uri'].isin(uris)]
-
-        if track_uri is not None:
-            uris = set(playlist_track[playlist_track['track_uri'] == track_uri]['playlist_uri'])
-            out = out[out['playlist_uri'].isin(uris)]
-
-        if album_uris is not None:
-            track_uris = set(self.tracks(album_uris=album_uris)['track_uri'])
-            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
-            out = out[out['playlist_uri'].isin(uris)]
-
-        if years is not None:
-            albums = raw['albums']
-            albums['album_release_year'] = albums['album_release_date'].apply(release_year)
-            tracks = raw['tracks']
-            joined = pd.merge(pd.merge(playlist_track, tracks, on='track_uri'), albums, on='album_uri')
-            joined = joined[joined['album_release_year'].isin(years)]
-            out = out[out['playlist_uri'].isin(joined['playlist_uri'])]
-
-        if artist_uris is not None:
-            track_uris = set(self.tracks(artist_uris=artist_uris)['track_uri'])
-            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
-            out = out[out['playlist_uri'].isin(uris)]
-
-        if labels is not None:
-            album_uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
-            track_uris = set(self.tracks(album_uris==album_uris)['track_uri'])
-            uris = set(playlist_track[playlist_track['track_uri'].isin(track_uris)]['playlist_uri'])
-            out = out[out['playlist_uri'].isin(uris)]
-
-        if genres is not None:
-            track_genre = self.track_genre()
-            tracks_in_genre = set(track_genre[track_genre['genre'].isin(genres)]['track_uri'])
-            uris = playlist_track[playlist_track['track_uri'].isin(tracks_in_genre)]['playlist_uri']
-            out = out[out['playlist_uri'].isin(uris)]
-
-        return out
-
-
-    def albums(self, 
-               uris: typing.Iterable[str] = None, 
-               owned = False,
-               playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None,
-               labels: typing.Iterable[str] = None,
-               genres: typing.Iterable[str] = None,
-               years: typing.Iterable[str] = None) -> pd.DataFrame:
-        raw = RawData()
-        if self._albums is None:
-            albums = raw["albums"].copy()
-            albums['album_name'] = albums['album_name'].fillna('NA') # This string gets set to null when going back and forth to CSV
-            albums['album_release_year'] = albums['album_release_date'].apply(release_year)
-            albums['album_short_name'] = albums['album_name'].apply(short_album_name)
-
-            ranks = current_album_ranks(albums['album_uri'])
-            albums = pd.merge(albums, ranks, on="album_uri", how="left")
-            albums['album_rank'].fillna(albums['album_rank'].max() + 1, inplace=True)
-            
-            self._albums = albums
-            self._owned_albums = albums[albums['album_uri'].isin(self.__owned_album_uris())]
-        
-        out = self._owned_albums if owned else self._albums
-
-        if uris is not None:
-            out = out[out["album_uri"].isin(uris)]
-
-        if playlist_uris is not None:
-            playlist_track = raw['playlist_track']
-            track_uris = set(playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri'])
-            tracks = raw['tracks']
-            uris = tracks[tracks['track_uri'].isin(track_uris)]['album_uri']
-            out = out[out["album_uri"].isin(uris)]
-
-        if artist_uris is not None:
-            album_artist = raw['album_artist']
-            uris = album_artist[album_artist['artist_uri'].isin(artist_uris)]['album_uri']
-            out = out[out["album_uri"].isin(uris)]
-
-        if labels is not None:
-            if self._album_label is None:
-                self._album_label = standardize_record_labels(self.albums(), self.tracks())
-            uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
-            out = out[out['album_uri'].isin(uris)]
-
-        if genres is not None:
-            artist_genre = raw['artist_genre']
-            artist_uris = artist_genre[artist_genre['genre'].isin(genres)]['artist_uri']
-            album_artist = raw['album_artist']
-            uris = album_artist[album_artist['artist_uri'].isin(artist_uris)]['album_uri']
-            out = out[out['album_uri'].isin(uris)] 
-
-        if years is not None:
-            out = out[out['album_release_year'].isin(years)]
-
-        return out
-    
-
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
                liked: bool = None, 
@@ -179,6 +54,7 @@ class DataProvider:
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
                artist_uris: typing.Iterable[str] = None):
+        print('Fetching tracks...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_tracks), conn, params={
                 "filter_tracks": uris is not None,
@@ -197,6 +73,26 @@ class DataProvider:
                 "filter_years": years is not None,
                 "years": tuple([0]) if years is None else tuple(years)
             })
+
+
+    def playlists(self, track_uris: str = None) -> pd.DataFrame:
+        print('Fetching playlists...')
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(select_playlists), conn, params={
+                "filter_tracks": track_uris is not None,
+                "track_uris": tuple(['']) if track_uris is None else tuple(track_uris)
+            })
+
+
+    def albums(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+        print('Fetching albums...')
+        with get_engine().begin() as conn:
+            albums = pd.read_sql_query(sqlalchemy.text(select_albums), conn, params={
+                "filter_tracks": track_uris is not None,
+                "track_uris": tuple(['']) if track_uris is None else tuple(track_uris)
+            })
+            albums['album_short_name'] = albums['album_name'].apply(short_album_name)
+            return albums
 
 
     def track_credits(self, 
@@ -288,111 +184,9 @@ class DataProvider:
 
     def artists(self, 
                 uris: typing.Iterable[str] = None, 
-                mbids: typing.Iterable[str] = None,
-                with_page: bool = None, 
-                track_uri: str = None,
-                album_uris: typing.Iterable[str] = None,
-                playlist_uris: typing.Iterable[str] = None,
-                labels: typing.Iterable[str] = None,
-                genres: typing.Iterable[str] = None,
-                years: typing.Iterable[str] = None,
-                with_liked_tracks: bool = None) -> pd.DataFrame:
-        raw = RawData()
-        if self._artists is None:
-            track_artist = raw['track_artist']
-            artist_liked_tracks = pd.merge(track_artist, raw["liked_tracks"], on="track_uri")\
-                .groupby("artist_uri")\
-                .agg({"track_uri": "count"})\
-                .reset_index()
-            artist_liked_tracks.rename(columns={"track_uri": "artist_liked_track_count"}, inplace=True)
-            artist_all_track_counts = track_artist[["artist_uri", "track_uri"]]\
-                .groupby("artist_uri")\
-                .agg({"track_uri": "count"})\
-                .reset_index()
-            artist_all_track_counts.rename(columns={"track_uri": "artist_track_count"}, inplace=True)
-            artist_track_counts = pd.merge(artist_liked_tracks, artist_all_track_counts, how="outer", on="artist_uri")
-            
-            artists = pd.merge(raw['artists'], artist_track_counts, on="artist_uri", how="outer")
-            artists['artist_track_count'].fillna(0, inplace=True)
-            artists['artist_liked_track_count'].fillna(0, inplace=True)
-            
-            artists["artist_has_page"] = (artists["artist_track_count"] >= 50) \
-                | ((artists["artist_track_count"] >= 10) & (artists["artist_liked_track_count"] > 0)) \
-                | (artists["artist_liked_track_count"] >= 5)
-            
-            ranks = current_artist_ranks(artists['artist_uri'])
-            artists = pd.merge(artists, ranks, on="artist_uri", how="left")
-            artists['artist_rank'].fillna(artists['artist_rank'].max() + 1, inplace=True)
-
-            self._artists = artists
-
-        out = self._artists
-
-        if mbids is not None:
-            mb_join = raw['sp_artist_mb_artist']
-            matching_uris = mb_join[mb_join['artist_mbid'].isin(mbids)]['spotify_artist_uri']
-            uris = set(uris or {}) + set(matching_uris)
-
-        if uris is not None:
-            out = out[out['artist_uri'].isin(uris)]
-
-        if with_page is not None:
-            out = out[out['artist_has_page'] == with_page]
-
-        if track_uri is not None:
-            track_artist = raw['track_artist']
-            artist_entries_for_track = track_artist[track_artist['track_uri'] == track_uri]
-            out = pd.merge(artist_entries_for_track, out, on="artist_uri")\
-                .sort_values(by="artist_index", ascending=True)\
-                .drop(columns=["artist_index", "track_uri"])
-
-        if album_uris is not None:
-            album_artist = raw['album_artist']
-            uris = set(album_artist[album_artist['album_uri'].isin(album_uris)]['artist_uri'])
-            out = out[out['artist_uri'].isin(uris)]
-
-        if playlist_uris is not None:
-            playlist_track = raw['playlist_track']
-            track_uris = playlist_track[playlist_track['playlist_uri'].isin(playlist_uris)]['track_uri']
-            track_artist = raw['track_artist']
-            uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
-            out = out[out['artist_uri'].isin(uris)]
-
-        if labels is not None:
-            if self._album_label is None:
-                self._album_label = standardize_record_labels(self.albums(), self.tracks())
-            album_uris = self._album_label[self._album_label['album_standardized_label'].isin(labels)]['album_uri']
-            album_artist = raw['album_artist']
-            uris = set(album_artist[album_artist['album_uri'].isin(album_uris)]['artist_uri'])
-            out = out[out['artist_uri'].isin(uris)]
-
-        if with_liked_tracks is not None:
-            track_uris = raw['liked_tracks']['track_uri']
-            track_artist = raw['track_artist']
-            uris = track_artist[track_artist['track_uri'].isin(track_uris)]['artist_uri']
-            out = out[out['artist_uri'].isin(uris)]
-
-        if genres is not None:
-            artist_genre = raw['artist_genre']
-            uris = artist_genre[artist_genre['genre'].isin(genres)]['artist_uri']
-            out = out[out['artist_uri'].isin(uris)]
-
-        if years is not None:
-            albums = raw['albums']
-            albums['album_release_year'] = albums['album_release_date'].apply(release_year)
-            tracks = raw['tracks']
-            track_artist = raw['track_artist']
-            joined = pd.merge(pd.merge(albums, tracks, on='album_uri'), track_artist, on='track_uri')
-            uris = joined[joined['album_release_year'].isin(years)]['artist_uri']
-            out = out[out['artist_uri'].isin(uris)]
-
-        return out
-
-
-    def artists_alternate(self, 
-                          uris: typing.Iterable[str] = None, 
-                          track_uris: typing.Iterable[str] = None, 
-                          mbids: typing.Iterable[str] = None):
+                track_uris: typing.Iterable[str] = None, 
+                mbids: typing.Iterable[str] = None):
+        print('Fetching artists...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_artists), conn, params={
                 "filter_tracks": uris is not None,
@@ -563,43 +357,13 @@ class DataProvider:
         return self._album_label
     
 
-    def genres(self, 
-               names: typing.Iterable[str] = None,
-               playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None,
-               album_uris: typing.Iterable[str] = None,
-               labels: typing.Iterable[str] = None,
-               years: typing.Iterable[str] = None,
-               with_liked_tracks: bool = None,
-               with_page: bool = None) -> typing.Iterable[str]:
-        if with_page:
-            out = self.track_genre()
-            out = out[out['genre_has_page'] == True]
-            return out.groupby('genre').agg({'track_uri': "sum"}).reset_index()['genre']
-        
-        artist_uris = self.artists(uris=artist_uris, 
-                                   album_uris=album_uris, 
-                                   playlist_uris=playlist_uris, 
-                                   labels=labels, 
-                                   with_liked_tracks=with_liked_tracks)['artist_uri']
-        
-        rd = RawData()
-        artist_genre = rd['artist_genre']
-        out = artist_genre[artist_genre['artist_uri'].isin(artist_uris)]
-
-        if names is not None:
-            out = out[out['genre'].isin(names)]
-
-        if years is not None:
-            albums = rd['albums']
-            albums['album_release_year'] = albums['album_release_date'].apply(release_year)
-            tracks = rd['tracks']
-            track_artist = rd['track_artist']
-            joined = pd.merge(pd.merge(albums, tracks, on='album_uri'), track_artist, on='track_uri')
-            artist_uris = joined[joined['album_release_year'].isin(years)]['artist_uri']
-            out = out[out['artist_uri'].isin(artist_uris)]
-
-        return out['genre'].unique()
+    def genres(self, artist_uris: typing.Iterable[str]) -> typing.Iterable[str]:
+        print('Fetching genres...')
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(select_genres), conn, params={
+                "filter_artists": artist_uris is not None,
+                "artist_uris": tuple(['']) if artist_uris is None else tuple(artist_uris)
+            })['genre'].to_list()
 
 
     def track_genre(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
@@ -872,4 +636,84 @@ group by
     ar.rank,
     ar.stream_count
 order by ar.rank asc nulls last;
+"""
+
+select_playlists = """
+select
+    p.uri as playlist_uri,
+    p.name as playlist_name,
+    p.collaborative as playlist_collaborative,
+    p.public as playlist_public,
+    p.image_url as playlist_image_url,
+    p.owner as playlist_owner,
+    (
+        select count(track_uri)
+        from playlist_track
+        where playlist_uri = p.uri
+    ) as playlist_track_count,
+    (
+        select count(ipt.track_uri)
+        from playlist_track ipt
+        inner join liked_track lt on lt.track_uri = ipt.track_uri
+        where playlist_uri = p.uri
+    ) as playlist_liked_track_count
+from playlist p
+    inner join playlist_track pt on pt.playlist_uri = p.uri
+where
+    (:filter_tracks = false or pt.track_uri in :track_uris)
+group by
+    p.uri,
+    p.name,
+    p.collaborative,
+    p.public,
+    p.image_url,
+    p.owner;
+"""
+
+select_albums = """
+select 
+    al.uri as album_uri,
+    al.name as album_name,
+    al.album_type,
+    al.label as album_label,
+    al.label as album_standardized_label, -- TODO
+    al.popularity as album_popularity,
+    al.release_date as album_release_date,
+    al.image_url as album_image_url,
+    alr.rank as album_rank,
+    alr.stream_count as album_stream_count,
+    (
+        case
+        when length(al.release_date) = 10
+            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
+        when length(al.release_date) = 7
+            then extract(year from to_date(al.release_date, 'YYYY-MM'))
+        when length(al.release_date) = 4
+            then extract(year from to_date(al.release_date, 'YYYY'))
+        else 0
+        end
+    ) as album_release_year
+from album al
+    inner join track t on t.album_uri = al.uri
+    left join album_rank alr
+        on alr.album_uri = al.uri
+        and as_of_date = (select max(as_of_date) from album_rank)
+where (:filter_tracks = false or t.uri in :track_uris)
+group by 
+    al.uri,
+    al.name,
+    al.album_type,
+    al.label,
+    al.popularity,
+    al.release_date,
+    al.image_url,
+    alr.rank,
+    alr.stream_count
+order by rank asc nulls last;
+"""
+
+select_genres = """
+select distinct ag.genre
+from artist_genre ag
+where :filter_artists = false or ag.artist_uri in :artist_uris
 """

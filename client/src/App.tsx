@@ -106,7 +106,9 @@ export function App() {
             items={
               data
                 ? Object.values(data.artists).sort(
-                    (a, b) => a.artist_rank - b.artist_rank
+                    (a, b) =>
+                      (a.artist_rank ?? Number.MAX_SAFE_INTEGER) -
+                      (b.artist_rank ?? Number.MAX_SAFE_INTEGER)
                   )
                 : undefined
             }
@@ -150,7 +152,9 @@ export function App() {
             items={
               data
                 ? Object.values(data.albums).sort(
-                    (a, b) => a.album_rank - b.album_rank
+                    (a, b) =>
+                      (a.album_rank ?? Number.MAX_SAFE_INTEGER) -
+                      (b.album_rank ?? Number.MAX_SAFE_INTEGER)
                   )
                 : undefined
             }
@@ -180,7 +184,9 @@ export function App() {
             items={
               data
                 ? Object.values(data.tracks).sort(
-                    (a, b) => a.track_rank - b.track_rank
+                    (a, b) =>
+                      (a.track_rank ?? Number.MAX_SAFE_INTEGER) -
+                      (b.track_rank ?? Number.MAX_SAFE_INTEGER)
                   )
                 : undefined
             }
