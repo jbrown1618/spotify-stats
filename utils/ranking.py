@@ -9,7 +9,7 @@ track_score_factor = 0.5
 as_of_now = this_date()
 
 def current_track_ranks(track_uris: typing.Iterable[str]):
-    track_uris = tuple(track_uris)
+    track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         df = pd.read_sql_query(sqlalchemy.text('''
             SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
@@ -23,7 +23,7 @@ def current_track_ranks(track_uris: typing.Iterable[str]):
 
 
 def track_ranks_over_time(track_uris: typing.Iterable[str]):
-    track_uris = tuple(track_uris)
+    track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT track_uri, rank as track_rank, stream_count as track_stream_count, as_of_date
@@ -33,7 +33,7 @@ def track_ranks_over_time(track_uris: typing.Iterable[str]):
 
 
 def current_artist_ranks(artist_uris: typing.Iterable[str]):
-    artist_uris = tuple(artist_uris)
+    artist_uris = tuple(artist_uris) if len(artist_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
@@ -46,7 +46,7 @@ def current_artist_ranks(artist_uris: typing.Iterable[str]):
 
 
 def artist_ranks_over_time(artist_uris: typing.Iterable[str]):
-    artist_uris = tuple(artist_uris)
+    artist_uris = tuple(artist_uris) if len(artist_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT artist_uri, rank as artist_rank, stream_count as artist_stream_count, as_of_date
@@ -56,7 +56,7 @@ def artist_ranks_over_time(artist_uris: typing.Iterable[str]):
 
 
 def current_album_ranks(album_uris: typing.Iterable[str]):
-    album_uris = tuple(album_uris)
+    album_uris = tuple(album_uris) if len(album_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date
@@ -69,7 +69,7 @@ def current_album_ranks(album_uris: typing.Iterable[str]):
 
 
 def album_ranks_over_time(album_uris: typing.Iterable[str]):
-    album_uris = tuple(album_uris)
+    album_uris = tuple(album_uris) if len(album_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(sqlalchemy.text('''
             SELECT album_uri, rank as album_rank, stream_count as album_stream_count, as_of_date

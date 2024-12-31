@@ -35,13 +35,11 @@ class Migration:
 
                 cursor.execute(update_version.format(version=self.__version))
                 conn.commit()
-                conn.close()
                 print(f'Completed migration to {self.__version}')
                 return True
             except Exception as e:
                 print(f'Migration to {self.__version} failed: {e}')
                 conn.rollback()
-                conn.close()
                 return False
 
 
@@ -62,13 +60,11 @@ class Migration:
 
                 cursor.execute(update_version.format(version=f"v{int(self.__version[1:]) - 1}"))
                 conn.commit()
-                conn.close()
                 print(f'Reversed migration to {self.__version}')
                 return True
             except Exception as e:
                 print(f'Reversing migration to {self.__version} failed: {e}')
                 conn.rollback()
-                conn.close()
                 return False
 
 

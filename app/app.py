@@ -61,7 +61,6 @@ def data():
 
     dp = DataProvider()
 
-
     tracks = dp.tracks(
         playlist_uris=playlist_uris, 
         artist_uris=artist_uris, 
@@ -76,22 +75,14 @@ def data():
     artists = dp.artists(track_uris=tracks['track_uri'])
     albums = dp.albums(track_uris=tracks['track_uri'])
     genres = dp.genres(artist_uris=artists['artist_uri'])
-
-    labels = dp.labels(
-        label_names=label_names,
-        album_uris=album_uris,
-        artist_uris=artist_uris,
-        playlist_uris=playlist_uris,
-        years=release_years,
-        liked=liked
-    )
+    labels = dp.labels(album_uris=albums['album_uri'])
 
     summary_payload = {
         "playlists": to_json(playlists, 'playlist_uri'),
         "tracks": to_json(tracks, 'track_uri'),
         "artists": to_json(artists, 'artist_uri'),
         "albums": to_json(albums, 'album_uri'),
-        "labels": [l for l in labels['album_standardized_label']],
+        "labels": labels,
         "genres": genres,
         "artists_by_track": artists_by_track(tracks),
         "artists_by_album": artists_by_album(albums),
@@ -107,7 +98,7 @@ def data():
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
             "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),
             "playlists": to_json(playlists[['playlist_uri', 'playlist_name']], 'playlist_uri'),
-            "labels": [l for l in labels['album_standardized_label']],
+            "labels": labels,
             "genres": dp.genres(artist_uris=artists['artist_uri']),
             "years": [y for y in albums['album_release_year'].unique()]
         },

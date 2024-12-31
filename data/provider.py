@@ -4,8 +4,6 @@ import sqlalchemy
 
 from data.raw import RawData, get_engine
 from utils.album import short_album_name
-from utils.date import release_year
-from utils.record_label import standardize_record_labels
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
 
@@ -42,7 +40,6 @@ class DataProvider:
 
         self._initialized = True
 
-        self._album_label = standardize_record_labels(self.albums(), self.tracks())
 
 
     def tracks(self, 
@@ -58,20 +55,20 @@ class DataProvider:
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_tracks), conn, params={
                 "filter_tracks": uris is not None,
-                "track_uris": tuple(['']) if uris is None else tuple(uris),
+                "track_uris": tuple(['EMPTY']) if uris is None or len(uris) == 0 else tuple(uris),
                 "liked": bool(liked),
                 "filter_playlists": playlist_uris is not None,
-                "playlist_uris": tuple(['']) if playlist_uris is None else tuple(playlist_uris),
+                "playlist_uris": tuple(['EMPTY']) if playlist_uris is None or len(playlist_uris) == 0 else tuple(playlist_uris),
                 "filter_artists": artist_uris is not None,
-                "artist_uris": tuple(['']) if artist_uris is None else tuple(artist_uris),
+                "artist_uris": tuple(['EMPTY']) if artist_uris is None or len(artist_uris) == 0 else tuple(artist_uris),
                 "filter_albums": album_uris is not None,
-                "album_uris": tuple(['']) if album_uris is None else tuple(album_uris),
+                "album_uris": tuple(['EMPTY']) if album_uris is None or len(album_uris) == 0 else tuple(album_uris),
                 "filter_labels": labels is not None,
-                "labels": tuple(['']) if labels is None else tuple(labels),
+                "labels": tuple(['EMPTY']) if labels is None or len(labels) == 0 else tuple(labels),
                 "filter_genres": genres is not None,
-                "genres": tuple(['']) if genres is None else tuple(genres),
+                "genres": tuple(['EMPTY']) if genres is None or len(genres) == 0 else tuple(genres),
                 "filter_years": years is not None,
-                "years": tuple([0]) if years is None else tuple(years)
+                "years": tuple([0]) if years is None or len(years) == 0 else tuple(years)
             })
 
 
@@ -80,7 +77,7 @@ class DataProvider:
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_playlists), conn, params={
                 "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['']) if track_uris is None else tuple(track_uris)
+                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
 
 
@@ -89,7 +86,7 @@ class DataProvider:
         with get_engine().begin() as conn:
             albums = pd.read_sql_query(sqlalchemy.text(select_albums), conn, params={
                 "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['']) if track_uris is None else tuple(track_uris)
+                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
             albums['album_short_name'] = albums['album_name'].apply(short_album_name)
             return albums
@@ -189,12 +186,12 @@ class DataProvider:
         print('Fetching artists...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_artists), conn, params={
-                "filter_tracks": uris is not None,
-                "track_uris": tuple(['']) if uris is None else tuple(track_uris),
+                "filter_tracks": track_uris is not None,
+                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris),
                 "filter_artists": uris is not None,
-                "artist_uris": tuple(['']) if uris is None else tuple(uris),
+                "artist_uris": tuple(['EMPTY']) if uris is None or len(uris) == 0 else tuple(uris),
                 "filter_mbids": mbids is not None,
-                "mbids": tuple(['']) if mbids is None else tuple(mbids),
+                "mbids": tuple(['EMPTY']) if mbids is None or len(mbids) == 0 else tuple(mbids),
             })
 
 
@@ -308,53 +305,13 @@ class DataProvider:
             .reset_index()
     
 
-    def labels(self, 
-               label_names: typing.Iterable[str] = None,
-               track_uris: typing.Iterable[str] = None, 
-               artist_uris: typing.Iterable[str] = None, 
-               playlist_uris: typing.Iterable[str] = None, 
-               album_uris: typing.Iterable[str] = None, 
-               genres: typing.Iterable[str] = None, 
-               years: typing.Iterable[str] = None, 
-               liked: bool = None,
-               with_page: bool = None) -> pd.DataFrame:
-        if self._album_label is None:
-            self._album_label = standardize_record_labels(self.albums(), self.tracks())
-
-        tracks = self.tracks(uris=track_uris, 
-                             album_uris=album_uris, 
-                             artist_uris=artist_uris, 
-                             playlist_uris=playlist_uris,
-                             genres=genres,
-                             liked=liked)
-
-        out = pd.merge(tracks, self._album_label, on="album_uri")\
-            .groupby("album_standardized_label")\
-            .agg({"track_uri": "count", "track_liked": "sum", "label_has_page": first})\
-            .reset_index()\
-            .rename(columns={"track_uri": "label_track_count", "track_liked": "label_track_liked_count"})
-        
-        if label_names is not None:
-            out = out[out['album_standardized_label'].isin(label_names)]
-
-        if with_page is not None:
-            out = out[out['label_has_page'] == with_page]
-
-        if years is not None:
-            albums = RawData()['albums']
-            albums['album_release_year'] = albums['album_release_date'].apply(release_year)
-            album_uris = albums[albums['album_release_year'].isin(years)]['album_uri']
-            label_names = self._album_label[self._album_label['album_uri'].isin(album_uris)]['album_standardized_label']
-            out = out[out['album_standardized_label'].isin(label_names)]
-
-        return out
-    
-
-    def album_label(self):
-        if self._album_label is None:
-            self._album_label = standardize_record_labels(self.albums(), self.tracks())
-
-        return self._album_label
+    def labels(self, album_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+        print('Fetching labels...')
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(select_labels), conn, params={
+                "filter_albums": album_uris is not None,
+                "album_uris": tuple(['EMPTY']) if album_uris is None or len(album_uris) == 0 else tuple(album_uris)
+            })['standardized_label'].to_list()
     
 
     def genres(self, artist_uris: typing.Iterable[str]) -> typing.Iterable[str]:
@@ -362,7 +319,7 @@ class DataProvider:
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(select_genres), conn, params={
                 "filter_artists": artist_uris is not None,
-                "artist_uris": tuple(['']) if artist_uris is None else tuple(artist_uris)
+                "artist_uris": tuple(['EMPTY']) if artist_uris is None or len(artist_uris) == 0 else tuple(artist_uris)
             })['genre'].to_list()
 
 
@@ -524,6 +481,8 @@ from track t
     left join artist_rank ar
         on ar.artist_uri = a.uri
         and ar.as_of_date = (select max(as_of_date) from artist_rank)
+    left join record_label rl
+        on rl.album_uri = t.album_uri
 
 where
     (:filter_tracks = false or t.uri in :track_uris)
@@ -536,7 +495,7 @@ where
     and
     (:filter_albums = false or al.uri in :album_uris)
     and
-    (:filter_labels = false or al.label in (:labels))
+    (:filter_labels = false or rl.standardized_label in (:labels))
     and
     (:filter_genres = false or ag.genre in (:genres))
     and
@@ -676,7 +635,6 @@ select
     al.name as album_name,
     al.album_type,
     al.label as album_label,
-    al.label as album_standardized_label, -- TODO
     al.popularity as album_popularity,
     al.release_date as album_release_date,
     al.image_url as album_image_url,
@@ -716,4 +674,10 @@ select_genres = """
 select distinct ag.genre
 from artist_genre ag
 where :filter_artists = false or ag.artist_uri in :artist_uris
+"""
+
+select_labels = """
+select distinct rl.standardized_label
+from record_label rl
+where :filter_albums = false or rl.album_uri in :album_uris
 """

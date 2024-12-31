@@ -27,6 +27,12 @@ CREATE TABLE IF NOT EXISTS album (
     image_url TEXT
 );
 
+CREATE TABLE IF NOT EXISTS record_label (
+    id SERIAL PRIMARY KEY,
+    album_uri TEXT NOT NULL,
+    standardized_label TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS artist (
     id SERIAL PRIMARY KEY,
     uri TEXT NOT NULL UNIQUE,

@@ -1,5 +1,7 @@
-import pandas as pd
 import re
+import pandas as pd
+import sqlalchemy
+from data.raw import get_connection, get_engine
 from utils.util import md_link
 from utils.path import label_path
 
@@ -33,13 +35,16 @@ all_standardized_by_all_labels = {}
 most_common_by_standardized = {}
 labels_with_page = set()
 
-def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
+def standardize_record_labels():
     global all_standardized_by_all_labels
     global most_common_by_standardized
     global labels_with_page
     labels_by_standardized = {}
     standardized_by_label = {}
     count_by_label = {}
+
+    with get_engine().begin() as conn:
+        albums = pd.read_sql_query(sqlalchemy.text("SELECT label as album_label, uri as album_uri FROM album"), conn)
 
     for record_labels_str in albums["album_label"]:
         if record_labels_str.startswith('Republic Records - '):
@@ -69,7 +74,6 @@ def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
             else:
                 all_standardized_by_all_labels[record_labels_str] = {standardized}
 
-
     for standardized, labels in labels_by_standardized.items():
         largest_count = 0
         most_common = None
@@ -98,20 +102,16 @@ def standardize_record_labels(albums: pd.DataFrame, tracks: pd.DataFrame):
                 "album_standardized_label": label
             })
         
-    album_record_label = pd.DataFrame(standardized_labels_data)
+    with get_connection() as conn:
+        cursor = conn.cursor()
 
-    label_counts = pd.merge(album_record_label, tracks, on="album_uri")\
-        .groupby("album_standardized_label")\
-        .agg({"track_uri": "count"})\
-        .reset_index()
-    label_counts.rename(columns={"track_uri": "track_count"}, inplace=True)
-
-    for label in label_counts[label_counts["track_count"] >= 10]["album_standardized_label"]:
-        labels_with_page.add(label)
-
-    album_record_label["label_has_page"] = album_record_label["album_standardized_label"].apply(lambda label: label in labels_with_page)
-
-    return album_record_label
+        cursor.execute('TRUNCATE record_label')
+        for entry in standardized_labels_data:
+            cursor.execute("""
+            INSERT INTO record_label
+            (album_uri, standardized_label)
+            VALUES (%(album_uri)s, %(album_standardized_label)s)
+            """, entry)
 
 
 def split(record_labels_str: str):
@@ -180,3 +180,6 @@ def get_display_labels(labels: str, relative_to: str):
     segments.sort()
 
     return ", ".join(segments)
+
+if __name__ == '__main__':
+    standardize_record_labels()
