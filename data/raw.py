@@ -7,14 +7,18 @@ import sqlalchemy.dialects.postgresql
 from utils.date import this_date
 from utils.settings import postgres_host, postgres_password, postgres_port, postgres_url, postgres_user
 
+_engine = None
 def get_engine():
-    url = postgres_url()
-    if url is not None:
-        if url.startswith("postgres") and not url.startswith("postgresql+psycopg2"):
-            url = "postgresql+psycopg2" + url[len("postgres"):]
-        return sqlalchemy.create_engine(url)
-    else:
-        return sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
+    global _engine
+    if _engine is None:
+        url = postgres_url()
+        if url is not None:
+            if url.startswith("postgres") and not url.startswith("postgresql+psycopg2"):
+                url = "postgresql+psycopg2" + url[len("postgres"):]
+            _engine = sqlalchemy.create_engine(url)
+        else:
+            _engine = sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
+    return _engine
 
 
 def get_connection():
@@ -100,11 +104,11 @@ class DataSource:
             
         print(f'Updating {self.key} data')
         
-        conn = get_connection()
-        cursor = conn.cursor()
 
         if self.delete_before_set:
-            cursor.execute(f'TRUNCATE {self._table_name()};')
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f'TRUNCATE {self._table_name()};')
 
         if self.persistent and 'as_of_date' not in value.columns:
             value['as_of_date'] = this_date()
@@ -131,26 +135,23 @@ class DataSource:
             {conflict_operation}
         """
 
-        for i, row in value.iterrows():
-            value_map = {
-                col: row[col]
-                for col in value.columns
-            }
+        with get_connection() as conn:
+            cursor = conn.cursor()
 
-            cursor.execute(insert_statement, value_map)
+            for i, row in value.iterrows():
+                value_map = {
+                    col: row[col]
+                    for col in value.columns
+                }
+                
+                cursor.execute(insert_statement, value_map)
 
-            if i > 0 and i % update_batch_size == 0:
-                # Prevent timeouts by getting a new connection every so often
-                conn.commit()
-                conn.close()
-                conn = get_connection()
-                cursor = conn.cursor()
+                if i > 0 and i % update_batch_size == 0:
+                    conn.commit()
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
-        self.data()
-        return
+            self.data()
 
 
     def _table_name(self) -> str:
