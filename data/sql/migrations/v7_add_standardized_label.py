@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS record_label (
 );
 """
 
-class AddJobTable(Migration):
+class AddLabelTable(Migration):
     def __init__(self):
         super().__init__("v7")
 
@@ -27,5 +27,5 @@ class AddJobTable(Migration):
 
 
 if __name__ == '__main__':
-    AddJobTable().reverse_migration()
-    AddJobTable().perform_migration()
+    AddLabelTable().reverse_migration()
+    AddLabelTable().perform_migration()

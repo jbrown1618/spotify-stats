@@ -270,3 +270,7 @@ def artist_data(artist):
         data["image_url"] = artist["images"][0]["url"]
 
     return data
+
+
+if __name__ == '__main__':
+    save_spotify_data()
