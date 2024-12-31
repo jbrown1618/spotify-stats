@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS job (
     start_time timestamp,
     end_time timestamp,
 );
+CREATE INDEX IF NOT EXISTS i_job_status_queue_time ON job (status, queue_time);
 
 CREATE TABLE IF NOT EXISTS album (
     id SERIAL PRIMARY KEY,
@@ -26,12 +27,14 @@ CREATE TABLE IF NOT EXISTS album (
     release_date TEXT,
     image_url TEXT
 );
+CREATE INDEX IF NOT EXISTS i_album_uri ON album (uri);
 
 CREATE TABLE IF NOT EXISTS record_label (
     id SERIAL PRIMARY KEY,
     album_uri TEXT NOT NULL,
     standardized_label TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS i_record_label_album_uri ON record_label (album_uri);
 
 CREATE TABLE IF NOT EXISTS artist (
     id SERIAL PRIMARY KEY,
@@ -41,6 +44,7 @@ CREATE TABLE IF NOT EXISTS artist (
     followers INT,
     image_url TEXT
 );
+CREATE INDEX IF NOT EXISTS i_artist_uri ON artist (uri);
 
 CREATE TABLE IF NOT EXISTS track (
     id SERIAL PRIMARY KEY,
@@ -52,6 +56,7 @@ CREATE TABLE IF NOT EXISTS track (
     album_uri TEXT,
     isrc TEXT
 );
+CREATE INDEX IF NOT EXISTS i_track_uri ON track (uri);
 
 CREATE TABLE IF NOT EXISTS playlist (
     id SERIAL PRIMARY KEY,
@@ -62,10 +67,12 @@ CREATE TABLE IF NOT EXISTS playlist (
     image_url TEXT,
     owner TEXT
 );
+CREATE INDEX IF NOT EXISTS i_playlist_uri ON playlist (uri);
 
 CREATE TABLE IF NOT EXISTS liked_track (
     track_uri TEXT NOT NULL UNIQUE
 );
+CREATE INDEX IF NOT EXISTS i_liked_track_track_uri ON liked_track (track_uri);
 
 CREATE TABLE IF NOT EXISTS top_track (
     id SERIAL PRIMARY KEY,
@@ -93,6 +100,7 @@ CREATE TABLE IF NOT EXISTS track_rank (
     UNIQUE (rank, as_of_date),
     UNIQUE (track_uri, as_of_date)
 );
+CREATE INDEX IF NOT EXISTS i_track_rank_track_uri ON track_rank (track_uri);
 
 CREATE TABLE IF NOT EXISTS artist_rank (
     id SERIAL PRIMARY KEY,
@@ -102,6 +110,7 @@ CREATE TABLE IF NOT EXISTS artist_rank (
     UNIQUE (rank, as_of_date),
     UNIQUE (artist_uri, as_of_date)
 );
+CREATE INDEX IF NOT EXISTS i_artist_rank_artist_uri ON artist_rank (artist_uri);
 
 CREATE TABLE IF NOT EXISTS album_rank (
     id SERIAL PRIMARY KEY,
@@ -111,24 +120,28 @@ CREATE TABLE IF NOT EXISTS album_rank (
     UNIQUE (rank, as_of_date),
     UNIQUE (album_uri, as_of_date)
 );
+CREATE INDEX IF NOT EXISTS i_album_rank_album_uri ON album_rank (album_uri);
 
 CREATE TABLE IF NOT EXISTS album_artist (
     album_uri TEXT NOT NULL,
     artist_uri TEXT NOT NULL,
     UNIQUE(album_uri, artist_uri)
 );
+CREATE INDEX IF NOT EXISTS i_album_artist_join ON album_artist (album_uri, artist_uri);
 
 CREATE TABLE IF NOT EXISTS artist_genre (
     artist_uri TEXT NOT NULL,
     genre TEXT NOT NULL,
     UNIQUE(artist_uri, genre)
 );
+CREATE INDEX IF NOT EXISTS i_artist_genre_join ON artist_genre (artist_uri, genre);
 
 CREATE TABLE IF NOT EXISTS playlist_track (
     playlist_uri TEXT NOT NULL,
     track_uri TEXT NOT NULL,
     UNIQUE(playlist_uri, track_uri)
 );
+CREATE INDEX IF NOT EXISTS i_playlist_track_join ON playlist_track (playlist_uri, track_uri);
 
 CREATE TABLE IF NOT EXISTS track_artist (
     track_uri TEXT NOT NULL,
@@ -136,6 +149,8 @@ CREATE TABLE IF NOT EXISTS track_artist (
     artist_index INT NOT NULL,
     UNIQUE(track_uri, artist_uri)
 );
+CREATE INDEX IF NOT EXISTS i_track_artist_join ON track_artist (track_uri, artist_uri);
+CREATE INDEX IF NOT EXISTS i_track_artist_joinIndex ON track_artist (track_uri, artist_uri, artist_index);
 
 CREATE TABLE IF NOT EXISTS listening_period (
     id SERIAL PRIMARY KEY,
