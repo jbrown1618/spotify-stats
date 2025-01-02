@@ -22,9 +22,8 @@ interface DisplayGridProps<T> {
 
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
 
-const defaultGridCount = 6;
-const defaultRowCount = 5;
-const loadingItems = Array.from(Array(defaultGridCount).keys());
+const defaultCount = 6;
+const loadingItems = Array.from(Array(defaultCount).keys());
 
 export function DisplayGrid<T>({
   items,
@@ -46,9 +45,7 @@ export function DisplayGrid<T>({
       : "tile"
   );
 
-  const [count, setCount] = useState(
-    variant === "row" ? defaultRowCount : defaultGridCount
-  );
+  const [count, setCount] = useState(defaultCount);
 
   const onMore = () => setCount((count) => count * 2);
 
