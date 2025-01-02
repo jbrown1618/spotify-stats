@@ -6,10 +6,9 @@ import pandas as pd
 from flask import Flask, send_file, request
 
 from data.provider import DataProvider
-from data.raw import RawData, get_connection
+from data.raw import get_connection
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
-from utils.util import first
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
@@ -116,7 +115,6 @@ def artists_by_track(tracks: pd.DataFrame):
     if len(tracks) == 0: return {}
 
     with get_connection() as conn:
-        print("Fetching artists by track...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT track_uri, array_agg(artist_uri)
@@ -136,7 +134,6 @@ def albums_by_artist(artists: pd.DataFrame):
     if len(artists) == 0: return {}
 
     with get_connection() as conn:
-        print("Fetching albums by artist...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT ta.artist_uri, array_agg(t.album_uri)
@@ -157,7 +154,6 @@ def artists_by_album(albums: pd.DataFrame):
     if len(albums) == 0: return {}
 
     with get_connection() as conn:
-        print("Fetching artists by track...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT album_uri, array_agg(artist_uri)
@@ -178,7 +174,6 @@ def playlist_track_counts(tracks: pd.DataFrame):
         return {}
     
     with get_connection() as conn:
-        print("Fetching track counts by playlist...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT
@@ -210,7 +205,6 @@ def artist_track_counts(tracks):
         return {}
     
     with get_connection() as conn:
-        print("Fetching track counts by artist...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT
@@ -242,7 +236,6 @@ def label_track_counts(tracks):
         return {}
     
     with get_connection() as conn:
-        print("Fetching track counts by label...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT
@@ -272,7 +265,6 @@ def genre_track_counts(tracks):
         return {}
     
     with get_connection() as conn:
-        print("Fetching track counts by genre...")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT
