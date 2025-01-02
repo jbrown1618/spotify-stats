@@ -2,7 +2,7 @@ import { LineChart } from "@mantine/charts";
 import { Paper, Slider, Text } from "@mantine/core";
 import { useIsMobile } from "../useIsMobile";
 import { formatDate } from "../utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const colors = [
   "#6aff00", // Lime
@@ -22,6 +22,7 @@ interface RankLineChartProps<TRank> {
   getKey: (r: TRank) => string;
   getRank: (r: TRank) => number;
   getDate: (r: TRank) => string;
+  getItem: (r: TRank) => string;
   getCurrentRank: (k: string) => number;
   getLabel: (k: string) => string;
   getImageURL: (k: string) => string;
@@ -32,6 +33,7 @@ export function RankLineChart<TRank>({
   getKey,
   getRank,
   getDate,
+  getItem,
   getLabel,
   getCurrentRank,
   getImageURL,
@@ -41,8 +43,10 @@ export function RankLineChart<TRank>({
   const dataPoints = new Map<number, Record<string, number>>();
   const artistURIs = new Set<string>();
 
-  const range = getAxisRange(ranks, getRank, getDate);
+  const range = getAxisRange(ranks, getRank, getItem, getDate);
   const [max, setMax] = useState(range.initialMax);
+
+  useEffect(() => setMax(range.initialMax), [range.initialMax]);
 
   for (const rank of ranks) {
     artistURIs.add(getKey(rank));
@@ -258,9 +262,11 @@ interface AxisRange {
 function getAxisRange<TRank>(
   ranks: TRank[],
   getRank: (r: TRank) => number,
+  getItem: (r: TRank) => string,
   getDate: (r: TRank) => string
 ): AxisRange {
   const allRanks = ranks.map(getRank);
+  const distinctItems = new Set(ranks.map(getItem)).size;
   const min = Math.min(...allRanks);
   const dataMax = Math.max(...allRanks);
 
@@ -280,7 +286,8 @@ function getAxisRange<TRank>(
   const idealInitialMax = (maxCurrentRank - minCurrentRank) * 3 + min + 1;
   const showSlider = max - maxSliderMin > 20;
 
-  const initialMax = showSlider ? Math.min(idealInitialMax, max) : max;
+  const initialMax =
+    showSlider && distinctItems > 1 ? Math.min(idealInitialMax, max) : max;
 
   return {
     min,

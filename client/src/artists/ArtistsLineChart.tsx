@@ -13,6 +13,7 @@ export function ArtistsLineChart({
       ranks={ranks}
       getKey={(r) => r.artist_uri}
       getDate={(r) => r.as_of_date}
+      getItem={(r) => r.artist_uri}
       getRank={(r) => r.artist_rank}
       getLabel={(k) => artists[k]?.artist_name}
       getCurrentRank={(k) => artists[k]?.artist_rank}

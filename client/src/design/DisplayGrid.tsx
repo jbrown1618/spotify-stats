@@ -22,8 +22,8 @@ interface DisplayGridProps<T> {
 
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
 
-const defaultGridCount = 12;
-const defaultRowCount = 10;
+const defaultGridCount = 6;
+const defaultRowCount = 5;
 const loadingItems = Array.from(Array(defaultGridCount).keys());
 
 export function DisplayGrid<T>({

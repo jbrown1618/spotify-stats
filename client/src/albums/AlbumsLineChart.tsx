@@ -13,6 +13,7 @@ export function AlbumsLineChart({
       ranks={ranks}
       getKey={(r) => r.album_uri}
       getDate={(r) => r.as_of_date}
+      getItem={(r) => r.album_uri}
       getRank={(r) => r.album_rank}
       getLabel={(k) => albums[k]?.album_short_name}
       getCurrentRank={(k) => albums[k]?.album_rank}
