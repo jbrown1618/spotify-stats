@@ -74,7 +74,6 @@ def data():
     playlists = dp.playlists(track_uris=tracks['track_uri'])
     artists = dp.artists(track_uris=tracks['track_uri'])
     albums = dp.albums(track_uris=tracks['track_uri'])
-    genres = dp.genres(artist_uris=artists['artist_uri'])
     labels = dp.labels(album_uris=albums['album_uri'])
 
     summary_payload = {
@@ -82,13 +81,13 @@ def data():
         "tracks": to_json(tracks, 'track_uri'),
         "artists": to_json(artists, 'artist_uri'),
         "albums": to_json(albums, 'album_uri'),
-        "labels": labels,
-        "genres": genres,
         "artists_by_track": artists_by_track(tracks),
         "artists_by_album": artists_by_album(albums),
         "albums_by_artist": albums_by_artist(artists),
         "playlist_track_counts": playlist_track_counts(tracks),
         "artist_track_counts": artist_track_counts(tracks),
+        "label_track_counts": label_track_counts(tracks),
+        "genre_track_counts": genre_track_counts(tracks),
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
@@ -234,6 +233,66 @@ def artist_track_counts(tracks):
             "artist_name": artist_name,
             "artist_track_count": artist_track_count,
             "artist_liked_track_count": artist_liked_track_count
+        }
+    return out
+
+
+def label_track_counts(tracks):
+    if len(tracks) == 0:
+        return {}
+    
+    with get_connection() as conn:
+        print("Fetching track counts by label...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                rl.standardized_label as label, 
+                count(t.uri) as label_track_count,
+                count(lt.track_uri) as label_liked_track_count
+            FROM record_label rl
+                INNER JOIN track t ON t.album_uri = rl.album_uri
+                LEFT JOIN liked_track lt ON lt.track_uri = t.uri
+            WHERE t.uri in %(track_uris)s
+            GROUP BY rl.standardized_label
+        """, { "track_uris": tuple(tracks['track_uri']) })
+        result = cursor.fetchall()
+
+    out = {}
+    for label, label_track_count, label_liked_track_count in result:
+        out[label] = {
+            "label": label,
+            "label_track_count": label_track_count,
+            "label_liked_track_count": label_liked_track_count
+        }
+    return out
+
+
+def genre_track_counts(tracks):
+    if len(tracks) == 0:
+        return {}
+    
+    with get_connection() as conn:
+        print("Fetching track counts by genre...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                ag.genre, 
+                count(ta.track_uri) as genre_track_count,
+                count(lt.track_uri) as genre_liked_track_count
+            FROM artist_genre ag
+                INNER JOIN track_artist ta ON ag.artist_uri = ta.artist_uri
+                LEFT JOIN liked_track lt ON ta.track_uri = lt.track_uri
+            WHERE ta.track_uri in %(track_uris)s
+            GROUP BY ag.genre
+        """, { "track_uris": tuple(tracks['track_uri']) })
+        result = cursor.fetchall()
+
+    out = {}
+    for genre, genre_track_count, genre_liked_track_count in result:
+        out[genre] = {
+            "genre": genre,
+            "genre_track_count": genre_track_count,
+            "genre_liked_track_count": genre_liked_track_count
         }
     return out
 

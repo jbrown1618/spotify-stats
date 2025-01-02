@@ -20,6 +20,8 @@ import { useIsMobile } from "./useIsMobile";
 import { useFilters, useSetFilters } from "./useFilters";
 import { ChartSkeleton } from "./design/ChartSkeleton";
 import { Summary } from "./api";
+import { LabelsBarChart } from "./LabelsBarChart";
+import { GenresBarChart } from "./GenresBarChart";
 
 export function App() {
   const isMobile = useIsMobile();
@@ -45,35 +47,6 @@ export function App() {
         <Filters filters={filters} options={data?.filter_options} />
 
         <div>
-          <h2>Playlists</h2>
-
-          <ChartWithFallback
-            title="Top playlists by liked tracks"
-            data={data}
-            shouldRender={(d) =>
-              Object.keys(d.playlist_track_counts).length > 1
-            }
-            renderChart={(d) => (
-              <PlaylistsBarChart
-                counts={Object.values(d.playlist_track_counts)}
-              />
-            )}
-          />
-
-          <DisplayGrid
-            items={
-              data
-                ? Object.values(data.playlists).sort(
-                    (a, b) =>
-                      b.playlist_liked_track_count -
-                      a.playlist_liked_track_count
-                  )
-                : undefined
-            }
-            getKey={(playlist) => playlist.playlist_uri}
-            renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
-          />
-
           <h2>Artists</h2>
 
           <ChartWithFallback
@@ -195,38 +168,95 @@ export function App() {
             )}
           />
 
-          <h2>Record Labels</h2>
+          <h2>Playlists</h2>
+
+          <ChartWithFallback
+            title="Top playlists by liked tracks"
+            data={data}
+            shouldRender={(d) =>
+              Object.keys(d.playlist_track_counts).length > 1
+            }
+            renderChart={(d) => (
+              <PlaylistsBarChart
+                counts={Object.values(d.playlist_track_counts)}
+              />
+            )}
+          />
+
           <DisplayGrid
-            items={data ? data.labels.sort() : undefined}
-            getKey={(label) => label}
-            renderPill={(label) => (
+            items={
+              data
+                ? Object.values(data.playlists).sort(
+                    (a, b) =>
+                      b.playlist_liked_track_count -
+                      a.playlist_liked_track_count
+                  )
+                : undefined
+            }
+            getKey={(playlist) => playlist.playlist_uri}
+            renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
+          />
+
+          <h2>Record Labels</h2>
+          <ChartWithFallback
+            title="Top record labels by liked tracks"
+            data={data}
+            shouldRender={(d) => Object.keys(d.label_track_counts).length > 1}
+            renderChart={(d) => (
+              <LabelsBarChart counts={Object.values(d.label_track_counts)} />
+            )}
+          />
+          <DisplayGrid
+            items={
+              data
+                ? Object.values(data.label_track_counts).sort(
+                    (a, b) =>
+                      (b.label_liked_track_count ?? 0) -
+                      (a.label_liked_track_count ?? 0)
+                  )
+                : undefined
+            }
+            getKey={(ltc) => ltc.label}
+            renderPill={(ltc) => (
               <Pill
                 bg="gray"
                 size="lg"
                 style={{ cursor: "pointer" }}
-                onClick={() =>
-                  setFilters((filters) => ({ ...filters, labels: [label] }))
-                }
+                onClick={() => setFilters({ labels: [ltc.label] })}
               >
-                {label}
+                {ltc.label}
               </Pill>
             )}
           />
 
           <h2>Genres</h2>
+          <ChartWithFallback
+            title="Top genres by liked tracks"
+            data={data}
+            shouldRender={(d) => Object.keys(d.genre_track_counts).length > 1}
+            renderChart={(d) => (
+              <GenresBarChart counts={Object.values(d.genre_track_counts)} />
+            )}
+          />
           <DisplayGrid
-            items={data ? data.genres.sort() : undefined}
-            getKey={(genre) => genre}
-            renderPill={(genre) => (
+            items={
+              data
+                ? Object.values(data.genre_track_counts).sort(
+                    (a, b) =>
+                      (b.genre_liked_track_count ?? 0) -
+                      (a.genre_liked_track_count ?? 0)
+                  )
+                : undefined
+            }
+            getKey={(gtc) => gtc.genre}
+            renderPill={(gtc) => (
               <Pill
                 bg="gray"
                 size="lg"
                 style={{ cursor: "pointer" }}
-                onClick={() =>
-                  setFilters((filters) => ({ ...filters, genres: [genre] }))
-                }
+                onClick={() => setFilters({ genres: [gtc.genre] })}
               >
-                {genre}
+                {gtc.genre}
               </Pill>
             )}
           />

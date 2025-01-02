@@ -4,14 +4,14 @@ export interface Summary {
   tracks: Record<string, Track>;
   artists: Record<string, Artist>;
   albums: Record<string, Album>;
-  labels: string[];
-  genres: string[];
   years: Record<string, YearCounts>;
   artists_by_track: Record<string, string[]>;
   artists_by_album: Record<string, string[]>;
   albums_by_artist: Record<string, string[]>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
   artist_track_counts: Record<string, ArtistTrackCount>;
+  label_track_counts: Record<string, LabelTrackCount>;
+  genre_track_counts: Record<string, GenreTrackCount>;
   track_rank_history: TrackRank[];
   artist_rank_history: ArtistRank[];
   album_rank_history: AlbumRank[];
@@ -42,6 +42,18 @@ export type ArtistTrackCount = Pick<
   | "artist_track_count"
   | "artist_liked_track_count"
 >;
+
+export interface LabelTrackCount {
+  label: string;
+  label_track_count: number;
+  label_liked_track_count: number;
+}
+
+export interface GenreTrackCount {
+  genre: string;
+  genre_track_count: number;
+  genre_liked_track_count: number;
+}
 
 export interface Track extends Album {
   primary_artist_followers: number;
