@@ -1,7 +1,9 @@
 import { BarChart } from "@mantine/charts";
 import { YearCounts } from "./api";
+import { useIsMobile } from "./useIsMobile";
 
 export function YearsBarChart({ counts }: { counts: YearCounts[] }) {
+  const isMobile = useIsMobile();
   const data = [...counts];
 
   const distinctYears = counts.map((c) => c.year);
@@ -36,6 +38,8 @@ export function YearsBarChart({ counts }: { counts: YearCounts[] }) {
       dataKey="Year"
       type="stacked"
       withLegend
+      withTooltip={!isMobile}
+      withBarValueLabel={isMobile && distinctYears.length < 8}
       legendProps={{ verticalAlign: "bottom" }}
       gridAxis="none"
     />

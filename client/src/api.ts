@@ -11,7 +11,6 @@ export interface Summary {
   artists_by_album: Record<string, string[]>;
   albums_by_artist: Record<string, string[]>;
   playlist_track_counts: Record<string, PlaylistTrackCount>;
-  playlist_images: Record<string, string[]>;
   artist_track_counts: Record<string, ArtistTrackCount>;
   track_rank_history: TrackRank[];
   artist_rank_history: ArtistRank[];

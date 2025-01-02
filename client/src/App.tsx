@@ -71,12 +71,7 @@ export function App() {
                 : undefined
             }
             getKey={(playlist) => playlist.playlist_uri}
-            renderTile={(playlist) => (
-              <PlaylistTile
-                playlist={playlist}
-                playlist_images={data?.playlist_images ?? {}}
-              />
-            )}
+            renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
           />
 
           <h2>Artists</h2>
@@ -236,10 +231,10 @@ export function App() {
             )}
           />
 
-          <h2>Years</h2>
+          <h2>Release Years</h2>
 
           <ChartWithFallback
-            title="Liked tracks by year"
+            title="Liked tracks by release year"
             data={data}
             shouldRender={(d) => Object.keys(d.years).length > 1}
             renderChart={(d) => (

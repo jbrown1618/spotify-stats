@@ -4,17 +4,14 @@ import { TileDesign } from "../design/TileDesign";
 
 interface PlaylistTileProps {
   playlist: Playlist;
-  playlist_images: Record<string, string[]>;
 }
 
-export function PlaylistTile({ playlist, playlist_images }: PlaylistTileProps) {
+export function PlaylistTile({ playlist }: PlaylistTileProps) {
   const setFilters = useSetFilters();
   return (
     <TileDesign
       title={playlist.playlist_name}
-      src={
-        playlist.playlist_image_url ?? playlist_images[playlist.playlist_uri]
-      }
+      src={playlist.playlist_image_url}
       onClick={() =>
         setFilters({
           playlists: [playlist.playlist_uri],

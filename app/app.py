@@ -6,7 +6,7 @@ import pandas as pd
 from flask import Flask, send_file, request
 
 from data.provider import DataProvider
-from data.raw import RawData
+from data.raw import RawData, get_connection
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
 from utils.util import first
@@ -87,9 +87,8 @@ def data():
         "artists_by_track": artists_by_track(tracks),
         "artists_by_album": artists_by_album(albums),
         "albums_by_artist": albums_by_artist(artists),
-        "playlist_track_counts": playlist_track_counts(playlists, tracks),
-        "playlist_images": playlist_images(playlists),
-        "artist_track_counts": artist_track_counts(artists, tracks),
+        "playlist_track_counts": playlist_track_counts(tracks),
+        "artist_track_counts": artist_track_counts(tracks),
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
@@ -115,80 +114,128 @@ def data():
 
 
 def artists_by_track(tracks: pd.DataFrame):
+    if len(tracks) == 0: return {}
+
+    with get_connection() as conn:
+        print("Fetching artists by track...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT track_uri, array_agg(artist_uri)
+            FROM track_artist
+            WHERE track_uri in %(track_uris)s
+            GROUP BY track_uri
+        """, { "track_uris": tuple(tracks['track_uri']) })
+        result = cursor.fetchall()
+
     out = {}
-    track_artist = RawData()['track_artist']
-    for _, track in tracks.iterrows():
-        artists = track_artist[track_artist['track_uri'] == track['track_uri']]
-        uris = artists.sort_values(by="artist_index", ascending=True)['artist_uri']
-        out[track['track_uri']] = [u for u in uris]
+    for track_uri, artist_uris in result:
+        out[track_uri] = artist_uris
     return out
 
 
 def albums_by_artist(artists: pd.DataFrame):
+    if len(artists) == 0: return {}
+
+    with get_connection() as conn:
+        print("Fetching albums by artist...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT ta.artist_uri, array_agg(t.album_uri)
+            FROM track_artist ta
+                INNER JOIN track t ON t.uri = ta.track_uri
+            WHERE ta.artist_uri in %(artist_uris)s
+            GROUP BY ta.artist_uri
+        """, { "artist_uris": tuple(artists['artist_uri']) })
+        result = cursor.fetchall()
+
     out = {}
-    album_artist = RawData()['album_artist']
-    for _, artist in artists.iterrows():
-        albums = album_artist[album_artist['artist_uri'] == artist['artist_uri']]
-        uris = albums['album_uri']
-        out[artist['artist_uri']] = [u for u in uris]
+    for artist_uri, album_uris in result:
+        out[artist_uri] = list(set(album_uris))
     return out
 
 
 def artists_by_album(albums: pd.DataFrame):
+    if len(albums) == 0: return {}
+
+    with get_connection() as conn:
+        print("Fetching artists by track...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT album_uri, array_agg(artist_uri)
+            FROM album_artist
+            WHERE album_uri in %(album_uris)s
+            GROUP BY album_uri
+        """, { "album_uris": tuple(albums['album_uri']) })
+        result = cursor.fetchall()
+
     out = {}
-    album_artist = RawData()['album_artist']
-    for _, album in albums.iterrows():
-        artists = album_artist[album_artist['album_uri'] == album['album_uri']]
-        uris = artists['artist_uri']
-        out[album['album_uri']] = [u for u in uris]
+    for album_uri, artist_uris in result:
+        out[album_uri] = artist_uris
     return out
 
 
-def playlist_track_counts(playlists, tracks):
-    raw = RawData()
-    playlist_track = raw['playlist_track']
-    playlist_track = pd.merge(playlist_track, playlists, on="playlist_uri")
-    playlist_track = pd.merge(playlist_track, tracks, on='track_uri')
-
-    track_counts = playlist_track\
-        .groupby("playlist_uri")\
-        .agg({"track_uri": "count", "track_liked": "sum", "playlist_name": first})\
-        .reset_index()\
-        .rename(columns={"track_uri": "playlist_track_count", "track_liked": "playlist_liked_track_count"})
+def playlist_track_counts(tracks: pd.DataFrame):
+    if len(tracks) == 0:
+        return {}
     
-    return to_json(track_counts, 'playlist_uri')
+    with get_connection() as conn:
+        print("Fetching track counts by playlist...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                pt.playlist_uri,
+                p.name as playlist_name, 
+                count(pt.track_uri) as playlist_track_count,
+                count(lt.track_uri) as playlist_liked_track_count
+            FROM playlist_track pt
+                INNER JOIN playlist p ON p.uri = pt.playlist_uri
+                LEFT JOIN liked_track lt ON lt.track_uri = pt.track_uri
+            WHERE pt.track_uri in %(track_uris)s
+            GROUP BY pt.playlist_uri, p.name
+        """, { "track_uris": tuple(tracks['track_uri']) })
+        result = cursor.fetchall()
 
-
-# Now, the Spotify API does not always return playlist images. So we have to make them ourselves.
-def playlist_images(playlists):
     out = {}
-
-    raw = RawData()
-    joined = pd.merge(raw['albums'], raw['tracks'], on='album_uri')
-    playlist_track = raw['playlist_track']
-
-    for _, playlist in playlists.iterrows():
-        tracks = pd.merge(playlist_track[playlist_track['playlist_uri'] == playlist['playlist_uri']], joined, on='track_uri')
-        grouped = tracks.groupby('album_image_url').agg({'track_uri': 'count'}).reset_index()
-        top = grouped.sort_values('track_uri', ascending=False).head(4)
-        out[playlist['playlist_uri']] = [url for url in top['album_image_url']]
-
+    for playlist_uri, playlist_name, playlist_track_count, playlist_liked_track_count in result:
+        out[playlist_uri] = {
+            "playlist_uri": playlist_uri,
+            "playlist_name": playlist_name,
+            "playlist_track_count": playlist_track_count,
+            "playlist_liked_track_count": playlist_liked_track_count
+        }
     return out
 
 
-def artist_track_counts(artists, tracks):
-    raw = RawData()
-    track_artist = raw['track_artist']
-    track_artist = pd.merge(track_artist, artists, on="artist_uri")
-    track_artist = pd.merge(track_artist, tracks, on='track_uri')
-
-    track_counts = track_artist\
-        .groupby("artist_uri")\
-        .agg({"track_uri": "count", "track_liked": "sum", "artist_name": first})\
-        .reset_index()\
-        .rename(columns={"track_uri": "artist_track_count", "track_liked": "artist_liked_track_count"})
+def artist_track_counts(tracks):
+    if len(tracks) == 0:
+        return {}
     
-    return to_json(track_counts, 'artist_uri')
+    with get_connection() as conn:
+        print("Fetching track counts by artist...")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                ta.artist_uri,
+                a.name as artist_name, 
+                count(ta.track_uri) as artist_track_count,
+                count(lt.track_uri) as artist_liked_track_count
+            FROM track_artist ta
+                INNER JOIN artist a ON a.uri = ta.artist_uri
+                LEFT JOIN liked_track lt ON lt.track_uri = ta.track_uri
+            WHERE ta.track_uri in %(track_uris)s
+            GROUP BY ta.artist_uri, a.name
+        """, { "track_uris": tuple(tracks['track_uri']) })
+        result = cursor.fetchall()
+
+    out = {}
+    for artist_uri, artist_name, artist_track_count, artist_liked_track_count in result:
+        out[artist_uri] = {
+            "artist_uri": artist_uri,
+            "artist_name": artist_name,
+            "artist_track_count": artist_track_count,
+            "artist_liked_track_count": artist_liked_track_count
+        }
+    return out
 
 
 def track_rank_history(tracks):
