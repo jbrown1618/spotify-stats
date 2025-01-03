@@ -20,6 +20,7 @@ const colors = [
 
 interface RankLineChartProps<TRank> {
   ranks: TRank[];
+  height?: number;
   getKey: (r: TRank) => string;
   getRank: (r: TRank) => number;
   getDate: (r: TRank) => string;
@@ -31,6 +32,7 @@ interface RankLineChartProps<TRank> {
 
 export function RankLineChart<TRank>({
   ranks,
+  height,
   getKey,
   getRank,
   getDate,
@@ -70,7 +72,7 @@ export function RankLineChart<TRank>({
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <LineChart
-        h={500}
+        h={height ?? 500}
         data={Array.from(dataPoints.values()).sort(
           (a, b) => a["date"] - b["date"]
         )}

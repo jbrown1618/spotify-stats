@@ -13,6 +13,8 @@ import { TracksLineChart } from "./charts/TracksLineChart";
 import { YearsBarChart } from "./charts/YearsBarChart";
 import { ChartSkeleton } from "./design/ChartSkeleton";
 import { DisplayGrid } from "./design/DisplayGrid";
+import { AlbumDetails } from "./details/AlbumDetails";
+import { ArtistDetails } from "./details/ArtistDetails";
 import { Filters } from "./Filters";
 import { Header } from "./Header";
 import { AlbumRow } from "./list-items/AlbumRow";
@@ -21,15 +23,15 @@ import { ArtistRow } from "./list-items/ArtistRow";
 import { ArtistTile } from "./list-items/ArtistTile";
 import { PlaylistTile } from "./list-items/PlaylistTile";
 import { TrackRow } from "./list-items/TrackRow";
-import { useData } from "./useData";
 import { useFilters, useSetFilters } from "./useFilters";
 import { useIsMobile } from "./useIsMobile";
+import { useSummary } from "./useSummary";
 
 export function App() {
   const isMobile = useIsMobile();
   const filters = useFilters();
   const setFilters = useSetFilters();
-  const { data } = useData(filters);
+  const { data } = useSummary();
   const t = useMantineTheme();
 
   return (
@@ -48,96 +50,120 @@ export function App() {
 
         <Filters filters={filters} options={data?.filter_options} />
 
+        {filters.artists?.length === 1 && (
+          <ArtistDetails artistURI={filters.artists[0]} />
+        )}
+
+        {filters.albums?.length === 1 && (
+          <AlbumDetails albumURI={filters.albums[0]} />
+        )}
+
         <div>
-          <h2>Artists</h2>
+          {filters.artists?.length !== 1 && (
+            <>
+              <h2>Artists</h2>
 
-          <ChartWithFallback
-            title="Artist ranking over time"
-            data={data}
-            shouldRender={(d) => d.artist_rank_history.length > 1}
-            renderChart={(d) => (
-              <ArtistsLineChart
-                ranks={d.artist_rank_history}
-                artists={d.artists}
+              <ChartWithFallback
+                title="Artist ranking over time"
+                data={data}
+                shouldRender={(d) => d.artist_rank_history.length > 1}
+                renderChart={(d) => (
+                  <ArtistsLineChart
+                    ranks={d.artist_rank_history}
+                    artists={d.artists}
+                  />
+                )}
               />
-            )}
-          />
 
-          <ChartWithFallback
-            title="Top artists by liked tracks"
-            data={data}
-            shouldRender={(d) => Object.keys(d.artist_track_counts).length > 1}
-            renderChart={(d) => (
-              <ArtistsBarChart counts={Object.values(d.artist_track_counts)} />
-            )}
-          />
-
-          <DisplayGrid
-            items={
-              data
-                ? Object.values(data.artists).sort(
-                    (a, b) =>
-                      (a.artist_rank ?? Number.MAX_SAFE_INTEGER) -
-                      (b.artist_rank ?? Number.MAX_SAFE_INTEGER)
-                  )
-                : undefined
-            }
-            getKey={(artist) => artist.artist_uri}
-            renderTile={(artist) => (
-              <ArtistTile
-                artist={artist}
-                album_by_artist={data!.albums_by_artist}
-                albums={data!.albums}
+              <ChartWithFallback
+                title="Top artists by liked tracks"
+                data={data}
+                shouldRender={(d) =>
+                  Object.keys(d.artist_track_counts).length > 1
+                }
+                renderChart={(d) => (
+                  <ArtistsBarChart
+                    counts={Object.values(d.artist_track_counts)}
+                  />
+                )}
               />
-            )}
-            renderLargeTile={(artist) => (
-              <ArtistTile
-                large
-                artist={artist}
-                album_by_artist={data!.albums_by_artist}
-                albums={data!.albums}
-              />
-            )}
-            renderRow={(artist) => (
-              <ArtistRow
-                artist={artist}
-                album_by_artist={data!.albums_by_artist}
-                albums={data!.albums}
-              />
-            )}
-          />
 
-          <h2>Albums</h2>
-
-          <ChartWithFallback
-            title="Album ranking over time"
-            data={data}
-            shouldRender={(d) => d.album_rank_history.length > 1}
-            renderChart={(d) => (
-              <AlbumsLineChart ranks={d.album_rank_history} albums={d.albums} />
-            )}
-          />
-
-          <DisplayGrid
-            items={
-              data
-                ? Object.values(data.albums).sort(
-                    (a, b) =>
-                      (a.album_rank ?? Number.MAX_SAFE_INTEGER) -
-                      (b.album_rank ?? Number.MAX_SAFE_INTEGER)
-                  )
-                : undefined
-            }
-            getKey={(album) => album.album_uri}
-            renderTile={(album) => <AlbumTile album={album} />}
-            renderRow={(album) => (
-              <AlbumRow
-                album={album}
-                artists={data!.artists}
-                artists_by_album={data!.artists_by_album}
+              <DisplayGrid
+                items={
+                  data
+                    ? Object.values(data.artists).sort(
+                        (a, b) =>
+                          (a.artist_rank ?? Number.MAX_SAFE_INTEGER) -
+                          (b.artist_rank ?? Number.MAX_SAFE_INTEGER)
+                      )
+                    : undefined
+                }
+                getKey={(artist) => artist.artist_uri}
+                renderTile={(artist) => (
+                  <ArtistTile
+                    artist={artist}
+                    albums_by_artist={data!.albums_by_artist}
+                    albums={data!.albums}
+                  />
+                )}
+                renderLargeTile={(artist) => (
+                  <ArtistTile
+                    large
+                    artist={artist}
+                    albums_by_artist={data!.albums_by_artist}
+                    albums={data!.albums}
+                  />
+                )}
+                renderRow={(artist) => (
+                  <ArtistRow
+                    artist={artist}
+                    album_by_artist={data!.albums_by_artist}
+                    albums={data!.albums}
+                  />
+                )}
               />
-            )}
-          />
+            </>
+          )}
+
+          {filters.albums?.length !== 1 && (
+            <>
+              <h2>Albums</h2>
+
+              <ChartWithFallback
+                title="Album ranking over time"
+                data={data}
+                shouldRender={(d) => d.album_rank_history.length > 1}
+                renderChart={(d) => (
+                  <AlbumsLineChart
+                    ranks={d.album_rank_history}
+                    albums={d.albums}
+                  />
+                )}
+              />
+
+              <DisplayGrid
+                items={
+                  data
+                    ? Object.values(data.albums).sort(
+                        (a, b) =>
+                          (a.album_rank ?? Number.MAX_SAFE_INTEGER) -
+                          (b.album_rank ?? Number.MAX_SAFE_INTEGER)
+                      )
+                    : undefined
+                }
+                getKey={(album) => album.album_uri}
+                renderTile={(album) => <AlbumTile album={album} />}
+                renderLargeTile={(album) => <AlbumTile large album={album} />}
+                renderRow={(album) => (
+                  <AlbumRow
+                    album={album}
+                    artists={data!.artists}
+                    artists_by_album={data!.artists_by_album}
+                  />
+                )}
+              />
+            </>
+          )}
 
           <h2>Tracks</h2>
 

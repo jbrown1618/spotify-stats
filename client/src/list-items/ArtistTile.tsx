@@ -5,14 +5,14 @@ import { useSetFilters } from "../useFilters";
 
 interface ArtistTileProps {
   artist: Artist;
-  album_by_artist: Record<string, string[]>;
+  albums_by_artist: Record<string, string[]>;
   albums: Record<string, Album>;
   large?: boolean;
 }
 
 export function ArtistTile({
   artist,
-  album_by_artist,
+  albums_by_artist,
   albums,
   large,
 }: ArtistTileProps) {
@@ -31,7 +31,7 @@ export function ArtistTile({
       />
     );
 
-  const artistAlbums = album_by_artist[artist.artist_uri].map(
+  const artistAlbums = albums_by_artist[artist.artist_uri].map(
     (uri) => albums[uri]
   );
   const highestRankedAlbum = artistAlbums.sort(
@@ -46,10 +46,15 @@ export function ArtistTile({
       onClick={onClick}
       stats={[
         { label: "Rank", value: artist.artist_rank },
+        { label: "Streams", value: artist.artist_stream_count },
         { label: "Popularity", value: artist.artist_popularity },
         {
           label: "Liked Tracks",
           value: `${artist.artist_liked_track_count} / ${artist.artist_track_count}`,
+        },
+        {
+          label: "Albums",
+          value: artistAlbums.length,
         },
       ]}
     />

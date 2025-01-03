@@ -4,6 +4,7 @@ import { KPI, KPIProps } from "./KPI";
 
 interface LargeTileDesignProps {
   title: string;
+  subtitle?: string;
   stats?: KPIProps[];
   src: string;
   secondarySrc?: string;
@@ -13,6 +14,7 @@ interface LargeTileDesignProps {
 export function LargeTileDesign({
   onClick,
   title,
+  subtitle,
   src,
   stats,
   secondarySrc,
@@ -58,12 +60,21 @@ export function LargeTileDesign({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          textAlign: "center",
           paddingTop: 8,
         }}
       >
-        <Text fw={700}>{title}</Text>
+        <Text size={"xl"} fw={700}>
+          {title}
+        </Text>
+        {subtitle && <Text>{subtitle}</Text>}
         <div
-          style={{ display: "flex", justifyContent: "space-between", gap: 16 }}
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-evenly",
+            gap: 16,
+          }}
         >
           {stats?.map((stat) => (
             <KPI {...stat} />

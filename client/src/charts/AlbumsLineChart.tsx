@@ -2,14 +2,17 @@ import { Album, AlbumRank } from "../api";
 import { RankLineChart } from "./RankLineChart";
 
 export function AlbumsLineChart({
+  height,
   ranks,
   albums,
 }: {
+  height?: number;
   ranks: AlbumRank[];
   albums: Record<string, Album>;
 }) {
   return (
     <RankLineChart
+      height={height}
       ranks={ranks}
       getKey={(r) => r.album_uri}
       getDate={(r) => r.as_of_date}

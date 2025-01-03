@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { ActiveFilters, getData,toFiltersQuery } from "./api";
+import { getData, toFiltersQuery } from "./api";
+import { useFilters } from "./useFilters";
 
-export function useData(filters: ActiveFilters) {
+export function useSummary() {
+  const filters = useFilters();
   const query = toFiltersQuery(filters);
   return useQuery({
     queryKey: ["data", query],

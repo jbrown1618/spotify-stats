@@ -1,7 +1,7 @@
 import { BarChart } from "@mantine/charts";
 
-import { YearCounts } from "./api";
-import { useIsMobile } from "./useIsMobile";
+import { YearCounts } from "../api";
+import { useIsMobile } from "../useIsMobile";
 
 export function YearsBarChart({ counts }: { counts: YearCounts[] }) {
   const isMobile = useIsMobile();

@@ -1,7 +1,7 @@
 import { BarChart } from "@mantine/charts";
 
-import { GenreTrackCount } from "./api";
-import { useIsMobile } from "./useIsMobile";
+import { GenreTrackCount } from "../api";
+import { useIsMobile } from "../useIsMobile";
 
 export function GenresBarChart({ counts }: { counts: GenreTrackCount[] }) {
   const isMobile = useIsMobile();

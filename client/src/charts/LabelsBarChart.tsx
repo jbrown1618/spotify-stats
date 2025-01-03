@@ -1,7 +1,7 @@
 import { BarChart } from "@mantine/charts";
 
-import { LabelTrackCount } from "./api";
-import { useIsMobile } from "./useIsMobile";
+import { LabelTrackCount } from "../api";
+import { useIsMobile } from "../useIsMobile";
 
 export function LabelsBarChart({ counts }: { counts: LabelTrackCount[] }) {
   const isMobile = useIsMobile();
