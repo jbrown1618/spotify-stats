@@ -35,7 +35,7 @@ export function ArtistTile({
     (uri) => albums[uri]
   );
   const highestRankedAlbum = artistAlbums.sort(
-    (a, b) => a.album_rank - b.album_rank
+    (a, b) => b.album_stream_count - a.album_stream_count
   )[0];
 
   return (
