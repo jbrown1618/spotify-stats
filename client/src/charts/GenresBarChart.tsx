@@ -1,8 +1,9 @@
 import { BarChart } from "@mantine/charts";
-import { useIsMobile } from "./useIsMobile";
-import { LabelTrackCount } from "./api";
 
-export function LabelsBarChart({ counts }: { counts: LabelTrackCount[] }) {
+import { GenreTrackCount } from "./api";
+import { useIsMobile } from "./useIsMobile";
+
+export function GenresBarChart({ counts }: { counts: GenreTrackCount[] }) {
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
@@ -11,19 +12,19 @@ export function LabelsBarChart({ counts }: { counts: LabelTrackCount[] }) {
     <BarChart
       h={height}
       data={Object.values(counts)
-        .sort((a, b) => b.label_liked_track_count - a.label_liked_track_count)
+        .sort((a, b) => b.genre_liked_track_count - a.genre_liked_track_count)
         .slice(0, maxCount)
         .map((p) => ({
-          Label: p.label,
-          Liked: p.label_liked_track_count,
-          Unliked: p.label_track_count - p.label_liked_track_count,
+          Genre: p.genre,
+          Liked: p.genre_liked_track_count,
+          Unliked: p.genre_track_count - p.genre_liked_track_count,
         }))}
       orientation="vertical"
       series={[
         { name: "Liked", color: "green" },
         { name: "Unliked", color: "gray" },
       ]}
-      dataKey="Label"
+      dataKey="Genre"
       type="stacked"
       withTooltip={!isMobile}
       withBarValueLabel={isMobile}

@@ -1,27 +1,29 @@
-import { Header } from "./Header";
-import { useData } from "./useData";
-import { Filters } from "./Filters";
 import "./global.css";
-import { PlaylistTile } from "./playlists/PlaylistTile";
+
 import { Container, Pill, useMantineTheme } from "@mantine/core";
-import { ArtistTile } from "./artists/ArtistTile";
-import { AlbumTile } from "./albums/AlbumTile";
-import { AlbumRow } from "./albums/AlbumRow";
-import { DisplayGrid } from "./design/DisplayGrid";
-import { TracksLineChart } from "./tracks/TracksLineChart";
-import { PlaylistsBarChart } from "./playlists/PlaylistsBarChart";
-import { ArtistsLineChart } from "./artists/ArtistsLineChart";
-import { AlbumsLineChart } from "./albums/AlbumsLineChart";
-import { YearsBarChart } from "./YearsBarChart";
-import { ArtistsBarChart } from "./artists/ArtistsBarChart";
-import { TrackRow } from "./tracks/TrackRow";
-import { ArtistRow } from "./artists/ArtistRow";
-import { useIsMobile } from "./useIsMobile";
-import { useFilters, useSetFilters } from "./useFilters";
-import { ChartSkeleton } from "./design/ChartSkeleton";
+
 import { Summary } from "./api";
-import { LabelsBarChart } from "./LabelsBarChart";
-import { GenresBarChart } from "./GenresBarChart";
+import { AlbumsLineChart } from "./charts/AlbumsLineChart";
+import { ArtistsBarChart } from "./charts/ArtistsBarChart";
+import { ArtistsLineChart } from "./charts/ArtistsLineChart";
+import { GenresBarChart } from "./charts/GenresBarChart";
+import { LabelsBarChart } from "./charts/LabelsBarChart";
+import { PlaylistsBarChart } from "./charts/PlaylistsBarChart";
+import { TracksLineChart } from "./charts/TracksLineChart";
+import { YearsBarChart } from "./charts/YearsBarChart";
+import { ChartSkeleton } from "./design/ChartSkeleton";
+import { DisplayGrid } from "./design/DisplayGrid";
+import { Filters } from "./Filters";
+import { Header } from "./Header";
+import { AlbumRow } from "./list-items/AlbumRow";
+import { AlbumTile } from "./list-items/AlbumTile";
+import { ArtistRow } from "./list-items/ArtistRow";
+import { ArtistTile } from "./list-items/ArtistTile";
+import { PlaylistTile } from "./list-items/PlaylistTile";
+import { TrackRow } from "./list-items/TrackRow";
+import { useData } from "./useData";
+import { useFilters, useSetFilters } from "./useFilters";
+import { useIsMobile } from "./useIsMobile";
 
 export function App() {
   const isMobile = useIsMobile();

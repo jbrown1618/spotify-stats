@@ -1,19 +1,7 @@
-import {
-  createContext,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { SetStateAction, useCallback, useEffect, useState } from "react";
+
 import { ActiveFilters, fromFiltersQuery, toFiltersQuery } from "./api";
-
-const FiltersContext = createContext<{
-  setFilters: (a: SetStateAction<ActiveFilters>) => void;
-  filters: ActiveFilters;
-}>({ setFilters: () => {}, filters: {} });
-
-FiltersContext.Provider;
+import { FiltersContext } from "./useFilters";
 
 export function FiltersProvider({
   children,
@@ -51,12 +39,4 @@ export function FiltersProvider({
       {children}
     </FiltersContext.Provider>
   );
-}
-
-export function useFilters() {
-  return useContext(FiltersContext).filters;
-}
-
-export function useSetFilters() {
-  return useContext(FiltersContext).setFilters;
 }

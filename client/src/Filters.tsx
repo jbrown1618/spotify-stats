@@ -1,4 +1,3 @@
-import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import {
   Button,
   Checkbox,
@@ -7,9 +6,11 @@ import {
   Modal,
   MultiSelect,
 } from "@mantine/core";
+import { SetStateAction, useEffect, useRef, useState } from "react";
+
+import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import { useSetFilters } from "./useFilters";
 import { useIsMobile } from "./useIsMobile";
-import { SetStateAction, useEffect, useRef, useState } from "react";
 
 interface FiltersProps {
   filters: ActiveFilters;
@@ -124,7 +125,10 @@ function FiltersDialog({
 }: FiltersDialogProps) {
   const [localFilters, setLocalFilters] = useState(filters);
 
-  useEffect(() => (opened ? setLocalFilters(filters) : undefined), [opened]);
+  useEffect(
+    () => (opened ? setLocalFilters(filters) : undefined),
+    [opened, filters]
+  );
 
   return (
     <Modal

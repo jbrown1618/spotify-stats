@@ -1,6 +1,7 @@
 import { Text } from "@mantine/core";
-import { Artist, Track } from "../api";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+
+import { Artist, Track } from "../api";
 import { RowDesign } from "../design/RowDesign";
 import { useIsMobile } from "../useIsMobile";
 

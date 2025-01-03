@@ -1,4 +1,5 @@
 import { BarChart } from "@mantine/charts";
+
 import { YearCounts } from "./api";
 import { useIsMobile } from "./useIsMobile";
 

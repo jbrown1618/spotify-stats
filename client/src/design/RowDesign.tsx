@@ -1,4 +1,5 @@
 import { Paper, Pill, Skeleton, Text } from "@mantine/core";
+
 import { KPI, KPIProps } from "./KPI";
 
 interface RowDesignProps {

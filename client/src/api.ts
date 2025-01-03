@@ -210,6 +210,7 @@ export function fromFiltersQuery(q: string): ActiveFilters {
       arrayKeys.includes(key as (typeof arrayKeys)[number]) ||
       key === "liked"
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (out as any)[key] = JSON.parse(
         decodeURIComponent(decodeURIComponent(value))
       );

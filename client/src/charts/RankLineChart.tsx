@@ -1,8 +1,9 @@
 import { LineChart } from "@mantine/charts";
 import { Paper, Slider, Text } from "@mantine/core";
+import { useEffect, useState } from "react";
+
 import { useIsMobile } from "../useIsMobile";
 import { formatDate } from "../utils";
-import { useEffect, useState } from "react";
 
 const colors = [
   "#6aff00", // Lime

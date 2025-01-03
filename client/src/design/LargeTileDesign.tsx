@@ -1,4 +1,5 @@
 import { Card, Skeleton, Text } from "@mantine/core";
+
 import { KPI, KPIProps } from "./KPI";
 
 interface LargeTileDesignProps {

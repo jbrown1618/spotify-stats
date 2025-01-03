@@ -1,6 +1,6 @@
 import { Album } from "../api";
-import { useSetFilters } from "../useFilters";
 import { TileDesign } from "../design/TileDesign";
+import { useSetFilters } from "../FiltersProvider";
 
 interface AlbumTileProps {
   album: Album;

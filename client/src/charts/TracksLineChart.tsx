@@ -1,5 +1,5 @@
 import { Track, TrackRank } from "../api";
-import { RankLineChart } from "../design/RankLineChart";
+import { RankLineChart } from "./RankLineChart";
 
 export function TracksLineChart({
   ranks,

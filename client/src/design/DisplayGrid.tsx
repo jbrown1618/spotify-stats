@@ -6,10 +6,11 @@ import {
   IconPill,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { RowSkeleton } from "./RowDesign";
-import { PillSkeleton } from "./PillDesign";
-import { TileSkeleton } from "./TileDesign";
+
 import { LargeTileSkeleton } from "./LargeTileDesign";
+import { PillSkeleton } from "./PillDesign";
+import { RowSkeleton } from "./RowDesign";
+import { TileSkeleton } from "./TileDesign";
 
 interface DisplayGridProps<T> {
   items: T[] | undefined;

@@ -1,5 +1,5 @@
 import { Album, AlbumRank } from "../api";
-import { RankLineChart } from "../design/RankLineChart";
+import { RankLineChart } from "./RankLineChart";
 
 export function AlbumsLineChart({
   ranks,

@@ -1,5 +1,5 @@
 import { Artist, ArtistRank } from "../api";
-import { RankLineChart } from "../design/RankLineChart";
+import { RankLineChart } from "./RankLineChart";
 
 export function ArtistsLineChart({
   ranks,
