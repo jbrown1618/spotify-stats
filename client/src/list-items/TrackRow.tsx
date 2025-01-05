@@ -13,23 +13,32 @@ interface TrackRowProps {
 
 export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
   const isMobile = useIsMobile();
+
+  const artistsOnTrack = artists_by_track[track.track_uri]
+    .map((uri) => artists[uri])
+    .filter((a) => !!a);
+
   return (
     <RowDesign
       src={track.album_image_url}
       primaryText={track.track_name}
       secondaryText={track.album_name}
       tertiaryText={
-        <>
-          {artists_by_track[track.track_uri].map((artistURI) => {
-            const artist = artists[artistURI];
-            if (!artist) return null;
-
-            return <Text c="dimmed">{artist.artist_name}</Text>;
+        <div style={{ display: "flex" }}>
+          {artistsOnTrack.map((artist, i) => {
+            return (
+              <>
+                <Text c="dimmed">{artist.artist_name}</Text>
+                {i < artistsOnTrack.length - 1 ? (
+                  <Text c="dimmed">,&nbsp;</Text>
+                ) : null}
+              </>
+            );
           })}
-        </>
+        </div>
       }
       stats={[
-        { label: "Rank", value: track.track_rank },
+        isMobile ? null : { label: "Rank", value: track.track_rank },
         { label: "Streams", value: track.track_stream_count },
         isMobile
           ? null
