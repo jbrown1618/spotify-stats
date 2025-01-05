@@ -12,6 +12,7 @@ export function PlaylistTile({ playlist }: PlaylistTileProps) {
     <TileDesign
       title={playlist.playlist_name}
       src={playlist.playlist_image_url}
+      itemURI={playlist.playlist_uri}
       onClick={() =>
         setFilters({
           playlists: [playlist.playlist_uri],

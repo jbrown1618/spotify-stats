@@ -1,6 +1,7 @@
 import { Card, Skeleton, Text } from "@mantine/core";
 
 import { KPI, KPIProps } from "./KPI";
+import { SpotifyLink } from "./SpotifyLink";
 
 interface LargeTileDesignProps {
   title: string;
@@ -8,6 +9,7 @@ interface LargeTileDesignProps {
   stats?: KPIProps[];
   src: string;
   secondarySrc?: string;
+  itemURI: string;
   onClick: () => void;
 }
 
@@ -18,6 +20,7 @@ export function LargeTileDesign({
   src,
   stats,
   secondarySrc,
+  itemURI,
 }: LargeTileDesignProps) {
   return (
     <Card
@@ -80,6 +83,7 @@ export function LargeTileDesign({
             <KPI {...stat} />
           ))}
         </div>
+        <SpotifyLink uri={itemURI} />
       </div>
     </Card>
   );

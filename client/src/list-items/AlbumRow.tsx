@@ -17,6 +17,7 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
   return (
     <RowDesign
       primaryText={album.album_name}
+      itemURI={album.album_uri}
       tertiaryText={album.album_release_date}
       src={album.album_image_url}
       onClick={() =>

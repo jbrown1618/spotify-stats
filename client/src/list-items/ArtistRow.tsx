@@ -33,6 +33,7 @@ export function ArtistRow({
     <RowDesign
       onClick={onClick}
       primaryText={artist.artist_name}
+      itemURI={artist.artist_uri}
       src={artist.artist_image_url}
       secondarySrc={highestRankedAlbum?.album_image_url}
       stats={[

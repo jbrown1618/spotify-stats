@@ -1,12 +1,15 @@
 import { Card, Skeleton, Text } from "@mantine/core";
 
+import { SpotifyLink } from "./SpotifyLink";
+
 interface TileDesignProps {
   title: string;
   src: string;
+  itemURI: string;
   onClick: () => void;
 }
 
-export function TileDesign({ onClick, title, src }: TileDesignProps) {
+export function TileDesign({ onClick, title, src, itemURI }: TileDesignProps) {
   return (
     <Card
       w={150}
@@ -33,6 +36,7 @@ export function TileDesign({ onClick, title, src }: TileDesignProps) {
         }}
       >
         <Text fw={700}>{title}</Text>
+        <SpotifyLink uri={itemURI} />
       </div>
     </Card>
   );

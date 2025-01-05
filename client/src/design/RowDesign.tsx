@@ -1,11 +1,13 @@
 import { Paper, Pill, Skeleton, Text } from "@mantine/core";
 
 import { KPI, KPIProps } from "./KPI";
+import { SpotifyLink } from "./SpotifyLink";
 
 interface RowDesignProps {
   src: string;
-  secondarySrc?: string;
   primaryText: string | JSX.Element;
+  itemURI: string;
+  secondarySrc?: string;
   secondaryText?: string | JSX.Element;
   tertiaryText?: string | JSX.Element;
   labels?: string[];
@@ -15,6 +17,7 @@ interface RowDesignProps {
 
 export function RowDesign({
   src,
+  itemURI,
   secondarySrc,
   primaryText,
   secondaryText,
@@ -59,6 +62,7 @@ export function RowDesign({
           flexShrink: 1,
           overflow: "hidden",
           textOverflow: "ellipsis",
+          position: "relative",
         }}
       >
         <img src={src} style={{ height: 70 }} />
@@ -78,7 +82,9 @@ export function RowDesign({
               textOverflow: "ellipsis",
             }}
           >
-            <Text fw={700}>{primaryText}</Text>
+            <Text fw={700}>
+              <SpotifyLink text={primaryText} uri={itemURI} />
+            </Text>
             {labels?.map((labelText) => (
               <Pill bg="gray">{labelText}</Pill>
             ))}
@@ -103,6 +109,7 @@ export function RowDesign({
           gap: 16,
           alignItems: "start",
           paddingRight: 8,
+          position: "relative",
         }}
       >
         {stats?.map((stat) =>

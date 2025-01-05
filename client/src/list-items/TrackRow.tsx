@@ -21,6 +21,7 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
   return (
     <RowDesign
       src={track.album_image_url}
+      itemURI={track.track_uri}
       primaryText={track.track_name}
       secondaryText={track.album_name}
       tertiaryText={
