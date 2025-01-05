@@ -23,12 +23,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         }}
       >
         <div style={{ flexGrow: 0 }}>
-          <ArtistTile
-            large
-            artist={artist}
-            albums_by_artist={summary.albums_by_artist}
-            albums={summary.albums}
-          />
+          <ArtistTile large artist={artist} />
         </div>
         <div
           style={{ flexGrow: 1, flexShrink: 1, minWidth: 100, maxWidth: 800 }}

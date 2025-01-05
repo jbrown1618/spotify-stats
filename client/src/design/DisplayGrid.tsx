@@ -1,4 +1,9 @@
-import { Button, SegmentedControl, SegmentedControlItem } from "@mantine/core";
+import {
+  Button,
+  SegmentedControl,
+  SegmentedControlItem,
+  Select,
+} from "@mantine/core";
 import {
   IconGridDots,
   IconLayoutGridFilled,
@@ -7,6 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
+import { SortOptions } from "../sorting";
 import { LargeTileSkeleton } from "./LargeTileDesign";
 import { PillSkeleton } from "./PillDesign";
 import { RowSkeleton } from "./RowDesign";
@@ -14,6 +20,7 @@ import { TileSkeleton } from "./TileDesign";
 
 interface DisplayGridProps<T> {
   items: T[] | undefined;
+  sortOptions?: SortOptions<T>;
   getKey: (item: T) => string;
   renderTile?: (item: T) => JSX.Element;
   renderLargeTile?: (item: T) => JSX.Element;
@@ -28,6 +35,7 @@ const loadingItems = Array.from(Array(defaultCount).keys());
 
 export function DisplayGrid<T>({
   items,
+  sortOptions,
   renderTile,
   renderLargeTile,
   renderRow,
@@ -47,6 +55,11 @@ export function DisplayGrid<T>({
   );
 
   const [count, setCount] = useState(defaultCount);
+  const [sort, setSort] = useState<string | null>(
+    sortOptions && Object.keys(sortOptions).length > 0
+      ? Object.keys(sortOptions)[0]
+      : null
+  );
 
   const onMore = () => setCount((count) => count * 2);
 
@@ -61,15 +74,40 @@ export function DisplayGrid<T>({
       value: "large-tile",
     });
 
+  const comparator = sortOptions && sort ? sortOptions[sort] : null;
+  const displayItems = comparator && items ? items.sort(comparator) : items;
+
   return (
     <>
-      {displayOptions.length > 1 && (
-        <SegmentedControl
-          onChange={(v) => setVariant(v as DisplayVariant)}
-          value={variant}
-          data={displayOptions}
-        />
-      )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 16,
+          alignItems: "center",
+        }}
+      >
+        {displayOptions.length > 1 ? (
+          <SegmentedControl
+            onChange={(v) => setVariant(v as DisplayVariant)}
+            value={variant}
+            data={displayOptions}
+          />
+        ) : (
+          <div />
+        )}
+
+        {sortOptions && Object.keys(sortOptions).length > 0 && (
+          <Select
+            data={Object.keys(sortOptions)}
+            value={sort}
+            onChange={setSort}
+            checkIconPosition="right"
+            radius="xl"
+          />
+        )}
+      </div>
+
       <div
         style={{
           marginTop: 16,
@@ -80,8 +118,8 @@ export function DisplayGrid<T>({
           justifyContent: variant === "row" ? "left" : "center",
         }}
       >
-        {items
-          ? items.slice(0, count).map((item) => (
+        {displayItems
+          ? displayItems.slice(0, count).map((item) => (
               <div key={getKey(item)}>
                 {variant === "row" && renderRow?.(item)}
                 {variant === "large-tile" && renderLargeTile?.(item)}

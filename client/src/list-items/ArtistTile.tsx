@@ -1,26 +1,23 @@
-import { Album, Artist } from "../api";
+import { Artist } from "../api";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 import { TileDesign } from "../design/TileDesign";
 import { useSetFilters } from "../useFilters";
+import { useSummary } from "../useSummary";
 
 interface ArtistTileProps {
   artist: Artist;
-  albums_by_artist: Record<string, string[]>;
-  albums: Record<string, Album>;
   large?: boolean;
 }
 
-export function ArtistTile({
-  artist,
-  albums_by_artist,
-  albums,
-  large,
-}: ArtistTileProps) {
+export function ArtistTile({ artist, large }: ArtistTileProps) {
+  const { data: summary } = useSummary();
   const setFilters = useSetFilters();
   const onClick = () =>
     setFilters({
       artists: [artist.artist_uri],
     });
+
+  if (!summary) return null;
 
   if (!large)
     return (
@@ -31,8 +28,8 @@ export function ArtistTile({
       />
     );
 
-  const artistAlbums = albums_by_artist[artist.artist_uri].map(
-    (uri) => albums[uri]
+  const artistAlbums = summary.albums_by_artist[artist.artist_uri].map(
+    (uri) => summary.albums[uri]
   );
   const highestRankedAlbum = artistAlbums.sort(
     (a, b) => b.album_stream_count - a.album_stream_count

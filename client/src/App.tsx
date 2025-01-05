@@ -23,6 +23,11 @@ import { ArtistRow } from "./list-items/ArtistRow";
 import { ArtistTile } from "./list-items/ArtistTile";
 import { PlaylistTile } from "./list-items/PlaylistTile";
 import { TrackRow } from "./list-items/TrackRow";
+import {
+  albumSortOptions,
+  artistSortOptions,
+  trackSortOptions,
+} from "./sorting";
 import { useFilters, useSetFilters } from "./useFilters";
 import { useIsMobile } from "./useIsMobile";
 import { useSummary } from "./useSummary";
@@ -89,30 +94,12 @@ export function App() {
               />
 
               <DisplayGrid
-                items={
-                  data
-                    ? Object.values(data.artists).sort(
-                        (a, b) =>
-                          (a.artist_rank ?? Number.MAX_SAFE_INTEGER) -
-                          (b.artist_rank ?? Number.MAX_SAFE_INTEGER)
-                      )
-                    : undefined
-                }
+                items={data ? Object.values(data.artists) : undefined}
+                sortOptions={artistSortOptions}
                 getKey={(artist) => artist.artist_uri}
-                renderTile={(artist) => (
-                  <ArtistTile
-                    artist={artist}
-                    albums_by_artist={data!.albums_by_artist}
-                    albums={data!.albums}
-                  />
-                )}
+                renderTile={(artist) => <ArtistTile artist={artist} />}
                 renderLargeTile={(artist) => (
-                  <ArtistTile
-                    large
-                    artist={artist}
-                    albums_by_artist={data!.albums_by_artist}
-                    albums={data!.albums}
-                  />
+                  <ArtistTile large artist={artist} />
                 )}
                 renderRow={(artist) => (
                   <ArtistRow
@@ -142,15 +129,8 @@ export function App() {
               />
 
               <DisplayGrid
-                items={
-                  data
-                    ? Object.values(data.albums).sort(
-                        (a, b) =>
-                          (a.album_rank ?? Number.MAX_SAFE_INTEGER) -
-                          (b.album_rank ?? Number.MAX_SAFE_INTEGER)
-                      )
-                    : undefined
-                }
+                items={data ? Object.values(data.albums) : undefined}
+                sortOptions={albumSortOptions}
                 getKey={(album) => album.album_uri}
                 renderTile={(album) => <AlbumTile album={album} />}
                 renderLargeTile={(album) => <AlbumTile large album={album} />}
@@ -177,15 +157,8 @@ export function App() {
           />
 
           <DisplayGrid
-            items={
-              data
-                ? Object.values(data.tracks).sort(
-                    (a, b) =>
-                      (a.track_rank ?? Number.MAX_SAFE_INTEGER) -
-                      (b.track_rank ?? Number.MAX_SAFE_INTEGER)
-                  )
-                : undefined
-            }
+            items={data ? Object.values(data.tracks) : undefined}
+            sortOptions={trackSortOptions}
             getKey={(track) => track.track_uri}
             renderRow={(track) => (
               <TrackRow

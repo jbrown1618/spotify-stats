@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { Album } from "../api";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 import { TileDesign } from "../design/TileDesign";
@@ -12,6 +14,13 @@ interface AlbumTileProps {
 export function AlbumTile({ album, large }: AlbumTileProps) {
   const { data: summary } = useSummary();
   const setFilters = useSetFilters();
+  const onClick = useCallback(
+    () =>
+      setFilters({
+        albums: [album.album_uri],
+      }),
+    [album.album_uri, setFilters]
+  );
 
   if (large) {
     const artist =
@@ -22,11 +31,7 @@ export function AlbumTile({ album, large }: AlbumTileProps) {
         subtitle={album.album_label}
         src={album.album_image_url}
         secondarySrc={artist?.artist_image_url}
-        onClick={() =>
-          setFilters({
-            albums: [album.album_uri],
-          })
-        }
+        onClick={onClick}
         stats={[
           { label: "Rank", value: album.album_rank },
           { label: "Streams", value: album.album_stream_count },
@@ -40,11 +45,7 @@ export function AlbumTile({ album, large }: AlbumTileProps) {
     <TileDesign
       title={album.album_name}
       src={album.album_image_url}
-      onClick={() =>
-        setFilters({
-          albums: [album.album_uri],
-        })
-      }
+      onClick={onClick}
     />
   );
 }
