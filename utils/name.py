@@ -3,8 +3,8 @@ import pandas as pd
 
 album_index_regex = re.compile(r"\d+(st|nd|rd|th)( mini)? album")
 ending_parenthetical_regex = re.compile(r"\((.+)\)$")
-actual_name_in_quotes_regex = re.compile(r"(.+)\"(.+)\"")
-disposable_keywords = {"remaster", "deluxe", "soundtrack", "standard", "bonus", "stereo", "version"}
+actual_name_in_quotes_regex = re.compile(r"(.+)[\"\'](.+)[\"\']")
+disposable_keywords = {"remaster", "deluxe", "soundtrack", "standard", "bonus", "stereo"}
 
 def short_name(full_name: str):
     if pd.isna(full_name):
@@ -28,7 +28,7 @@ def short_name(full_name: str):
     if search is not None:
         opening = search.group(1)
         if is_disposable(opening):
-            return search.group(2) # The contents of the quotes
+            return search.group(2).strip() # The contents of the quotes
 
     return full_name
 

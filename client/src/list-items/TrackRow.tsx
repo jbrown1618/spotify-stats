@@ -22,8 +22,8 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
     <RowDesign
       src={track.album_image_url}
       itemURI={track.album_uri}
-      primaryText={track.track_name}
-      secondaryText={track.album_name}
+      primaryText={isMobile ? track.track_short_name : track.track_name}
+      secondaryText={isMobile ? track.album_short_name : track.album_name}
       tertiaryText={
         <div style={{ display: "flex" }}>
           {artistsOnTrack.map((artist, i) => {

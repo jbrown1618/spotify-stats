@@ -15,7 +15,7 @@ export function TracksLineChart({
       getDate={(r) => r.as_of_date}
       getItem={(r) => r.track_uri}
       getRank={(r) => r.track_rank}
-      getLabel={(k) => tracks[k]?.track_name}
+      getLabel={(k) => tracks[k]?.track_short_name}
       getCurrentRank={(k) => tracks[k]?.track_rank}
       getImageURL={(k) => tracks[k]?.album_image_url}
     />
