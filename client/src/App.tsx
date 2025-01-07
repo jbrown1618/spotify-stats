@@ -1,6 +1,6 @@
 import "./global.css";
 
-import { Container, Pill, useMantineTheme } from "@mantine/core";
+import { Anchor, Container, Pill, useMantineTheme } from "@mantine/core";
 
 import { Summary } from "./api";
 import { AlbumsLineChart } from "./charts/AlbumsLineChart";
@@ -273,17 +273,31 @@ export function App() {
             )}
           />
 
-          <h2>Release Years</h2>
+          {(!data || Object.keys(data.years).length > 1) && (
+            <>
+              <h2>Release Years</h2>
 
-          <ChartWithFallback
-            title="Liked tracks by release year"
-            data={data}
-            shouldRender={(d) => Object.keys(d.years).length > 1}
-            renderChart={(d) => (
-              <YearsBarChart counts={Object.values(d.years)} />
-            )}
-          />
+              <ChartWithFallback
+                title="Liked tracks by release year"
+                data={data}
+                shouldRender={(d) => Object.keys(d.years).length > 1}
+                renderChart={(d) => (
+                  <YearsBarChart counts={Object.values(d.years)} />
+                )}
+              />
+            </>
+          )}
         </div>
+
+        <footer style={{ padding: 16, textAlign: "center" }}>
+          <Anchor
+            href="https://www.github.com/jbrown1618/spotify-stats"
+            target="_blank"
+            underline="hover"
+          >
+            jbrown1618/spotify-stats
+          </Anchor>
+        </footer>
       </Container>
     </>
   );

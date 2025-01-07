@@ -21,16 +21,15 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           justifyContent: "center",
-          alignItems: "center",
           gap: 16,
         }}
       >
-        <div style={{ flexGrow: 0 }}>
+        <div
+          style={{ flexGrow: 0, alignSelf: isMobile ? "center" : undefined }}
+        >
           <ArtistTile large artist={artist} />
         </div>
-        <div
-          style={{ flexGrow: 1, flexShrink: 1, minWidth: 100, maxWidth: 800 }}
-        >
+        <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
           <ArtistsLineChart
             height={300}

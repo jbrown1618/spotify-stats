@@ -1,5 +1,6 @@
 import { AlbumsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumTile } from "../list-items/AlbumTile";
+import { useIsMobile } from "../useIsMobile";
 import { useSummary } from "../useSummary";
 
 interface AlbumDetailsProps {
@@ -8,6 +9,7 @@ interface AlbumDetailsProps {
 
 export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
   const { data: summary } = useSummary();
+  const isMobile = useIsMobile();
   const album = summary?.albums[albumURI];
   if (!album) return null;
 
@@ -17,17 +19,17 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
       <div
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-evenly",
+          flexDirection: isMobile ? "column" : "row",
+          justifyContent: "center",
           gap: 16,
         }}
       >
-        <div style={{ flexGrow: 0 }}>
+        <div
+          style={{ flexGrow: 0, alignSelf: isMobile ? "center" : undefined }}
+        >
           <AlbumTile large album={album} />
         </div>
-        <div
-          style={{ flexGrow: 1, flexShrink: 1, minWidth: 100, maxWidth: 800 }}
-        >
+        <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
           <AlbumsLineChart
             height={300}
