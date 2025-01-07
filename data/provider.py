@@ -3,7 +3,7 @@ import pandas as pd
 import sqlalchemy
 
 from data.raw import RawData, get_engine
-from utils.album import short_album_name
+from utils.name import short_name
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
 
@@ -88,7 +88,6 @@ class DataProvider:
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
-            albums['album_short_name'] = albums['album_name'].apply(short_album_name)
             return albums
 
 
@@ -407,6 +406,7 @@ select_tracks = """
 select
     t.uri as track_uri,
     t.name as track_name,
+    t.short_name as track_short_name,
     t.popularity as track_popularity,
     t.explicit as track_explicit,
     t.duration_ms as track_duration_ms,
@@ -633,6 +633,7 @@ select_albums = """
 select 
     al.uri as album_uri,
     al.name as album_name,
+    al.short_name as album_short_name,
     al.album_type,
     al.label as album_label,
     al.popularity as album_popularity,

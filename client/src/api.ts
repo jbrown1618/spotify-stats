@@ -70,6 +70,7 @@ export interface Track extends Album {
   track_isrc: string;
   track_liked: boolean;
   track_name: string;
+  track_short_name: string;
   track_popularity: number;
   track_rank: number;
   track_stream_count: number;

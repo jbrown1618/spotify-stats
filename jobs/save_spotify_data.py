@@ -3,6 +3,7 @@ import pandas as pd
 from data.raw import RawData
 from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
+from utils.name import short_name
 
 page_size = 50
 small_page_size = 20
@@ -185,6 +186,7 @@ def track_data(track):
     data = {field: track[field] for field in fields}
     data["album_uri"] = track["album"]["uri"]
     data["isrc"] = track["external_ids"].get("isrc", None)
+    data["short_name"] = short_name(track['name'])
 
     return data
 
@@ -226,6 +228,8 @@ def album_data(album):
 
     if album["images"] is not None and len(album["images"]) > 0:
         data["image_url"] = album["images"][0]["url"]
+
+    data["short_name"] = short_name(album['name'])
 
     return data
 

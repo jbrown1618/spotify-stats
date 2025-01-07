@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from data.raw import get_connection
 from jobs.queue import queue_job
+from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
 
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -51,6 +52,10 @@ def save_listening_data():
     
     if should_re_rank:
         queue_job("ensure_ranks", { "force": True })
+
+    unsaved_uris = get_unsaved_track_uris()
+    if len(unsaved_uris) > 0:
+        save_tracks_by_uri(unsaved_uris)
 
 
 
@@ -153,6 +158,20 @@ def update_play_counts(period_id: int, play_counts: pd.DataFrame):
                 "stream_count": row["stream_count"]
             })
         conn.commit()
+
+
+def get_unsaved_track_uris():
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT track_uri
+            FROM listening_history
+            WHERE track_uri NOT IN (
+                SELECT uri FROM track
+            )
+        """)
+        return [row[0] for row in cursor.fetchall()]
+
 
 
 if __name__ == '__main__':

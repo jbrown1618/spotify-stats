@@ -6,6 +6,7 @@ from data.sql.migrations.v5_add_streams_to_rank import AddStreamColumns
 from data.sql.migrations.v6_rank_additional_unique_constraint import AddRankURIConstraint
 from data.sql.migrations.v7_add_standardized_label import AddLabelTable
 from data.sql.migrations.v8_add_indices import AddIndices
+from data.sql.migrations.v9_add_short_names import AddShortNames
 
 migrations = [
     AddTrackRanks(),
@@ -14,7 +15,8 @@ migrations = [
     AddStreamColumns(),
     AddRankURIConstraint(),
     AddLabelTable(),
-    AddIndices()
+    AddIndices(),
+    AddShortNames()
 ]
 
 def perform_all_migrations():
