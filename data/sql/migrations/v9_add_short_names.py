@@ -3,10 +3,10 @@ from utils.name import short_name
 
 remove_short_names = """
 ALTER TABLE track
-DROP COLUMN short_name;
+DROP COLUMN IF EXISTS short_name;
 
 ALTER TABLE album
-DROP COLUMN short_name;
+DROP COLUMN IF EXISTS short_name;
 """
 
 add_short_names = """
@@ -23,6 +23,7 @@ class AddShortNames(Migration):
 
 
     def migrate(self, cursor):
+        cursor.execute(remove_short_names)
         cursor.execute(add_short_names)
 
         cursor.execute("SELECT uri, name FROM track")
