@@ -5,6 +5,23 @@ export interface KPIProps {
   value: number | string | JSX.Element;
 }
 
+export function KPIsList({ items }: { items: KPIProps[] }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-evenly",
+        gap: 16,
+      }}
+    >
+      {items.map((kpi) => (
+        <KPI {...kpi} />
+      ))}
+    </div>
+  );
+}
+
 export function KPI({ label, value }: KPIProps) {
   return (
     <div

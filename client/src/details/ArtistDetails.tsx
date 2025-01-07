@@ -1,5 +1,6 @@
 import { ArtistsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistTile } from "../list-items/ArtistTile";
+import { useIsMobile } from "../useIsMobile";
 import { useSummary } from "../useSummary";
 
 interface ArtistDetailsProps {
@@ -8,6 +9,7 @@ interface ArtistDetailsProps {
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   const { data: summary } = useSummary();
+  const isMobile = useIsMobile();
   const artist = summary?.artists[artistURI];
   if (!artist) return null;
 
@@ -17,8 +19,9 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
       <div
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-evenly",
+          flexDirection: isMobile ? "column" : "row",
+          justifyContent: "center",
+          alignItems: "center",
           gap: 16,
         }}
       >

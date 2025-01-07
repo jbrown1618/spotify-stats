@@ -6,6 +6,7 @@ import {
   Modal,
   MultiSelect,
 } from "@mantine/core";
+import { IconFilter, IconX } from "@tabler/icons-react";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
@@ -31,10 +32,18 @@ export function Filters({ filters, options }: FiltersProps) {
 
   if (isMobile)
     return (
-      <>
-        <Button variant="filled" onClick={() => setDialogOpen(true)}>
+      <div
+        style={{ display: "flex", flexWrap: "nowrap", alignItems: "center" }}
+      >
+        <Button variant="subtle" size="xs" onClick={() => setDialogOpen(true)}>
+          <IconFilter style={{ marginRight: 8 }} />
           Filters
         </Button>
+        {Object.keys(filters).length > 0 && (
+          <Button variant="subtle" size="xs" onClick={() => setFilters({})}>
+            <IconX />
+          </Button>
+        )}
         <FiltersDialog
           filters={filters}
           options={lastOptions}
@@ -44,7 +53,7 @@ export function Filters({ filters, options }: FiltersProps) {
             setDialogOpen(false);
           }}
         />
-      </>
+      </div>
     );
 
   return (

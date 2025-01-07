@@ -18,6 +18,10 @@ export function PlaylistTile({ playlist }: PlaylistTileProps) {
           playlists: [playlist.playlist_uri],
         })
       }
+      stats={[
+        { label: "Tracks", value: playlist.playlist_track_count },
+        { label: "Liked", value: playlist.playlist_liked_track_count },
+      ]}
     />
   );
 }

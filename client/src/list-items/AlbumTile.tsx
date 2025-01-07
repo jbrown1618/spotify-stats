@@ -44,10 +44,14 @@ export function AlbumTile({ album, large }: AlbumTileProps) {
   }
   return (
     <TileDesign
-      title={album.album_name}
+      title={album.album_short_name}
       src={album.album_image_url}
       onClick={onClick}
       itemURI={album.album_uri}
+      stats={[
+        { label: "Rank", value: album.album_rank },
+        { label: "Streams", value: album.album_stream_count },
+      ]}
     />
   );
 }

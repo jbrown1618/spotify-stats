@@ -16,7 +16,6 @@ import { DisplayGrid } from "./design/DisplayGrid";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
 import { Filters } from "./Filters";
-import { Header } from "./Header";
 import { AlbumRow } from "./list-items/AlbumRow";
 import { AlbumTile } from "./list-items/AlbumTile";
 import { ArtistRow } from "./list-items/ArtistRow";
@@ -44,16 +43,28 @@ export function App() {
       <div
         style={{
           width: "100%",
-          height: isMobile ? 100 : 170,
+          height: isMobile ? 40 : 170,
           backgroundColor: t.colors.green[9],
           position: "absolute",
           zIndex: -1,
         }}
       ></div>
       <Container size="lg">
-        <Header />
+        <nav
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <h1 style={{ margin: 0, whiteSpace: "nowrap" }}>Spotify Stats</h1>
+          {isMobile && (
+            <Filters filters={filters} options={data?.filter_options} />
+          )}
+        </nav>
 
-        <Filters filters={filters} options={data?.filter_options} />
+        {!isMobile && (
+          <Filters filters={filters} options={data?.filter_options} />
+        )}
 
         {filters.artists?.length === 1 && (
           <ArtistDetails artistURI={filters.artists[0]} />
