@@ -417,6 +417,7 @@ select
 
     al.uri as album_uri,
     al.name as album_name,
+    al.short_name as album_short_name,
     al.album_type,
     al.label as album_label,
     al.popularity as album_popularity,
@@ -515,6 +516,7 @@ where
 group by
     t.uri,
     t.name,
+    t.short_name,
     t.popularity,
     t.explicit,
     t.duration_ms,
@@ -524,6 +526,7 @@ group by
 
     al.uri,
     al.name,
+    al.short_name,
     al.album_type,
     al.label,
     al.popularity,
@@ -661,6 +664,7 @@ where (:filter_tracks = false or t.uri in :track_uris)
 group by 
     al.uri,
     al.name,
+    al.short_name,
     al.album_type,
     al.label,
     al.popularity,
