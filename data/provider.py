@@ -81,10 +81,12 @@ class DataProvider:
             })
 
 
-    def albums(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+    def albums(self, uris: typing.Iterable[str] = None, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         print('Fetching albums...')
         with get_engine().begin() as conn:
             albums = pd.read_sql_query(sqlalchemy.text(select_albums), conn, params={
+                "filter_albums": uris is not None,
+                "album_uris": tuple(['EMPTY']) if uris is None or len(uris) == 0 else tuple(uris),
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
@@ -496,9 +498,9 @@ where
     and
     (:filter_albums = false or al.uri in :album_uris)
     and
-    (:filter_labels = false or rl.standardized_label in (:labels))
+    (:filter_labels = false or rl.standardized_label in :labels)
     and
-    (:filter_genres = false or ag.genre in (:genres))
+    (:filter_genres = false or ag.genre in :genres)
     and
     (:filter_years = false or (
         case
@@ -660,7 +662,10 @@ from album al
     left join album_rank alr
         on alr.album_uri = al.uri
         and as_of_date = (select max(as_of_date) from album_rank)
-where (:filter_tracks = false or t.uri in :track_uris)
+where
+    (:filter_tracks = false or t.uri in :track_uris)
+    AND
+    (:filter_albums = false or al.uri in :album_uris)
 group by 
     al.uri,
     al.name,

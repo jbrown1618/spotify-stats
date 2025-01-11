@@ -8,7 +8,7 @@ function reverse<T>(comparator: Comparator<T>): Comparator<T> {
   return (a, b) => -1 * comparator(a, b);
 }
 
-function prioritize<T>(...comparators: Comparator<T>[]): Comparator<T> {
+export function prioritize<T>(...comparators: Comparator<T>[]): Comparator<T> {
   return (a: T, b: T) => {
     for (const compare of comparators) {
       const result = compare(a, b);
@@ -18,7 +18,7 @@ function prioritize<T>(...comparators: Comparator<T>[]): Comparator<T> {
   };
 }
 
-function compareValue<T>(cb: (val: T) => string | number) {
+export function compareValue<T>(cb: (val: T) => string | number) {
   return (a: T, b: T) => {
     const aVal = cb(a);
     const bVal = cb(b);

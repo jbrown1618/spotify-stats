@@ -1,6 +1,6 @@
 import "./global.css";
 
-import { Anchor, Container, Pill, useMantineTheme } from "@mantine/core";
+import { Pill } from "@mantine/core";
 
 import { Summary } from "./api";
 import { AlbumsLineChart } from "./charts/AlbumsLineChart";
@@ -13,9 +13,11 @@ import { TracksLineChart } from "./charts/TracksLineChart";
 import { YearsBarChart } from "./charts/YearsBarChart";
 import { ChartSkeleton } from "./design/ChartSkeleton";
 import { DisplayGrid } from "./design/DisplayGrid";
+import { Layout } from "./design/Layout";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
 import { Filters } from "./Filters";
+import { FiltersProvider } from "./FiltersProvider";
 import { AlbumRow } from "./list-items/AlbumRow";
 import { AlbumTile } from "./list-items/AlbumTile";
 import { ArtistRow } from "./list-items/ArtistRow";
@@ -31,37 +33,22 @@ import { useFilters, useSetFilters } from "./useFilters";
 import { useIsMobile } from "./useIsMobile";
 import { useSummary } from "./useSummary";
 
-export function App() {
+export function SummaryPage() {
   const isMobile = useIsMobile();
   const filters = useFilters();
   const setFilters = useSetFilters();
   const { data } = useSummary();
-  const t = useMantineTheme();
 
   return (
-    <>
-      <div
-        style={{
-          width: "100%",
-          height: isMobile ? 40 : 170,
-          backgroundColor: t.colors.green[9],
-          position: "absolute",
-          zIndex: -1,
-        }}
-      ></div>
-      <Container size="lg">
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <h1 style={{ margin: 0, whiteSpace: "nowrap" }}>Spotify Stats</h1>
-          {isMobile && (
+    <FiltersProvider>
+      <Layout
+        title="Spotify Stats"
+        headerControl={
+          isMobile && (
             <Filters filters={filters} options={data?.filter_options} />
-          )}
-        </nav>
-
+          )
+        }
+      >
         {!isMobile && (
           <Filters filters={filters} options={data?.filter_options} />
         )}
@@ -288,18 +275,8 @@ export function App() {
             </>
           )}
         </div>
-
-        <footer style={{ padding: 16, textAlign: "center" }}>
-          <Anchor
-            href="https://www.github.com/jbrown1618/spotify-stats"
-            target="_blank"
-            underline="hover"
-          >
-            jbrown1618/spotify-stats
-          </Anchor>
-        </footer>
-      </Container>
-    </>
+      </Layout>
+    </FiltersProvider>
   );
 }
 
