@@ -1,8 +1,8 @@
 import pandas as pd
 from flask import Flask, send_file
 
-from app.api.summary import summary_payload
-from app.api.wrapped import wrapped_payload
+from api.summary import summary_payload
+from api.wrapped import wrapped_payload
 from data.sql.migrations.migrations import perform_all_migrations
 
 pd.options.mode.chained_assignment = None  # default='warn'
