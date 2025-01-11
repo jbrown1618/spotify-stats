@@ -97,7 +97,7 @@ export function DisplayGrid<T>({
           <div />
         )}
 
-        {sortOptions && Object.keys(sortOptions).length > 1 && (
+        {sortOptions && Object.keys(sortOptions).length > 0 && (
           <Select
             data={Object.keys(sortOptions)}
             value={sort}

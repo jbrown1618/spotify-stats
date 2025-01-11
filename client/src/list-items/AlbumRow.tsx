@@ -27,7 +27,7 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
       }
       secondaryText={
         <>
-          {artists_by_album[album.album_uri]?.map((artistURI) => {
+          {artists_by_album[album.album_uri].map((artistURI) => {
             const artist = artists[artistURI];
             if (!artist) return null;
 
