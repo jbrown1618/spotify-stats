@@ -17,6 +17,18 @@ export interface Summary {
   album_rank_history: AlbumRank[];
 }
 
+export interface Wrapped {
+  tracks: Record<string, Track>;
+  artists: Record<string, Artist>;
+  albums: Record<string, Album>;
+  streams_by_track: Record<string, number>;
+  streams_by_album: Record<string, number>;
+  streams_by_artist: Record<string, number>;
+  artists_by_track: Record<string, string[]>;
+  artists_by_album: Record<string, string[]>;
+  albums_by_artist: Record<string, string[]>;
+}
+
 export interface Playlist {
   playlist_uri: string;
   playlist_name: string;
@@ -159,7 +171,7 @@ export const defaultFilterOptions: FilterOptions = {
   years: [],
 };
 
-export async function getData(query: string): Promise<Summary> {
+export async function fetchSummary(query: string): Promise<Summary> {
   try {
     const res = await fetch("/api/summary?" + query.toString());
     if (!res.ok)
@@ -219,4 +231,20 @@ export function fromFiltersQuery(q: string): ActiveFilters {
   }
 
   return out;
+}
+
+export async function fetchWrapped(year: number): Promise<Wrapped> {
+  try {
+    const res = await fetch(`/api/wrapped/${year}`);
+    if (!res.ok)
+      throw new Error(
+        `Error fetching wrapped for ${year}: ${res.status}: ${res.statusText}`
+      );
+
+    return await res.json();
+  } catch (e: unknown) {
+    const message =
+      e instanceof Error ? e.message : `Error fetching wrapped for ${year}`;
+    throw new Error(message);
+  }
 }
