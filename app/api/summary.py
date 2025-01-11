@@ -9,7 +9,7 @@ from flask import request
 import pandas as pd
 import urllib
 
-from api.utils import albums_by_artist, artists_by_album, artists_by_track
+from app.api.utils import albums_by_artist, artists_by_album, artists_by_track
 from data.provider import DataProvider
 from data.raw import get_connection
 from utils.json import to_json
