@@ -1,4 +1,4 @@
-import { AlbumsLineChart } from "../charts/AlbumsLineChart";
+import { AlbumsRankLineChart } from "../charts/AlbumsLineChart";
 import { AlbumTile } from "../list-items/AlbumTile";
 import { useIsMobile } from "../useIsMobile";
 import { useSummary } from "../useSummary";
@@ -31,7 +31,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
         </div>
         <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
-          <AlbumsLineChart
+          <AlbumsRankLineChart
             height={300}
             ranks={summary.album_rank_history.filter(
               (r) => r.album_uri === albumURI

@@ -3,13 +3,23 @@ import "./global.css";
 import { Anchor, Container, Pill, useMantineTheme } from "@mantine/core";
 
 import { Summary } from "./api";
-import { AlbumsLineChart } from "./charts/AlbumsLineChart";
+import {
+  AlbumsRankLineChart,
+  AlbumStreamsLineChart,
+} from "./charts/AlbumsLineChart";
 import { ArtistsBarChart } from "./charts/ArtistsBarChart";
-import { ArtistsLineChart } from "./charts/ArtistsLineChart";
+import {
+  ArtistsRankLineChart,
+  ArtistStreamsLineChart,
+} from "./charts/ArtistsLineChart";
 import { GenresBarChart } from "./charts/GenresBarChart";
 import { LabelsBarChart } from "./charts/LabelsBarChart";
 import { PlaylistsBarChart } from "./charts/PlaylistsBarChart";
-import { TracksLineChart } from "./charts/TracksLineChart";
+import { StreamingHistoryLineChart } from "./charts/StreamingHistoryAreaChart";
+import {
+  TracksRankLineChart,
+  TrackStreamsLineChart,
+} from "./charts/TracksLineChart";
 import { YearsBarChart } from "./charts/YearsBarChart";
 import { ChartSkeleton } from "./design/ChartSkeleton";
 import { DisplayGrid } from "./design/DisplayGrid";
@@ -75,6 +85,18 @@ export function App() {
         )}
 
         <div>
+          <h2>Streaming history</h2>
+          <ChartWithFallback
+            title="Streams by month"
+            data={data}
+            shouldRender={(d) => Object.keys(d.streams_by_month).length > 1}
+            renderChart={(d) => (
+              <StreamingHistoryLineChart
+                streams_by_month={d.streams_by_month}
+              />
+            )}
+          />
+
           {filters.artists?.length !== 1 && (
             <>
               <h2>Artists</h2>
@@ -84,7 +106,19 @@ export function App() {
                 data={data}
                 shouldRender={(d) => d.artist_rank_history.length > 1}
                 renderChart={(d) => (
-                  <ArtistsLineChart
+                  <ArtistsRankLineChart
+                    ranks={d.artist_rank_history}
+                    artists={d.artists}
+                  />
+                )}
+              />
+
+              <ChartWithFallback
+                title="Artist streams over time"
+                data={data}
+                shouldRender={(d) => d.artist_rank_history.length > 1}
+                renderChart={(d) => (
+                  <ArtistStreamsLineChart
                     ranks={d.artist_rank_history}
                     artists={d.artists}
                   />
@@ -123,6 +157,45 @@ export function App() {
             </>
           )}
 
+          <h2>Tracks</h2>
+
+          <ChartWithFallback
+            title="Track ranking over time"
+            data={data}
+            shouldRender={(d) => d.track_rank_history.length > 1}
+            renderChart={(d) => (
+              <TracksRankLineChart
+                ranks={d.track_rank_history}
+                tracks={d.tracks}
+              />
+            )}
+          />
+
+          <ChartWithFallback
+            title="Track streams over time"
+            data={data}
+            shouldRender={(d) => d.track_rank_history.length > 1}
+            renderChart={(d) => (
+              <TrackStreamsLineChart
+                ranks={d.track_rank_history}
+                tracks={d.tracks}
+              />
+            )}
+          />
+
+          <DisplayGrid
+            items={data ? Object.values(data.tracks) : undefined}
+            sortOptions={trackSortOptions}
+            getKey={(track) => track.track_uri}
+            renderRow={(track) => (
+              <TrackRow
+                track={track}
+                artists_by_track={data!.artists_by_track}
+                artists={data!.artists}
+              />
+            )}
+          />
+
           {filters.albums?.length !== 1 && (
             <>
               <h2>Albums</h2>
@@ -132,7 +205,19 @@ export function App() {
                 data={data}
                 shouldRender={(d) => d.album_rank_history.length > 1}
                 renderChart={(d) => (
-                  <AlbumsLineChart
+                  <AlbumsRankLineChart
+                    ranks={d.album_rank_history}
+                    albums={d.albums}
+                  />
+                )}
+              />
+
+              <ChartWithFallback
+                title="Album streams over time"
+                data={data}
+                shouldRender={(d) => d.album_rank_history.length > 1}
+                renderChart={(d) => (
+                  <AlbumStreamsLineChart
                     ranks={d.album_rank_history}
                     albums={d.albums}
                   />
@@ -155,30 +240,6 @@ export function App() {
               />
             </>
           )}
-
-          <h2>Tracks</h2>
-
-          <ChartWithFallback
-            title="Track ranking over time"
-            data={data}
-            shouldRender={(d) => d.track_rank_history.length > 1}
-            renderChart={(d) => (
-              <TracksLineChart ranks={d.track_rank_history} tracks={d.tracks} />
-            )}
-          />
-
-          <DisplayGrid
-            items={data ? Object.values(data.tracks) : undefined}
-            sortOptions={trackSortOptions}
-            getKey={(track) => track.track_uri}
-            renderRow={(track) => (
-              <TrackRow
-                track={track}
-                artists_by_track={data!.artists_by_track}
-                artists={data!.artists}
-              />
-            )}
-          />
 
           <h2>Playlists</h2>
 

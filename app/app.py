@@ -6,7 +6,7 @@ import pandas as pd
 from flask import Flask, send_file, request
 
 from data.provider import DataProvider
-from data.raw import get_connection
+from data.raw import get_connection, get_engine
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
 
@@ -90,6 +90,7 @@ def data():
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
+        "streams_by_month": overall_streams_by_month(tracks),
         "years": years(tracks),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
@@ -294,7 +295,7 @@ def track_rank_history(tracks):
     top_track_uris = current_ranks.sort_values('track_rank').head(10)['track_uri']
     ranks = track_ranks_over_time(top_track_uris)
 
-    return to_json(ranks[['track_uri', 'track_rank', 'as_of_date']])
+    return to_json(ranks[['track_uri', 'track_rank', 'track_stream_count', 'as_of_date']])
 
 
 def artist_rank_history(artists):
@@ -302,7 +303,7 @@ def artist_rank_history(artists):
     top_track_uris = current_ranks.sort_values('artist_rank').head(10)['artist_uri']
     ranks = artist_ranks_over_time(top_track_uris)
 
-    return to_json(ranks[['artist_uri', 'artist_rank', 'as_of_date']])
+    return to_json(ranks[['artist_uri', 'artist_rank', 'artist_stream_count', 'as_of_date']])
 
 
 def album_rank_history(albums):
@@ -310,7 +311,41 @@ def album_rank_history(albums):
     top_album_uris = current_ranks.sort_values('album_rank').head(10)['album_uri']
     ranks = album_ranks_over_time(top_album_uris)
 
-    return to_json(ranks[['album_uri', 'album_rank', 'as_of_date']])
+    return to_json(ranks[['album_uri', 'album_rank', 'album_stream_count', 'as_of_date']])
+
+
+def overall_streams_by_month(tracks):
+    track_uris = tracks['track_uri']
+    track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                year,
+                month,
+                SUM(stream_count) AS stream_count
+            FROM (
+                SELECT 
+                    EXTRACT(YEAR FROM p.from_time) AS year,
+                    EXTRACT(MONTH FROM p.to_time) AS month,
+                    h.stream_count
+                FROM listening_history h
+                    INNER JOIN listening_period p ON p.id = h.listening_period_id
+                WHERE h.track_uri IN %(track_uris)s
+            )
+            GROUP BY year, month;
+        ''', {"track_uris": track_uris})
+        results = cursor.fetchall()
+
+    out = {}
+    for year, month, stream_count in results:
+        year = int(year)
+        month = int(month)
+        if year not in out:
+            out[year] = {}
+        if month not in out[year]:
+            out[year][month] = stream_count
+    return out
 
 
 def years(tracks: pd.DataFrame):

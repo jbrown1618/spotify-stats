@@ -15,6 +15,7 @@ export interface Summary {
   track_rank_history: TrackRank[];
   artist_rank_history: ArtistRank[];
   album_rank_history: AlbumRank[];
+  streams_by_month: Record<number, Record<number, number>>;
 }
 
 export interface Playlist {
@@ -80,6 +81,7 @@ export interface Track extends Album {
 export interface TrackRank {
   track_uri: string;
   track_rank: number;
+  track_stream_count: number;
   as_of_date: string;
 }
 
@@ -98,6 +100,7 @@ export interface Artist {
 export interface ArtistRank {
   artist_uri: string;
   artist_rank: number;
+  artist_stream_count: number;
   as_of_date: string;
 }
 
@@ -118,6 +121,7 @@ export interface Album {
 export interface AlbumRank {
   album_uri: string;
   album_rank: number;
+  album_stream_count: number;
   as_of_date: string;
 }
 
