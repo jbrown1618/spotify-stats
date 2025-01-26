@@ -1,71 +1,57 @@
 import { LineChart } from "@mantine/charts";
-import { Paper, Slider, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
 import { formatDate } from "../utils";
 import { colors } from "./colors";
 
-interface RankLineChartProps<TRank> {
-  ranks: TRank[];
+interface RankLineChartProps<TStreams> {
+  ranks: TStreams[];
   height?: number;
-  getKey: (r: TRank) => string;
-  getRank: (r: TRank) => number;
-  getDate: (r: TRank) => string;
-  getItem: (r: TRank) => string;
+  getKey: (r: TStreams) => string;
+  getStreams: (r: TStreams) => number;
+  getDate: (r: TStreams) => string;
+  getItem: (r: TStreams) => string;
   getCurrentRank: (k: string) => number;
   getLabel: (k: string) => string;
   getImageURL: (k: string) => string;
 }
 
-export function RankLineChart<TRank>({
+export function StreamsLineChart<TStreams>({
   ranks,
   height,
   getKey,
-  getRank,
+  getStreams,
   getDate,
-  getItem,
   getLabel,
   getCurrentRank,
   getImageURL,
-}: RankLineChartProps<TRank>) {
+}: RankLineChartProps<TStreams>) {
   const isMobile = useIsMobile();
 
   const dataPoints = new Map<number, Record<string, number>>();
   const artistURIs = new Set<string>();
-
-  const range = getAxisRange(ranks, getRank, getItem, getDate);
-  const [max, setMax] = useState(range.initialMax);
-
-  useEffect(() => setMax(range.initialMax), [range.initialMax]);
 
   for (const rank of ranks) {
     artistURIs.add(getKey(rank));
 
     const ts = new Date(getDate(rank)).getTime();
 
-    if (getRank(rank) > max) continue;
-
     const existing = dataPoints.get(ts);
     if (existing) {
-      existing[getKey(rank)] = getRank(rank);
+      existing[getKey(rank)] = getStreams(rank);
     } else {
       dataPoints.set(ts, {
         date: ts,
-        [getKey(rank)]: getRank(rank),
+        [getKey(rank)]: getStreams(rank),
       });
     }
-  }
-
-  height ??= 550;
-  if (range.showSlider) {
-    height -= 50;
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <LineChart
-        h={height ?? 500}
+        h={height ?? 550}
         data={Array.from(dataPoints.values()).sort(
           (a, b) => a["date"] - b["date"]
         )}
@@ -76,10 +62,6 @@ export function RankLineChart<TRank>({
         }))}
         connectNulls={false}
         withDots={false}
-        yAxisProps={{
-          reversed: true,
-          domain: [() => range.min, () => max],
-        }}
         xAxisProps={{
           tickFormatter: formatDate,
         }}
@@ -91,7 +73,7 @@ export function RankLineChart<TRank>({
               payload={payload}
               getLabel={getLabel}
               getImageURL={getImageURL}
-              getCurrentRank={getCurrentRank}
+              getStreamCount={getCurrentRank}
             />
           ),
         }}
@@ -107,20 +89,6 @@ export function RankLineChart<TRank>({
           ),
         }}
       />
-      {range.showSlider && (
-        <div style={{ margin: 8 }}>
-          <Text>Scale</Text>
-          <div style={{ flexGrow: 1 }}>
-            <Slider
-              value={max}
-              onChange={setMax}
-              min={range.maxSliderMin}
-              max={range.max}
-              label={(v) => `${Math.ceil(100 * (v / range.max))}%`}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -151,7 +119,7 @@ function RankLineChartTooltip({
     >
       <h3 style={{ margin: 0, alignSelf: "center" }}>{formatDate(label)}</h3>
       {payload
-        ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
+        ?.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
         .map((item) => {
           return (
             <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
@@ -178,11 +146,11 @@ function RankLineChartTooltip({
   );
 }
 
-interface RankLineChartLegendProps {
+interface StreamsLineChartLegendProps {
   payload?: LegendItem[];
   getImageURL: (k: string) => string;
   getLabel: (k: string) => string;
-  getCurrentRank: (k: string) => number;
+  getStreamCount: (k: string) => number;
 }
 
 interface LegendItem {
@@ -194,8 +162,8 @@ function RankLineChartLegend({
   payload,
   getImageURL,
   getLabel,
-  getCurrentRank,
-}: RankLineChartLegendProps) {
+  getStreamCount,
+}: StreamsLineChartLegendProps) {
   if (!payload) return null;
   return (
     <div
@@ -208,7 +176,7 @@ function RankLineChartLegend({
       }}
     >
       {payload
-        .sort((a, b) => getCurrentRank(a.value) - getCurrentRank(b.value))
+        .sort((a, b) => getStreamCount(a.value) - getStreamCount(b.value))
         .map((item) => {
           return (
             <div
@@ -245,51 +213,4 @@ function RankLineChartLegend({
         })}
     </div>
   );
-}
-
-interface AxisRange {
-  min: number;
-  max: number;
-  initialMax: number;
-  maxSliderMin: number;
-  showSlider: boolean;
-}
-
-function getAxisRange<TRank>(
-  ranks: TRank[],
-  getRank: (r: TRank) => number,
-  getItem: (r: TRank) => string,
-  getDate: (r: TRank) => string
-): AxisRange {
-  const allRanks = ranks.map(getRank);
-  const distinctItems = new Set(ranks.map(getItem)).size;
-  const min = Math.min(...allRanks);
-  const dataMax = Math.max(...allRanks);
-
-  // The smallest max that should be settable
-  const maxSliderMin = min + 9;
-  const max = Math.max(dataMax, maxSliderMin);
-
-  const maxDate = Math.max(...ranks.map((r) => new Date(getDate(r)).getTime()));
-
-  const currentRanks = ranks
-    .filter((r) => new Date(getDate(r)).getTime() === maxDate)
-    .map(getRank);
-
-  const minCurrentRank = Math.min(...currentRanks);
-  const maxCurrentRank = Math.max(...currentRanks);
-
-  const idealInitialMax = (maxCurrentRank - minCurrentRank) * 3 + min + 1;
-  const showSlider = max - maxSliderMin > 20;
-
-  const initialMax =
-    showSlider && distinctItems > 1 ? Math.min(idealInitialMax, max) : max;
-
-  return {
-    min,
-    max,
-    initialMax,
-    maxSliderMin,
-    showSlider,
-  };
 }

@@ -1,15 +1,26 @@
 import "./global.css";
 
-import { Anchor, Container, Pill, useMantineTheme } from "@mantine/core";
+import { Anchor, Container, Pill, Tabs, useMantineTheme } from "@mantine/core";
 
 import { Summary } from "./api";
-import { AlbumsLineChart } from "./charts/AlbumsLineChart";
+import {
+  AlbumsRankLineChart,
+  AlbumStreamsLineChart,
+} from "./charts/AlbumsLineChart";
 import { ArtistsBarChart } from "./charts/ArtistsBarChart";
-import { ArtistsLineChart } from "./charts/ArtistsLineChart";
+import {
+  ArtistsRankLineChart,
+  ArtistStreamsLineChart,
+} from "./charts/ArtistsLineChart";
 import { GenresBarChart } from "./charts/GenresBarChart";
 import { LabelsBarChart } from "./charts/LabelsBarChart";
 import { PlaylistsBarChart } from "./charts/PlaylistsBarChart";
-import { TracksLineChart } from "./charts/TracksLineChart";
+import { StreamingHistoryAreaChart } from "./charts/StreamingHistoryAreaChart";
+import { StreamingHistoryStack } from "./charts/StreamingHistoryStack";
+import {
+  TracksRankLineChart,
+  TrackStreamsLineChart,
+} from "./charts/TracksLineChart";
 import { YearsBarChart } from "./charts/YearsBarChart";
 import { ChartSkeleton } from "./design/ChartSkeleton";
 import { DisplayGrid } from "./design/DisplayGrid";
@@ -79,30 +90,56 @@ export function App() {
             <>
               <h2>Artists</h2>
 
-              <ChartWithFallback
-                title="Artist ranking over time"
-                data={data}
-                shouldRender={(d) => d.artist_rank_history.length > 1}
-                renderChart={(d) => (
-                  <ArtistsLineChart
-                    ranks={d.artist_rank_history}
-                    artists={d.artists}
-                  />
-                )}
-              />
+              <Tabs defaultValue="rank">
+                <Tabs.List>
+                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
+                  <Tabs.Tab value="streams">Streams</Tabs.Tab>
+                  <Tabs.Tab value="count">Count</Tabs.Tab>
+                </Tabs.List>
 
-              <ChartWithFallback
-                title="Top artists by liked tracks"
-                data={data}
-                shouldRender={(d) =>
-                  Object.keys(d.artist_track_counts).length > 1
-                }
-                renderChart={(d) => (
-                  <ArtistsBarChart
-                    counts={Object.values(d.artist_track_counts)}
+                <Tabs.Panel value="rank">
+                  <ChartWithFallback
+                    title="Artist ranking over time"
+                    data={data}
+                    shouldRender={(d) => d.artist_rank_history.length > 1}
+                    renderChart={(d) => (
+                      <ArtistsRankLineChart
+                        ranks={d.artist_rank_history}
+                        artists={d.artists}
+                      />
+                    )}
                   />
-                )}
-              />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="streams">
+                  <ChartWithFallback
+                    title="Artist streams over time"
+                    data={data}
+                    shouldRender={(d) => d.artist_rank_history.length > 1}
+                    renderChart={(d) => (
+                      <ArtistStreamsLineChart
+                        ranks={d.artist_rank_history}
+                        artists={d.artists}
+                      />
+                    )}
+                  />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="count">
+                  <ChartWithFallback
+                    title="Artists by liked tracks"
+                    data={data}
+                    shouldRender={(d) =>
+                      Object.keys(d.artist_track_counts).length > 1
+                    }
+                    renderChart={(d) => (
+                      <ArtistsBarChart
+                        counts={Object.values(d.artist_track_counts)}
+                      />
+                    )}
+                  />
+                </Tabs.Panel>
+              </Tabs>
 
               <DisplayGrid
                 items={data ? Object.values(data.artists) : undefined}
@@ -123,21 +160,127 @@ export function App() {
             </>
           )}
 
+          <h2>Tracks</h2>
+
+          <Tabs defaultValue="rank">
+            <Tabs.List>
+              <Tabs.Tab value="rank">Rank</Tabs.Tab>
+              <Tabs.Tab value="streams">Streams</Tabs.Tab>
+              <Tabs.Tab value="months">Comparison</Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="rank">
+              <ChartWithFallback
+                title="Track ranking over time"
+                data={data}
+                shouldRender={(d) => d.track_rank_history.length > 1}
+                renderChart={(d) => (
+                  <TracksRankLineChart
+                    ranks={d.track_rank_history}
+                    tracks={d.tracks}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="streams">
+              <ChartWithFallback
+                title="Track streams over time"
+                data={data}
+                shouldRender={(d) => d.track_rank_history.length > 1}
+                renderChart={(d) => (
+                  <TrackStreamsLineChart
+                    ranks={d.track_rank_history}
+                    tracks={d.tracks}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="months">
+              <ChartWithFallback
+                title="Track streams by month"
+                data={data}
+                shouldRender={(d) =>
+                  Object.keys(d.track_streams_by_month).length > 1
+                }
+                renderChart={(d) => (
+                  <StreamingHistoryStack
+                    data={d.track_streams_by_month}
+                    renderKey={(key) => (
+                      <h4
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          margin: 0,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <img
+                          height={20}
+                          src={data!.tracks[key].album_image_url}
+                        />
+                        {data!.tracks[key].track_name}
+                      </h4>
+                    )}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+          </Tabs>
+
+          <DisplayGrid
+            items={data ? Object.values(data.tracks) : undefined}
+            sortOptions={trackSortOptions}
+            getKey={(track) => track.track_uri}
+            renderRow={(track) => (
+              <TrackRow
+                track={track}
+                artists_by_track={data!.artists_by_track}
+                artists={data!.artists}
+              />
+            )}
+          />
+
           {filters.albums?.length !== 1 && (
             <>
               <h2>Albums</h2>
 
-              <ChartWithFallback
-                title="Album ranking over time"
-                data={data}
-                shouldRender={(d) => d.album_rank_history.length > 1}
-                renderChart={(d) => (
-                  <AlbumsLineChart
-                    ranks={d.album_rank_history}
-                    albums={d.albums}
+              <Tabs defaultValue="rank">
+                <Tabs.List>
+                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
+                  <Tabs.Tab value="streams">Streams</Tabs.Tab>
+                </Tabs.List>
+
+                <Tabs.Panel value="rank">
+                  <ChartWithFallback
+                    title="Album ranking over time"
+                    data={data}
+                    shouldRender={(d) => d.album_rank_history.length > 1}
+                    renderChart={(d) => (
+                      <AlbumsRankLineChart
+                        ranks={d.album_rank_history}
+                        albums={d.albums}
+                      />
+                    )}
                   />
-                )}
-              />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="streams">
+                  <ChartWithFallback
+                    title="Album streams over time"
+                    data={data}
+                    shouldRender={(d) => d.album_rank_history.length > 1}
+                    renderChart={(d) => (
+                      <AlbumStreamsLineChart
+                        ranks={d.album_rank_history}
+                        albums={d.albums}
+                      />
+                    )}
+                  />
+                </Tabs.Panel>
+              </Tabs>
 
               <DisplayGrid
                 items={data ? Object.values(data.albums) : undefined}
@@ -155,30 +298,6 @@ export function App() {
               />
             </>
           )}
-
-          <h2>Tracks</h2>
-
-          <ChartWithFallback
-            title="Track ranking over time"
-            data={data}
-            shouldRender={(d) => d.track_rank_history.length > 1}
-            renderChart={(d) => (
-              <TracksLineChart ranks={d.track_rank_history} tracks={d.tracks} />
-            )}
-          />
-
-          <DisplayGrid
-            items={data ? Object.values(data.tracks) : undefined}
-            sortOptions={trackSortOptions}
-            getKey={(track) => track.track_uri}
-            renderRow={(track) => (
-              <TrackRow
-                track={track}
-                artists_by_track={data!.artists_by_track}
-                artists={data!.artists}
-              />
-            )}
-          />
 
           <h2>Playlists</h2>
 
@@ -287,6 +406,18 @@ export function App() {
               />
             </>
           )}
+
+          <h2>Streaming history</h2>
+          <ChartWithFallback
+            title="Streams by month"
+            data={data}
+            shouldRender={(d) => Object.keys(d.streams_by_month).length > 1}
+            renderChart={(d) => (
+              <StreamingHistoryAreaChart
+                streams_by_month={d.streams_by_month}
+              />
+            )}
+          />
         </div>
 
         <footer style={{ padding: 16, textAlign: "center" }}>

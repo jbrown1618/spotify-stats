@@ -1,4 +1,4 @@
-import { ArtistsLineChart } from "../charts/ArtistsLineChart";
+import { ArtistsRankLineChart } from "../charts/ArtistsLineChart";
 import { ArtistTile } from "../list-items/ArtistTile";
 import { useIsMobile } from "../useIsMobile";
 import { useSummary } from "../useSummary";
@@ -31,7 +31,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         </div>
         <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
-          <ArtistsLineChart
+          <ArtistsRankLineChart
             height={300}
             ranks={summary.artist_rank_history.filter(
               (r) => r.artist_uri === artist.artist_uri
