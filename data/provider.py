@@ -435,43 +435,13 @@ select
             then extract(year from to_date(al.release_date, 'YYYY'))
         else 0
         end
-    ) as album_release_year,
-
-    pa.uri as primary_artist_uri,
-    pa.name as primary_artist_name,
-    pa.popularity as primary_artist_popularity,
-    pa.followers as primary_artist_followers,
-    pa.image_url as primary_artist_image_url,
-    (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            inner join liked_track ilt on ilt.track_uri = ita.track_uri
-            where ita.artist_uri = pa.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
-            )
-        )
-    ) as primary_artist_liked_track_count,
-    (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            where ita.artist_uri = pa.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
-            )
-        )
-    ) as primary_artist_track_count
+    ) as album_release_year
 
 from track t
     inner join playlist_track pt on pt.track_uri = t.uri
     inner join album al on al.uri = t.album_uri
     inner join track_artist ta on ta.track_uri = t.uri
     inner join artist a on a.uri = ta.artist_uri
-    inner join artist pa on pa.uri = ta.artist_uri and ta.artist_index = 0
     left join artist_genre ag on ag.artist_uri = a.uri
     left join track_rank tr
         on tr.track_uri = t.uri
@@ -533,13 +503,7 @@ group by
     al.release_date,
     al.image_url,
     alr.rank,
-    alr.stream_count,
-
-    pa.uri,
-    pa.name,
-    pa.popularity,
-    pa.followers,
-    pa.image_url
+    alr.stream_count
 
 order by tr.rank asc nulls last;
 """

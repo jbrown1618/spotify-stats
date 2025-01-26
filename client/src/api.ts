@@ -61,15 +61,6 @@ export interface GenreTrackCount {
 }
 
 export interface Track extends Album {
-  primary_artist_followers: number;
-  primary_artist_image_url: string;
-  primary_artist_liked_track_count: number;
-  primary_artist_name: string;
-  primary_artist_popularity: number;
-  primary_artist_rank: number;
-  primary_artist_track_count: number;
-  primary_artist_uri: string;
-  primary_artist_stream_count: number;
   track_duration_ms: number;
   track_explicit: boolean;
   track_isrc: string;
