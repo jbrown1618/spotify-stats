@@ -2,7 +2,7 @@ import "./global.css";
 
 import { Anchor, Container, Pill, Tabs, useMantineTheme } from "@mantine/core";
 
-import { Summary } from "./api";
+import { Summary, Track } from "./api";
 import {
   AlbumsRankLineChart,
   AlbumStreamsLineChart,
@@ -207,7 +207,11 @@ export function App() {
                 renderChart={(d) => (
                   <StreamingHistoryStack
                     data={d.track_streams_by_month}
-                    renderKey={(key) => (
+                    getItem={(key) => data!.tracks[key]}
+                    sortItems={(a, b) =>
+                      b.track_stream_count - a.track_stream_count
+                    }
+                    renderItem={(track: Track) => (
                       <h4
                         style={{
                           display: "flex",
@@ -217,11 +221,8 @@ export function App() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        <img
-                          height={20}
-                          src={data!.tracks[key].album_image_url}
-                        />
-                        {data!.tracks[key].track_name}
+                        <img height={20} src={track.album_image_url} />
+                        {track.track_name}
                       </h4>
                     )}
                   />

@@ -1,6 +1,8 @@
 import { AreaChart } from "@mantine/charts";
+import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
+import { formatDate, formatMonth } from "../utils";
 
 export function StreamingHistoryAreaChart({
   streams_by_month,
@@ -9,6 +11,8 @@ export function StreamingHistoryAreaChart({
   dataMax,
   minYear,
   minMonth,
+  maxYear,
+  maxMonth,
 }: {
   streams_by_month: Record<number, Record<number, number>>;
   height?: number;
@@ -16,6 +20,8 @@ export function StreamingHistoryAreaChart({
   dataMax?: number;
   minYear?: number;
   minMonth?: number;
+  maxYear?: number;
+  maxMonth?: number;
 }) {
   const isMobile = useIsMobile();
   minYear ??= Math.min(
@@ -24,10 +30,11 @@ export function StreamingHistoryAreaChart({
   minMonth ??= Math.min(
     ...Object.keys(streams_by_month[minYear]).map((m) => parseInt(m))
   );
-  const maxYear = Math.max(
+
+  maxYear ??= Math.max(
     ...Object.keys(streams_by_month).map((y) => parseInt(y))
   );
-  const maxMonth = Math.max(
+  maxMonth ??= Math.max(
     ...Object.keys(streams_by_month[maxYear]).map((m) => parseInt(m))
   );
 
@@ -47,11 +54,11 @@ export function StreamingHistoryAreaChart({
     }
   }
 
-  const data: { Month: string; Streams: number }[] = [];
+  const data: { Month: number; Streams: number }[] = [];
   for (const [year, by_month] of Object.entries(streams_by_month)) {
     for (const [month, streams] of Object.entries(by_month)) {
       data.push({
-        Month: `${year}-${month}`,
+        Month: new Date(parseInt(year), parseInt(month)).getTime(),
         Streams: streams,
       });
     }
@@ -73,6 +80,56 @@ export function StreamingHistoryAreaChart({
             }
           : undefined
       }
+      xAxisProps={{
+        tickFormatter: formatMonth,
+      }}
+      tooltipProps={{
+        content: ({ label, payload }) => (
+          <AreaChartTooltip label={label} payload={payload ?? []} />
+        ),
+      }}
     />
+  );
+}
+
+interface AreaChartTooltipProps {
+  label?: number;
+  payload: TooltipItem[];
+}
+
+interface TooltipItem {
+  value?: number;
+  name?: string;
+  color?: string;
+}
+
+function AreaChartTooltip({ label, payload }: AreaChartTooltipProps) {
+  return (
+    <Paper
+      withBorder
+      style={{ display: "flex", flexDirection: "column", padding: 20, gap: 5 }}
+    >
+      <h3 style={{ margin: 0, alignSelf: "center" }}>{formatDate(label)}</h3>
+      {payload
+        ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
+        .map((item) => {
+          return (
+            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+              <div
+                style={{
+                  backgroundColor: item.color,
+                  height: "1em",
+                  width: "1em",
+                  borderRadius: "0.5em",
+                }}
+              />
+              <span>Streams</span>
+              <span style={{ width: 30, textAlign: "right" }}>
+                {item.value}
+              </span>
+            </div>
+          );
+        })}
+    </Paper>
   );
 }
