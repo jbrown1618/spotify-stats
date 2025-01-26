@@ -82,9 +82,7 @@ export function RowDesign({
               textOverflow: "ellipsis",
             }}
           >
-            <Text fw={700}>
-              <SpotifyLink text={primaryText} uri={itemURI} />
-            </Text>
+            <Text fw={700}>{primaryText}</Text>
             {labels?.map((labelText) => (
               <Pill bg="gray">{labelText}</Pill>
             ))}
