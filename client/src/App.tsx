@@ -15,7 +15,8 @@ import {
 import { GenresBarChart } from "./charts/GenresBarChart";
 import { LabelsBarChart } from "./charts/LabelsBarChart";
 import { PlaylistsBarChart } from "./charts/PlaylistsBarChart";
-import { StreamingHistoryLineChart } from "./charts/StreamingHistoryAreaChart";
+import { StreamingHistoryAreaChart } from "./charts/StreamingHistoryAreaChart";
+import { StreamingHistoryStack } from "./charts/StreamingHistoryStack";
 import {
   TracksRankLineChart,
   TrackStreamsLineChart,
@@ -91,7 +92,7 @@ export function App() {
             data={data}
             shouldRender={(d) => Object.keys(d.streams_by_month).length > 1}
             renderChart={(d) => (
-              <StreamingHistoryLineChart
+              <StreamingHistoryAreaChart
                 streams_by_month={d.streams_by_month}
               />
             )}
@@ -179,6 +180,33 @@ export function App() {
               <TrackStreamsLineChart
                 ranks={d.track_rank_history}
                 tracks={d.tracks}
+              />
+            )}
+          />
+
+          <ChartWithFallback
+            title="Track streams by month"
+            data={data}
+            shouldRender={(d) =>
+              Object.keys(d.track_streams_by_month).length > 1
+            }
+            renderChart={(d) => (
+              <StreamingHistoryStack
+                data={d.track_streams_by_month}
+                renderKey={(key) => (
+                  <h4
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      margin: 0,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <img height={20} src={data!.tracks[key].album_image_url} />
+                    {data!.tracks[key].track_name}
+                  </h4>
+                )}
               />
             )}
           />

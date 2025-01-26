@@ -91,6 +91,7 @@ def data():
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
         "streams_by_month": overall_streams_by_month(tracks),
+        "track_streams_by_month": track_streams_by_month(tracks),
         "years": years(tracks),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
@@ -292,10 +293,48 @@ def genre_track_counts(tracks):
 
 def track_rank_history(tracks):
     current_ranks = current_track_ranks(tracks['track_uri'])
-    top_track_uris = current_ranks.sort_values('track_rank').head(10)['track_uri']
+    top_track_uris = current_ranks.sort_values('track_rank', ascending=True).head(10)['track_uri']
     ranks = track_ranks_over_time(top_track_uris)
 
     return to_json(ranks[['track_uri', 'track_rank', 'track_stream_count', 'as_of_date']])
+
+
+def track_streams_by_month(tracks):
+    top_track_uris = tracks.sort_values('track_rank').head(5)['track_uri']
+    top_track_uris = tuple(top_track_uris) if len(top_track_uris) > 0 else tuple(['EMPTY'])
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                track_uri,
+                year,
+                month,
+                SUM(stream_count) AS stream_count
+            FROM (
+                SELECT 
+                    h.track_uri,
+                    EXTRACT(YEAR FROM p.from_time) AS year,
+                    EXTRACT(MONTH FROM p.to_time) AS month,
+                    h.stream_count
+                FROM listening_history h
+                    INNER JOIN listening_period p ON p.id = h.listening_period_id
+                WHERE h.track_uri IN %(track_uris)s
+            )
+            GROUP BY track_uri, year, month;
+        ''', {"track_uris": top_track_uris})
+        results = cursor.fetchall()
+
+    out = {}
+    for track_uri, year, month, stream_count in results:
+        year = int(year)
+        month = int(month)
+        if track_uri not in out:
+            out[track_uri] = {}
+        if year not in out[track_uri]:
+            out[track_uri][year] = {}
+        if month not in out[track_uri][year]:
+            out[track_uri][year][month] = stream_count
+    return out
 
 
 def artist_rank_history(artists):

@@ -16,6 +16,10 @@ export interface Summary {
   artist_rank_history: ArtistRank[];
   album_rank_history: AlbumRank[];
   streams_by_month: Record<number, Record<number, number>>;
+  track_streams_by_month: Record<
+    string,
+    Record<number, Record<number, number>>
+  >;
 }
 
 export interface Playlist {
