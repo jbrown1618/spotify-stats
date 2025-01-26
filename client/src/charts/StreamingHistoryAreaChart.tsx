@@ -2,7 +2,7 @@ import { AreaChart } from "@mantine/charts";
 import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
-import { formatDate, formatMonth } from "../utils";
+import { formatMonth } from "../utils";
 
 export function StreamingHistoryAreaChart({
   streams_by_month,
@@ -109,7 +109,7 @@ function AreaChartTooltip({ label, payload }: AreaChartTooltipProps) {
       withBorder
       style={{ display: "flex", flexDirection: "column", padding: 20, gap: 5 }}
     >
-      <h3 style={{ margin: 0, alignSelf: "center" }}>{formatDate(label)}</h3>
+      <h3 style={{ margin: 0, alignSelf: "center" }}>{formatMonth(label)}</h3>
       {payload
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
