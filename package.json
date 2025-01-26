@@ -6,8 +6,5 @@
   "engines": {
     "npm": "10.7.x",
     "node": "20.14.x"
-  },
-  "dependencies": {
-    "@mantine/carousel": "^7.16.1"
   }
 }
