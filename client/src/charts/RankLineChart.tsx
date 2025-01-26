@@ -57,6 +57,11 @@ export function RankLineChart<TRank>({
     }
   }
 
+  height ??= 550;
+  if (range.showSlider) {
+    height -= 50;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <LineChart

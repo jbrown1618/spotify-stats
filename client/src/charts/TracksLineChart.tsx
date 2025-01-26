@@ -32,6 +32,7 @@ export function TrackStreamsLineChart({
 }) {
   return (
     <StreamsLineChart
+      height={550}
       ranks={ranks}
       getKey={(r) => r.track_uri}
       getDate={(r) => r.as_of_date}

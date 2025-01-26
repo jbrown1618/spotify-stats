@@ -51,7 +51,7 @@ export function StreamsLineChart<TStreams>({
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <LineChart
-        h={height ?? 500}
+        h={height ?? 550}
         data={Array.from(dataPoints.values()).sort(
           (a, b) => a["date"] - b["date"]
         )}
@@ -176,7 +176,7 @@ function RankLineChartLegend({
       }}
     >
       {payload
-        .sort((a, b) => getStreamCount(b.value) - getStreamCount(a.value))
+        .sort((a, b) => getStreamCount(a.value) - getStreamCount(b.value))
         .map((item) => {
           return (
             <div
