@@ -98,13 +98,15 @@ export function DisplayGrid<T>({
         )}
 
         {sortOptions && Object.keys(sortOptions).length > 0 && (
-          <Select
-            data={Object.keys(sortOptions)}
-            value={sort}
-            onChange={setSort}
-            checkIconPosition="right"
-            radius="xl"
-          />
+          <div style={{ maxWidth: 150 }}>
+            <Select
+              data={Object.keys(sortOptions)}
+              value={sort}
+              onChange={setSort}
+              checkIconPosition="right"
+              radius="xl"
+            />
+          </div>
         )}
       </div>
 

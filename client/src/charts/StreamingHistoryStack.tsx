@@ -30,7 +30,7 @@ export function StreamingHistoryStack<TItem>({
   );
 
   const itemCount = Object.keys(data).length;
-  const itemHeight = (550 - 32 * itemCount) / itemCount;
+  const itemHeight = (550 - 15 - 32 * itemCount) / itemCount;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {Object.keys(data)
@@ -40,11 +40,16 @@ export function StreamingHistoryStack<TItem>({
             <div style={{ marginLeft: 30 }}>{renderItem(getItem(key))}</div>
             <StreamingHistoryAreaChart
               streams_by_month={data[key]}
-              height={itemHeight}
+              height={
+                i === Object.keys(data).length - 1
+                  ? itemHeight + 15
+                  : itemHeight
+              }
               color={colors[i]}
+              withXAxis={i === Object.keys(data).length - 1}
               dataMax={dataMax}
-              minYear={minYear}
-              minMonth={minMonth}
+              minYear={minMonth === 1 ? minYear - 1 : minYear}
+              minMonth={minMonth === 1 ? 12 : minMonth - 1}
               maxYear={maxYear}
               maxMonth={maxMonth}
             />

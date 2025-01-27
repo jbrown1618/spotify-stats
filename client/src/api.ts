@@ -20,6 +20,14 @@ export interface Summary {
     string,
     Record<number, Record<number, number>>
   >;
+  artist_streams_by_month: Record<
+    string,
+    Record<number, Record<number, number>>
+  >;
+  album_streams_by_month: Record<
+    string,
+    Record<number, Record<number, number>>
+  >;
 }
 
 export interface Playlist {

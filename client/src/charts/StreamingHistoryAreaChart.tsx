@@ -8,6 +8,7 @@ export function StreamingHistoryAreaChart({
   streams_by_month,
   height,
   color,
+  withXAxis,
   dataMax,
   minYear,
   minMonth,
@@ -17,6 +18,7 @@ export function StreamingHistoryAreaChart({
   streams_by_month: Record<number, Record<number, number>>;
   height?: number;
   color?: string;
+  withXAxis?: boolean;
   dataMax?: number;
   minYear?: number;
   minMonth?: number;
@@ -40,7 +42,7 @@ export function StreamingHistoryAreaChart({
 
   let y = minYear;
   let m = minMonth;
-  while (y < maxYear || m < maxMonth) {
+  while (y < maxYear || (y === maxYear && m <= maxMonth)) {
     if (!streams_by_month[y]) {
       streams_by_month[y] = {};
     }
@@ -58,7 +60,7 @@ export function StreamingHistoryAreaChart({
   for (const [year, by_month] of Object.entries(streams_by_month)) {
     for (const [month, streams] of Object.entries(by_month)) {
       data.push({
-        Month: new Date(parseInt(year), parseInt(month)).getTime(),
+        Month: new Date(parseInt(year), parseInt(month) - 1).getTime(),
         Streams: streams,
       });
     }
@@ -80,6 +82,7 @@ export function StreamingHistoryAreaChart({
             }
           : undefined
       }
+      withXAxis={withXAxis ?? true}
       xAxisProps={{
         tickFormatter: formatMonth,
       }}

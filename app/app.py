@@ -6,7 +6,7 @@ import pandas as pd
 from flask import Flask, send_file, request
 
 from data.provider import DataProvider
-from data.raw import get_connection, get_engine
+from data.raw import get_connection
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
 
@@ -92,6 +92,8 @@ def data():
         "album_rank_history": album_rank_history(albums),
         "streams_by_month": overall_streams_by_month(tracks),
         "track_streams_by_month": track_streams_by_month(tracks),
+        "artist_streams_by_month": artist_streams_by_month(artists),
+        "album_streams_by_month": album_streams_by_month(albums),
         "years": years(tracks),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
@@ -338,11 +340,49 @@ def track_streams_by_month(tracks):
 
 
 def artist_rank_history(artists):
-    current_ranks = current_artist_ranks(artists['artist_uri'])
-    top_track_uris = current_ranks.sort_values('artist_rank').head(10)['artist_uri']
-    ranks = artist_ranks_over_time(top_track_uris)
+    top_artist_uris = artists.sort_values('artist_rank').head(10)['artist_uri']
+    ranks = artist_ranks_over_time(top_artist_uris)
 
     return to_json(ranks[['artist_uri', 'artist_rank', 'artist_stream_count', 'as_of_date']])
+
+
+def artist_streams_by_month(artists):
+    top_artist_uris = artists.sort_values('artist_rank').head(5)['artist_uri']
+    top_artist_uris = tuple(top_artist_uris) if len(top_artist_uris) > 0 else tuple(['EMPTY'])
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                artist_uri,
+                year,
+                month,
+                SUM(stream_count) AS stream_count
+            FROM (
+                SELECT 
+                    ta.artist_uri,
+                    EXTRACT(YEAR FROM p.from_time) AS year,
+                    EXTRACT(MONTH FROM p.to_time) AS month,
+                    h.stream_count
+                FROM listening_history h
+                    INNER JOIN listening_period p ON p.id = h.listening_period_id
+                    INNER JOIN track_artist ta ON ta.track_uri = h.track_uri
+                WHERE ta.artist_uri IN %(artist_uris)s
+            )
+            GROUP BY artist_uri, year, month;
+        ''', {"artist_uris": top_artist_uris})
+        results = cursor.fetchall()
+
+    out = {}
+    for artist_uri, year, month, stream_count in results:
+        year = int(year)
+        month = int(month)
+        if artist_uri not in out:
+            out[artist_uri] = {}
+        if year not in out[artist_uri]:
+            out[artist_uri][year] = {}
+        if month not in out[artist_uri][year]:
+            out[artist_uri][year][month] = stream_count
+    return out
 
 
 def album_rank_history(albums):
@@ -351,6 +391,45 @@ def album_rank_history(albums):
     ranks = album_ranks_over_time(top_album_uris)
 
     return to_json(ranks[['album_uri', 'album_rank', 'album_stream_count', 'as_of_date']])
+
+
+def album_streams_by_month(albums):
+    top_album_uris = albums.sort_values('album_rank').head(5)['album_uri']
+    top_album_uris = tuple(top_album_uris) if len(top_album_uris) > 0 else tuple(['EMPTY'])
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                album_uri,
+                year,
+                month,
+                SUM(stream_count) AS stream_count
+            FROM (
+                SELECT 
+                    t.album_uri,
+                    EXTRACT(YEAR FROM p.from_time) AS year,
+                    EXTRACT(MONTH FROM p.to_time) AS month,
+                    h.stream_count
+                FROM listening_history h
+                    INNER JOIN listening_period p ON p.id = h.listening_period_id
+                    INNER JOIN track t ON t.uri = h.track_uri
+                WHERE t.album_uri IN %(album_uris)s
+            )
+            GROUP BY album_uri, year, month;
+        ''', {"album_uris": top_album_uris})
+        results = cursor.fetchall()
+
+    out = {}
+    for album_uri, year, month, stream_count in results:
+        year = int(year)
+        month = int(month)
+        if album_uri not in out:
+            out[album_uri] = {}
+        if year not in out[album_uri]:
+            out[album_uri][year] = {}
+        if month not in out[album_uri][year]:
+            out[album_uri][year][month] = stream_count
+    return out
 
 
 def overall_streams_by_month(tracks):

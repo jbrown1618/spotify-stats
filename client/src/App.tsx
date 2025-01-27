@@ -2,7 +2,7 @@ import "./global.css";
 
 import { Anchor, Container, Pill, Tabs, useMantineTheme } from "@mantine/core";
 
-import { Summary, Track } from "./api";
+import { Album, Artist, Summary, Track } from "./api";
 import {
   AlbumsRankLineChart,
   AlbumStreamsLineChart,
@@ -95,6 +95,7 @@ export function App() {
                   <Tabs.Tab value="rank">Rank</Tabs.Tab>
                   <Tabs.Tab value="streams">Streams</Tabs.Tab>
                   <Tabs.Tab value="count">Count</Tabs.Tab>
+                  <Tabs.Tab value="months">Comparison</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="rank">
@@ -135,6 +136,39 @@ export function App() {
                     renderChart={(d) => (
                       <ArtistsBarChart
                         counts={Object.values(d.artist_track_counts)}
+                      />
+                    )}
+                  />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="months">
+                  <ChartWithFallback
+                    title="Artist streams by month"
+                    data={data}
+                    shouldRender={(d) =>
+                      Object.keys(d.artist_streams_by_month).length > 1
+                    }
+                    renderChart={(d) => (
+                      <StreamingHistoryStack
+                        data={d.artist_streams_by_month}
+                        getItem={(key) => data!.artists[key]}
+                        sortItems={(a, b) =>
+                          b.artist_stream_count - a.artist_stream_count
+                        }
+                        renderItem={(track: Artist) => (
+                          <h4
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              margin: 0,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <img height={20} src={track.artist_image_url} />
+                            {track.artist_name}
+                          </h4>
+                        )}
                       />
                     )}
                   />
@@ -252,6 +286,7 @@ export function App() {
                 <Tabs.List>
                   <Tabs.Tab value="rank">Rank</Tabs.Tab>
                   <Tabs.Tab value="streams">Streams</Tabs.Tab>
+                  <Tabs.Tab value="months">Comparison</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="rank">
@@ -277,6 +312,39 @@ export function App() {
                       <AlbumStreamsLineChart
                         ranks={d.album_rank_history}
                         albums={d.albums}
+                      />
+                    )}
+                  />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="months">
+                  <ChartWithFallback
+                    title="Album streams by month"
+                    data={data}
+                    shouldRender={(d) =>
+                      Object.keys(d.album_streams_by_month).length > 1
+                    }
+                    renderChart={(d) => (
+                      <StreamingHistoryStack
+                        data={d.album_streams_by_month}
+                        getItem={(key) => data!.albums[key]}
+                        sortItems={(a, b) =>
+                          b.album_stream_count - a.album_stream_count
+                        }
+                        renderItem={(track: Album) => (
+                          <h4
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              margin: 0,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <img height={20} src={track.album_image_url} />
+                            {track.album_name}
+                          </h4>
+                        )}
                       />
                     )}
                   />
