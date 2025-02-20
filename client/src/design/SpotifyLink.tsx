@@ -5,13 +5,16 @@ import SpotifyIcon from "../../spotify.svg";
 export function SpotifyLink({
   uri,
   text,
+  size,
 }: {
   uri: string;
   text?: string | JSX.Element;
+  size?: number;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, itemType, itemID] = uri.split(":");
   const href = `https://open.spotify.com/${itemType}/${itemID}`;
+  size ??= 14;
 
   return (
     <Anchor
@@ -24,9 +27,9 @@ export function SpotifyLink({
     >
       <img
         src={SpotifyIcon}
-        style={{ height: 14, width: 14, marginRight: 4 }}
+        style={{ height: size, width: size, marginRight: 4 }}
       />
-      {text ?? "Open"}
+      {text}
     </Anchor>
   );
 }

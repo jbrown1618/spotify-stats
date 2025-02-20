@@ -72,7 +72,7 @@ export function LargeTileDesign({
         </Text>
         {subtitle && <Text>{subtitle}</Text>}
         {stats && <KPIsList items={stats} />}
-        <SpotifyLink uri={itemURI} />
+        <SpotifyLink text="Open" uri={itemURI} />
       </div>
     </Card>
   );

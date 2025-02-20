@@ -1,2 +1,0 @@
-(cd client; npm run build)
-python -m flask --app ./app/app.py run

@@ -17,24 +17,12 @@ python ./main.py
 deactivate
 ```
 
-## Start the server
-
-```bash
-script/server
-```
-
-And navigate to `http://localhost:5000`
-
 ## Start the server with live client reloading
 
-In two separate terminals, run:
+Run:
 
 ```bash
-script/server
-```
-
-```bash
-script/client-dev
+script/dev
 ```
 
 And navigate to `http://localhost:5173`

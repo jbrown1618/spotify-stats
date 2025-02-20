@@ -1,5 +1,6 @@
 import { Paper, Pill, Skeleton, Text } from "@mantine/core";
 
+import { useIsMobile } from "../useIsMobile";
 import { KPI, KPIProps } from "./KPI";
 import { SpotifyLink } from "./SpotifyLink";
 
@@ -26,6 +27,7 @@ export function RowDesign({
   stats,
   onClick,
 }: RowDesignProps) {
+  const isMobile = useIsMobile();
   return (
     <Paper
       onClick={onClick}
@@ -82,9 +84,7 @@ export function RowDesign({
               textOverflow: "ellipsis",
             }}
           >
-            <Text fw={700}>
-              {<SpotifyLink text={primaryText} uri={itemURI} />}
-            </Text>
+            <Text fw={700}>{primaryText}</Text>
             {labels?.map((labelText) => (
               <Pill bg="gray">{labelText}</Pill>
             ))}
@@ -115,7 +115,28 @@ export function RowDesign({
         {stats?.map((stat) =>
           stat ? <KPI key={stat.label} {...stat} /> : null
         )}
+        {!isMobile && (
+          <KPI
+            value={
+              <div style={{ marginTop: 5 }}>
+                <SpotifyLink uri={itemURI} size={20} />
+              </div>
+            }
+            label="Open"
+          />
+        )}
       </div>
+      {isMobile && (
+        <div
+          style={{
+            position: "absolute",
+            left: 7,
+            bottom: 3,
+          }}
+        >
+          <SpotifyLink uri={itemURI} />
+        </div>
+      )}
     </Paper>
   );
 }

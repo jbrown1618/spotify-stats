@@ -48,7 +48,7 @@ export function TileDesign({
         <Text fw={700}>{title}</Text>
         {subtitle && <Text>{subtitle}</Text>}
         {stats && <KPIsList items={stats} />}
-        <SpotifyLink uri={itemURI} />
+        <SpotifyLink text="Open" uri={itemURI} />
       </div>
     </Card>
   );
