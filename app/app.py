@@ -4,12 +4,13 @@ import typing
 import urllib
 import pandas as pd
 from flask import Flask, send_file, request
+import sqlalchemy
 
 from data.provider import DataProvider
 from data.query import query_text
-from data.raw import get_connection
+from data.raw import get_connection, get_engine
 from data.sql.migrations.migrations import perform_all_migrations
-from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
+from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_track_ranks, track_ranks_over_time
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
@@ -59,9 +60,17 @@ def data():
     release_years = filters.get('years', None)
     liked = filters.get('liked', None)
 
+    streams_by_track = None
+
+    track_uris = None
+    if 'min_stream_date' in filters and 'max_stream_date' in filters:
+        streams_by_track = track_streams(filters['min_stream_date'], filters['max_stream_date'])
+        track_uris = streams_by_track['track_uri']
+
     dp = DataProvider()
 
     tracks = dp.tracks(
+        uris=track_uris,
         playlist_uris=playlist_uris, 
         artist_uris=artist_uris, 
         album_uris=album_uris,
@@ -70,6 +79,9 @@ def data():
         years=release_years,
         liked=liked
     )
+
+    if streams_by_track is None:
+        streams_by_track = current_track_ranks(tracks['track_uri'])[['track_uri', 'track_rank', 'track_stream_count']]
 
     playlists = dp.playlists(track_uris=tracks['track_uri'])
     artists = dp.artists(track_uris=tracks['track_uri'])
@@ -91,6 +103,7 @@ def data():
         "track_rank_history": track_rank_history(tracks),
         "artist_rank_history": artist_rank_history(artists),
         "album_rank_history": album_rank_history(albums),
+        "streams_by_track": to_json(streams_by_track, 'track_uri'),
         "streams_by_month": overall_streams_by_month(tracks),
         "track_streams_by_month": track_streams_by_month(tracks),
         "artist_streams_by_month": artist_streams_by_month(artists),
@@ -265,6 +278,15 @@ def track_rank_history(tracks):
     return to_json(ranks[['track_uri', 'track_rank', 'track_stream_count', 'as_of_date']])
 
 
+def track_streams(from_date, to_date):
+    with get_engine().begin() as conn:
+        return pd.read_sql_query(
+            sqlalchemy.text(query_text('select_top_tracks_for_date_range')), 
+            conn, 
+            params={ 'min_stream_date': from_date, 'max_stream_date': to_date }
+        )[['track_uri', 'track_rank', 'track_stream_count']]
+
+
 def track_streams_by_month(tracks):
     top_track_uris = tracks.sort_values('track_rank').head(5)['track_uri']
     top_track_uris = tuple(top_track_uris) if len(top_track_uris) > 0 else tuple(['EMPTY'])
@@ -413,6 +435,13 @@ def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Ite
     if liked is not None:
         liked = liked.lower() == "true"
         filters["liked"] = liked
+
+    stream_range = args.get("range", None)
+    if stream_range is not None:
+        values = stream_range.split('..')
+        if len(values) == 2:
+            filters['min_stream_date'] = values[0]
+            filters['max_stream_date'] = values[1]
 
     return filters
 

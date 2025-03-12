@@ -146,6 +146,7 @@ export interface ActiveFilters {
   playlists?: string[];
   genres?: string[];
   years?: number[];
+  range?: string;
 }
 
 export interface FilterOptions {
@@ -202,6 +203,9 @@ export function toFiltersQuery(filters: ActiveFilters) {
   if (filters.liked) {
     query.append("liked", "true");
   }
+  if (filters.range) {
+    query.append("range", filters.range);
+  }
   return query.toString();
 }
 
@@ -216,7 +220,8 @@ export function fromFiltersQuery(q: string): ActiveFilters {
     const [key, value] = pair.split("=");
     if (
       arrayKeys.includes(key as (typeof arrayKeys)[number]) ||
-      key === "liked"
+      key === "liked" ||
+      key === "range"
     ) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (out as any)[key] = JSON.parse(
