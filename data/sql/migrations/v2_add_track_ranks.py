@@ -1,5 +1,5 @@
+from data.query import query_text
 from data.sql.migrations.migration import Migration
-from utils.ranking import populate_track_ranks, populate_artist_ranks, populate_album_ranks
 
 add_rank_tables = """
 CREATE TABLE track_rank (
@@ -50,13 +50,13 @@ class AddTrackRanks(Migration):
 
         for date in dates:
             print(f'Populating track ranks for {date}')
-            cursor.execute(populate_track_ranks, {"as_of_date": date})
+            cursor.execute(query_text('populate_track_ranks'), {"as_of_date": date})
 
             print(f'Populating artist ranks for {date}')
-            cursor.execute(populate_artist_ranks, {"as_of_date": date})
+            cursor.execute(query_text('populate_artist_ranks'), {"as_of_date": date})
 
             print(f'Populating album ranks for {date}')
-            cursor.execute(populate_album_ranks, {"as_of_date": date})
+            cursor.execute(query_text('populate_album_ranks'), {"as_of_date": date})
 
 
     def reverse(self, cursor):

@@ -2,8 +2,8 @@ import typing
 import pandas as pd
 import sqlalchemy
 
+from data.query import query_text
 from data.raw import RawData, get_engine
-from utils.name import short_name
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
 
@@ -53,7 +53,7 @@ class DataProvider:
                artist_uris: typing.Iterable[str] = None):
         print('Fetching tracks...')
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(select_tracks), conn, params={
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_tracks')), conn, params={
                 "filter_tracks": uris is not None,
                 "track_uris": tuple(['EMPTY']) if uris is None or len(uris) == 0 else tuple(uris),
                 "liked": bool(liked),
@@ -75,7 +75,7 @@ class DataProvider:
     def playlists(self, track_uris: str = None) -> pd.DataFrame:
         print('Fetching playlists...')
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(select_playlists), conn, params={
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_playlists')), conn, params={
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
@@ -84,7 +84,7 @@ class DataProvider:
     def albums(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         print('Fetching albums...')
         with get_engine().begin() as conn:
-            albums = pd.read_sql_query(sqlalchemy.text(select_albums), conn, params={
+            albums = pd.read_sql_query(sqlalchemy.text(query_text('select_albums')), conn, params={
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
@@ -184,7 +184,7 @@ class DataProvider:
                 mbids: typing.Iterable[str] = None):
         print('Fetching artists...')
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(select_artists), conn, params={
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_artists')), conn, params={
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris),
                 "filter_artists": uris is not None,
@@ -307,7 +307,7 @@ class DataProvider:
     def labels(self, album_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         print('Fetching labels...')
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(select_labels), conn, params={
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_labels')), conn, params={
                 "filter_albums": album_uris is not None,
                 "album_uris": tuple(['EMPTY']) if album_uris is None or len(album_uris) == 0 else tuple(album_uris)
             })['standardized_label'].to_list()
@@ -316,7 +316,7 @@ class DataProvider:
     def genres(self, artist_uris: typing.Iterable[str]) -> typing.Iterable[str]:
         print('Fetching genres...')
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(select_genres), conn, params={
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_genres')), conn, params={
                 "filter_artists": artist_uris is not None,
                 "artist_uris": tuple(['EMPTY']) if artist_uris is None or len(artist_uris) == 0 else tuple(artist_uris)
             })['genre'].to_list()
@@ -374,279 +374,7 @@ class DataProvider:
         self._artist_genre = artist_genre[['artist_uri', 'genre', 'genre_has_page']]
 
 
-    def __owned_track_uris(self):
-        if self._owned_track_uris is None:
-            raw = RawData()
-            playlists = raw['playlists']
-            playlist_track = raw['playlist_track']
-            owned_playlists = playlists[playlists['playlist_owner'] != 'spotify']
-            owned_tracks = pd.merge(owned_playlists, playlist_track, on='playlist_uri', how='inner')
-
-            self._owned_track_uris = {u for u in owned_tracks['track_uri']}
-
-        return self._owned_track_uris
-    
-
-    def __owned_album_uris(self):
-        if self._owned_album_uris is None:
-            tracks = RawData()['tracks']
-            owned_tracks = tracks[tracks['track_uri'].isin(self.__owned_track_uris())]
-
-            return {u for u in owned_tracks['album_uri']}
-        
-        return self._owned_album_uris
-
-
 def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]
     return artists
     
-
-select_tracks = """
-select
-    t.uri as track_uri,
-    t.name as track_name,
-    t.short_name as track_short_name,
-    t.popularity as track_popularity,
-    t.explicit as track_explicit,
-    t.duration_ms as track_duration_ms,
-    t.isrc as track_isrc,
-    t.uri in (select track_uri from liked_track) as track_liked,
-    tr.rank as track_rank,
-    coalesce(tr.stream_count, 0) as track_stream_count,
-
-    al.uri as album_uri,
-    al.name as album_name,
-    al.short_name as album_short_name,
-    al.album_type,
-    al.label as album_label,
-    al.popularity as album_popularity,
-    al.release_date as album_release_date,
-    al.image_url as album_image_url,
-    alr.rank as album_rank,
-    alr.stream_count as album_stream_count,
-    (
-        case
-        when length(al.release_date) = 10
-            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
-        when length(al.release_date) = 7
-            then extract(year from to_date(al.release_date, 'YYYY-MM'))
-        when length(al.release_date) = 4
-            then extract(year from to_date(al.release_date, 'YYYY'))
-        else 0
-        end
-    ) as album_release_year
-
-from track t
-    inner join playlist_track pt on pt.track_uri = t.uri
-    inner join album al on al.uri = t.album_uri
-    inner join track_artist ta on ta.track_uri = t.uri
-    inner join artist a on a.uri = ta.artist_uri
-    left join artist_genre ag on ag.artist_uri = a.uri
-    left join track_rank tr
-        on tr.track_uri = t.uri
-        and tr.as_of_date = (select max(as_of_date) from track_rank)
-    left join album_rank alr
-        on alr.album_uri = al.uri
-        and alr.as_of_date = (select max(as_of_date) from album_rank)
-    left join artist_rank ar
-        on ar.artist_uri = a.uri
-        and ar.as_of_date = (select max(as_of_date) from artist_rank)
-    left join record_label rl
-        on rl.album_uri = t.album_uri
-
-where
-    (:filter_tracks = false or t.uri in :track_uris)
-    and
-    (:liked = false or t.uri in (select track_uri from liked_track))
-    and
-    (:filter_playlists = false or pt.playlist_uri in :playlist_uris)
-    and
-    (:filter_artists = false or a.uri in :artist_uris)
-    and
-    (:filter_albums = false or al.uri in :album_uris)
-    and
-    (:filter_labels = false or rl.standardized_label in (:labels))
-    and
-    (:filter_genres = false or ag.genre in (:genres))
-    and
-    (:filter_years = false or (
-        case
-        when length(al.release_date) = 10
-            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
-        when length(al.release_date) = 7
-            then extract(year from to_date(al.release_date, 'YYYY-MM'))
-        when length(al.release_date) = 4
-            then extract(year from to_date(al.release_date, 'YYYY'))
-        else 0
-        end
-        ) in :years
-    )
-
-group by
-    t.uri,
-    t.name,
-    t.short_name,
-    t.popularity,
-    t.explicit,
-    t.duration_ms,
-    t.isrc,
-    tr.rank,
-    tr.stream_count,
-
-    al.uri,
-    al.name,
-    al.short_name,
-    al.album_type,
-    al.label,
-    al.popularity,
-    al.release_date,
-    al.image_url,
-    alr.rank,
-    alr.stream_count
-
-order by tr.rank asc nulls last;
-"""
-
-select_artists = """
-select
-    a.uri as artist_uri,
-    a.name as artist_name,
-    a.popularity as artist_popularity,
-    a.followers as artist_followers,
-    a.image_url as artist_image_url,
-    ar.rank as artist_rank,
-    ar.stream_count as artist_stream_count,
-    (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            inner join liked_track ilt on ilt.track_uri = ita.track_uri
-            where ita.artist_uri = a.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
-            )
-        )
-    ) as artist_liked_track_count,
-    (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            where ita.artist_uri = a.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
-            )
-        )
-    ) as artist_track_count
-
-from artist a
-    inner join track_artist ta on ta.artist_uri = a.uri
-    inner join playlist_track pt on ta.track_uri = pt.track_uri
-    left join artist_rank ar on ar.artist_uri = a.uri and ar.as_of_date = (select max(as_of_date) from artist_rank)
-    left join sp_artist_mb_artist sp_mb_a on sp_mb_a.spotify_artist_uri = a.uri
-    left join mb_artist mba on mba.artist_mbid = sp_mb_a.artist_mbid
-WHERE
-    (:filter_artists = false or a.uri in :artist_uris)
-    AND
-    (:filter_tracks = false or ta.track_uri in :track_uris)
-    AND
-    (:filter_mbids = false or mba.artist_mbid in :mbids)
-group by
-    a.uri,
-    a.name,
-    a.popularity,
-    a.followers,
-    a.image_url,
-    ar.rank,
-    ar.stream_count
-order by ar.rank asc nulls last;
-"""
-
-select_playlists = """
-select
-    p.uri as playlist_uri,
-    p.name as playlist_name,
-    p.collaborative as playlist_collaborative,
-    p.public as playlist_public,
-    p.image_url as playlist_image_url,
-    p.owner as playlist_owner,
-    (
-        select count(track_uri)
-        from playlist_track
-        where playlist_uri = p.uri
-    ) as playlist_track_count,
-    (
-        select count(ipt.track_uri)
-        from playlist_track ipt
-        inner join liked_track lt on lt.track_uri = ipt.track_uri
-        where playlist_uri = p.uri
-    ) as playlist_liked_track_count
-from playlist p
-    inner join playlist_track pt on pt.playlist_uri = p.uri
-where
-    (:filter_tracks = false or pt.track_uri in :track_uris)
-group by
-    p.uri,
-    p.name,
-    p.collaborative,
-    p.public,
-    p.image_url,
-    p.owner;
-"""
-
-select_albums = """
-select 
-    al.uri as album_uri,
-    al.name as album_name,
-    al.short_name as album_short_name,
-    al.album_type,
-    al.label as album_label,
-    al.popularity as album_popularity,
-    al.release_date as album_release_date,
-    al.image_url as album_image_url,
-    alr.rank as album_rank,
-    alr.stream_count as album_stream_count,
-    (
-        case
-        when length(al.release_date) = 10
-            then extract(year from to_date(al.release_date, 'YYYY-MM-DD'))
-        when length(al.release_date) = 7
-            then extract(year from to_date(al.release_date, 'YYYY-MM'))
-        when length(al.release_date) = 4
-            then extract(year from to_date(al.release_date, 'YYYY'))
-        else 0
-        end
-    ) as album_release_year
-from album al
-    inner join track t on t.album_uri = al.uri
-    left join album_rank alr
-        on alr.album_uri = al.uri
-        and as_of_date = (select max(as_of_date) from album_rank)
-where (:filter_tracks = false or t.uri in :track_uris)
-group by 
-    al.uri,
-    al.name,
-    al.short_name,
-    al.album_type,
-    al.label,
-    al.popularity,
-    al.release_date,
-    al.image_url,
-    alr.rank,
-    alr.stream_count
-order by rank asc nulls last;
-"""
-
-select_genres = """
-select distinct ag.genre
-from artist_genre ag
-where :filter_artists = false or ag.artist_uri in :artist_uris
-"""
-
-select_labels = """
-select distinct rl.standardized_label
-from record_label rl
-where :filter_albums = false or rl.album_uri in :album_uris
-"""

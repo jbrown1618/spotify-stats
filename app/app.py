@@ -6,6 +6,7 @@ import pandas as pd
 from flask import Flask, send_file, request
 
 from data.provider import DataProvider
+from data.query import query_text
 from data.raw import get_connection
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, artist_ranks_over_time, current_album_ranks, current_artist_ranks, current_track_ranks, track_ranks_over_time
@@ -120,12 +121,10 @@ def artists_by_track(tracks: pd.DataFrame):
 
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT track_uri, array_agg(artist_uri)
-            FROM track_artist
-            WHERE track_uri in %(track_uris)s
-            GROUP BY track_uri
-        """, { "track_uris": tuple(tracks['track_uri']) })
+        cursor.execute(
+            query_text('select_artists_by_track'), 
+            { "track_uris": tuple(tracks['track_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -139,13 +138,10 @@ def albums_by_artist(artists: pd.DataFrame):
 
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT ta.artist_uri, array_agg(t.album_uri)
-            FROM track_artist ta
-                INNER JOIN track t ON t.uri = ta.track_uri
-            WHERE ta.artist_uri in %(artist_uris)s
-            GROUP BY ta.artist_uri
-        """, { "artist_uris": tuple(artists['artist_uri']) })
+        cursor.execute(
+            query_text('select_albums_by_artist'), 
+            { "artist_uris": tuple(artists['artist_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -159,12 +155,10 @@ def artists_by_album(albums: pd.DataFrame):
 
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT album_uri, array_agg(artist_uri)
-            FROM album_artist
-            WHERE album_uri in %(album_uris)s
-            GROUP BY album_uri
-        """, { "album_uris": tuple(albums['album_uri']) })
+        cursor.execute(
+            query_text('select_artists_by_album'), 
+            { "album_uris": tuple(albums['album_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -179,18 +173,10 @@ def playlist_track_counts(tracks: pd.DataFrame):
     
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                pt.playlist_uri,
-                p.name as playlist_name, 
-                count(pt.track_uri) as playlist_track_count,
-                count(lt.track_uri) as playlist_liked_track_count
-            FROM playlist_track pt
-                INNER JOIN playlist p ON p.uri = pt.playlist_uri
-                LEFT JOIN liked_track lt ON lt.track_uri = pt.track_uri
-            WHERE pt.track_uri in %(track_uris)s
-            GROUP BY pt.playlist_uri, p.name
-        """, { "track_uris": tuple(tracks['track_uri']) })
+        cursor.execute(
+            query_text('select_playlist_track_counts'), 
+            { "track_uris": tuple(tracks['track_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -210,18 +196,10 @@ def artist_track_counts(tracks):
     
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                ta.artist_uri,
-                a.name as artist_name, 
-                count(ta.track_uri) as artist_track_count,
-                count(lt.track_uri) as artist_liked_track_count
-            FROM track_artist ta
-                INNER JOIN artist a ON a.uri = ta.artist_uri
-                LEFT JOIN liked_track lt ON lt.track_uri = ta.track_uri
-            WHERE ta.track_uri in %(track_uris)s
-            GROUP BY ta.artist_uri, a.name
-        """, { "track_uris": tuple(tracks['track_uri']) })
+        cursor.execute(
+            query_text('select_artist_track_counts'), 
+            { "track_uris": tuple(tracks['track_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -241,17 +219,10 @@ def label_track_counts(tracks):
     
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                rl.standardized_label as label, 
-                count(t.uri) as label_track_count,
-                count(lt.track_uri) as label_liked_track_count
-            FROM record_label rl
-                INNER JOIN track t ON t.album_uri = rl.album_uri
-                LEFT JOIN liked_track lt ON lt.track_uri = t.uri
-            WHERE t.uri in %(track_uris)s
-            GROUP BY rl.standardized_label
-        """, { "track_uris": tuple(tracks['track_uri']) })
+        cursor.execute(
+            query_text('select_label_track_counts'), 
+            { "track_uris": tuple(tracks['track_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -270,17 +241,10 @@ def genre_track_counts(tracks):
     
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                ag.genre, 
-                count(ta.track_uri) as genre_track_count,
-                count(lt.track_uri) as genre_liked_track_count
-            FROM artist_genre ag
-                INNER JOIN track_artist ta ON ag.artist_uri = ta.artist_uri
-                LEFT JOIN liked_track lt ON ta.track_uri = lt.track_uri
-            WHERE ta.track_uri in %(track_uris)s
-            GROUP BY ag.genre
-        """, { "track_uris": tuple(tracks['track_uri']) })
+        cursor.execute(
+            query_text('select_genre_track_counts'), 
+            { "track_uris": tuple(tracks['track_uri']) }
+        )
         result = cursor.fetchall()
 
     out = {}
@@ -306,24 +270,10 @@ def track_streams_by_month(tracks):
     top_track_uris = tuple(top_track_uris) if len(top_track_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT 
-                track_uri,
-                year,
-                month,
-                SUM(stream_count) AS stream_count
-            FROM (
-                SELECT 
-                    h.track_uri,
-                    EXTRACT(YEAR FROM p.from_time) AS year,
-                    EXTRACT(MONTH FROM p.to_time) AS month,
-                    h.stream_count
-                FROM listening_history h
-                    INNER JOIN listening_period p ON p.id = h.listening_period_id
-                WHERE h.track_uri IN %(track_uris)s
-            )
-            GROUP BY track_uri, year, month;
-        ''', {"track_uris": top_track_uris})
+        cursor.execute(
+            query_text('select_track_streams_by_month'), 
+            {"track_uris": top_track_uris}
+        )
         results = cursor.fetchall()
 
     out = {}
@@ -351,25 +301,10 @@ def artist_streams_by_month(artists):
     top_artist_uris = tuple(top_artist_uris) if len(top_artist_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT 
-                artist_uri,
-                year,
-                month,
-                SUM(stream_count) AS stream_count
-            FROM (
-                SELECT 
-                    ta.artist_uri,
-                    EXTRACT(YEAR FROM p.from_time) AS year,
-                    EXTRACT(MONTH FROM p.to_time) AS month,
-                    h.stream_count
-                FROM listening_history h
-                    INNER JOIN listening_period p ON p.id = h.listening_period_id
-                    INNER JOIN track_artist ta ON ta.track_uri = h.track_uri
-                WHERE ta.artist_uri IN %(artist_uris)s
-            )
-            GROUP BY artist_uri, year, month;
-        ''', {"artist_uris": top_artist_uris})
+        cursor.execute(
+            query_text('select_artist_streams_by_month'), 
+            {"artist_uris": top_artist_uris}
+        )
         results = cursor.fetchall()
 
     out = {}
@@ -398,25 +333,10 @@ def album_streams_by_month(albums):
     top_album_uris = tuple(top_album_uris) if len(top_album_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT 
-                album_uri,
-                year,
-                month,
-                SUM(stream_count) AS stream_count
-            FROM (
-                SELECT 
-                    t.album_uri,
-                    EXTRACT(YEAR FROM p.from_time) AS year,
-                    EXTRACT(MONTH FROM p.to_time) AS month,
-                    h.stream_count
-                FROM listening_history h
-                    INNER JOIN listening_period p ON p.id = h.listening_period_id
-                    INNER JOIN track t ON t.uri = h.track_uri
-                WHERE t.album_uri IN %(album_uris)s
-            )
-            GROUP BY album_uri, year, month;
-        ''', {"album_uris": top_album_uris})
+        cursor.execute(
+            query_text('select_album_streams_by_month'),
+            {"album_uris": top_album_uris}
+        )
         results = cursor.fetchall()
 
     out = {}
@@ -437,22 +357,10 @@ def overall_streams_by_month(tracks):
     track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT 
-                year,
-                month,
-                SUM(stream_count) AS stream_count
-            FROM (
-                SELECT 
-                    EXTRACT(YEAR FROM p.from_time) AS year,
-                    EXTRACT(MONTH FROM p.to_time) AS month,
-                    h.stream_count
-                FROM listening_history h
-                    INNER JOIN listening_period p ON p.id = h.listening_period_id
-                WHERE h.track_uri IN %(track_uris)s
-            )
-            GROUP BY year, month;
-        ''', {"track_uris": track_uris})
+        cursor.execute(
+            query_text('select_overall_streams_by_month'),
+            {"track_uris": track_uris}
+        )
         results = cursor.fetchall()
 
     out = {}
