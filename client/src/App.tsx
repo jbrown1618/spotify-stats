@@ -90,12 +90,12 @@ export function App() {
             <>
               <h2>Artists</h2>
 
-              <Tabs defaultValue="rank">
+              <Tabs defaultValue="months">
                 <Tabs.List>
-                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
+                  <Tabs.Tab value="months">Months</Tabs.Tab>
                   <Tabs.Tab value="streams">Streams</Tabs.Tab>
+                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
                   <Tabs.Tab value="count">Count</Tabs.Tab>
-                  <Tabs.Tab value="months">Comparison</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="rank">
@@ -196,11 +196,11 @@ export function App() {
 
           <h2>Tracks</h2>
 
-          <Tabs defaultValue="rank">
+          <Tabs defaultValue="months">
             <Tabs.List>
-              <Tabs.Tab value="rank">Rank</Tabs.Tab>
+              <Tabs.Tab value="months">Months</Tabs.Tab>
               <Tabs.Tab value="streams">Streams</Tabs.Tab>
-              <Tabs.Tab value="months">Comparison</Tabs.Tab>
+              <Tabs.Tab value="rank">Rank</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="rank">
@@ -282,11 +282,11 @@ export function App() {
             <>
               <h2>Albums</h2>
 
-              <Tabs defaultValue="rank">
+              <Tabs defaultValue="months">
                 <Tabs.List>
-                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
+                  <Tabs.Tab value="months">Months</Tabs.Tab>
                   <Tabs.Tab value="streams">Streams</Tabs.Tab>
-                  <Tabs.Tab value="months">Comparison</Tabs.Tab>
+                  <Tabs.Tab value="rank">Rank</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="rank">
@@ -463,7 +463,7 @@ export function App() {
 
           {(!data || Object.keys(data.years).length > 1) && (
             <>
-              <h2>Release Years</h2>
+              <h2>Release date</h2>
 
               <ChartWithFallback
                 title="Liked tracks by release year"
@@ -471,6 +471,27 @@ export function App() {
                 shouldRender={(d) => Object.keys(d.years).length > 1}
                 renderChart={(d) => (
                   <YearsBarChart counts={Object.values(d.years)} />
+                )}
+              />
+
+              <DisplayGrid
+                items={
+                  data
+                    ? Object.values(data.years).sort(
+                        (a, b) => (b.liked ?? 0) - (a.liked ?? 0)
+                      )
+                    : undefined
+                }
+                getKey={(yc) => "" + yc.year}
+                renderPill={(yc) => (
+                  <Pill
+                    bg="gray"
+                    size="lg"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setFilters({ years: [yc.year] })}
+                  >
+                    {yc.year}
+                  </Pill>
                 )}
               />
             </>
