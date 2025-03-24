@@ -13,5 +13,7 @@ FROM (
         INNER JOIN listening_period p ON p.id = h.listening_period_id
         INNER JOIN track t ON t.uri = h.track_uri
     WHERE t.album_uri IN %(album_uris)s
+        AND (%(from_date)s IS NULL OR p.from_time >= %(from_date)s)
+        AND (%(to_date)s IS NULL OR p.to_time <= %(to_date)s)
 )
 GROUP BY album_uri, year, month;

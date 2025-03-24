@@ -34,6 +34,7 @@ export function StreamingHistoryStack<TItem>({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {Object.keys(data)
+        .filter(getItem)
         .sort((a, b) => sortItems(getItem(a), getItem(b)))
         .map((key, i) => (
           <div>

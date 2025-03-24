@@ -60,11 +60,14 @@ def data():
     release_years = filters.get('years', None)
     liked = filters.get('liked', None)
 
+    min_stream_date = filters.get('min_stream_date', None)
+    max_stream_date = filters.get('max_stream_date', None)
+
     streams_by_track = None
 
     track_uris = None
-    if 'min_stream_date' in filters and 'max_stream_date' in filters:
-        streams_by_track = track_streams(filters['min_stream_date'], filters['max_stream_date'])
+    if min_stream_date is not None and max_stream_date is not None:
+        streams_by_track = track_streams(min_stream_date, max_stream_date)
         track_uris = streams_by_track['track_uri']
 
     dp = DataProvider()
@@ -100,14 +103,14 @@ def data():
         "artist_track_counts": artist_track_counts(tracks),
         "label_track_counts": label_track_counts(tracks),
         "genre_track_counts": genre_track_counts(tracks),
-        "track_rank_history": track_rank_history(tracks),
-        "artist_rank_history": artist_rank_history(artists),
-        "album_rank_history": album_rank_history(albums),
+        "track_rank_history": track_rank_history(tracks, min_stream_date, max_stream_date),
+        "artist_rank_history": artist_rank_history(artists, min_stream_date, max_stream_date),
+        "album_rank_history": album_rank_history(albums, min_stream_date, max_stream_date),
         "streams_by_track": to_json(streams_by_track, 'track_uri'),
-        "streams_by_month": overall_streams_by_month(tracks),
-        "track_streams_by_month": track_streams_by_month(tracks),
-        "artist_streams_by_month": artist_streams_by_month(artists),
-        "album_streams_by_month": album_streams_by_month(albums),
+        "streams_by_month": overall_streams_by_month(tracks, min_stream_date, max_stream_date),
+        "track_streams_by_month": track_streams_by_month(tracks, min_stream_date, max_stream_date),
+        "artist_streams_by_month": artist_streams_by_month(artists, min_stream_date, max_stream_date),
+        "album_streams_by_month": album_streams_by_month(albums, min_stream_date, max_stream_date),
         "years": years(tracks),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
@@ -270,10 +273,10 @@ def genre_track_counts(tracks):
     return out
 
 
-def track_rank_history(tracks):
+def track_rank_history(tracks, from_date, to_date):
     current_ranks = current_track_ranks(tracks['track_uri'])
     top_track_uris = current_ranks.sort_values('track_rank', ascending=True).head(10)['track_uri']
-    ranks = track_ranks_over_time(top_track_uris)
+    ranks = track_ranks_over_time(top_track_uris, from_date, to_date)
 
     return to_json(ranks[['track_uri', 'track_rank', 'track_stream_count', 'as_of_date']])
 
@@ -287,14 +290,18 @@ def track_streams(from_date, to_date):
         )[['track_uri', 'track_rank', 'track_stream_count']]
 
 
-def track_streams_by_month(tracks):
+def track_streams_by_month(tracks, from_date, to_date):
     top_track_uris = tracks.sort_values('track_rank').head(5)['track_uri']
     top_track_uris = tuple(top_track_uris) if len(top_track_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             query_text('select_track_streams_by_month'), 
-            {"track_uris": top_track_uris}
+            {
+                "track_uris": top_track_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
         results = cursor.fetchall()
 
@@ -311,21 +318,25 @@ def track_streams_by_month(tracks):
     return out
 
 
-def artist_rank_history(artists):
+def artist_rank_history(artists, from_date, to_date):
     top_artist_uris = artists.sort_values('artist_rank').head(10)['artist_uri']
-    ranks = artist_ranks_over_time(top_artist_uris)
+    ranks = artist_ranks_over_time(top_artist_uris, from_date, to_date)
 
     return to_json(ranks[['artist_uri', 'artist_rank', 'artist_stream_count', 'as_of_date']])
 
 
-def artist_streams_by_month(artists):
+def artist_streams_by_month(artists, from_date, to_date):
     top_artist_uris = artists.sort_values('artist_rank').head(5)['artist_uri']
     top_artist_uris = tuple(top_artist_uris) if len(top_artist_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            query_text('select_artist_streams_by_month'), 
-            {"artist_uris": top_artist_uris}
+            query_text('select_artist_streams_by_month'),
+            {
+                "artist_uris": top_artist_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
         results = cursor.fetchall()
 
@@ -342,22 +353,26 @@ def artist_streams_by_month(artists):
     return out
 
 
-def album_rank_history(albums):
+def album_rank_history(albums, from_date, to_date):
     current_ranks = current_album_ranks(albums['album_uri'])
     top_album_uris = current_ranks.sort_values('album_rank').head(10)['album_uri']
-    ranks = album_ranks_over_time(top_album_uris)
+    ranks = album_ranks_over_time(top_album_uris, from_date, to_date)
 
     return to_json(ranks[['album_uri', 'album_rank', 'album_stream_count', 'as_of_date']])
 
 
-def album_streams_by_month(albums):
+def album_streams_by_month(albums, from_date, to_date):
     top_album_uris = albums.sort_values('album_rank').head(5)['album_uri']
     top_album_uris = tuple(top_album_uris) if len(top_album_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             query_text('select_album_streams_by_month'),
-            {"album_uris": top_album_uris}
+            {
+                "album_uris": top_album_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
         results = cursor.fetchall()
 
@@ -374,14 +389,18 @@ def album_streams_by_month(albums):
     return out
 
 
-def overall_streams_by_month(tracks):
+def overall_streams_by_month(tracks, from_date, to_date):
     track_uris = tracks['track_uri']
     track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             query_text('select_overall_streams_by_month'),
-            {"track_uris": track_uris}
+            {
+                "track_uris": track_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
         results = cursor.fetchall()
 

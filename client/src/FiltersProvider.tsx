@@ -9,6 +9,7 @@ export function FiltersProvider({
   const [filters, _setFilters] = useState<ActiveFilters>(
     fromFiltersQuery(window.location.search)
   );
+
   const setFilters = useCallback((a: SetStateAction<ActiveFilters>) => {
     _setFilters((oldFilters) => {
       const newFilters = typeof a === "function" ? a(oldFilters) : a;

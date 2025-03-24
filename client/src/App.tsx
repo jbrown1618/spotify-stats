@@ -155,7 +155,7 @@ export function App() {
                         sortItems={(a, b) =>
                           b.artist_stream_count - a.artist_stream_count
                         }
-                        renderItem={(track: Artist) => (
+                        renderItem={(artist: Artist) => (
                           <h4
                             style={{
                               display: "flex",
@@ -165,8 +165,8 @@ export function App() {
                               whiteSpace: "nowrap",
                             }}
                           >
-                            <img height={20} src={track.artist_image_url} />
-                            {track.artist_name}
+                            <img height={20} src={artist.artist_image_url} />
+                            {artist.artist_name}
                           </h4>
                         )}
                       />

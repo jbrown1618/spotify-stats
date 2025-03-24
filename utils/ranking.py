@@ -20,13 +20,17 @@ def current_track_ranks(track_uris: typing.Iterable[str]):
         return df
 
 
-def track_ranks_over_time(track_uris: typing.Iterable[str]):
+def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
     track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(
             sqlalchemy.text(query_text('track_ranks_over_time')), 
             conn, 
-            params={"track_uris": track_uris}
+            params={
+                "track_uris": track_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
 
 
@@ -40,13 +44,17 @@ def current_artist_ranks(artist_uris: typing.Iterable[str]):
         )
 
 
-def artist_ranks_over_time(artist_uris: typing.Iterable[str]):
+def artist_ranks_over_time(artist_uris: typing.Iterable[str], from_date, to_date):
     artist_uris = tuple(artist_uris) if len(artist_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
         return pd.read_sql_query(
             sqlalchemy.text(query_text('artist_ranks_over_time')), 
             conn, 
-            params={"artist_uris": artist_uris}
+            params={
+                "artist_uris": artist_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            }
         )
 
 
@@ -60,10 +68,17 @@ def current_album_ranks(album_uris: typing.Iterable[str]):
         )
 
 
-def album_ranks_over_time(album_uris: typing.Iterable[str]):
+def album_ranks_over_time(album_uris: typing.Iterable[str], from_date, to_date):
     album_uris = tuple(album_uris) if len(album_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
-        return pd.read_sql_query(sqlalchemy.text(query_text('album_ranks_over_time')), conn, params={"album_uris": album_uris})
+        return pd.read_sql_query(
+            sqlalchemy.text(query_text('album_ranks_over_time')), 
+            conn, 
+            params={
+                "album_uris": album_uris,
+                "from_date": from_date,
+                "to_date": to_date
+            })
 
 
 def ensure_ranks(force: bool = False):
