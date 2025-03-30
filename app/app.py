@@ -455,7 +455,7 @@ def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Ite
         liked = liked.lower() == "true"
         filters["liked"] = liked
 
-    stream_range = args.get("range", None)
+    stream_range = args.get("wrapped", None)
     if stream_range is not None:
         values = stream_range.split('..')
         if len(values) == 2:

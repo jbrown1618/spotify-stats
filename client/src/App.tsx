@@ -39,11 +39,9 @@ import {
   trackSortOptions,
 } from "./sorting";
 import { useFilters, useSetFilters } from "./useFilters";
-import { useIsMobile } from "./useIsMobile";
 import { useSummary } from "./useSummary";
 
 export function App() {
-  const isMobile = useIsMobile();
   const filters = useFilters();
   const setFilters = useSetFilters();
   const { data } = useSummary();
@@ -54,7 +52,7 @@ export function App() {
       <div
         style={{
           width: "100%",
-          height: isMobile ? 40 : 170,
+          height: 40,
           backgroundColor: t.colors.green[9],
           position: "absolute",
           zIndex: -1,
@@ -68,14 +66,8 @@ export function App() {
           }}
         >
           <h1 style={{ margin: 0, whiteSpace: "nowrap" }}>Spotify Stats</h1>
-          {isMobile && (
-            <Filters filters={filters} options={data?.filter_options} />
-          )}
-        </nav>
-
-        {!isMobile && (
           <Filters filters={filters} options={data?.filter_options} />
-        )}
+        </nav>
 
         {filters.artists?.length === 1 && (
           <ArtistDetails artistURI={filters.artists[0]} />
@@ -86,6 +78,90 @@ export function App() {
         )}
 
         <div>
+          <h2>Tracks</h2>
+
+          <Tabs defaultValue="months">
+            <Tabs.List>
+              <Tabs.Tab value="months">Months</Tabs.Tab>
+              <Tabs.Tab value="streams">Streams</Tabs.Tab>
+              <Tabs.Tab value="rank">Rank</Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="rank">
+              <ChartWithFallback
+                title="Track ranking over time"
+                data={data}
+                shouldRender={(d) => d.track_rank_history.length > 1}
+                renderChart={(d) => (
+                  <TracksRankLineChart
+                    ranks={d.track_rank_history}
+                    tracks={d.tracks}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="streams">
+              <ChartWithFallback
+                title="Track streams over time"
+                data={data}
+                shouldRender={(d) => d.track_rank_history.length > 1}
+                renderChart={(d) => (
+                  <TrackStreamsLineChart
+                    ranks={d.track_rank_history}
+                    tracks={d.tracks}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="months">
+              <ChartWithFallback
+                title="Track streams by month"
+                data={data}
+                shouldRender={(d) =>
+                  Object.keys(d.track_streams_by_month).length > 1
+                }
+                renderChart={(d) => (
+                  <StreamingHistoryStack
+                    data={d.track_streams_by_month}
+                    getItem={(key) => data!.tracks[key]}
+                    sortItems={(a, b) =>
+                      b.track_stream_count - a.track_stream_count
+                    }
+                    renderItem={(track: Track) => (
+                      <h4
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          margin: 0,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <img height={20} src={track.album_image_url} />
+                        {track.track_name}
+                      </h4>
+                    )}
+                  />
+                )}
+              />
+            </Tabs.Panel>
+          </Tabs>
+
+          <DisplayGrid
+            items={data ? Object.values(data.tracks) : undefined}
+            sortOptions={trackSortOptions}
+            getKey={(track) => track.track_uri}
+            renderRow={(track) => (
+              <TrackRow
+                track={track}
+                artists_by_track={data!.artists_by_track}
+                artists={data!.artists}
+              />
+            )}
+          />
+
           {filters.artists?.length !== 1 && (
             <>
               <h2>Artists</h2>
@@ -193,90 +269,6 @@ export function App() {
               />
             </>
           )}
-
-          <h2>Tracks</h2>
-
-          <Tabs defaultValue="months">
-            <Tabs.List>
-              <Tabs.Tab value="months">Months</Tabs.Tab>
-              <Tabs.Tab value="streams">Streams</Tabs.Tab>
-              <Tabs.Tab value="rank">Rank</Tabs.Tab>
-            </Tabs.List>
-
-            <Tabs.Panel value="rank">
-              <ChartWithFallback
-                title="Track ranking over time"
-                data={data}
-                shouldRender={(d) => d.track_rank_history.length > 1}
-                renderChart={(d) => (
-                  <TracksRankLineChart
-                    ranks={d.track_rank_history}
-                    tracks={d.tracks}
-                  />
-                )}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel value="streams">
-              <ChartWithFallback
-                title="Track streams over time"
-                data={data}
-                shouldRender={(d) => d.track_rank_history.length > 1}
-                renderChart={(d) => (
-                  <TrackStreamsLineChart
-                    ranks={d.track_rank_history}
-                    tracks={d.tracks}
-                  />
-                )}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel value="months">
-              <ChartWithFallback
-                title="Track streams by month"
-                data={data}
-                shouldRender={(d) =>
-                  Object.keys(d.track_streams_by_month).length > 1
-                }
-                renderChart={(d) => (
-                  <StreamingHistoryStack
-                    data={d.track_streams_by_month}
-                    getItem={(key) => data!.tracks[key]}
-                    sortItems={(a, b) =>
-                      b.track_stream_count - a.track_stream_count
-                    }
-                    renderItem={(track: Track) => (
-                      <h4
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          margin: 0,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <img height={20} src={track.album_image_url} />
-                        {track.track_name}
-                      </h4>
-                    )}
-                  />
-                )}
-              />
-            </Tabs.Panel>
-          </Tabs>
-
-          <DisplayGrid
-            items={data ? Object.values(data.tracks) : undefined}
-            sortOptions={trackSortOptions}
-            getKey={(track) => track.track_uri}
-            renderRow={(track) => (
-              <TrackRow
-                track={track}
-                artists_by_track={data!.artists_by_track}
-                artists={data!.artists}
-              />
-            )}
-          />
 
           {filters.albums?.length !== 1 && (
             <>

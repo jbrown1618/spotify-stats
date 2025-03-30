@@ -146,7 +146,7 @@ export interface ActiveFilters {
   playlists?: string[];
   genres?: string[];
   years?: number[];
-  range?: string;
+  wrapped?: string;
 }
 
 export interface FilterOptions {
@@ -203,8 +203,8 @@ export function toFiltersQuery(filters: ActiveFilters) {
   if (filters.liked) {
     query.append("liked", "true");
   }
-  if (filters.range) {
-    query.append("range", filters.range);
+  if (filters.wrapped) {
+    query.append("wrapped", filters.wrapped);
   }
   return query.toString();
 }
@@ -218,15 +218,14 @@ export function fromFiltersQuery(q: string): ActiveFilters {
   const pairs = q.split("&");
   for (const pair of pairs) {
     const [key, value] = pair.split("=");
-    if (
-      arrayKeys.includes(key as (typeof arrayKeys)[number]) ||
-      key === "liked" ||
-      key === "range"
-    ) {
+    if (arrayKeys.includes(key as (typeof arrayKeys)[number])) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (out as any)[key] = JSON.parse(
         decodeURIComponent(decodeURIComponent(value))
       );
+    } else if (key === "liked" || key === "wrapped") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (out as any)[key] = decodeURIComponent(decodeURIComponent(value));
     }
   }
 

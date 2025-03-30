@@ -1,17 +1,9 @@
-import {
-  Button,
-  Checkbox,
-  Grid,
-  GridCol,
-  Modal,
-  MultiSelect,
-} from "@mantine/core";
+import { Button, Checkbox, Modal, MultiSelect, Select } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import { useSetFilters } from "./useFilters";
-import { useIsMobile } from "./useIsMobile";
 
 interface FiltersProps {
   filters: ActiveFilters;
@@ -20,7 +12,6 @@ interface FiltersProps {
 
 export function Filters({ filters, options }: FiltersProps) {
   const setFilters = useSetFilters();
-  const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const lastOptionsRef = useRef(options ?? defaultFilterOptions);
@@ -30,93 +21,27 @@ export function Filters({ filters, options }: FiltersProps) {
 
   const lastOptions = lastOptionsRef.current;
 
-  if (isMobile)
-    return (
-      <div
-        style={{ display: "flex", flexWrap: "nowrap", alignItems: "center" }}
-      >
-        <Button variant="subtle" size="xs" onClick={() => setDialogOpen(true)}>
-          <IconFilter style={{ marginRight: 8 }} />
-          Filters
-        </Button>
-        {Object.keys(filters).length > 0 && (
-          <Button variant="subtle" size="xs" onClick={() => setFilters({})}>
-            <IconX />
-          </Button>
-        )}
-        <FiltersDialog
-          filters={filters}
-          options={lastOptions}
-          opened={dialogOpen}
-          onClose={(filters) => {
-            setFilters(filters);
-            setDialogOpen(false);
-          }}
-        />
-      </div>
-    );
-
   return (
-    <>
-      <h2>Filters</h2>
-      <Grid>
-        <GridCol span={4}>
-          <PlaylistsFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <ArtistsFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <AlbumsFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <LabelsFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <GenresFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <YearsFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-
-        <GridCol span={4}>
-          <LikedTracksFilter
-            filters={filters}
-            options={lastOptions}
-            onFilterChange={setFilters}
-          />
-        </GridCol>
-      </Grid>
-    </>
+    <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center" }}>
+      <Button variant="subtle" size="xs" onClick={() => setDialogOpen(true)}>
+        <IconFilter style={{ marginRight: 8 }} />
+        Filters
+      </Button>
+      {Object.keys(filters).length > 0 && (
+        <Button variant="subtle" size="xs" onClick={() => setFilters({})}>
+          <IconX />
+        </Button>
+      )}
+      <FiltersDialog
+        filters={filters}
+        options={lastOptions}
+        opened={dialogOpen}
+        onClose={(filters) => {
+          setFilters(filters);
+          setDialogOpen(false);
+        }}
+      />
+    </div>
   );
 }
 
@@ -139,6 +64,12 @@ function FiltersDialog({
     [opened, filters]
   );
 
+  const props = {
+    filters: localFilters,
+    options,
+    onFilterChange: setLocalFilters,
+  };
+
   return (
     <Modal
       title="Filters"
@@ -149,47 +80,14 @@ function FiltersDialog({
       removeScrollProps={{ removeScrollBar: false }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <PlaylistsFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <ArtistsFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <AlbumsFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <LabelsFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <GenresFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <YearsFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
-
-        <LikedTracksFilter
-          filters={localFilters}
-          options={options}
-          onFilterChange={setLocalFilters}
-        />
+        <ListeningPeriodFilter {...props} />
+        <PlaylistsFilter {...props} />
+        <ArtistsFilter {...props} />
+        <AlbumsFilter {...props} />
+        <LabelsFilter {...props} />
+        <GenresFilter {...props} />
+        <YearsFilter {...props} />
+        <LikedTracksFilter {...props} />
 
         <Button onClick={() => onClose(localFilters)}>Apply</Button>
       </div>
@@ -202,10 +100,48 @@ interface FilterProps extends FiltersProps {
   options: NonNullable<FilterOptions>;
 }
 
+const minYear = 2020; // Whatever, just hard-code it.
+
+function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
+  const years = [];
+  for (let i = minYear; i <= currentYear; ++i) {
+    years.push(i);
+  }
+
+  return (
+    <Select
+      label="Wrapped"
+      data={[
+        {
+          label: "This month",
+          value: `${currentYear}-${currentMonth}-01..${
+            currentMonth === 12 ? currentYear + 1 : currentYear
+          }-${currentMonth === 12 ? "01" : currentMonth + 1}-01`,
+        },
+        { label: "Last 6 months", value: "f" },
+        ...years.reverse().map((y) => ({
+          label: `${y}`,
+          value: `${y}-01-01..${y + 1}-01-01`,
+        })),
+      ]}
+      value={filters.wrapped}
+      onChange={(range) =>
+        onFilterChange((filters) => ({
+          ...filters,
+          wrapped: range ?? undefined,
+        }))
+      }
+    />
+  );
+}
+
 function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter playlists"
+      label="Playlists"
       data={Object.values(options.playlists).map(
         ({ playlist_name, playlist_uri }) => {
           return {
@@ -229,7 +165,7 @@ function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
 function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter artists"
+      label="Artists"
       data={Object.values(options.artists).map(
         ({ artist_uri, artist_name }) => {
           return {
@@ -253,7 +189,7 @@ function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
 function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter albums"
+      label="Albums"
       data={Object.values(options.albums).map(({ album_uri, album_name }) => {
         return {
           label: album_name,
@@ -275,7 +211,7 @@ function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
 function LabelsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter labels"
+      label="Labels"
       data={Object.values(options.labels).map((album_standardized_label) => {
         return {
           label: album_standardized_label,
@@ -296,7 +232,7 @@ function LabelsFilter({ filters, options, onFilterChange }: FilterProps) {
 function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter genres"
+      label="Genres"
       data={Object.values(options.genres).map((genre) => {
         return {
           label: genre,
@@ -318,7 +254,7 @@ function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
 function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
     <MultiSelect
-      label="Filter years"
+      label="Release years"
       data={Object.values(options.years)
         .sort()
         .reverse()
