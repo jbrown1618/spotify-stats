@@ -41,6 +41,9 @@ class DataProvider:
         self._initialized = True
 
 
+    def track(self, uri: str):
+        return self.tracks(uris={uri}).iloc[0]
+
 
     def tracks(self, 
                uris: typing.Iterable[str] = None, 
@@ -50,7 +53,7 @@ class DataProvider:
                years: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None):
+               artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         print('Fetching tracks...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_tracks')), conn, params={

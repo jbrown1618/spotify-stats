@@ -17,6 +17,16 @@ select
                 select track_uri from playlist_track
             )
         )
+    ) as artist_total_liked_track_count,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            inner join liked_track ilt on ilt.track_uri = ita.track_uri
+            where ita.artist_uri = a.uri
+            and (:filter_tracks = false or ita.track_uri in :track_uris)
+        )
     ) as artist_liked_track_count,
     (
         select count(track_uri) 
@@ -27,6 +37,15 @@ select
             and ita.track_uri in (
                 select track_uri from playlist_track
             )
+        )
+    ) as artist_total_track_count,
+    (
+        select count(track_uri) 
+        from (
+            select distinct ita.track_uri
+            from track_artist ita 
+            where ita.artist_uri = a.uri
+            and (:filter_tracks = false or ita.track_uri in :track_uris)
         )
     ) as artist_track_count
 
