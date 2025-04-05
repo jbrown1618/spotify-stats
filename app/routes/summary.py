@@ -90,8 +90,9 @@ def summary_payload():
         "playlist_track_counts": playlist_track_counts(tracks),
         "artist_track_counts": artist_track_counts(tracks),
         "label_track_counts": label_track_counts(tracks),
-        # No equivalent API yet
         "genre_track_counts": genre_track_counts(tracks),
+        "years": years(tracks),
+        # No equivalent API yet
         "track_rank_history": track_rank_history(tracks, min_stream_date, max_stream_date),
         "artist_rank_history": artist_rank_history(artists, min_stream_date, max_stream_date),
         "album_rank_history": album_rank_history(albums, min_stream_date, max_stream_date),
@@ -100,7 +101,6 @@ def summary_payload():
         "track_streams_by_month": track_streams_by_month(tracks, min_stream_date, max_stream_date),
         "artist_streams_by_month": artist_streams_by_month(artists, min_stream_date, max_stream_date),
         "album_streams_by_month": album_streams_by_month(albums, min_stream_date, max_stream_date),
-        "years": years(tracks),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
             "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),
@@ -231,11 +231,11 @@ def label_track_counts(tracks):
         result = cursor.fetchall()
 
     out = {}
-    for label, label_track_count, label_liked_track_count in result:
+    for label, track_count, _, liked_track_count, _ in result:
         out[label] = {
             "label": label,
-            "label_track_count": label_track_count,
-            "label_liked_track_count": label_liked_track_count
+            "label_track_count": track_count,
+            "label_liked_track_count": liked_track_count
         }
     return out
 
@@ -253,11 +253,11 @@ def genre_track_counts(tracks):
         result = cursor.fetchall()
 
     out = {}
-    for genre, genre_track_count, genre_liked_track_count in result:
+    for genre, track_count, _, liked_track_count, _ in result:
         out[genre] = {
             "genre": genre,
-            "genre_track_count": genre_track_count,
-            "genre_liked_track_count": genre_liked_track_count
+            "genre_track_count": track_count,
+            "genre_liked_track_count": liked_track_count
         }
     return out
 

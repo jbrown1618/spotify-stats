@@ -18,5 +18,5 @@ SELECT
 FROM record_label rl
     INNER JOIN track t ON t.album_uri = rl.album_uri
     LEFT JOIN liked_track lt ON lt.track_uri = t.uri
-WHERE t.uri in %(track_uris)s
+WHERE t.uri IN %(track_uris)s
 GROUP BY rl.standardized_label;

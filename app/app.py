@@ -3,8 +3,10 @@ from flask import Flask, request, send_file
 
 from app.routes.albums import albums_payload
 from app.routes.artists import artists_payload
+from app.routes.genres import genres_payload
 from app.routes.labels import labels_payload
 from app.routes.playlists import playlists_payload
+from app.routes.release_years import release_years_payload
 from app.routes.summary import summary_payload
 from app.routes.tracks import track_payload, tracks_search_payload
 from app.utils import to_filters, to_track_uris
@@ -56,3 +58,13 @@ def list_albums():
 @app.route("/api/labels")
 def list_labels():
     return labels_payload(to_track_uris(request.args))
+
+
+@app.route("/api/genres")
+def list_genres():
+    return genres_payload(to_track_uris(request.args))
+
+
+@app.route("/api/release_years")
+def list_release_years():
+    return release_years_payload(to_track_uris(request.args))
