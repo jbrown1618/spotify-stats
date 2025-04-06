@@ -92,15 +92,14 @@ def summary_payload():
         "label_track_counts": label_track_counts(tracks),
         "genre_track_counts": genre_track_counts(tracks),
         "years": years(tracks),
-        # No equivalent API yet
         "track_rank_history": track_rank_history(tracks, min_stream_date, max_stream_date),
         "artist_rank_history": artist_rank_history(artists, min_stream_date, max_stream_date),
         "album_rank_history": album_rank_history(albums, min_stream_date, max_stream_date),
-        "streams_by_track": to_json(streams_by_track, 'track_uri'),
         "streams_by_month": overall_streams_by_month(tracks, min_stream_date, max_stream_date),
         "track_streams_by_month": track_streams_by_month(tracks, min_stream_date, max_stream_date),
         "artist_streams_by_month": artist_streams_by_month(artists, min_stream_date, max_stream_date),
         "album_streams_by_month": album_streams_by_month(albums, min_stream_date, max_stream_date),
+        "streams_by_track": to_json(streams_by_track, 'track_uri'),
         "filter_options": {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
             "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),

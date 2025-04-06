@@ -37,8 +37,25 @@ def to_filters(args: typing.Mapping[str, str]) -> typing.Mapping[str, typing.Ite
     return filters
 
 
+def to_date_range(args: typing.Mapping[str, str]):
+    stream_range = args.get("wrapped", None)
+    if stream_range is not None:
+        values = stream_range.split('..')
+        if len(values) == 2:
+            return values
+    return [None, None]
+
+
 def to_track_uris(args: typing.Mapping[str, str]) -> typing.Iterable[str]:
     return to_array_filter(args.get('tracks', None))
+
+
+def to_artist_uris(args: typing.Mapping[str, str]) -> typing.Iterable[str]:
+    return to_array_filter(args.get('artists', None))
+
+
+def to_album_uris(args: typing.Mapping[str, str]) -> typing.Iterable[str]:
+    return to_array_filter(args.get('albums', None))
 
 
 def to_array_filter(arg: str) -> typing.Iterable[str]:

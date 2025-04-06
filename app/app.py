@@ -3,14 +3,16 @@ from flask import Flask, request, send_file
 
 from app.routes.albums import albums_payload
 from app.routes.artists import artists_payload
+from app.routes.filters import filter_options_payload
 from app.routes.genres import genres_payload
 from app.routes.labels import labels_payload
 from app.routes.playlists import playlists_payload
 from app.routes.release_years import release_years_payload
 from app.routes.summary import summary_payload
 from app.routes.tracks import track_payload, tracks_search_payload
-from app.utils import to_filters, to_track_uris
+from app.utils import to_album_uris, to_artist_uris, to_date_range, to_filters, to_json, to_track_uris
 from data.sql.migrations.migrations import perform_all_migrations
+from utils.ranking import album_ranks_over_time, album_streams_by_month, artist_ranks_over_time, artist_streams_by_month, track_ranks_over_time, track_streams_by_month
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
@@ -28,6 +30,11 @@ def index():
 @app.route("/api/summary")
 def get_summary():
     return summary_payload()
+
+
+@app.route("/api/filters")
+def get_filter_options():
+    return filter_options_payload()
 
 
 @app.route("/api/tracks/search")
@@ -65,6 +72,42 @@ def list_genres():
     return genres_payload(to_track_uris(request.args))
 
 
-@app.route("/api/release_years")
+@app.route("/api/release-years")
 def list_release_years():
     return release_years_payload(to_track_uris(request.args))
+
+
+@app.route("/api/streams/tracks/history")
+def list_track_stream_history():
+    min_date, max_date = to_date_range(request.args)
+    return to_json(track_ranks_over_time(to_track_uris(request.args), min_date, max_date))
+
+
+@app.route("/api/streams/tracks/months")
+def list_track_streams_by_month():
+    min_date, max_date = to_date_range(request.args)
+    return track_streams_by_month(to_track_uris(request.args), min_date, max_date)
+
+
+@app.route("/api/streams/artists/history")
+def list_artist_stream_history():
+    min_date, max_date = to_date_range(request.args)
+    return to_json(artist_ranks_over_time(to_artist_uris(request.args), min_date, max_date))
+
+
+@app.route("/api/streams/artists/months")
+def list_artist_streams_by_month():
+    min_date, max_date = to_date_range(request.args)
+    return artist_streams_by_month(to_artist_uris(request.args), min_date, max_date)
+
+
+@app.route("/api/streams/albums/history")
+def list_album_stream_history():
+    min_date, max_date = to_date_range(request.args)
+    return to_json(album_ranks_over_time(to_album_uris(request.args), min_date, max_date))
+
+
+@app.route("/api/streams/albums/months")
+def list_album_streams_by_month():
+    min_date, max_date = to_date_range(request.args)
+    return album_streams_by_month(to_album_uris(request.args), min_date, max_date)
