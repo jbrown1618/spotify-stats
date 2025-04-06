@@ -3,7 +3,7 @@ import typing
 
 import pandas as pd
 import sqlalchemy
-from app.utils import to_json
+from routes.utils import to_json
 from data.provider import DataProvider
 from data.query import query_text
 from data.raw import get_engine

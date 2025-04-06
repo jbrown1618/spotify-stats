@@ -1,6 +1,6 @@
 import typing
 
-from app.utils import to_json
+from routes.utils import to_json
 from data.provider import DataProvider
 
 

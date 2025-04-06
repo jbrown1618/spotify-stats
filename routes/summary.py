@@ -8,7 +8,7 @@ from flask import request
 import pandas as pd
 import sqlalchemy
 
-from app.utils import is_empty_filter, is_liked_filter, to_filters, to_json
+from routes.utils import is_empty_filter, is_liked_filter, to_filters, to_json
 from data.provider import DataProvider
 from data.query import query_text
 from data.raw import get_connection, get_engine
