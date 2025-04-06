@@ -1,1 +1,2 @@
+npm run build
 (gunicorn --chdir app app:app) & (python -m app.job_agent)
