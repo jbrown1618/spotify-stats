@@ -1,7 +1,7 @@
 import { ArtistsRankLineChart } from "../charts/ArtistsLineChart";
 import { ArtistTile } from "../list-items/ArtistTile";
 import { useIsMobile } from "../useIsMobile";
-import { useSummary } from "../useSummary";
+import { useSummary } from "../useApi";
 
 interface ArtistDetailsProps {
   artistURI: string;

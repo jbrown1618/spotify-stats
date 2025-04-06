@@ -1,7 +1,7 @@
 import { AlbumsRankLineChart } from "../charts/AlbumsLineChart";
 import { AlbumTile } from "../list-items/AlbumTile";
 import { useIsMobile } from "../useIsMobile";
-import { useSummary } from "../useSummary";
+import { useSummary } from "../useApi";
 
 interface AlbumDetailsProps {
   albumURI: string;

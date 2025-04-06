@@ -81,6 +81,15 @@ export interface Track extends Album {
   track_uri: string;
 }
 
+export type BasicTrack = Pick<
+  Track,
+  | "track_uri"
+  | "track_name"
+  | "track_stream_count"
+  | "album_image_url"
+  | "album_release_date"
+>;
+
 export interface TrackRank {
   track_uri: string;
   track_rank: number;
@@ -129,7 +138,27 @@ export interface AlbumRank {
 }
 
 export interface Label {
-  album_standardized_label: string;
+  label: string;
+  track_count: number;
+  total_track_count: number;
+  liked_track_count: number;
+  total_liked_track_count: number;
+}
+
+export interface Genre {
+  genre: string;
+  track_count: number;
+  total_track_count: number;
+  liked_track_count: number;
+  total_liked_track_count: number;
+}
+
+export interface ReleaseYear {
+  release_year: number;
+  track_count: number;
+  total_track_count: number;
+  liked_track_count: number;
+  total_liked_track_count: number;
 }
 
 export interface YearCounts {
@@ -140,6 +169,7 @@ export interface YearCounts {
 
 export interface ActiveFilters {
   liked?: boolean;
+  tracks?: string[];
   labels?: string[];
   artists?: string[];
   albums?: string[];
@@ -167,18 +197,118 @@ export const defaultFilterOptions: FilterOptions = {
   years: [],
 };
 
-export async function getData(query: string): Promise<Summary> {
+export async function getSummary(query: string): Promise<Summary> {
+  return sendRequest(`/api/summary?${query}`, "summary");
+}
+
+export async function getFilterOptions(): Promise<FilterOptions> {
+  return sendRequest("/api/filters", "filter options");
+}
+
+export async function searchTracks(
+  query: string
+): Promise<Record<string, BasicTrack>> {
+  return sendRequest(`/api/tracks/search?${query}`, "tracks");
+}
+
+export async function getTrack(uri: string): Promise<Track> {
+  return sendRequest(`/api/tracks/${uri}`, `track ${uri}`);
+}
+
+export async function getPlaylists(
+  query: string
+): Promise<Record<string, Playlist>> {
+  return sendRequest(`/api/playlists?${query}`, "playlists");
+}
+
+export async function getArtists(
+  query: string
+): Promise<Record<string, Artist>> {
+  return sendRequest(`/api/artists?${query}`, "artists");
+}
+
+export async function getAlbums(query: string): Promise<Record<string, Album>> {
+  return sendRequest(`/api/albums?${query}`, "albums");
+}
+
+export async function getLabels(query: string): Promise<Label[]> {
+  return sendRequest(`/api/labels?${query}`, "labels");
+}
+
+export async function getGenres(query: string): Promise<Genre[]> {
+  return sendRequest(`/api/genres?${query}`, "genres");
+}
+
+export async function getReleaseYears(query: string): Promise<ReleaseYear[]> {
+  return sendRequest(`/api/release-years?${query}`, "release years");
+}
+
+export async function getTracksStreamingHistory(
+  query: string
+): Promise<TrackRank[]> {
+  return sendRequest(
+    `/api/streams/tracks/history?${query}`,
+    "tracks streaming history"
+  );
+}
+
+export async function getArtistsStreamingHistory(
+  query: string
+): Promise<ArtistRank[]> {
+  return sendRequest(
+    `/api/streams/artists/history?${query}`,
+    "artists streaming history"
+  );
+}
+
+export async function getAlbumsStreamingHistory(
+  query: string
+): Promise<AlbumRank[]> {
+  return sendRequest(
+    `/api/streams/albums/history?${query}`,
+    "albums streaming history"
+  );
+}
+
+export async function getTracksStreamsByMonth(
+  query: string
+): Promise<TrackRank[]> {
+  return sendRequest(
+    `/api/streams/tracks/months?${query}`,
+    "track streams by month"
+  );
+}
+
+export async function getArtistsStreamsByMonth(
+  query: string
+): Promise<ArtistRank[]> {
+  return sendRequest(
+    `/api/streams/artists/months?${query}`,
+    "artist streams by month"
+  );
+}
+
+export async function getAlbumsStreamsByMonth(
+  query: string
+): Promise<AlbumRank[]> {
+  return sendRequest(
+    `/api/streams/albums/months?${query}`,
+    "album streams by month"
+  );
+}
+
+async function sendRequest<T>(url: string, dataName: string): Promise<T> {
   try {
-    const res = await fetch("/api/summary?" + query.toString());
+    const res = await fetch(url);
     if (!res.ok)
       throw new Error(
-        `Error fetching tracks summary: ${res.status}: ${res.statusText}`
+        `Error fetching ${dataName}: ${res.status}: ${res.statusText}`
       );
 
     return await res.json();
   } catch (e: unknown) {
     const message =
-      e instanceof Error ? e.message : "Error fetching tracks summary";
+      e instanceof Error ? e.message : `Error fetching ${dataName}`;
     throw new Error(message);
   }
 }
@@ -192,7 +322,7 @@ const arrayKeys = [
   "years",
 ] as const;
 
-export function toFiltersQuery(filters: ActiveFilters) {
+export function toFiltersQuery(filters: ActiveFilters): string {
   const query = new URLSearchParams();
   for (const key of arrayKeys) {
     const value = filters[key];

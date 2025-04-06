@@ -4,7 +4,7 @@ import { Album } from "../api";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 import { TileDesign } from "../design/TileDesign";
 import { useSetFilters } from "../useFilters";
-import { useSummary } from "../useSummary";
+import { useSummary } from "../useApi";
 
 interface AlbumTileProps {
   album: Album;

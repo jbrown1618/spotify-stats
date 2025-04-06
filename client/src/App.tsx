@@ -39,7 +39,7 @@ import {
   trackSortOptions,
 } from "./sorting";
 import { useFilters, useSetFilters } from "./useFilters";
-import { useSummary } from "./useSummary";
+import { useSummary } from "./useApi";
 
 export function App() {
   const filters = useFilters();
