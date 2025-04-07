@@ -3,14 +3,12 @@ import { IconFilter, IconX } from "@tabler/icons-react";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
-import { useSetFilters } from "./useFilters";
+import { useFilterOptions } from "./useApi";
+import { useFilters, useSetFilters } from "./useFilters";
 
-interface FiltersProps {
-  filters: ActiveFilters;
-  options?: FilterOptions;
-}
-
-export function Filters({ filters, options }: FiltersProps) {
+export function Filters() {
+  const filters = useFilters();
+  const { data: options } = useFilterOptions();
   const setFilters = useSetFilters();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -45,7 +43,8 @@ export function Filters({ filters, options }: FiltersProps) {
   );
 }
 
-interface FiltersDialogProps extends FiltersProps {
+interface FiltersDialogProps {
+  filters: ActiveFilters;
   options: NonNullable<FilterOptions>;
   opened: boolean;
   onClose: (filters: ActiveFilters) => void;
@@ -95,7 +94,8 @@ function FiltersDialog({
   );
 }
 
-interface FilterProps extends FiltersProps {
+interface FilterProps {
+  filters: ActiveFilters;
   onFilterChange: (a: SetStateAction<ActiveFilters>) => void;
   options: NonNullable<FilterOptions>;
 }

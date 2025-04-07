@@ -1,20 +1,21 @@
 import { BarChart } from "@mantine/charts";
 
-import { PlaylistTrackCount } from "../api";
+import { ChartSkeleton } from "../design/ChartSkeleton";
+import { usePlaylists } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
-export function PlaylistsBarChart({
-  counts,
-}: {
-  counts: PlaylistTrackCount[];
-}) {
+export function PlaylistsBarChart() {
+  const { data: playlists } = usePlaylists();
   const isMobile = useIsMobile();
+  if (!playlists) return <ChartSkeleton />;
+
   const maxCount = isMobile ? 15 : 20;
-  const height = 100 + 30 * Math.min(maxCount, Object.keys(counts).length);
+  const height = 100 + 30 * Math.min(maxCount, Object.keys(playlists).length);
+
   return (
     <BarChart
       h={height}
-      data={Object.values(counts)
+      data={Object.values(playlists)
         .sort(
           (a, b) => b.playlist_liked_track_count - a.playlist_liked_track_count
         )

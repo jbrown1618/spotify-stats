@@ -1,16 +1,19 @@
 import { AlbumsRankLineChart } from "../charts/AlbumsLineChart";
 import { AlbumTile } from "../list-items/AlbumTile";
+import { useAlbums } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
-import { useSummary } from "../useApi";
 
 interface AlbumDetailsProps {
   albumURI: string;
 }
 
 export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
-  const { data: summary } = useSummary();
+  const { data: albums } = useAlbums({ albums: [albumURI] });
   const isMobile = useIsMobile();
-  const album = summary?.albums[albumURI];
+
+  if (!albums) return null; // TODO: skeleton
+
+  const album = albums[albumURI];
   if (!album) return null;
 
   return (
@@ -31,13 +34,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
         </div>
         <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
-          <AlbumsRankLineChart
-            height={300}
-            ranks={summary.album_rank_history.filter(
-              (r) => r.album_uri === albumURI
-            )}
-            albums={summary.albums}
-          />
+          <AlbumsRankLineChart height={300} />
         </div>
       </div>
     </>

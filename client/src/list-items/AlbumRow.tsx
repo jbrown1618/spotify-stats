@@ -1,17 +1,16 @@
-import { Text } from "@mantine/core";
+import { Skeleton, Text } from "@mantine/core";
 
-import { Album, Artist } from "../api";
+import { Album } from "../api";
 import { RowDesign } from "../design/RowDesign";
+import { useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
 
 interface AlbumTileProps {
   album: Album;
-  artists_by_album: Record<string, string[]>;
-  artists: Record<string, Artist>;
 }
 
-export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
+export function AlbumRow({ album }: AlbumTileProps) {
   const isMobile = useIsMobile();
   const setFilters = useSetFilters();
   return (
@@ -25,16 +24,7 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
           albums: [album.album_uri],
         })
       }
-      secondaryText={
-        <>
-          {artists_by_album[album.album_uri].map((artistURI) => {
-            const artist = artists[artistURI];
-            if (!artist) return null;
-
-            return <Text>{artist.artist_name}</Text>;
-          })}
-        </>
-      }
+      secondaryText={<ArtistsList albumURI={album.album_uri} />}
       stats={[
         { label: "Rank", value: album.album_rank },
         { label: "Streams", value: album.album_stream_count },
@@ -46,5 +36,19 @@ export function AlbumRow({ album, artists_by_album, artists }: AlbumTileProps) {
             },
       ]}
     />
+  );
+}
+
+function ArtistsList({ albumURI }: { albumURI: string }) {
+  const { data: albumArtists } = useArtists({ albums: [albumURI] });
+
+  if (!albumArtists) return <Skeleton width={100} height={12} />;
+
+  return (
+    <>
+      {Object.values(albumArtists).map((artist) => {
+        return <Text>{artist.artist_name}</Text>;
+      })}
+    </>
   );
 }

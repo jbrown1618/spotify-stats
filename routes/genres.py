@@ -5,8 +5,8 @@ from data.raw import get_connection
 
 
 def genres_payload(track_uris: typing.Iterable[str]):
-    if len(track_uris) == 0:
-        return {}
+    if track_uris is None or len(track_uris) == 0:
+        return []
     
     with get_connection() as conn:
         cursor = conn.cursor()

@@ -30,7 +30,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
         liked=filters.get('liked', None)
     )
 
-    tracks = tracks[['track_uri', 'track_name', 'album_release_date', 'album_image_url', 'track_stream_count']]
+    tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count']]
 
     return to_json(tracks, 'track_uri')
 

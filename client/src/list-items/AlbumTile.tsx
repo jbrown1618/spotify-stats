@@ -3,8 +3,9 @@ import { useCallback } from "react";
 import { Album } from "../api";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 import { TileDesign } from "../design/TileDesign";
+import { mostStreamedArtists } from "../sorting";
+import { useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
-import { useSummary } from "../useApi";
 
 interface AlbumTileProps {
   album: Album;
@@ -12,8 +13,9 @@ interface AlbumTileProps {
 }
 
 export function AlbumTile({ album, large }: AlbumTileProps) {
-  const { data: summary } = useSummary();
   const setFilters = useSetFilters();
+  const { data: artists } = useArtists({ albums: [album.album_uri] });
+
   const onClick = useCallback(
     () =>
       setFilters({
@@ -22,35 +24,38 @@ export function AlbumTile({ album, large }: AlbumTileProps) {
     [album.album_uri, setFilters]
   );
 
-  if (large) {
-    const artist =
-      summary?.artists[summary?.artists_by_album[album.album_uri][0]];
+  if (!large) {
     return (
-      <LargeTileDesign
-        title={album.album_name}
-        subtitle={album.album_label}
+      <TileDesign
+        title={album.album_short_name}
         src={album.album_image_url}
-        secondarySrc={artist?.artist_image_url}
         onClick={onClick}
         itemURI={album.album_uri}
         stats={[
           { label: "Rank", value: album.album_rank },
           { label: "Streams", value: album.album_stream_count },
-          { label: "Popularity", value: album.album_popularity },
-          { label: "Release date", value: album.album_release_date },
         ]}
       />
     );
   }
+
+  const artist = artists
+    ? Object.values(artists).sort(mostStreamedArtists)[0]
+    : undefined;
+
   return (
-    <TileDesign
-      title={album.album_short_name}
+    <LargeTileDesign
+      title={album.album_name}
+      subtitle={album.album_label}
       src={album.album_image_url}
+      secondarySrc={artist?.artist_image_url}
       onClick={onClick}
       itemURI={album.album_uri}
       stats={[
         { label: "Rank", value: album.album_rank },
         { label: "Streams", value: album.album_stream_count },
+        { label: "Popularity", value: album.album_popularity },
+        { label: "Release date", value: album.album_release_date },
       ]}
     />
   );

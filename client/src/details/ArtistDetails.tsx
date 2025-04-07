@@ -1,16 +1,18 @@
 import { ArtistsRankLineChart } from "../charts/ArtistsLineChart";
 import { ArtistTile } from "../list-items/ArtistTile";
+import { useArtists } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
-import { useSummary } from "../useApi";
 
 interface ArtistDetailsProps {
   artistURI: string;
 }
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
-  const { data: summary } = useSummary();
+  const { data: artists } = useArtists({ artists: [artistURI] });
   const isMobile = useIsMobile();
-  const artist = summary?.artists[artistURI];
+  if (!artists) return null;
+
+  const artist = artists[artistURI];
   if (!artist) return null;
 
   return (
@@ -31,13 +33,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         </div>
         <div style={{ flexGrow: 1 }}>
           <h3>Rank over time</h3>
-          <ArtistsRankLineChart
-            height={300}
-            ranks={summary.artist_rank_history.filter(
-              (r) => r.artist_uri === artist.artist_uri
-            )}
-            artists={summary.artists}
-          />
+          <ArtistsRankLineChart height={300} />
         </div>
       </div>
     </>

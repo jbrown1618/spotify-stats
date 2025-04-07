@@ -1,51 +1,63 @@
-import { Album, AlbumRank } from "../api";
+import { ChartSkeleton } from "../design/ChartSkeleton";
+import { mostStreamedAlbums } from "../sorting";
+import { useAlbums, useAlbumsStreamingHistory } from "../useApi";
 import { RankLineChart } from "./RankLineChart";
 import { StreamsLineChart } from "./StreamsLineChart";
 
-export function AlbumsRankLineChart({
-  height,
-  ranks,
-  albums,
-}: {
-  height?: number;
-  ranks: AlbumRank[];
-  albums: Record<string, Album>;
-}) {
+export function AlbumsRankLineChart({ height }: { height?: number }) {
+  const { data: albums } = useAlbums();
+  const topAlbumURIs = albums
+    ? Object.values(albums)
+        .sort(mostStreamedAlbums)
+        .slice(0, 10)
+        .map((a) => a.album_uri)
+    : [];
+  const { data: history } = useAlbumsStreamingHistory(topAlbumURIs);
+
+  if (!history || !albums) return <ChartSkeleton />;
   return (
-    <RankLineChart
-      height={height}
-      ranks={ranks}
-      getKey={(r) => r.album_uri}
-      getDate={(r) => r.as_of_date}
-      getItem={(r) => r.album_uri}
-      getRank={(r) => r.album_rank}
-      getLabel={(k) => albums[k]?.album_short_name}
-      getCurrentRank={(k) => albums[k]?.album_rank}
-      getImageURL={(k) => albums[k]?.album_image_url}
-    />
+    <>
+      <h3>Album ranking over time</h3>
+      <RankLineChart
+        height={height}
+        ranks={history}
+        getKey={(r) => r.album_uri}
+        getDate={(r) => r.as_of_date}
+        getItem={(r) => r.album_uri}
+        getRank={(r) => r.album_rank}
+        getLabel={(k) => albums[k]?.album_short_name}
+        getCurrentRank={(k) => albums[k]?.album_rank}
+        getImageURL={(k) => albums[k]?.album_image_url}
+      />
+    </>
   );
 }
 
-export function AlbumStreamsLineChart({
-  height,
-  ranks,
-  albums,
-}: {
-  height?: number;
-  ranks: AlbumRank[];
-  albums: Record<string, Album>;
-}) {
+export function AlbumStreamsLineChart({ height }: { height?: number }) {
+  const { data: albums } = useAlbums();
+  const topAlbumURIs = albums
+    ? Object.values(albums)
+        .sort(mostStreamedAlbums)
+        .slice(0, 10)
+        .map((a) => a.album_uri)
+    : [];
+  const { data: history } = useAlbumsStreamingHistory(topAlbumURIs);
+
+  if (!history || !albums) return <ChartSkeleton />;
   return (
-    <StreamsLineChart
-      height={height}
-      ranks={ranks}
-      getKey={(r) => r.album_uri}
-      getDate={(r) => r.as_of_date}
-      getItem={(r) => r.album_uri}
-      getStreams={(r) => r.album_stream_count}
-      getLabel={(k) => albums[k]?.album_short_name}
-      getCurrentRank={(k) => albums[k]?.album_rank}
-      getImageURL={(k) => albums[k]?.album_image_url}
-    />
+    <>
+      <h3>Album streams over time</h3>
+      <StreamsLineChart
+        height={height}
+        ranks={history}
+        getKey={(r) => r.album_uri}
+        getDate={(r) => r.as_of_date}
+        getItem={(r) => r.album_uri}
+        getStreams={(r) => r.album_stream_count}
+        getLabel={(k) => albums[k]?.album_short_name}
+        getCurrentRank={(k) => albums[k]?.album_rank}
+        getImageURL={(k) => albums[k]?.album_image_url}
+      />
+    </>
   );
 }

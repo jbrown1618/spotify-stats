@@ -1,35 +1,3 @@
-export interface Summary {
-  filter_options: FilterOptions;
-  playlists: Record<string, Playlist>;
-  tracks: Record<string, Track>;
-  artists: Record<string, Artist>;
-  albums: Record<string, Album>;
-  years: Record<string, YearCounts>;
-  artists_by_track: Record<string, string[]>;
-  artists_by_album: Record<string, string[]>;
-  albums_by_artist: Record<string, string[]>;
-  playlist_track_counts: Record<string, PlaylistTrackCount>;
-  artist_track_counts: Record<string, ArtistTrackCount>;
-  label_track_counts: Record<string, LabelTrackCount>;
-  genre_track_counts: Record<string, GenreTrackCount>;
-  track_rank_history: TrackRank[];
-  artist_rank_history: ArtistRank[];
-  album_rank_history: AlbumRank[];
-  streams_by_month: Record<number, Record<number, number>>;
-  track_streams_by_month: Record<
-    string,
-    Record<number, Record<number, number>>
-  >;
-  artist_streams_by_month: Record<
-    string,
-    Record<number, Record<number, number>>
-  >;
-  album_streams_by_month: Record<
-    string,
-    Record<number, Record<number, number>>
-  >;
-}
-
 export interface Playlist {
   playlist_uri: string;
   playlist_name: string;
@@ -40,35 +8,7 @@ export interface Playlist {
   playlist_track_count: number;
 }
 
-export type PlaylistTrackCount = Pick<
-  Playlist,
-  | "playlist_uri"
-  | "playlist_name"
-  | "playlist_track_count"
-  | "playlist_liked_track_count"
->;
-
-export type ArtistTrackCount = Pick<
-  Artist,
-  | "artist_uri"
-  | "artist_name"
-  | "artist_track_count"
-  | "artist_liked_track_count"
->;
-
-export interface LabelTrackCount {
-  label: string;
-  label_track_count: number;
-  label_liked_track_count: number;
-}
-
-export interface GenreTrackCount {
-  genre: string;
-  genre_track_count: number;
-  genre_liked_track_count: number;
-}
-
-export interface Track extends Album {
+export interface TrackDetails extends Album {
   track_duration_ms: number;
   track_explicit: boolean;
   track_isrc: string;
@@ -81,10 +21,11 @@ export interface Track extends Album {
   track_uri: string;
 }
 
-export type BasicTrack = Pick<
-  Track,
+export type Track = Pick<
+  TrackDetails,
   | "track_uri"
   | "track_name"
+  | "track_short_name"
   | "track_stream_count"
   | "album_image_url"
   | "album_release_date"
@@ -197,21 +138,17 @@ export const defaultFilterOptions: FilterOptions = {
   years: [],
 };
 
-export async function getSummary(query: string): Promise<Summary> {
-  return sendRequest(`/api/summary?${query}`, "summary");
-}
-
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
 }
 
 export async function searchTracks(
   query: string
-): Promise<Record<string, BasicTrack>> {
+): Promise<Record<string, Track>> {
   return sendRequest(`/api/tracks/search?${query}`, "tracks");
 }
 
-export async function getTrack(uri: string): Promise<Track> {
+export async function getTrack(uri: string): Promise<TrackDetails> {
   return sendRequest(`/api/tracks/${uri}`, `track ${uri}`);
 }
 
@@ -272,7 +209,7 @@ export async function getAlbumsStreamingHistory(
 
 export async function getTracksStreamsByMonth(
   query: string
-): Promise<TrackRank[]> {
+): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
     `/api/streams/tracks/months?${query}`,
     "track streams by month"
@@ -281,7 +218,7 @@ export async function getTracksStreamsByMonth(
 
 export async function getArtistsStreamsByMonth(
   query: string
-): Promise<ArtistRank[]> {
+): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
     `/api/streams/artists/months?${query}`,
     "artist streams by month"
@@ -290,7 +227,7 @@ export async function getArtistsStreamsByMonth(
 
 export async function getAlbumsStreamsByMonth(
   query: string
-): Promise<AlbumRank[]> {
+): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
     `/api/streams/albums/months?${query}`,
     "album streams by month"
@@ -320,6 +257,7 @@ const arrayKeys = [
   "labels",
   "genres",
   "years",
+  "tracks",
 ] as const;
 
 export function toFiltersQuery(filters: ActiveFilters): string {

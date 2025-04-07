@@ -1,23 +1,20 @@
 import { Text } from "@mantine/core";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 
-import { Artist, Track } from "../api";
 import { RowDesign } from "../design/RowDesign";
+import { useArtists, useTrack } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 interface TrackRowProps {
-  track: Track;
-  artists_by_track: Record<string, string[]>;
-  artists: Record<string, Artist>;
+  trackUri: string;
 }
 
-export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
+export function TrackRow({ trackUri }: TrackRowProps) {
+  const { data: track } = useTrack(trackUri);
+  const { data: artists } = useArtists([trackUri]);
   const isMobile = useIsMobile();
 
-  const artistsOnTrack = artists_by_track[track.track_uri]
-    .map((uri) => artists[uri])
-    .filter((a) => !!a);
-
+  if (!track) return; // TODO: skeleton
   return (
     <RowDesign
       src={track.album_image_url}
@@ -26,16 +23,18 @@ export function TrackRow({ track, artists_by_track, artists }: TrackRowProps) {
       secondaryText={isMobile ? track.album_short_name : track.album_name}
       tertiaryText={
         <div style={{ display: "flex" }}>
-          {artistsOnTrack.map((artist, i) => {
-            return (
-              <>
-                <Text c="dimmed">{artist.artist_name}</Text>
-                {i < artistsOnTrack.length - 1 ? (
-                  <Text c="dimmed">,&nbsp;</Text>
-                ) : null}
-              </>
-            );
-          })}
+          {!artists
+            ? null /* TODO: skeleton */
+            : Object.values(artists).map((artist, i) => {
+                return (
+                  <>
+                    <Text c="dimmed">{artist.artist_name}</Text>
+                    {i < Object.values(artists).length - 1 ? (
+                      <Text c="dimmed">,&nbsp;</Text>
+                    ) : null}
+                  </>
+                );
+              })}
         </div>
       }
       stats={[

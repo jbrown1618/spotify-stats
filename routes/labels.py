@@ -6,7 +6,7 @@ from data.raw import get_connection
 
 def labels_payload(track_uris: typing.Iterable[str]):
     if len(track_uris) == 0:
-        return {}
+        return []
     
     with get_connection() as conn:
         cursor = conn.cursor()

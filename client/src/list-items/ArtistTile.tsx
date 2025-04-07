@@ -1,8 +1,10 @@
+import { Skeleton } from "@mantine/core";
+
 import { Artist } from "../api";
 import { LargeTileDesign } from "../design/LargeTileDesign";
 import { TileDesign } from "../design/TileDesign";
+import { useAlbums } from "../useApi";
 import { useSetFilters } from "../useFilters";
-import { useSummary } from "../useApi";
 
 interface ArtistTileProps {
   artist: Artist;
@@ -10,14 +12,13 @@ interface ArtistTileProps {
 }
 
 export function ArtistTile({ artist, large }: ArtistTileProps) {
-  const { data: summary } = useSummary();
   const setFilters = useSetFilters();
+  const { data: artistAlbums } = useAlbums({ artists: [artist.artist_uri] });
+
   const onClick = () =>
     setFilters({
       artists: [artist.artist_uri],
     });
-
-  if (!summary) return null;
 
   if (!large)
     return (
@@ -33,12 +34,11 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
       />
     );
 
-  const artistAlbums = summary.albums_by_artist[artist.artist_uri].map(
-    (uri) => summary.albums[uri]
-  );
-  const highestRankedAlbum = artistAlbums.sort(
-    (a, b) => b.album_stream_count - a.album_stream_count
-  )[0];
+  const highestRankedAlbum = artistAlbums
+    ? Object.values(artistAlbums).sort(
+        (a, b) => b.album_stream_count - a.album_stream_count
+      )[0]
+    : undefined;
 
   return (
     <LargeTileDesign
@@ -57,7 +57,11 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
         },
         {
           label: "Albums",
-          value: artistAlbums.length,
+          value: artistAlbums ? (
+            Object.keys(artistAlbums).length
+          ) : (
+            <Skeleton height={24} width={24} />
+          ),
         },
       ]}
     />
