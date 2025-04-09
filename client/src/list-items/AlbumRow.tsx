@@ -1,7 +1,9 @@
 import { Skeleton, Text } from "@mantine/core";
+import { Fragment } from "react/jsx-runtime";
 
 import { Album } from "../api";
 import { RowDesign } from "../design/RowDesign";
+import { mostStreamedArtists } from "../sorting";
 import { useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
@@ -45,10 +47,19 @@ function ArtistsList({ albumURI }: { albumURI: string }) {
   if (!albumArtists) return <Skeleton width={100} height={12} />;
 
   return (
-    <>
-      {Object.values(albumArtists).map((artist) => {
-        return <Text>{artist.artist_name}</Text>;
-      })}
-    </>
+    <div style={{ display: "flex" }}>
+      {Object.values(albumArtists)
+        .sort(mostStreamedArtists)
+        .map((artist, i) => {
+          return (
+            <Fragment key={artist.artist_uri}>
+              <Text>{artist.artist_name}</Text>
+              {i < Object.values(albumArtists).length - 1 ? (
+                <Text>,&nbsp;</Text>
+              ) : null}
+            </Fragment>
+          );
+        })}
+    </div>
   );
 }
