@@ -19,10 +19,14 @@ deactivate
 
 ## Start the server with live client reloading
 
-Run:
+Run in separate shells:
 
 ```bash
-script/dev
+script/dev-server
+```
+
+```bash
+script/dev-client
 ```
 
 And navigate to `http://localhost:5173`

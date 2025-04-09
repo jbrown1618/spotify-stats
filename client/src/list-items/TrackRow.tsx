@@ -11,7 +11,7 @@ interface TrackRowProps {
 
 export function TrackRow({ trackUri }: TrackRowProps) {
   const { data: track } = useTrack(trackUri);
-  const { data: artists } = useArtists([trackUri]);
+  const { data: artists } = useArtists({ tracks: [trackUri] });
   const isMobile = useIsMobile();
 
   if (!track) return; // TODO: skeleton

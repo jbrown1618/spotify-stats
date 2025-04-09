@@ -19,7 +19,7 @@ def release_years_payload(track_uris: typing.Iterable[str]):
     out = []
     for release_year, track_count, liked_track_count, total_track_count, total_liked_track_count in result:
         out.append({
-            "release_year": release_year,
+            "release_year": int(release_year),
             "track_count": track_count,
             "liked_track_count": liked_track_count,
             "total_track_count": total_track_count,

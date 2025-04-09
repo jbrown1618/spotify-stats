@@ -143,9 +143,9 @@ export async function getFilterOptions(): Promise<FilterOptions> {
 }
 
 export async function searchTracks(
-  query: string
+  filters: ActiveFilters
 ): Promise<Record<string, Track>> {
-  return sendRequest(`/api/tracks/search?${query}`, "tracks");
+  return sendRequest(`/api/tracks/search`, "tracks", filters);
 }
 
 export async function getTrack(uri: string): Promise<TrackDetails> {
@@ -153,90 +153,115 @@ export async function getTrack(uri: string): Promise<TrackDetails> {
 }
 
 export async function getPlaylists(
-  query: string
+  filters: Pick<ActiveFilters, "tracks">
 ): Promise<Record<string, Playlist>> {
-  return sendRequest(`/api/playlists?${query}`, "playlists");
+  return sendRequest(`/api/playlists`, "playlists", filters);
 }
 
 export async function getArtists(
-  query: string
+  filters: Pick<ActiveFilters, "tracks">
 ): Promise<Record<string, Artist>> {
-  return sendRequest(`/api/artists?${query}`, "artists");
+  return sendRequest(`/api/artists`, "artists", filters);
 }
 
-export async function getAlbums(query: string): Promise<Record<string, Album>> {
-  return sendRequest(`/api/albums?${query}`, "albums");
+export async function getAlbums(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Record<string, Album>> {
+  return sendRequest(`/api/albums`, "albums", filters);
 }
 
-export async function getLabels(query: string): Promise<Label[]> {
-  return sendRequest(`/api/labels?${query}`, "labels");
+export async function getLabels(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Label[]> {
+  return sendRequest(`/api/labels`, "labels", filters);
 }
 
-export async function getGenres(query: string): Promise<Genre[]> {
-  return sendRequest(`/api/genres?${query}`, "genres");
+export async function getGenres(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Genre[]> {
+  return sendRequest(`/api/genres`, "genres", filters);
 }
 
-export async function getReleaseYears(query: string): Promise<ReleaseYear[]> {
-  return sendRequest(`/api/release-years?${query}`, "release years");
+export async function getReleaseYears(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<ReleaseYear[]> {
+  return sendRequest(`/api/release-years`, "release years", filters);
 }
 
 export async function getTracksStreamingHistory(
-  query: string
+  filters: Pick<ActiveFilters, "tracks" | "wrapped">
 ): Promise<TrackRank[]> {
   return sendRequest(
-    `/api/streams/tracks/history?${query}`,
-    "tracks streaming history"
+    `/api/streams/tracks/history`,
+    "tracks streaming history",
+    filters
   );
 }
 
 export async function getArtistsStreamingHistory(
-  query: string
+  filters: Pick<ActiveFilters, "artists" | "wrapped">
 ): Promise<ArtistRank[]> {
   return sendRequest(
-    `/api/streams/artists/history?${query}`,
-    "artists streaming history"
+    `/api/streams/artists/history`,
+    "artists streaming history",
+    filters
   );
 }
 
 export async function getAlbumsStreamingHistory(
-  query: string
+  filters: Pick<ActiveFilters, "albums" | "wrapped">
 ): Promise<AlbumRank[]> {
   return sendRequest(
-    `/api/streams/albums/history?${query}`,
-    "albums streaming history"
+    `/api/streams/albums/history`,
+    "albums streaming history",
+    filters
   );
 }
 
 export async function getTracksStreamsByMonth(
-  query: string
+  filters: Pick<ActiveFilters, "tracks" | "wrapped">
 ): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
-    `/api/streams/tracks/months?${query}`,
-    "track streams by month"
+    `/api/streams/tracks/months`,
+    "track streams by month",
+    filters
   );
 }
 
 export async function getArtistsStreamsByMonth(
-  query: string
+  filters: Pick<ActiveFilters, "artists" | "wrapped">
 ): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
-    `/api/streams/artists/months?${query}`,
-    "artist streams by month"
+    `/api/streams/artists/months`,
+    "artist streams by month",
+    filters
   );
 }
 
 export async function getAlbumsStreamsByMonth(
-  query: string
+  filters: Pick<ActiveFilters, "albums" | "wrapped">
 ): Promise<Record<string, Record<number, Record<number, number>>>> {
   return sendRequest(
-    `/api/streams/albums/months?${query}`,
-    "album streams by month"
+    `/api/streams/albums/months`,
+    "album streams by month",
+    filters
   );
 }
 
-async function sendRequest<T>(url: string, dataName: string): Promise<T> {
+async function sendRequest<T>(
+  url: string,
+  dataName: string,
+  filters?: ActiveFilters
+): Promise<T> {
   try {
-    const res = await fetch(url);
+    const headers = filters
+      ? new Headers({ "Content-Type": "application/json" })
+      : undefined;
+    const res = await fetch(url, {
+      method: filters ? "POST" : "GET",
+      body: filters ? JSON.stringify(filters) : undefined,
+      headers,
+    });
     if (!res.ok)
       throw new Error(
         `Error fetching ${dataName}: ${res.status}: ${res.statusText}`
