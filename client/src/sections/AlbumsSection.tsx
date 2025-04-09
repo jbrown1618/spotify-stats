@@ -14,7 +14,7 @@ import { useFilters } from "../useFilters";
 
 export function AlbumsSection() {
   const filters = useFilters();
-  if (filters.albums?.length !== 1) return null;
+  if (filters.albums?.length === 1) return null;
 
   return (
     <div>
