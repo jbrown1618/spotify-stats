@@ -1,8 +1,8 @@
-import { Text } from "@mantine/core";
+import { Skeleton, Text } from "@mantine/core";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { Fragment } from "react/jsx-runtime";
 
-import { RowDesign } from "../design/RowDesign";
+import { RowDesign, RowSkeleton } from "../design/RowDesign";
 import { useArtists, useTrack } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
@@ -15,7 +15,8 @@ export function TrackRow({ trackUri }: TrackRowProps) {
   const { data: artists } = useArtists({ tracks: [trackUri] });
   const isMobile = useIsMobile();
 
-  if (!track) return; // TODO: skeleton
+  if (!track) return <RowSkeleton />;
+
   return (
     <RowDesign
       src={track.album_image_url}
@@ -24,18 +25,29 @@ export function TrackRow({ trackUri }: TrackRowProps) {
       secondaryText={isMobile ? track.album_short_name : track.album_name}
       tertiaryText={
         <div style={{ display: "flex" }}>
-          {!artists
-            ? null /* TODO: skeleton */
-            : Object.values(artists).map((artist, i) => {
-                return (
-                  <Fragment key={artist.artist_uri}>
-                    <Text c="dimmed">{artist.artist_name}</Text>
-                    {i < Object.values(artists).length - 1 ? (
-                      <Text c="dimmed">,&nbsp;</Text>
-                    ) : null}
-                  </Fragment>
-                );
-              })}
+          {!artists ? (
+            <div
+              style={{
+                height: 24,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <Skeleton width={100} height={14} />
+            </div>
+          ) : (
+            Object.values(artists).map((artist, i) => {
+              return (
+                <Fragment key={artist.artist_uri}>
+                  <Text c="dimmed">{artist.artist_name}</Text>
+                  {i < Object.values(artists).length - 1 ? (
+                    <Text c="dimmed">,&nbsp;</Text>
+                  ) : null}
+                </Fragment>
+              );
+            })
+          )}
         </div>
       }
       stats={[

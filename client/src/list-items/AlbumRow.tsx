@@ -44,7 +44,19 @@ export function AlbumRow({ album }: AlbumTileProps) {
 function ArtistsList({ albumURI }: { albumURI: string }) {
   const { data: albumArtists } = useArtists({ albums: [albumURI] });
 
-  if (!albumArtists) return <Skeleton width={100} height={12} />;
+  if (!albumArtists)
+    return (
+      <div
+        style={{
+          height: 24,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <Skeleton width={100} height={14} />
+      </div>
+    );
 
   return (
     <div style={{ display: "flex" }}>
