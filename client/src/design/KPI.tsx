@@ -16,7 +16,7 @@ export function KPIsList({ items }: { items: KPIProps[] }) {
       }}
     >
       {items.map((kpi) => (
-        <KPI {...kpi} />
+        <KPI key={kpi.label} {...kpi} />
       ))}
     </div>
   );

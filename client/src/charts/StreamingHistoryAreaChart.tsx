@@ -117,7 +117,10 @@ function AreaChartTooltip({ label, payload }: AreaChartTooltipProps) {
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
           return (
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            <div
+              key={item.value}
+              style={{ display: "flex", flexDirection: "row", gap: 10 }}
+            >
               <div
                 style={{
                   backgroundColor: item.color,

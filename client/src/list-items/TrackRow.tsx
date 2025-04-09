@@ -1,5 +1,6 @@
 import { Text } from "@mantine/core";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { Fragment } from "react/jsx-runtime";
 
 import { RowDesign } from "../design/RowDesign";
 import { useArtists, useTrack } from "../useApi";
@@ -27,12 +28,12 @@ export function TrackRow({ trackUri }: TrackRowProps) {
             ? null /* TODO: skeleton */
             : Object.values(artists).map((artist, i) => {
                 return (
-                  <>
+                  <Fragment key={artist.artist_uri}>
                     <Text c="dimmed">{artist.artist_name}</Text>
                     {i < Object.values(artists).length - 1 ? (
                       <Text c="dimmed">,&nbsp;</Text>
                     ) : null}
-                  </>
+                  </Fragment>
                 );
               })}
         </div>

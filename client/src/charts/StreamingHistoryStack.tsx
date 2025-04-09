@@ -37,7 +37,7 @@ export function StreamingHistoryStack<TItem>({
         .filter(getItem)
         .sort((a, b) => sortItems(getItem(a), getItem(b)))
         .map((key, i) => (
-          <div>
+          <div key={key}>
             <div style={{ marginLeft: 30 }}>{renderItem(getItem(key))}</div>
             <StreamingHistoryAreaChart
               streams_by_month={data[key]}
