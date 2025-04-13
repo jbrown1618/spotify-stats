@@ -5,6 +5,7 @@ import { SetStateAction, useEffect, useRef, useState } from "react";
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import { useFilterOptions } from "./useApi";
 import { useFilters, useSetFilters } from "./useFilters";
+import { addMonths, formatDate } from "./utils";
 
 export function Filters() {
   const filters = useFilters();
@@ -104,12 +105,16 @@ const minYear = 2020; // Whatever, just hard-code it.
 
 function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
   const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
 
   const years = [];
   for (let i = minYear; i <= currentYear; ++i) {
     years.push(i);
   }
+
+  const beginningOfThisMonth = new Date();
+  beginningOfThisMonth.setDate(1);
+  const beginningOfNextMonth = addMonths(beginningOfThisMonth, 1);
+  const sixMonthsAgo = addMonths(beginningOfThisMonth, -6);
 
   return (
     <Select
@@ -117,11 +122,16 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
       data={[
         {
           label: "This month",
-          value: `${currentYear}-${currentMonth}-01..${
-            currentMonth === 12 ? currentYear + 1 : currentYear
-          }-${currentMonth === 12 ? "01" : currentMonth + 1}-01`,
+          value: `${formatDate(beginningOfThisMonth)}..${formatDate(
+            beginningOfNextMonth
+          )}`,
         },
-        { label: "Last 6 months", value: "f" },
+        {
+          label: "Last 6 months",
+          value: `${formatDate(sixMonthsAgo)}..${formatDate(
+            beginningOfNextMonth
+          )}`,
+        },
         ...years.reverse().map((y) => ({
           label: `${y}`,
           value: `${y}-01-01..${y + 1}-01-01`,
