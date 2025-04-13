@@ -4,6 +4,7 @@ import { Fragment } from "react/jsx-runtime";
 
 import { RowDesign, RowSkeleton } from "../design/RowDesign";
 import { useArtists, useTrack } from "../useApi";
+import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
 
 interface TrackRowProps {
@@ -11,6 +12,7 @@ interface TrackRowProps {
 }
 
 export function TrackRow({ trackUri }: TrackRowProps) {
+  const setFilters = useSetFilters();
   const { data: track } = useTrack(trackUri);
   const { data: artists } = useArtists({ tracks: [trackUri] });
   const isMobile = useIsMobile();
@@ -23,6 +25,11 @@ export function TrackRow({ trackUri }: TrackRowProps) {
       itemURI={track.album_uri}
       primaryText={isMobile ? track.track_short_name : track.track_name}
       secondaryText={isMobile ? track.album_short_name : track.album_name}
+      onClick={() =>
+        setFilters({
+          tracks: [trackUri],
+        })
+      }
       tertiaryText={
         <div style={{ display: "flex" }}>
           {!artists ? (
