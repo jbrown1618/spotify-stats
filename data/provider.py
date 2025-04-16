@@ -54,7 +54,6 @@ class DataProvider:
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
                artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
-        print('Fetching tracks...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_tracks')), conn, params={
                 "filter_tracks": uris is not None,
@@ -76,7 +75,6 @@ class DataProvider:
 
 
     def playlists(self, track_uris: str = None) -> pd.DataFrame:
-        print('Fetching playlists...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_playlists')), conn, params={
                 "filter_tracks": track_uris is not None,
@@ -85,7 +83,6 @@ class DataProvider:
 
 
     def albums(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
-        print('Fetching albums...')
         with get_engine().begin() as conn:
             albums = pd.read_sql_query(sqlalchemy.text(query_text('select_albums')), conn, params={
                 "filter_tracks": track_uris is not None,
@@ -185,7 +182,6 @@ class DataProvider:
                 uris: typing.Iterable[str] = None, 
                 track_uris: typing.Iterable[str] = None, 
                 mbids: typing.Iterable[str] = None):
-        print('Fetching artists...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_artists')), conn, params={
                 "filter_tracks": track_uris is not None,
@@ -223,6 +219,14 @@ class DataProvider:
             mbids = filtered['artist_mbid']
             self._producers_with_page = mbids
         return self._producers_with_page
+
+
+    def producers(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_producers')), conn, params={
+                "filter_tracks": track_uris is not None,
+                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
+            })
 
 
     def related_artists(self, artist_uri: str) -> pd.DataFrame:
@@ -380,4 +384,3 @@ class DataProvider:
 def add_primary_prefix(artists: pd.DataFrame):
     artists.columns = ['primary_' + col for col in artists.columns]
     return artists
-    

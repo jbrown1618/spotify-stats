@@ -94,6 +94,15 @@ export interface Genre {
   total_liked_track_count: number;
 }
 
+export interface Producer {
+  producer_name: string;
+  producer_mbid: string;
+  artist_uri: string | undefined;
+  artist_image_url: string | undefined;
+  liked_track_count: number;
+  track_count: number;
+}
+
 export interface ReleaseYear {
   release_year: number;
   track_count: number;
@@ -118,12 +127,14 @@ export interface ActiveFilters {
   genres?: string[];
   years?: number[];
   wrapped?: string;
+  producers?: string[];
 }
 
 export interface FilterOptions {
   artists: Record<string, Pick<Artist, "artist_uri" | "artist_name">>;
   albums: Record<string, Pick<Album, "album_uri" | "album_name">>;
   playlists: Record<string, Pick<Playlist, "playlist_uri" | "playlist_name">>;
+  producers: Record<string, Pick<Producer, "producer_name" | "producer_mbid">>;
   labels: string[];
   genres: string[];
   years: number[];
@@ -133,6 +144,7 @@ export const defaultFilterOptions: FilterOptions = {
   artists: {},
   albums: {},
   playlists: {},
+  producers: {},
   labels: [],
   genres: [],
   years: [],
@@ -180,6 +192,12 @@ export async function getGenres(
   filters: Pick<ActiveFilters, "tracks">
 ): Promise<Genre[]> {
   return sendRequest(`/api/genres`, "genres", filters);
+}
+
+export async function getProducers(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Producer[]> {
+  return sendRequest(`/api/producers`, "producers", filters);
 }
 
 export async function getReleaseYears(

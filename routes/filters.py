@@ -20,6 +20,7 @@ def filter_options_payload():
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
             "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),
             "playlists": to_json(playlists[['playlist_uri', 'playlist_name']], 'playlist_uri'),
+            "producers": {}, # TODO
             "labels": labels,
             "genres": dp.genres(artist_uris=artists['artist_uri']),
             "years": [y for y in albums['album_release_year'].unique()]

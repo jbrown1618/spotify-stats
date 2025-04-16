@@ -10,6 +10,7 @@ from routes.playlists import playlists_payload
 from routes.release_years import release_years_payload
 from routes.tracks import track_payload, tracks_search_payload
 from routes.utils import to_date_range, to_json
+from routes.producers import producers_payload
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, album_streams_by_month, artist_ranks_over_time, artist_streams_by_month, track_ranks_over_time, track_streams_by_month
 
@@ -63,6 +64,11 @@ def list_labels():
 @app.route("/api/genres", methods = ['POST'])
 def list_genres():
     return genres_payload(request.json.get('tracks', None))
+
+
+@app.route("/api/producers", methods=['POST'])
+def list_producers():
+    return producers_payload(request.json.get('tracks', None))
 
 
 @app.route("/api/release-years", methods = ['POST'])
