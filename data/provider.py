@@ -50,6 +50,7 @@ class DataProvider:
                liked: bool = None, 
                labels: typing.Iterable[str] = None, 
                genres: typing.Iterable[str] = None, 
+               producers: typing.Iterable[str] = None,
                years: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
@@ -69,6 +70,8 @@ class DataProvider:
                 "labels": tuple(['EMPTY']) if labels is None or len(labels) == 0 else tuple(labels),
                 "filter_genres": genres is not None,
                 "genres": tuple(['EMPTY']) if genres is None or len(genres) == 0 else tuple(genres),
+                "filter_producers": producers is not None,
+                "producers": tuple(['EMPTY']) if producers is None or len(producers) == 0 else tuple(producers),
                 "filter_years": years is not None,
                 "years": tuple([0]) if years is None or len(years) == 0 else tuple(years)
             })
@@ -223,10 +226,12 @@ class DataProvider:
 
     def producers(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(query_text('select_producers')), conn, params={
+            producers = pd.read_sql_query(sqlalchemy.text(query_text('select_producers')), conn, params={
                 "filter_tracks": track_uris is not None,
                 "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
             })
+            producers.drop_duplicates(subset=['producer_mbid'], keep='first', inplace=True)
+            return producers
 
 
     def related_artists(self, artist_uri: str) -> pd.DataFrame:
@@ -312,7 +317,6 @@ class DataProvider:
     
 
     def labels(self, album_uris: typing.Iterable[str] = None) -> pd.DataFrame:
-        print('Fetching labels...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_labels')), conn, params={
                 "filter_albums": album_uris is not None,
@@ -321,7 +325,6 @@ class DataProvider:
     
 
     def genres(self, artist_uris: typing.Iterable[str]) -> typing.Iterable[str]:
-        print('Fetching genres...')
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_genres')), conn, params={
                 "filter_artists": artist_uris is not None,

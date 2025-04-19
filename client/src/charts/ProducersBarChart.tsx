@@ -11,13 +11,13 @@ export function ProducersBarChart() {
 
   if (!producers) return <ChartSkeleton />;
 
-  const height = 100 + 30 * Math.min(maxCount, producers.length);
+  const height = 100 + 30 * Math.min(maxCount, Object.values(producers).length);
   return (
     <>
       <h3>Top producers by liked tracks</h3>
       <BarChart
         h={height}
-        data={producers
+        data={Object.values(producers)
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({

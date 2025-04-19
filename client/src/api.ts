@@ -101,6 +101,7 @@ export interface Producer {
   artist_image_url: string | undefined;
   liked_track_count: number;
   track_count: number;
+  credit_types: string[];
 }
 
 export interface ReleaseYear {
@@ -196,7 +197,7 @@ export async function getGenres(
 
 export async function getProducers(
   filters: Pick<ActiveFilters, "tracks">
-): Promise<Producer[]> {
+): Promise<Record<string, Producer>> {
   return sendRequest(`/api/producers`, "producers", filters);
 }
 
@@ -301,6 +302,7 @@ const arrayKeys = [
   "genres",
   "years",
   "tracks",
+  "producers",
 ] as const;
 
 export function toFiltersQuery(filters: ActiveFilters): string {

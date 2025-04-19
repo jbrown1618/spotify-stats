@@ -49,6 +49,10 @@ from track t
         and ar.as_of_date = (select max(as_of_date) from artist_rank)
     left join record_label rl
         on rl.album_uri = t.album_uri
+    left join sp_track_mb_recording stmr
+        on stmr.spotify_track_uri = t.uri
+    left join mb_recording_credit rc
+        on rc.recording_mbid = stmr.recording_mbid
 
 where
     (:filter_tracks = false or t.uri in :track_uris)
@@ -64,6 +68,8 @@ where
     (:filter_labels = false or rl.standardized_label in (:labels))
     and
     (:filter_genres = false or ag.genre in (:genres))
+    and
+    (:filter_producers = false or rc.artist_mbid in (:producers))
     and
     (:filter_years = false or (
         case

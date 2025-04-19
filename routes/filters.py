@@ -16,11 +16,12 @@ def filter_options_payload():
     artists = dp.artists(track_uris=tracks['track_uri'])
     albums = dp.albums(track_uris=tracks['track_uri'])
     labels = dp.labels(album_uris=albums['album_uri'])
+    producers = dp.producers(track_uris=tracks['track_uri'])
     __cache_filter_options = {
             "artists": to_json(artists[['artist_uri', 'artist_name']], 'artist_uri'),
             "albums": to_json(albums[['album_uri', 'album_name']], 'album_uri'),
             "playlists": to_json(playlists[['playlist_uri', 'playlist_name']], 'playlist_uri'),
-            "producers": {}, # TODO
+            "producers": to_json(producers[['producer_name', 'producer_mbid']], 'producer_mbid'),
             "labels": labels,
             "genres": dp.genres(artist_uris=artists['artist_uri']),
             "years": [y for y in albums['album_release_year'].unique()]

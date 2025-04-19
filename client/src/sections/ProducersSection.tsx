@@ -22,7 +22,9 @@ function ProducersDisplayGrid() {
     <DisplayGrid
       items={
         producers
-          ? producers.sort((a, b) => b.liked_track_count - a.liked_track_count)
+          ? Object.values(producers).sort(
+              (a, b) => b.liked_track_count - a.liked_track_count
+            )
           : undefined
       }
       getKey={(producer) => producer.producer_mbid}
