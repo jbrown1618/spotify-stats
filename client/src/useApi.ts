@@ -84,7 +84,7 @@ export function useReleaseYears(filters?: ActiveFilters) {
 }
 
 export function useProducers(filters?: ActiveFilters) {
-  return useTracksDependentQuery("producers", getProducers, [], filters);
+  return useTracksDependentQuery("producers", getProducers, {}, filters);
 }
 
 export function useTracksStreamingHistory(trackUris: string[]) {
