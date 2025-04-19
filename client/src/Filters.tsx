@@ -86,6 +86,7 @@ function FiltersDialog({
         <AlbumsFilter {...props} />
         <LabelsFilter {...props} />
         <GenresFilter {...props} />
+        <ProducersFilter {...props} />
         <YearsFilter {...props} />
         <LikedTracksFilter {...props} />
 
@@ -295,6 +296,30 @@ function LikedTracksFilter({ filters, onFilterChange }: FilterProps) {
         onFilterChange((filters) => ({
           ...filters,
           liked: e.currentTarget.checked,
+        }))
+      }
+    />
+  );
+}
+
+function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
+  return (
+    <MultiSelect
+      label="Producers"
+      data={Object.values(options.producers).map(
+        ({ producer_mbid, producer_name }) => {
+          return {
+            label: producer_name,
+            value: producer_mbid,
+          };
+        }
+      )}
+      value={filters.producers}
+      searchable
+      onChange={(producers) =>
+        onFilterChange((filters) => ({
+          ...filters,
+          producers,
         }))
       }
     />

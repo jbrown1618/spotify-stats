@@ -10,6 +10,7 @@ import { ArtistsSection } from "./sections/ArtistsSection";
 import { GenresSection } from "./sections/GenresSection";
 import { LabelsSection } from "./sections/LabelsSection";
 import { PlaylistsSection } from "./sections/PlaylistsSection";
+import { ProducersSection } from "./sections/ProducersSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
 import { useFilters } from "./useFilters";
@@ -38,6 +39,7 @@ export function App() {
           <PlaylistsSection />
           <LabelsSection />
           <GenresSection />
+          <ProducersSection />
           <ReleaseYearsSection />
         </div>
 

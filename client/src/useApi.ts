@@ -15,6 +15,7 @@ import {
   getGenres,
   getLabels,
   getPlaylists,
+  getProducers,
   getReleaseYears,
   getTrack,
   getTracksStreamingHistory,
@@ -80,6 +81,10 @@ export function useGenres(filters?: ActiveFilters) {
 
 export function useReleaseYears(filters?: ActiveFilters) {
   return useTracksDependentQuery("release-years", getReleaseYears, [], filters);
+}
+
+export function useProducers(filters?: ActiveFilters) {
+  return useTracksDependentQuery("producers", getProducers, [], filters);
 }
 
 export function useTracksStreamingHistory(trackUris: string[]) {

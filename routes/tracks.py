@@ -33,6 +33,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
         album_uris=filters.get('albums', None),
         labels=filters.get('labels', None),
         genres=filters.get('genres', None),
+        producers=filters.get('producers', None),
         years=filters.get('years', None),
         liked=filters.get('liked', None)
     )
