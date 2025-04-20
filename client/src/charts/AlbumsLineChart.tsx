@@ -32,7 +32,7 @@ export function AlbumsRankLineChart({ height }: { height?: number }) {
         getItem={(r) => r.album_uri}
         getRank={(r) => r.album_rank}
         getLabel={(k) => albums[k]?.album_short_name}
-        getCurrentRank={(k) => albums[k]?.album_rank}
+        getCurrentRank={(k) => albums[k]?.album_stream_count * -1}
         getImageURL={(k) => albums[k]?.album_image_url}
       />
     </>
@@ -61,7 +61,7 @@ export function AlbumStreamsLineChart({ height }: { height?: number }) {
         getItem={(r) => r.album_uri}
         getStreams={(r) => r.album_stream_count}
         getLabel={(k) => albums[k]?.album_short_name}
-        getCurrentRank={(k) => albums[k]?.album_rank}
+        getCurrentRank={(k) => albums[k]?.album_stream_count * -1}
         getImageURL={(k) => albums[k]?.album_image_url}
       />
     </>
