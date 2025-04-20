@@ -1,3 +1,16 @@
+drop table if exists tmp_stream_counts;
+
+create temporary table tmp_stream_counts as
+select h.track_uri, SUM(h.stream_count) as stream_count
+from listening_history h
+inner join listening_period p
+    on h.listening_period_id = p.id
+where 
+    (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
+    and 
+    (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
+group by h.track_uri;
+
 select
     t.uri as track_uri,
     t.name as track_name,
@@ -7,8 +20,7 @@ select
     t.duration_ms as track_duration_ms,
     t.isrc as track_isrc,
     t.uri in (select track_uri from liked_track) as track_liked,
-    tr.rank as track_rank,
-    coalesce(tr.stream_count, 0) as track_stream_count,
+    sc.stream_count as track_stream_count,
 
     al.uri as album_uri,
     al.name as album_name,
@@ -18,8 +30,6 @@ select
     al.popularity as album_popularity,
     al.release_date as album_release_date,
     al.image_url as album_image_url,
-    alr.rank as album_rank,
-    alr.stream_count as album_stream_count,
     (
         case
         when length(al.release_date) = 10
@@ -38,21 +48,10 @@ from track t
     inner join track_artist ta on ta.track_uri = t.uri
     inner join artist a on a.uri = ta.artist_uri
     left join artist_genre ag on ag.artist_uri = a.uri
-    left join track_rank tr
-        on tr.track_uri = t.uri
-        and tr.as_of_date = (select max(as_of_date) from track_rank)
-    left join album_rank alr
-        on alr.album_uri = al.uri
-        and alr.as_of_date = (select max(as_of_date) from album_rank)
-    left join artist_rank ar
-        on ar.artist_uri = a.uri
-        and ar.as_of_date = (select max(as_of_date) from artist_rank)
-    left join record_label rl
-        on rl.album_uri = t.album_uri
-    left join sp_track_mb_recording stmr
-        on stmr.spotify_track_uri = t.uri
-    left join mb_recording_credit rc
-        on rc.recording_mbid = stmr.recording_mbid
+    left join record_label rl on rl.album_uri = t.album_uri
+    left join sp_track_mb_recording stmr on stmr.spotify_track_uri = t.uri
+    left join mb_recording_credit rc on rc.recording_mbid = stmr.recording_mbid
+    left join tmp_stream_counts sc on sc.track_uri = t.uri
 
 where
     (:filter_tracks = false or t.uri in :track_uris)
@@ -70,6 +69,8 @@ where
     (:filter_genres = false or ag.genre in (:genres))
     and
     (:filter_producers = false or rc.artist_mbid in (:producers))
+    and
+    ((:wrapped_start_date is NULL AND :wrapped_end_date is NULL) or sc.stream_count is not null)
     and
     (:filter_years = false or (
         case
@@ -92,8 +93,7 @@ group by
     t.explicit,
     t.duration_ms,
     t.isrc,
-    tr.rank,
-    tr.stream_count,
+    sc.stream_count,
 
     al.uri,
     al.name,
@@ -102,8 +102,6 @@ group by
     al.label,
     al.popularity,
     al.release_date,
-    al.image_url,
-    alr.rank,
-    alr.stream_count
+    al.image_url
 
-order by tr.rank asc nulls last;
+order by track_stream_count desc nulls last;

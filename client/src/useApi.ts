@@ -52,10 +52,11 @@ export function useTracks(filters?: ActiveFilters) {
 }
 
 export function useTrack(uri: string) {
+  const { wrapped } = useFilters();
   return useQuery<TrackDetails>({
     ...defaultQueryOptions,
     queryKey: ["track", uri],
-    queryFn: async () => getTrack(uri),
+    queryFn: async () => getTrack(uri, wrapped),
   });
 }
 
@@ -64,11 +65,23 @@ export function usePlaylists(filters?: ActiveFilters) {
 }
 
 export function useArtists(filters?: ActiveFilters) {
-  return useTracksDependentQuery("artists", getArtists, {}, filters);
+  const { wrapped } = useFilters();
+  return useTracksDependentQuery(
+    "artists",
+    getArtists,
+    {},
+    { wrapped, ...filters }
+  );
 }
 
 export function useAlbums(filters?: ActiveFilters) {
-  return useTracksDependentQuery("albums", getAlbums, {}, filters);
+  const { wrapped } = useFilters();
+  return useTracksDependentQuery(
+    "albums",
+    getAlbums,
+    {},
+    { wrapped, ...filters }
+  );
 }
 
 export function useLabels(filters?: ActiveFilters) {
@@ -170,7 +183,10 @@ function useTracksDependentQuery<T>(
   const query = toFiltersQuery(filters);
 
   const { data: tracks } = useTracks(filters);
-  const tracksFilter = { tracks: tracks ? Object.keys(tracks) : [] };
+  const tracksFilter = {
+    tracks: tracks ? Object.keys(tracks) : [],
+    wrapped: filters.wrapped,
+  };
 
   return useQuery<T>({
     ...defaultQueryOptions,

@@ -9,16 +9,6 @@ from utils.date import this_date
 track_score_factor = 0.5
 as_of_now = this_date()
 
-def current_track_ranks(track_uris: typing.Iterable[str]):
-    track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
-    with get_engine().begin() as conn:
-        df = pd.read_sql_query(
-            sqlalchemy.text(query_text('current_track_ranks')), 
-            conn, 
-            params={"track_uris": track_uris}
-        )
-        return df
-
 
 def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
     track_uris = tuple(track_uris) if len(track_uris) > 0 else tuple(['EMPTY'])
@@ -34,16 +24,6 @@ def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
         )
 
 
-def current_artist_ranks(artist_uris: typing.Iterable[str]):
-    artist_uris = tuple(artist_uris) if len(artist_uris) > 0 else tuple(['EMPTY'])
-    with get_engine().begin() as conn:
-        return pd.read_sql_query(
-            sqlalchemy.text(query_text('current_artist_ranks')), 
-            conn, 
-            params={"artist_uris": artist_uris}
-        )
-
-
 def artist_ranks_over_time(artist_uris: typing.Iterable[str], from_date, to_date):
     artist_uris = tuple(artist_uris) if len(artist_uris) > 0 else tuple(['EMPTY'])
     with get_engine().begin() as conn:
@@ -55,16 +35,6 @@ def artist_ranks_over_time(artist_uris: typing.Iterable[str], from_date, to_date
                 "from_date": from_date,
                 "to_date": to_date
             }
-        )
-
-
-def current_album_ranks(album_uris: typing.Iterable[str]):
-    album_uris = tuple(album_uris) if len(album_uris) > 0 else tuple(['EMPTY'])
-    with get_engine().begin() as conn:
-        return pd.read_sql_query(
-            sqlalchemy.text(query_text('current_album_ranks')), 
-            conn, 
-            params={"album_uris": album_uris}
         )
 
 

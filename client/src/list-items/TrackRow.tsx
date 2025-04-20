@@ -50,7 +50,6 @@ export function TrackRow({ trackUri }: TrackRowProps) {
         </div>
       }
       stats={[
-        isMobile ? null : { label: "Rank", value: track.track_rank },
         { label: "Streams", value: track.track_stream_count },
         isMobile
           ? null

@@ -28,7 +28,7 @@ export function ArtistsRankLineChart({ height }: { height?: number }) {
         getItem={(r) => r.artist_uri}
         getRank={(r) => r.artist_rank}
         getLabel={(k) => artists[k]?.artist_name}
-        getCurrentRank={(k) => artists[k]?.artist_rank}
+        getCurrentRank={(k) => artists[k]?.artist_stream_count * -1}
         getImageURL={(k) => artists[k]?.artist_image_url}
       />
     </>
@@ -63,7 +63,7 @@ export function ArtistStreamsLineChart({ height }: { height?: number }) {
         getItem={(r) => r.artist_uri}
         getStreams={(r) => r.artist_stream_count}
         getLabel={(k) => artists[k]?.artist_name}
-        getCurrentRank={(k) => artists[k]?.artist_rank}
+        getCurrentRank={(k) => artists[k]?.artist_stream_count * -1}
         getImageURL={(k) => artists[k]?.artist_image_url}
       />
     </>

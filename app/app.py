@@ -38,7 +38,8 @@ def search_tracks():
 
 @app.route("/api/tracks/<track_uri>")
 def get_track(track_uri):
-    return track_payload(track_uri)
+    min_date, max_date = to_date_range(request.args.get('wrapped', None))
+    return track_payload(track_uri, min_date, max_date)
 
 
 @app.route("/api/playlists", methods = ['POST'])
@@ -48,12 +49,14 @@ def list_playlists():
 
 @app.route("/api/artists", methods = ['POST'])
 def list_artists():
-    return artists_payload(request.json.get('tracks', None))
+    min_date, max_date = to_date_range(request.json.get("wrapped"))
+    return artists_payload(request.json.get('tracks', None), min_date, max_date)
 
 
 @app.route("/api/albums", methods = ['POST'])
 def list_albums():
-    return albums_payload(request.json.get('tracks', None))
+    min_date, max_date = to_date_range(request.json.get("wrapped"))
+    return albums_payload(request.json.get('tracks', None), min_date, max_date)
 
 
 @app.route("/api/labels", methods = ['POST'])

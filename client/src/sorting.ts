@@ -51,7 +51,6 @@ const alphabeticalAlbums: Comparator<Album> = prioritize(
 
 export const mostStreamedAlbums: Comparator<Album> = prioritize(
   compareValue((a) => a.album_stream_count),
-  reverse(compareValue((a) => a.album_rank)),
   alphabeticalAlbums
 );
 
