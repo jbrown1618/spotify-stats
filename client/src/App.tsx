@@ -4,6 +4,9 @@ import { Anchor, Container, useMantineTheme } from "@mantine/core";
 
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
+import { PlaylistDetails } from "./details/PlaylistDetails";
+import { ProducerDetails } from "./details/ProducerDetails";
+import { TrackDetails } from "./details/TrackDetails";
 import { Filters } from "./Filters";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -24,12 +27,26 @@ export function App() {
       <Container size="lg">
         <AppHeader />
 
+        {filters.tracks?.length === 1 && (
+          <TrackDetails trackURI={filters.tracks[0]} />
+        )}
         {filters.artists?.length === 1 && (
           <ArtistDetails artistURI={filters.artists[0]} />
         )}
-
         {filters.albums?.length === 1 && (
           <AlbumDetails albumURI={filters.albums[0]} />
+        )}
+        {filters.playlists?.length === 1 && (
+          <PlaylistDetails playlistURI={filters.playlists[0]} />
+        )}
+        {filters.producers?.length === 1 && (
+          <ProducerDetails mbid={filters.producers[0]} />
+        )}
+
+        {filters.labels?.length === 1 && <h2>{filters.labels[0]}</h2>}
+        {filters.genres?.length === 1 && <h2>{filters.genres[0]}</h2>}
+        {filters.years?.length === 1 && (
+          <h2>Tracks released in {filters.years[0]}</h2>
         )}
 
         <div>

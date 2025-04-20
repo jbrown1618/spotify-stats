@@ -1,6 +1,7 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamingHistory } from "../useApi";
+import { useFilters } from "../useFilters";
 import { RankLineChart } from "./RankLineChart";
 import { StreamsLineChart } from "./StreamsLineChart";
 
@@ -35,9 +36,14 @@ export function ArtistsRankLineChart({ height }: { height?: number }) {
 }
 
 export function ArtistStreamsLineChart({ height }: { height?: number }) {
+  const filters = useFilters();
   const { data: artists } = useArtists();
   const topArtistURIs = artists
     ? Object.values(artists)
+        .filter(
+          (a) =>
+            filters.artists?.length != 1 || a.artist_uri === filters.artists[0]
+        )
         .sort(mostStreamedArtists)
         .slice(0, 10)
         .map((a) => a.artist_uri)

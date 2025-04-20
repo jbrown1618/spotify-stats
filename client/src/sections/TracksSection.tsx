@@ -9,8 +9,11 @@ import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
 import { trackSortOptions } from "../sorting";
 import { useTracks } from "../useApi";
+import { useFilters } from "../useFilters";
 
 export function TracksSection() {
+  const filters = useFilters();
+  if (filters.tracks?.length === 1) return null;
   return (
     <div>
       <h2>Tracks</h2>

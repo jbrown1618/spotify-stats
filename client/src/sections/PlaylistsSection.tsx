@@ -2,8 +2,11 @@ import { PlaylistsBarChart } from "../charts/PlaylistsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { PlaylistTile } from "../list-items/PlaylistTile";
 import { usePlaylists } from "../useApi";
+import { useFilters } from "../useFilters";
 
 export function PlaylistsSection() {
+  const filters = useFilters();
+  if (filters.playlists?.length === 1) return null;
   return (
     <div>
       <h2>Playlists</h2>

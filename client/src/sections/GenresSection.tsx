@@ -3,9 +3,11 @@ import { Pill } from "@mantine/core";
 import { GenresBarChart } from "../charts/GenresBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useGenres } from "../useApi";
-import { useSetFilters } from "../useFilters";
+import { useFilters, useSetFilters } from "../useFilters";
 
 export function GenresSection() {
+  const filters = useFilters();
+  if (filters.genres?.length === 1) return null;
   return (
     <div>
       <h2>Genres</h2>

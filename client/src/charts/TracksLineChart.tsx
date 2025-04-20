@@ -69,7 +69,7 @@ export function TrackStreamsLineChart() {
 
   return (
     <>
-      <h3>Track ranking over time</h3>
+      <h3>Track streams over time</h3>
       <StreamsLineChart
         height={550}
         ranks={ranks}

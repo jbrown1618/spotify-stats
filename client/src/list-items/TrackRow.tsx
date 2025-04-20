@@ -1,8 +1,9 @@
-import { Skeleton, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { Fragment } from "react/jsx-runtime";
 
 import { RowDesign, RowSkeleton } from "../design/RowDesign";
+import { TextSkeleton } from "../design/TextSkeleton";
 import { useArtists, useTrack } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
@@ -33,16 +34,7 @@ export function TrackRow({ trackUri }: TrackRowProps) {
       tertiaryText={
         <div style={{ display: "flex" }}>
           {!artists ? (
-            <div
-              style={{
-                height: 24,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <Skeleton width={100} height={14} />
-            </div>
+            <TextSkeleton style="regular" />
           ) : (
             Object.values(artists).map((artist, i) => {
               return (

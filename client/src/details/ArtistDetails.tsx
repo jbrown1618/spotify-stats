@@ -1,7 +1,7 @@
-import { ArtistsRankLineChart } from "../charts/ArtistsLineChart";
+import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
+import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { ArtistTile } from "../list-items/ArtistTile";
 import { useArtists } from "../useApi";
-import { useIsMobile } from "../useIsMobile";
 
 interface ArtistDetailsProps {
   artistURI: string;
@@ -9,7 +9,6 @@ interface ArtistDetailsProps {
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   const { data: artists } = useArtists({ artists: [artistURI] });
-  const isMobile = useIsMobile();
   if (!artists) return null;
 
   const artist = artists[artistURI];
@@ -18,24 +17,12 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   return (
     <>
       <h2>{artist.artist_name}</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          justifyContent: "center",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{ flexGrow: 0, alignSelf: isMobile ? "center" : undefined }}
-        >
-          <ArtistTile large artist={artist} />
-        </div>
-        <div style={{ flexGrow: 1 }}>
-          <h3>Rank over time</h3>
-          <ArtistsRankLineChart height={300} />
-        </div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <ArtistTile large artist={artist} />
       </div>
+
+      <ArtistsStreamingHistoryStack />
+      <ArtistStreamsLineChart height={300} />
     </>
   );
 }
