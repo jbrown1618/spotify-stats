@@ -5,12 +5,6 @@ from utils.settings import output_dir
 from utils.util import file_name_friendly
 
 
-persistent_data_sources = {
-    'top_tracks',
-    'top_artists'
-}
-
-
 def clear_markdown():
     clear_contents(artists_path())
     clear_contents(playlists_path())

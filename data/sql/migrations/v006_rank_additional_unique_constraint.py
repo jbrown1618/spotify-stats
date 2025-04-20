@@ -1,5 +1,4 @@
 from data.sql.migrations.migration import Migration
-from utils.ranking import ensure_ranks
 
 remove_constraints = """
 ALTER TABLE track_rank

@@ -1,4 +1,3 @@
-from data.raw import get_connection
 from data.sql.migrations.migration import Migration
 from utils.name import short_name
 

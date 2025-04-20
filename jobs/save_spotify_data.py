@@ -22,8 +22,6 @@ artists_data = []
 albums_data = []
 
 liked_tracks = []
-top_tracks = []
-top_artists = []
 playlist_track = []
 track_artist = []
 album_artist = []
@@ -31,16 +29,12 @@ artist_genre = []
 
 def save_spotify_data():
     sp = get_spotify_client()
-    save_top_tracks_data(sp)
-    save_top_artists_data(sp)
     save_playlists_data(sp)
     save_liked_tracks_data(sp)
     save_albums_data(sp)
     save_artists_data(sp)
 
     raw_data = RawData()
-    raw_data["top_tracks"] = pd.DataFrame(top_tracks)
-    raw_data["top_artists"] = pd.DataFrame(top_artists)
     raw_data["playlists"] = pd.DataFrame(playlists_data)
     raw_data["tracks"] = pd.DataFrame(tracks_data)
     raw_data["artists"] = pd.DataFrame(artists_data)
@@ -74,32 +68,6 @@ def save_tracks_by_uri(uris):
     raw_data["track_artist"] = pd.DataFrame(track_artist)
     raw_data["album_artist"] = pd.DataFrame(album_artist)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
-
-
-def save_top_tracks_data(sp: spotipy.Spotify):
-    for term in ["short_term", "medium_term", "long_term"]:
-        print(f'Fetching {term} top tracks...')
-        tracks = sp.current_user_top_tracks(50, 0, term)["items"]
-        for i, track in enumerate(tracks):
-            top_tracks.append({
-                "track_uri": track["uri"],
-                "term": term,
-                "index": i + 1
-            })
-            process_track(track)
-
-
-def save_top_artists_data(sp: spotipy.Spotify):
-    for term in ["short_term", "medium_term", "long_term"]:
-        print(f'Fetching {term} top artists...')
-        artists = sp.current_user_top_artists(50, 0, term)["items"]
-        for i, artist in enumerate(artists):
-            top_artists.append({
-                "artist_uri": artist["uri"],
-                "term": term,
-                "index": i + 1
-            })
-            queue_artist(artist)
 
 
 def save_playlists_data(sp: spotipy.Spotify):

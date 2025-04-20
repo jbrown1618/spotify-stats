@@ -188,9 +188,6 @@ DataSource('spotify', 'liked_tracks',   index=["track_uri"], delete_before_set=T
 DataSource('spotify', 'playlist_track', index=["playlist_uri", "track_uri"], delete_before_set=True)
 DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 
-DataSource('spotify', 'top_artists',    index=["term", "index"], persistent=True)
-DataSource('spotify', 'top_tracks',     index=["term", "index"], persistent=True)
-
 DataSource('musicbrainz', 'mb_recordings', index=['recording_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_artists', index=['artist_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"], merge_on_set=True)

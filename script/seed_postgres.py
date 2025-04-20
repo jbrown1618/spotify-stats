@@ -19,11 +19,6 @@ raw['tracks'] = pd.read_csv(data_path("spotify", "tracks"))
 
 raw['liked_tracks'] = pd.read_csv(data_path("spotify", "liked_tracks"))
 
-raw['top_tracks'] = pd.read_csv(persistent_data_path("spotify", "top_tracks", "2023"))
-raw['top_tracks'] = pd.read_csv(persistent_data_path("spotify", "top_tracks", "2024"))
-raw['top_artists'] = pd.read_csv(persistent_data_path("spotify", "top_artists", "2023"))
-raw['top_artists'] = pd.read_csv(persistent_data_path("spotify", "top_artists", "2024"))
-
 raw['album_artist'] = pd.read_csv(data_path("spotify", "album_artist"))
 raw['artist_genre'] = pd.read_csv(data_path("spotify", "artist_genre"))
 raw['playlist_track'] = pd.read_csv(data_path("spotify", "playlist_track"))
