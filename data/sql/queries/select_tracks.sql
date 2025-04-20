@@ -7,7 +7,18 @@ select
     t.duration_ms as track_duration_ms,
     t.isrc as track_isrc,
     t.uri in (select track_uri from liked_track) as track_liked,
-    SUM(h.stream_count) / COUNT(h.id) as track_stream_count,
+    (
+        select SUM(h.stream_count)
+        from listening_history h
+        inner join listening_period p
+            on p.id = h.listening_period_id
+        where 
+        (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
+        and 
+        (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
+        and h.track_uri = t.uri
+
+    ) as track_stream_count,
 
     al.uri as album_uri,
     al.name as album_name,
@@ -63,9 +74,19 @@ where
     and
     (:filter_producers = false or rc.artist_mbid in (:producers))
     and
-    (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
+    (:wrapped_start_date is NULL or t.uri in (
+        select wh.track_uri
+        from listening_history wh
+        inner join listening_period wp on wp.id = wh.listening_period_id
+        where :wrapped_start_date <= p.to_time
+    ))
     and
-    (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
+    (:wrapped_start_date is NULL or t.uri in (
+        select wh.track_uri
+        from listening_history wh
+        inner join listening_period wp on wp.id = wh.listening_period_id
+        where :wrapped_end_date >= p.from_time
+    ))
     and
     (:filter_years = false or (
         case
