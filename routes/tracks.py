@@ -12,22 +12,8 @@ from data.raw import get_engine
 def tracks_search_payload(filters: typing.Mapping[str, str]):
     dp = DataProvider()
 
-    min_stream_date = filters.get('min_stream_date', None)
-    max_stream_date = filters.get('max_stream_date', None)
-
-    filtered_track_uris = filters.get('tracks', None)
-
-    top_track_uris = None
-    if min_stream_date is not None and max_stream_date is not None:
-        top_track_uris = top_tracks(min_stream_date, max_stream_date)
-
-    track_uris = None if filtered_track_uris is None and top_track_uris is None \
-        else filtered_track_uris if filtered_track_uris is not None and top_track_uris is None \
-        else top_track_uris if filtered_track_uris is None and top_track_uris is not None \
-        else set(top_track_uris).intersection(filtered_track_uris)
-
     tracks = dp.tracks(
-        uris=track_uris,
+        uris=filters.get('tracks', None),
         playlist_uris=filters.get('playlists', None), 
         artist_uris=filters.get('artists', None), 
         album_uris=filters.get('albums', None),
@@ -35,7 +21,9 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
         genres=filters.get('genres', None),
         producers=filters.get('producers', None),
         years=filters.get('years', None),
-        liked=filters.get('liked', None)
+        liked=filters.get('liked', None),
+        start_date=filters.get('min_stream_date', None),
+        end_date=filters.get('max_stream_date', None)
     )
 
     tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count']]

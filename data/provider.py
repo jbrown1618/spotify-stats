@@ -54,7 +54,9 @@ class DataProvider:
                years: typing.Iterable[str] = None, 
                album_uris: typing.Iterable[str] = None, 
                playlist_uris: typing.Iterable[str] = None,
-               artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
+               artist_uris: typing.Iterable[str] = None,
+               start_date: str = None,
+               end_date: str = None) -> pd.DataFrame:
         with get_engine().begin() as conn:
             return pd.read_sql_query(sqlalchemy.text(query_text('select_tracks')), conn, params={
                 "filter_tracks": uris is not None,
@@ -73,7 +75,9 @@ class DataProvider:
                 "filter_producers": producers is not None,
                 "producers": tuple(['EMPTY']) if producers is None or len(producers) == 0 else tuple(producers),
                 "filter_years": years is not None,
-                "years": tuple([0]) if years is None or len(years) == 0 else tuple(years)
+                "years": tuple([0]) if years is None or len(years) == 0 else tuple(years),
+                "wrapped_start_date": start_date,
+                "wrapped_end_date": end_date
             })
 
 

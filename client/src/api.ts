@@ -16,7 +16,6 @@ export interface TrackDetails extends Album {
   track_name: string;
   track_short_name: string;
   track_popularity: number;
-  track_rank: number;
   track_stream_count: number;
   track_uri: string;
 }
@@ -44,7 +43,6 @@ export interface Artist {
   artist_followers: number;
   artist_liked_track_count: number;
   artist_popularity: number;
-  artist_rank: number;
   artist_track_count: number;
   artist_image_url: string;
   artist_stream_count: number;
@@ -60,7 +58,6 @@ export interface ArtistRank {
 export interface Album {
   album_uri: string;
   album_name: string;
-  album_rank: number;
   album_image_url: string;
   album_label: string;
   album_popularity: number;
