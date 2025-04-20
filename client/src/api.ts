@@ -158,8 +158,14 @@ export async function searchTracks(
   return sendRequest(`/api/tracks/search`, "tracks", filters);
 }
 
-export async function getTrack(uri: string): Promise<TrackDetails> {
-  return sendRequest(`/api/tracks/${uri}`, `track ${uri}`);
+export async function getTrack(
+  uri: string,
+  wrapped?: string
+): Promise<TrackDetails> {
+  return sendRequest(
+    `/api/tracks/${uri}${wrapped ? "?wrapped=" + wrapped : ""}`,
+    `track ${uri}`
+  );
 }
 
 export async function getPlaylists(

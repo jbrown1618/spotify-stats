@@ -52,10 +52,11 @@ export function useTracks(filters?: ActiveFilters) {
 }
 
 export function useTrack(uri: string) {
+  const { wrapped } = useFilters();
   return useQuery<TrackDetails>({
     ...defaultQueryOptions,
     queryKey: ["track", uri],
-    queryFn: async () => getTrack(uri),
+    queryFn: async () => getTrack(uri, wrapped),
   });
 }
 

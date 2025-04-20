@@ -38,7 +38,8 @@ def search_tracks():
 
 @app.route("/api/tracks/<track_uri>")
 def get_track(track_uri):
-    return track_payload(track_uri)
+    min_date, max_date = to_date_range(request.args.get('wrapped', None))
+    return track_payload(track_uri, min_date, max_date)
 
 
 @app.route("/api/playlists", methods = ['POST'])

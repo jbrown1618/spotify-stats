@@ -1,3 +1,16 @@
+drop table if exists tmp_stream_counts;
+
+create temporary table tmp_stream_counts as
+select h.track_uri, SUM(h.stream_count) as stream_count
+from listening_history h
+inner join listening_period p
+    on h.listening_period_id = p.id
+where 
+    (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
+    and 
+    (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
+group by h.track_uri;
+
 select
     t.uri as track_uri,
     t.name as track_name,
@@ -7,18 +20,7 @@ select
     t.duration_ms as track_duration_ms,
     t.isrc as track_isrc,
     t.uri in (select track_uri from liked_track) as track_liked,
-    (
-        select SUM(h.stream_count)
-        from listening_history h
-        inner join listening_period p
-            on p.id = h.listening_period_id
-        where 
-        (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
-        and 
-        (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
-        and h.track_uri = t.uri
-
-    ) as track_stream_count,
+    sc.stream_count as track_stream_count,
 
     al.uri as album_uri,
     al.name as album_name,
@@ -46,16 +48,10 @@ from track t
     inner join track_artist ta on ta.track_uri = t.uri
     inner join artist a on a.uri = ta.artist_uri
     left join artist_genre ag on ag.artist_uri = a.uri
-    left join record_label rl
-        on rl.album_uri = t.album_uri
-    left join sp_track_mb_recording stmr
-        on stmr.spotify_track_uri = t.uri
-    left join mb_recording_credit rc
-        on rc.recording_mbid = stmr.recording_mbid
-    left join listening_history h
-        on h.track_uri = t.uri
-    left join listening_period p
-        on h.listening_period_id = p.id
+    left join record_label rl on rl.album_uri = t.album_uri
+    left join sp_track_mb_recording stmr on stmr.spotify_track_uri = t.uri
+    left join mb_recording_credit rc on rc.recording_mbid = stmr.recording_mbid
+    left join tmp_stream_counts sc on sc.track_uri = t.uri
 
 where
     (:filter_tracks = false or t.uri in :track_uris)
@@ -74,19 +70,7 @@ where
     and
     (:filter_producers = false or rc.artist_mbid in (:producers))
     and
-    (:wrapped_start_date is NULL or t.uri in (
-        select wh.track_uri
-        from listening_history wh
-        inner join listening_period wp on wp.id = wh.listening_period_id
-        where :wrapped_start_date <= p.to_time
-    ))
-    and
-    (:wrapped_start_date is NULL or t.uri in (
-        select wh.track_uri
-        from listening_history wh
-        inner join listening_period wp on wp.id = wh.listening_period_id
-        where :wrapped_end_date >= p.from_time
-    ))
+    ((:wrapped_start_date is NULL AND :wrapped_end_date is NULL) or sc.stream_count is not null)
     and
     (:filter_years = false or (
         case
@@ -109,6 +93,7 @@ group by
     t.explicit,
     t.duration_ms,
     t.isrc,
+    sc.stream_count,
 
     al.uri,
     al.name,

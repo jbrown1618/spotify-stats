@@ -41,8 +41,10 @@ class DataProvider:
         self._initialized = True
 
 
-    def track(self, uri: str):
-        return self.tracks(uris={uri}).iloc[0]
+    def track(self, uri: str,
+              start_date: str = None,
+              end_date: str = None):
+        return self.tracks(uris={uri}, start_date=start_date, end_date=end_date).iloc[0]
 
 
     def tracks(self, 
