@@ -148,6 +148,11 @@ export const defaultFilterOptions: FilterOptions = {
   years: [],
 };
 
+export type StreamsByMonth = Record<
+  string,
+  Record<number, Record<number, number>>
+>;
+
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
 }
@@ -242,7 +247,7 @@ export async function getAlbumsStreamingHistory(
 
 export async function getTracksStreamsByMonth(
   filters: Pick<ActiveFilters, "tracks" | "wrapped">
-): Promise<Record<string, Record<number, Record<number, number>>>> {
+): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/tracks/months`,
     "track streams by month",
@@ -252,7 +257,7 @@ export async function getTracksStreamsByMonth(
 
 export async function getArtistsStreamsByMonth(
   filters: Pick<ActiveFilters, "artists" | "wrapped">
-): Promise<Record<string, Record<number, Record<number, number>>>> {
+): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/artists/months`,
     "artist streams by month",
@@ -262,7 +267,7 @@ export async function getArtistsStreamsByMonth(
 
 export async function getAlbumsStreamsByMonth(
   filters: Pick<ActiveFilters, "albums" | "wrapped">
-): Promise<Record<string, Record<number, Record<number, number>>>> {
+): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/albums/months`,
     "album streams by month",

@@ -2,6 +2,7 @@ import { Track } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
 import { useTracks, useTracksStreamsByMonth } from "../useApi";
+import { countUniqueMonths } from "../utils";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function TracksStreamingHistoryStack() {
@@ -14,13 +15,15 @@ export function TracksStreamingHistoryStack() {
 
   if (!tracks || !streamsByMonth) return <ChartSkeleton />;
 
+  if (countUniqueMonths(streamsByMonth) < 3) return null;
+
   return (
     <>
       <h3>Track streams by month</h3>
       <StreamingHistoryStack
         data={streamsByMonth}
         getItem={(key) => tracks[key]}
-        sortItems={(a, b) => b.track_stream_count - a.track_stream_count}
+        sortItems={mostStreamedTracks}
         renderItem={(track: Track) => (
           <h4
             style={{

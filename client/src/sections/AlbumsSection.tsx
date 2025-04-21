@@ -1,9 +1,6 @@
 import { Tabs } from "@mantine/core";
 
-import {
-  AlbumsRankLineChart,
-  AlbumStreamsLineChart,
-} from "../charts/AlbumsLineChart";
+import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { AlbumRow } from "../list-items/AlbumRow";
@@ -24,12 +21,7 @@ export function AlbumsSection() {
         <Tabs.List>
           <Tabs.Tab value="months">Months</Tabs.Tab>
           <Tabs.Tab value="streams">Streams</Tabs.Tab>
-          <Tabs.Tab value="rank">Rank</Tabs.Tab>
         </Tabs.List>
-
-        <Tabs.Panel value="rank">
-          <AlbumsRankLineChart />
-        </Tabs.Panel>
 
         <Tabs.Panel value="streams">
           <AlbumStreamsLineChart />

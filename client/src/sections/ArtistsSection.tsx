@@ -1,10 +1,7 @@
 import { Tabs } from "@mantine/core";
 
 import { ArtistsBarChart } from "../charts/ArtistsBarChart";
-import {
-  ArtistsRankLineChart,
-  ArtistStreamsLineChart,
-} from "../charts/ArtistsLineChart";
+import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { ArtistRow } from "../list-items/ArtistRow";
@@ -26,13 +23,8 @@ export function ArtistsSection() {
         <Tabs.List>
           <Tabs.Tab value="months">Months</Tabs.Tab>
           <Tabs.Tab value="streams">Streams</Tabs.Tab>
-          <Tabs.Tab value="rank">Rank</Tabs.Tab>
           <Tabs.Tab value="count">Count</Tabs.Tab>
         </Tabs.List>
-
-        <Tabs.Panel value="rank">
-          <ArtistsRankLineChart />
-        </Tabs.Panel>
 
         <Tabs.Panel value="streams">
           <ArtistStreamsLineChart />

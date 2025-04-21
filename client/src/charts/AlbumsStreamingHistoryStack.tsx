@@ -3,6 +3,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedAlbums } from "../sorting";
 import { useAlbums, useAlbumsStreamsByMonth } from "../useApi";
 import { useFilters } from "../useFilters";
+import { countUniqueMonths } from "../utils";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function AlbumsStreamingHistoryStack() {
@@ -21,13 +22,16 @@ export function AlbumsStreamingHistoryStack() {
   const { data: history } = useAlbumsStreamsByMonth(topAlbumURIs);
 
   if (!albums || !history) return <ChartSkeleton />;
+
+  if (countUniqueMonths(history) < 3) return null;
+
   return (
     <>
       <h3>Album streams by month</h3>
       <StreamingHistoryStack
         data={history}
         getItem={(key) => albums[key]}
-        sortItems={(a, b) => b.album_stream_count - a.album_stream_count}
+        sortItems={mostStreamedAlbums}
         renderItem={(album: Album) => (
           <h4
             style={{

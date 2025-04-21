@@ -1,9 +1,6 @@
 import { Tabs } from "@mantine/core";
 
-import {
-  TracksRankLineChart,
-  TrackStreamsLineChart,
-} from "../charts/TracksLineChart";
+import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
@@ -14,6 +11,7 @@ import { useFilters } from "../useFilters";
 export function TracksSection() {
   const filters = useFilters();
   if (filters.tracks?.length === 1) return null;
+
   return (
     <div>
       <h2>Tracks</h2>
@@ -22,12 +20,7 @@ export function TracksSection() {
         <Tabs.List>
           <Tabs.Tab value="months">Months</Tabs.Tab>
           <Tabs.Tab value="streams">Streams</Tabs.Tab>
-          <Tabs.Tab value="rank">Rank</Tabs.Tab>
         </Tabs.List>
-
-        <Tabs.Panel value="rank">
-          <TracksRankLineChart />
-        </Tabs.Panel>
 
         <Tabs.Panel value="streams">
           <TrackStreamsLineChart />

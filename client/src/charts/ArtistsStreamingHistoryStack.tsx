@@ -3,6 +3,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamsByMonth } from "../useApi";
 import { useFilters } from "../useFilters";
+import { countUniqueMonths } from "../utils";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function ArtistsStreamingHistoryStack() {
@@ -22,13 +23,15 @@ export function ArtistsStreamingHistoryStack() {
 
   if (!artists || !history) return <ChartSkeleton />;
 
+  if (countUniqueMonths(history) < 3) return null;
+
   return (
     <>
       <h3>Artist streams by month</h3>
       <StreamingHistoryStack
         data={history}
         getItem={(key) => artists[key]}
-        sortItems={(a, b) => b.artist_stream_count - a.artist_stream_count}
+        sortItems={mostStreamedArtists}
         renderItem={(artist: Artist) => (
           <h4
             style={{
