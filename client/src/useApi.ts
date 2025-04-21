@@ -65,23 +65,11 @@ export function usePlaylists(filters?: ActiveFilters) {
 }
 
 export function useArtists(filters?: ActiveFilters) {
-  const { wrapped } = useFilters();
-  return useTracksDependentQuery(
-    "artists",
-    getArtists,
-    {},
-    { wrapped, ...filters }
-  );
+  return useTracksDependentQuery("artists", getArtists, {}, filters);
 }
 
 export function useAlbums(filters?: ActiveFilters) {
-  const { wrapped } = useFilters();
-  return useTracksDependentQuery(
-    "albums",
-    getAlbums,
-    {},
-    { wrapped, ...filters }
-  );
+  return useTracksDependentQuery("albums", getAlbums, {}, filters);
 }
 
 export function useLabels(filters?: ActiveFilters) {
