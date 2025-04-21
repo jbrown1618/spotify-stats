@@ -180,7 +180,7 @@ function useTracksDependentQuery<T>(
 ) {
   const globalFilters = useFilters();
   filters ??= globalFilters;
-  const query = toFiltersQuery(filters);
+  const query = toFiltersQuery({ wrapped: filters.wrapped, ...filters });
 
   const { data: tracks } = useTracks(filters);
   const tracksFilter = {
