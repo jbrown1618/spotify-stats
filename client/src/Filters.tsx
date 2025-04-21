@@ -120,6 +120,7 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
   return (
     <Select
       label="Wrapped"
+      clearable
       data={[
         {
           label: "This month",
