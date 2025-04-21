@@ -16,7 +16,6 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
         <div style={{ marginBottom: 16 }}>
           <RowSkeleton />
         </div>
-        <TextSkeleton style="h3" />
         <ChartSkeleton />
       </>
     );

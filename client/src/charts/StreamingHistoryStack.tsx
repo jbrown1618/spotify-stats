@@ -49,8 +49,8 @@ export function StreamingHistoryStack<TItem>({
               color={colors[i]}
               withXAxis={i === Object.keys(data).length - 1}
               dataMax={dataMax}
-              minYear={minMonth === 1 ? minYear - 1 : minYear}
-              minMonth={minMonth === 1 ? 12 : minMonth - 1}
+              minYear={minYear}
+              minMonth={minMonth}
               maxYear={maxYear}
               maxMonth={maxMonth}
             />
