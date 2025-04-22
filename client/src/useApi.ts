@@ -55,7 +55,7 @@ export function useTrack(uri: string) {
   const { wrapped } = useFilters();
   return useQuery<TrackDetails>({
     ...defaultQueryOptions,
-    queryKey: ["track", uri],
+    queryKey: ["track", uri, wrapped],
     queryFn: async () => getTrack(uri, wrapped),
   });
 }
