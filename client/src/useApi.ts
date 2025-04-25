@@ -176,7 +176,7 @@ export function useTracksStreamsByMonth() {
   }
 
   const result = useTracksDependentQuery(
-    "tracks-streaming-history",
+    "tracks-streams-by-month",
     getTopFiveTracksStreamsByMonth,
     {}
   );
