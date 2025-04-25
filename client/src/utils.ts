@@ -1,4 +1,4 @@
-import { StreamsByMonth } from "./api";
+import { AlbumRank, ArtistRank, StreamsByMonth, TrackRank } from "./api";
 
 export function formatDate(ts: number | Date | undefined) {
   if (!ts) return "Unknown Date";
@@ -28,4 +28,10 @@ export function countUniqueMonths(streamsByMonth: StreamsByMonth) {
     }
   }
   return months.size;
+}
+
+export function countUniqueAsOfDates(
+  history: (ArtistRank | AlbumRank | TrackRank)[]
+) {
+  return new Set(history.map((value) => value.as_of_date)).size;
 }

@@ -18,9 +18,10 @@ export function LabelsSection() {
 }
 
 function LabelsDisplayGrid() {
-  const { data: labels } = useLabels();
+  const { data: labels, isLoading } = useLabels();
   return (
     <DisplayGrid
+      loading={isLoading}
       items={
         labels
           ? labels.sort(

@@ -3,6 +3,7 @@ import {
   SegmentedControl,
   SegmentedControlItem,
   Select,
+  Text,
 } from "@mantine/core";
 import {
   IconGridDots,
@@ -19,6 +20,7 @@ import { RowSkeleton } from "./RowDesign";
 import { TileSkeleton } from "./TileDesign";
 
 interface DisplayGridProps<T> {
+  loading: boolean;
   items: T[] | undefined;
   sortOptions?: SortOptions<T>;
   getKey: (item: T) => string;
@@ -34,6 +36,7 @@ const defaultCount = 6;
 const loadingItems = Array.from(Array(defaultCount).keys());
 
 export function DisplayGrid<T>({
+  loading,
   items,
   sortOptions,
   renderTile,
@@ -77,6 +80,12 @@ export function DisplayGrid<T>({
   const comparator = sortOptions && sort ? sortOptions[sort] : null;
   const displayItems = comparator && items ? items.sort(comparator) : items;
 
+  if (!loading && displayItems?.length === 0)
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Text fs="italic">No data</Text>
+      </div>
+    );
   return (
     <>
       <div

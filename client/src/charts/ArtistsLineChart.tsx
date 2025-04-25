@@ -1,23 +1,12 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamingHistory } from "../useApi";
-import { useFilters } from "../useFilters";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function ArtistStreamsLineChart({ height }: { height?: number }) {
-  const filters = useFilters();
   const { data: artists } = useArtists();
-  const topArtistURIs = artists
-    ? Object.values(artists)
-        .filter(
-          (a) =>
-            filters.artists?.length != 1 || a.artist_uri === filters.artists[0]
-        )
-        .sort(mostStreamedArtists)
-        .slice(0, 10)
-        .map((a) => a.artist_uri)
-    : [];
-  const { data: history } = useArtistsStreamingHistory(topArtistURIs);
+  const { data: history, shouldRender } = useArtistsStreamingHistory();
+
+  if (!shouldRender) return null;
 
   if (!history || !artists) return <ChartSkeleton />;
 

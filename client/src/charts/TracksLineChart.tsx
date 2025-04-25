@@ -1,30 +1,14 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { mostStreamedTracks } from "../sorting";
 import { useTracks, useTracksStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function TrackStreamsLineChart() {
   const { data: tracks } = useTracks();
-  const topTenUris = Object.values(tracks ?? {})
-    .sort(mostStreamedTracks)
-    .slice(0, 10)
-    .map((t) => t.track_uri);
-  const { data: ranks } = useTracksStreamingHistory(topTenUris);
+  const { data: ranks, shouldRender } = useTracksStreamingHistory();
+
+  if (!shouldRender) return null;
 
   if (!tracks || !ranks) return <ChartSkeleton />;
-
-  const maxDate = Math.max(
-    ...ranks.map((r) => new Date(r.as_of_date).getTime())
-  );
-  const currentRanks: Record<string, number> = {};
-  for (const uri of topTenUris) {
-    const currentRank =
-      ranks.find(
-        (r) =>
-          r.track_uri === uri && new Date(r.as_of_date).getTime() === maxDate
-      )?.track_rank ?? Number.MAX_SAFE_INTEGER;
-    currentRanks[uri] = currentRank;
-  }
 
   return (
     <>
@@ -37,7 +21,7 @@ export function TrackStreamsLineChart() {
         getItem={(r) => r.track_uri}
         getStreams={(r) => r.track_stream_count}
         getLabel={(k) => tracks[k]?.track_short_name}
-        getCurrentRank={(k) => currentRanks[k]}
+        getCurrentRank={(k) => -1 * tracks[k].track_stream_count}
         getImageURL={(k) => tracks[k]?.album_image_url}
       />
     </>

@@ -1,19 +1,15 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { mostStreamedAlbums } from "../sorting";
 import { useAlbums, useAlbumsStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function AlbumStreamsLineChart({ height }: { height?: number }) {
   const { data: albums } = useAlbums();
-  const topAlbumURIs = albums
-    ? Object.values(albums)
-        .sort(mostStreamedAlbums)
-        .slice(0, 10)
-        .map((a) => a.album_uri)
-    : [];
-  const { data: history } = useAlbumsStreamingHistory(topAlbumURIs);
+  const { data: history, shouldRender } = useAlbumsStreamingHistory();
+
+  if (!shouldRender) return null;
 
   if (!history || !albums) return <ChartSkeleton />;
+
   return (
     <>
       <h3>Album streams over time</h3>

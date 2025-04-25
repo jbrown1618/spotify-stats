@@ -17,9 +17,10 @@ export function ProducersSection() {
 }
 
 function ProducersDisplayGrid() {
-  const { data: producers } = useProducers();
+  const { data: producers, isLoading } = useProducers();
   return (
     <DisplayGrid
+      loading={isLoading}
       items={
         producers
           ? Object.values(producers).sort(

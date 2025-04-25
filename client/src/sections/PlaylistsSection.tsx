@@ -18,9 +18,10 @@ export function PlaylistsSection() {
 }
 
 function PlaylistsDisplayGrid() {
-  const { data: playlists } = usePlaylists();
+  const { data: playlists, isLoading } = usePlaylists();
   return (
     <DisplayGrid
+      loading={isLoading}
       items={
         playlists
           ? Object.values(playlists).sort(

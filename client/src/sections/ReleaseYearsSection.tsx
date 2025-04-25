@@ -17,9 +17,10 @@ export function ReleaseYearsSection() {
 }
 
 function YearsDisplayGrid() {
-  const { data: years } = useReleaseYears();
+  const { data: years, isLoading } = useReleaseYears();
   return (
     <DisplayGrid
+      loading={isLoading}
       items={
         years
           ? Object.values(years).sort(

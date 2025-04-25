@@ -9,6 +9,7 @@ export function YearsBarChart() {
   const isMobile = useIsMobile();
 
   if (!years) return <ChartSkeleton />;
+  if (years && years.length < 3) return null;
 
   const distinctYears = new Set(years.map((c) => c.release_year));
   const minYear = Math.min(...distinctYears);

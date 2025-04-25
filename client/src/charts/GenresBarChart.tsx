@@ -10,6 +10,7 @@ export function GenresBarChart() {
   const maxCount = isMobile ? 15 : 20;
 
   if (!genres) return <ChartSkeleton />;
+  if (genres && genres.length < 3) return null;
 
   const height = 100 + 30 * Math.min(maxCount, genres.length);
   return (

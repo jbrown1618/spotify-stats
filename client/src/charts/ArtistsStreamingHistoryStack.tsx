@@ -2,28 +2,15 @@ import { Artist } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamsByMonth } from "../useApi";
-import { useFilters } from "../useFilters";
-import { countUniqueMonths } from "../utils";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function ArtistsStreamingHistoryStack() {
-  const filters = useFilters();
   const { data: artists } = useArtists();
-  const topArtistURIs = artists
-    ? Object.values(artists)
-        .filter(
-          (a) =>
-            filters.artists?.length != 1 || a.artist_uri === filters.artists[0]
-        )
-        .sort(mostStreamedArtists)
-        .slice(0, 5)
-        .map((a) => a.artist_uri)
-    : [];
-  const { data: history } = useArtistsStreamsByMonth(topArtistURIs);
+  const { data: history, shouldRender } = useArtistsStreamsByMonth();
 
   if (!artists || !history) return <ChartSkeleton />;
 
-  if (countUniqueMonths(history) < 3) return null;
+  if (!shouldRender) return null;
 
   return (
     <>

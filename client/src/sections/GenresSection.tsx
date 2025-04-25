@@ -18,9 +18,10 @@ export function GenresSection() {
 }
 
 function GenresDisplayGrid() {
-  const { data: genres } = useGenres();
+  const { data: genres, isLoading } = useGenres();
   return (
     <DisplayGrid
+      loading={isLoading}
       items={
         genres
           ? genres.sort(

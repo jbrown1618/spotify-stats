@@ -8,6 +8,7 @@ export function LabelsBarChart() {
   const { data: labels } = useLabels();
   const isMobile = useIsMobile();
   if (!labels) return <ChartSkeleton />;
+  if (labels && labels.length < 3) return null;
 
   const maxCount = isMobile ? 15 : 20;
 

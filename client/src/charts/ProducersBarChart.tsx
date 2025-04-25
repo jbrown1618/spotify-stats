@@ -10,6 +10,7 @@ export function ProducersBarChart() {
   const maxCount = isMobile ? 15 : 20;
 
   if (!producers) return <ChartSkeleton />;
+  if (producers && Object.keys(producers).length < 3) return null;
 
   const height = 100 + 30 * Math.min(maxCount, Object.values(producers).length);
   return (

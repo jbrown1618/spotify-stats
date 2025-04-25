@@ -1,21 +1,19 @@
 import { Track } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
-import { useTracks, useTracksStreamsByMonth } from "../useApi";
-import { countUniqueMonths } from "../utils";
+import { useTracksStreamsByMonth } from "../useApi";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function TracksStreamingHistoryStack() {
-  const { data: tracks } = useTracks();
-  const topFiveUris = Object.values(tracks ?? {})
-    .sort(mostStreamedTracks)
-    .slice(0, 5)
-    .map((t) => t.track_uri);
-  const { data: streamsByMonth } = useTracksStreamsByMonth(topFiveUris);
+  const {
+    data: streamsByMonth,
+    tracks,
+    shouldRender,
+  } = useTracksStreamsByMonth();
 
-  if (!tracks || !streamsByMonth) return <ChartSkeleton />;
+  if (!shouldRender) return null;
 
-  if (countUniqueMonths(streamsByMonth) < 3) return null;
+  if (!streamsByMonth || !tracks) return <ChartSkeleton />;
 
   return (
     <>
