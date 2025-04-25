@@ -28,7 +28,7 @@ export function ArtistRow({ artist }: { artist: Artist }) {
       src={artist.artist_image_url}
       secondarySrc={highestRankedAlbum?.album_image_url}
       stats={[
-        { label: "Streams", value: artist.artist_stream_count },
+        { label: "Streams", value: artist.artist_stream_count ?? 0 },
         isMobile
           ? null
           : { label: "Popularity", value: artist.artist_popularity },

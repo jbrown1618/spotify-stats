@@ -27,7 +27,7 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
         src={artist.artist_image_url}
         onClick={onClick}
         itemURI={artist.artist_uri}
-        stats={[{ label: "Streams", value: artist.artist_stream_count }]}
+        stats={[{ label: "Streams", value: artist.artist_stream_count ?? 0 }]}
       />
     );
 
@@ -45,7 +45,7 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
       itemURI={artist.artist_uri}
       onClick={onClick}
       stats={[
-        { label: "Streams", value: artist.artist_stream_count },
+        { label: "Streams", value: artist.artist_stream_count ?? 0 },
         { label: "Popularity", value: artist.artist_popularity },
         {
           label: "Liked Tracks",

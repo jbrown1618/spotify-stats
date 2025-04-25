@@ -86,6 +86,7 @@ export function DisplayGrid<T>({
         <Text fs="italic">No data</Text>
       </div>
     );
+
   return (
     <>
       <div
@@ -111,7 +112,10 @@ export function DisplayGrid<T>({
             <Select
               data={Object.keys(sortOptions)}
               value={sort}
-              onChange={setSort}
+              onChange={(s) => {
+                setSort(s);
+                setCount(defaultCount);
+              }}
               checkIconPosition="right"
               radius="xl"
             />

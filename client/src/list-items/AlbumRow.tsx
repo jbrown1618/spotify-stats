@@ -28,7 +28,7 @@ export function AlbumRow({ album }: AlbumTileProps) {
       }
       secondaryText={<ArtistsList albumURI={album.album_uri} />}
       stats={[
-        { label: "Streams", value: album.album_stream_count },
+        { label: "Streams", value: album.album_stream_count ?? 0 },
         isMobile
           ? null
           : {
