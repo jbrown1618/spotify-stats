@@ -7,6 +7,7 @@ import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
+import { WrappedDetails } from "./details/WrappedDetails";
 import { Filters } from "./Filters";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -27,6 +28,7 @@ export function App() {
       <Container size="lg">
         <AppHeader />
 
+        {filters.wrapped && <WrappedDetails />}
         {filters.tracks?.length === 1 && (
           <TrackDetails trackURI={filters.tracks[0]} />
         )}

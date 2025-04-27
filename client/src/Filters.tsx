@@ -5,7 +5,7 @@ import { SetStateAction, useEffect, useRef, useState } from "react";
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import { useFilterOptions } from "./useApi";
 import { useFilters, useSetFilters } from "./useFilters";
-import { addMonths, formatDate } from "./utils";
+import { namedWrappedOptions } from "./utils";
 
 export function Filters() {
   const filters = useFilters();
@@ -102,43 +102,14 @@ interface FilterProps {
   options: NonNullable<FilterOptions>;
 }
 
-const minYear = 2020; // Whatever, just hard-code it.
-
 function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
-  const currentYear = new Date().getFullYear();
-
-  const years = [];
-  for (let i = minYear; i <= currentYear; ++i) {
-    years.push(i);
-  }
-
-  const beginningOfThisMonth = new Date();
-  beginningOfThisMonth.setDate(1);
-  const beginningOfNextMonth = addMonths(beginningOfThisMonth, 1);
-  const sixMonthsAgo = addMonths(beginningOfThisMonth, -6);
+  const options = namedWrappedOptions();
 
   return (
     <Select
       label="Wrapped"
       clearable
-      data={[
-        {
-          label: "This month",
-          value: `${formatDate(beginningOfThisMonth)}..${formatDate(
-            beginningOfNextMonth
-          )}`,
-        },
-        {
-          label: "Last 6 months",
-          value: `${formatDate(sixMonthsAgo)}..${formatDate(
-            beginningOfNextMonth
-          )}`,
-        },
-        ...years.reverse().map((y) => ({
-          label: `${y}`,
-          value: `${y}-01-01..${y + 1}-01-01`,
-        })),
-      ]}
+      data={options}
       value={filters.wrapped}
       onChange={(range) =>
         onFilterChange((filters) => ({
