@@ -30,10 +30,10 @@ export function StreamsLineChart<TStreams>({
   const isMobile = useIsMobile();
 
   const dataPoints = new Map<number, Record<string, number>>();
-  const artistURIs = new Set<string>();
+  const uris = new Set<string>();
 
   for (const rank of ranks) {
-    artistURIs.add(getKey(rank));
+    uris.add(getKey(rank));
 
     const ts = new Date(getDate(rank)).getTime();
 
@@ -48,6 +48,23 @@ export function StreamsLineChart<TStreams>({
     }
   }
 
+  // Add a 0 to the data point immediately before the first stream for this URI
+  const minTs = Math.min(...dataPoints.keys());
+  for (const uri of uris) {
+    const minTsForUri = Math.min(
+      ...[...dataPoints.entries()]
+        .filter(([_, values]) => !!values[uri])
+        .map(([ts]) => ts)
+    );
+    if (minTsForUri === minTs) continue;
+
+    const previousTs = Math.max(
+      ...[...dataPoints.keys()].filter((ts) => ts < minTsForUri)
+    );
+    const streamsByUri = dataPoints.get(previousTs)!;
+    streamsByUri[uri] = 0;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <LineChart
@@ -56,7 +73,7 @@ export function StreamsLineChart<TStreams>({
           (a, b) => a["date"] - b["date"]
         )}
         dataKey="date"
-        series={Array.from(artistURIs).map((uri, i) => ({
+        series={Array.from(uris).map((uri, i) => ({
           name: uri,
           color: colors[i],
         }))}
