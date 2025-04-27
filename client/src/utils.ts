@@ -46,8 +46,11 @@ export function namedWrappedOptions() {
     years.push(i);
   }
 
-  const beginningOfThisMonth = new Date();
-  beginningOfThisMonth.setDate(0);
+  const beginningOfThisMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  );
   const beginningOfNextMonth = addMonths(beginningOfThisMonth, 1);
   const sixMonthsAgo = addMonths(beginningOfThisMonth, -6);
 
