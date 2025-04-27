@@ -7,6 +7,6 @@ FROM listening_period p
 WHERE
     p.from_time >= :min_stream_date 
     AND p.to_time < :max_stream_date
-    AND h.track_uri in :track_uris
+    AND h.track_uri IN :track_uris
 GROUP BY h.track_uri
 ORDER BY SUM(h.stream_count) DESC, track_uri;

@@ -1,3 +1,3 @@
-select distinct rl.standardized_label
-from record_label rl
-where :filter_albums = false or rl.album_uri in :album_uris;
+SELECT DISTINCT rl.standardized_label
+FROM record_label rl
+WHERE :filter_albums = FALSE OR rl.album_uri IN :album_uris;

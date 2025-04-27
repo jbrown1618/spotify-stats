@@ -53,6 +53,7 @@ export function StreamsLineChart<TStreams>({
   for (const uri of uris) {
     const minTsForUri = Math.min(
       ...[...dataPoints.entries()]
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .filter(([_, values]) => !!values[uri])
         .map(([ts]) => ts)
     );

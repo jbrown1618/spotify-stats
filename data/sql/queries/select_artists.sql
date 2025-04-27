@@ -1,83 +1,83 @@
-drop table if exists tmp_artist_stream_counts;
+DROP TABLE IF EXISTS tmp_artist_stream_counts;
 
-create temporary table tmp_artist_stream_counts as
-select ta.artist_uri, SUM(h.stream_count) as stream_count
-from listening_history h
-inner join listening_period p
-    on h.listening_period_id = p.id
-inner join track_artist ta
-    on ta.track_uri = h.track_uri
-where 
-    (:wrapped_start_date is NULL or :wrapped_start_date <= p.to_time)
-    and 
-    (:wrapped_end_date is NULL or :wrapped_end_date >= p.from_time)
-group by ta.artist_uri;
+CREATE TEMPORARY TABLE tmp_artist_stream_counts AS
+SELECT ta.artist_uri, SUM(h.stream_count) AS stream_count
+FROM listening_history h
+INNER JOIN listening_period p
+    ON h.listening_period_id = p.id
+INNER JOIN track_artist ta
+    ON ta.track_uri = h.track_uri
+WHERE 
+    (:wrapped_start_date IS NULL OR :wrapped_start_date <= p.to_time)
+    AND 
+    (:wrapped_end_date IS NULL OR :wrapped_end_date >= p.from_time)
+GROUP BY ta.artist_uri;
 
-select
-    a.uri as artist_uri,
-    a.name as artist_name,
-    a.popularity as artist_popularity,
-    a.followers as artist_followers,
-    a.image_url as artist_image_url,
-    sc.stream_count as artist_stream_count,
+SELECT
+    a.uri AS artist_uri,
+    a.name AS artist_name,
+    a.popularity AS artist_popularity,
+    a.followers AS artist_followers,
+    a.image_url AS artist_image_url,
+    sc.stream_count AS artist_stream_count,
     (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            inner join liked_track ilt on ilt.track_uri = ita.track_uri
-            where ita.artist_uri = a.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
+        SELECT COUNT(track_uri) 
+        FROM (
+            SELECT DISTINCT ita.track_uri
+            FROM track_artist ita 
+            INNER JOIN liked_track ilt ON ilt.track_uri = ita.track_uri
+            WHERE ita.artist_uri = a.uri
+            AND ita.track_uri IN (
+                SELECT track_uri FROM playlist_track
             )
         )
-    ) as artist_total_liked_track_count,
+    ) AS artist_total_liked_track_count,
     (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            inner join liked_track ilt on ilt.track_uri = ita.track_uri
-            where ita.artist_uri = a.uri
-            and (:filter_tracks = false or ita.track_uri in :track_uris)
+        SELECT COUNT(track_uri) 
+        FROM (
+            SELECT DISTINCT ita.track_uri
+            FROM track_artist ita 
+            INNER JOIN liked_track ilt ON ilt.track_uri = ita.track_uri
+            WHERE ita.artist_uri = a.uri
+            AND (:filter_tracks = FALSE OR ita.track_uri IN :track_uris)
         )
-    ) as artist_liked_track_count,
+    ) AS artist_liked_track_count,
     (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            where ita.artist_uri = a.uri
-            and ita.track_uri in (
-                select track_uri from playlist_track
+        SELECT COUNT(track_uri) 
+        FROM (
+            SELECT DISTINCT ita.track_uri
+            FROM track_artist ita 
+            WHERE ita.artist_uri = a.uri
+            AND ita.track_uri IN (
+                SELECT track_uri FROM playlist_track
             )
         )
-    ) as artist_total_track_count,
+    ) AS artist_total_track_count,
     (
-        select count(track_uri) 
-        from (
-            select distinct ita.track_uri
-            from track_artist ita 
-            where ita.artist_uri = a.uri
-            and (:filter_tracks = false or ita.track_uri in :track_uris)
+        SELECT COUNT(track_uri) 
+        FROM (
+            SELECT DISTINCT ita.track_uri
+            FROM track_artist ita 
+            WHERE ita.artist_uri = a.uri
+            AND (:filter_tracks = FALSE OR ita.track_uri IN :track_uris)
         )
-    ) as artist_track_count
+    ) AS artist_track_count
 
-from artist a
-    inner join track_artist ta on ta.artist_uri = a.uri
-    inner join playlist_track pt on ta.track_uri = pt.track_uri
-    left join sp_artist_mb_artist sp_mb_a on sp_mb_a.spotify_artist_uri = a.uri
-    left join mb_artist mba on mba.artist_mbid = sp_mb_a.artist_mbid
-    left join tmp_artist_stream_counts sc on sc.artist_uri = a.uri
+FROM artist a
+    INNER JOIN track_artist ta ON ta.artist_uri = a.uri
+    INNER JOIN playlist_track pt ON ta.track_uri = pt.track_uri
+    LEFT JOIN sp_artist_mb_artist sp_mb_a ON sp_mb_a.spotify_artist_uri = a.uri
+    LEFT JOIN mb_artist mba ON mba.artist_mbid = sp_mb_a.artist_mbid
+    LEFT JOIN tmp_artist_stream_counts sc ON sc.artist_uri = a.uri
 WHERE
-    (:filter_artists = false or a.uri in :artist_uris)
+    (:filter_artists = FALSE OR a.uri IN :artist_uris)
     AND
-    (:filter_tracks = false or ta.track_uri in :track_uris)
+    (:filter_tracks = FALSE OR ta.track_uri IN :track_uris)
     AND
-    (:filter_mbids = false or mba.artist_mbid in :mbids)
-    and
-    ((:wrapped_start_date is NULL AND :wrapped_end_date is NULL) or sc.stream_count is not null)
-group by
+    (:filter_mbids = FALSE OR mba.artist_mbid IN :mbids)
+    AND
+    ((:wrapped_start_date IS NULL AND :wrapped_end_date IS NULL) OR sc.stream_count IS NOT NULL)
+GROUP BY
     a.uri,
     a.name,
     a.popularity,
@@ -85,4 +85,4 @@ group by
     a.image_url,
     sc.stream_count
 
-order by sc.stream_count desc nulls last;
+ORDER BY sc.stream_count DESC NULLS LAST;

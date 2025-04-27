@@ -1,3 +1,3 @@
-select distinct ag.genre
-from artist_genre ag
-where :filter_artists = false or ag.artist_uri in :artist_uris;
+SELECT DISTINCT ag.genre
+FROM artist_genre ag
+WHERE :filter_artists = FALSE OR ag.artist_uri IN :artist_uris;
