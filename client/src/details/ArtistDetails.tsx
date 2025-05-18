@@ -21,8 +21,8 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         <ArtistTile large artist={artist} />
       </div>
 
-      <ArtistsStreamingHistoryStack />
-      <ArtistStreamsLineChart height={300} />
+      <ArtistsStreamingHistoryStack onlyArtist={artistURI} />
+      <ArtistStreamsLineChart height={300} onlyArtist={artistURI} />
     </>
   );
 }

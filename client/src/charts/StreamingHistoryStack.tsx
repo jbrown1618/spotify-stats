@@ -1,6 +1,11 @@
 import { colors } from "./colors";
 import { StreamingHistoryAreaChart } from "./StreamingHistoryAreaChart";
 
+const totalMaxHeight = 600;
+const itemHeaderHeight = 32;
+const xAxisHeight = 15;
+const individualMaxHeight = 250;
+
 export function StreamingHistoryStack<TItem>({
   data,
   getItem,
@@ -30,7 +35,10 @@ export function StreamingHistoryStack<TItem>({
   );
 
   const itemCount = Object.keys(data).length;
-  const itemHeight = (550 - 15 - 32 * itemCount) / itemCount;
+  const itemHeight = Math.min(
+    individualMaxHeight,
+    (totalMaxHeight - xAxisHeight - itemHeaderHeight * itemCount) / itemCount
+  );
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {Object.keys(data)

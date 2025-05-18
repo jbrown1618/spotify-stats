@@ -94,6 +94,7 @@ export function DisplayGrid<T>({
           display: "flex",
           justifyContent: "space-between",
           gap: 16,
+          marginTop: 8,
           alignItems: "center",
         }}
       >
@@ -125,7 +126,7 @@ export function DisplayGrid<T>({
 
       <div
         style={{
-          marginTop: 16,
+          marginTop: 8,
           display: "flex",
           flexDirection: variant === "row" ? "column" : "row",
           flexWrap: variant === "row" ? undefined : "wrap",

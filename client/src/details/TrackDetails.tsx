@@ -25,7 +25,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
       <h2>{track.track_name}</h2>
       <TrackRow trackUri={trackURI} />
       <TracksStreamingHistoryStack />
-      <TrackStreamsLineChart />
+      <TrackStreamsLineChart height={300} />
     </>
   );
 }

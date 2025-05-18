@@ -2,7 +2,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useTracks, useTracksStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
-export function TrackStreamsLineChart() {
+export function TrackStreamsLineChart({ height }: { height?: number }) {
   const { data: tracks } = useTracks();
   const { data: ranks, shouldRender } = useTracksStreamingHistory();
 
@@ -14,7 +14,7 @@ export function TrackStreamsLineChart() {
     <>
       <h3>Track streams over time</h3>
       <StreamsLineChart
-        height={550}
+        height={height ?? 550}
         ranks={ranks}
         getKey={(r) => r.track_uri}
         getDate={(r) => r.as_of_date}

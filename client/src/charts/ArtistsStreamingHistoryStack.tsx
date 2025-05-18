@@ -4,7 +4,11 @@ import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamsByMonth } from "../useApi";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
-export function ArtistsStreamingHistoryStack() {
+export function ArtistsStreamingHistoryStack({
+  onlyArtist,
+}: {
+  onlyArtist?: string;
+}) {
   const { data: artists } = useArtists();
   const { data: history, shouldRender } = useArtistsStreamsByMonth();
 
@@ -12,11 +16,19 @@ export function ArtistsStreamingHistoryStack() {
 
   if (!shouldRender) return null;
 
+  const data = onlyArtist
+    ? Object.fromEntries(
+        Object.entries(history).filter(
+          ([artistUri]) => artistUri === onlyArtist
+        )
+      )
+    : history;
+
   return (
     <>
       <h3>Artist streams by month</h3>
       <StreamingHistoryStack
-        data={history}
+        data={data}
         getItem={(key) => artists[key]}
         sortItems={mostStreamedArtists}
         renderItem={(artist: Artist) => (

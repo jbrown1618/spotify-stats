@@ -2,7 +2,13 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useArtists, useArtistsStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
-export function ArtistStreamsLineChart({ height }: { height?: number }) {
+export function ArtistStreamsLineChart({
+  height,
+  onlyArtist,
+}: {
+  height?: number;
+  onlyArtist?: string;
+}) {
   const { data: artists } = useArtists();
   const { data: history, shouldRender } = useArtistsStreamingHistory();
 
@@ -10,12 +16,16 @@ export function ArtistStreamsLineChart({ height }: { height?: number }) {
 
   if (!history || !artists) return <ChartSkeleton />;
 
+  const data = onlyArtist
+    ? history.filter((h) => h.artist_uri === onlyArtist)
+    : history;
+
   return (
     <>
       <h3>Artist streams over time</h3>
       <StreamsLineChart
         height={height}
-        ranks={history}
+        ranks={data}
         getKey={(r) => r.artist_uri}
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.artist_uri}
