@@ -1,32 +1,32 @@
 import { BarChart } from "@mantine/charts";
 
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { mostLikedArtists } from "../sorting";
-import { useArtists } from "../useApi";
+import { mostLikedAlbums } from "../sorting";
+import { useAlbums } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
-export function ArtistsBarChart() {
-  const { data: artists } = useArtists();
+export function AlbumsBarChart() {
+  const { data: albums } = useAlbums();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
-  if (artists && Object.keys(artists).length < 3) return null;
+  if (albums && Object.keys(albums).length < 3) return null;
 
-  if (!artists) return <ChartSkeleton />;
+  if (!albums) return <ChartSkeleton />;
 
-  const height = 100 + 30 * Math.min(maxCount, Object.keys(artists).length);
+  const height = 100 + 30 * Math.min(maxCount, Object.keys(albums).length);
   return (
     <>
-      <h3>Artists by liked tracks</h3>
+      <h3>Albums by liked tracks</h3>
       <BarChart
         h={height}
-        data={Object.values(artists)
-          .sort(mostLikedArtists)
+        data={Object.values(albums)
+          .sort(mostLikedAlbums)
           .slice(0, maxCount)
           .map((p) => ({
-            Artist: p.artist_name,
-            Liked: p.artist_liked_track_count,
-            Unliked: p.artist_track_count - p.artist_liked_track_count,
+            Artist: p.album_short_name,
+            Liked: p.album_liked_track_count,
+            Unliked: p.album_track_count - p.album_liked_track_count,
           }))}
         orientation="vertical"
         series={[

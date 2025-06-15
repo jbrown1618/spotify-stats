@@ -1,6 +1,7 @@
 import { Tabs } from "@mantine/core";
 import { useEffect, useState } from "react";
 
+import { AlbumsBarChart } from "../charts/AlbumsBarChart";
 import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
@@ -16,11 +17,16 @@ import { useFilters } from "../useFilters";
 
 export function AlbumsSection() {
   const filters = useFilters();
+  const { data: albums } = useAlbums();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
+  const shouldRenderCounts = albums && Object.keys(albums).length >= 3;
+
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
-    setActiveTab(shouldRenderMonths ? "months" : "streams");
+    setActiveTab(
+      shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
+    );
   }, [shouldRenderMonths, shouldRenderStreams]);
 
   if (filters.albums?.length === 1) return null;
@@ -50,6 +56,12 @@ export function AlbumsSection() {
           >
             Streams
           </Tabs.Tab>
+          <Tabs.Tab
+            value="count"
+            style={{ display: shouldRenderCounts ? undefined : "none" }}
+          >
+            Count
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel
@@ -64,6 +76,13 @@ export function AlbumsSection() {
           style={{ display: shouldRenderMonths ? undefined : "none" }}
         >
           <AlbumsStreamingHistoryStack />
+        </Tabs.Panel>
+
+        <Tabs.Panel
+          value="count"
+          style={{ display: shouldRenderCounts ? undefined : "none" }}
+        >
+          <AlbumsBarChart />
         </Tabs.Panel>
       </Tabs>
 

@@ -66,6 +66,8 @@ export interface Album {
   album_short_name: string;
   album_type: string;
   album_stream_count: number;
+  album_track_count: number;
+  album_liked_track_count: number;
 }
 
 export interface AlbumRank {

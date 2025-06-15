@@ -59,6 +59,12 @@ const mostRecentAlbums: Comparator<Album> = prioritize(
   alphabeticalAlbums
 );
 
+export const mostLikedAlbums: Comparator<Album> = prioritize(
+  compareValue((a) => a.album_liked_track_count),
+  compareValue((a) => a.album_track_count),
+  mostStreamedAlbums
+);
+
 const alphabeticalArtists: Comparator<Artist> = prioritize(
   reverse(compareValue((t) => t.artist_name)),
   compareValue((t) => t.artist_uri)
@@ -69,6 +75,12 @@ export const mostStreamedArtists: Comparator<Artist> = prioritize(
   compareValue((a) => a.artist_popularity),
   compareValue((a) => a.artist_followers),
   alphabeticalArtists
+);
+
+export const mostLikedArtists: Comparator<Artist> = prioritize(
+  compareValue((a) => a.artist_liked_track_count),
+  compareValue((a) => a.artist_track_count),
+  mostStreamedArtists
 );
 
 export const trackSortOptions: Record<string, Comparator<Track>> = {

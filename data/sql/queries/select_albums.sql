@@ -24,6 +24,25 @@ SELECT
     al.image_url AS album_image_url,
     sc.stream_count AS album_stream_count,
     (
+        SELECT COUNT(uri) 
+        FROM (
+            SELECT DISTINCT it.uri
+            FROM track it 
+            INNER JOIN liked_track ilt ON ilt.track_uri = it.uri
+            WHERE it.album_uri = al.uri
+            AND (:filter_tracks = FALSE OR it.uri IN :track_uris)
+        )
+    ) AS album_liked_track_count,
+    (
+        SELECT COUNT(uri) 
+        FROM (
+            SELECT DISTINCT it.uri
+            FROM track it 
+            WHERE it.album_uri = al.uri
+            AND (:filter_tracks = FALSE OR it.uri IN :track_uris)
+        )
+    ) AS album_track_count,
+    (
         CASE
         WHEN LENGTH(al.release_date) = 10
             THEN EXTRACT(YEAR FROM TO_DATE(al.release_date, 'YYYY-MM-DD'))
