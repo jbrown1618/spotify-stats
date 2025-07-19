@@ -2,7 +2,8 @@ from datetime import datetime
 import pandas as pd
 import musicbrainzngs as mb
 
-from data.raw import RawData
+from data.query import query_text
+from data.raw import RawData, get_connection
 from utils.settings import musicbrainz_max_tracks_per_run, musicbrainz_retry_days, musicbrainz_useragent, musicbrainz_version, musicbrainz_contact, musicbrainz_save_batch_size
 
 recordings = []
@@ -30,23 +31,20 @@ def save_supplemental_data():
         raw['mb_unfetchable_isrcs'] = None
         raw['mb_unmatchable_artists'] = None
 
-    all_tracks = raw['tracks']
-    liked = raw['liked_tracks']
-    track_recording = raw['sp_track_mb_recording']
-    unfetchable_isrcs = set(raw['mb_unfetchable_isrcs']['isrc'])
-    unmatchable_artists = set(raw['mb_unmatchable_artists']['artist_uri'])
-    processed_artists = set(raw['mb_artists']['artist_mbid'])
-    unfetched_tracks = all_tracks[
-        all_tracks['track_uri'].isin(liked['track_uri']) &
-        ~all_tracks['track_uri'].isin(track_recording['spotify_track_uri']) &
-        ~all_tracks['track_isrc'].isin(unfetchable_isrcs)
-    ]
+    
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query_text('unfetched_isrcs'))
+        unfetched = cursor.fetchall()
 
-    print(f'There are {len(unfetched_tracks)} unfetched ISRCs')
+        if should_retry_unfetchable_data():
+            cursor.execute(query_text('missing_credits'))
+            missing_credits = cursor.fetchall()
+            unfetched = set(unfetched + missing_credits)
 
     i = 1
-    for _, track in unfetched_tracks.iterrows():
-        save_supplemental_data_for_isrc(track['track_isrc'], track['track_uri'])
+    for track_uri, isrc in unfetched:
+        save_supplemental_data_for_isrc(isrc, track_uri)
         flush_artist_queue()
         i += 1
         if i % musicbrainz_save_batch_size() == 0:
@@ -303,3 +301,7 @@ def should_retry_unfetchable_data() -> bool:
     day_of_year = datetime.now().timetuple().tm_yday
     retry_days = musicbrainz_retry_days()
     return (day_of_year % retry_days) <= 3
+
+
+if __name__ == '__main__':
+    save_supplemental_data()
