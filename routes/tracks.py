@@ -27,7 +27,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
         end_date=max_stream_date
     )
 
-    tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count']]
+    tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count', 'last_streamed']]
 
     return to_json(tracks, 'track_uri')
 

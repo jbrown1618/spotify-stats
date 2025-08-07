@@ -21,6 +21,13 @@ SELECT
     t.isrc AS track_isrc,
     t.uri IN (SELECT track_uri FROM liked_track) AS track_liked,
     sc.stream_count AS track_stream_count,
+    (
+        SELECT MAX(ip.to_time)
+        FROM listening_period ip 
+            INNER JOIN listening_history ilh
+            ON ilh.listening_period_id = ip.id
+        WHERE ilh.track_uri = t.uri
+    ) as last_streamed,
 
     al.uri AS album_uri,
     al.name AS album_name,

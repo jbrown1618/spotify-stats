@@ -18,6 +18,7 @@ export interface TrackDetails extends Album {
   track_popularity: number;
   track_stream_count: number;
   track_uri: string;
+  last_streamed: number;
 }
 
 export type Track = Pick<
@@ -28,6 +29,7 @@ export type Track = Pick<
   | "track_stream_count"
   | "album_image_url"
   | "album_release_date"
+  | "last_streamed"
 >;
 
 export interface TrackRank {
