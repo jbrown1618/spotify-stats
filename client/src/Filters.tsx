@@ -5,7 +5,6 @@ import { SetStateAction, useEffect, useRef, useState } from "react";
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
 import { useFilterOptions } from "./useApi";
 import { useFilters, useSetFilters } from "./useFilters";
-import { useIsMobile } from "./useIsMobile";
 import { namedWrappedOptions } from "./utils";
 
 export function Filters() {
@@ -58,7 +57,6 @@ function FiltersDialog({
   opened,
   onClose,
 }: FiltersDialogProps) {
-  const isMobile = useIsMobile();
   const [localFilters, setLocalFilters] = useState(filters);
 
   useEffect(
@@ -77,7 +75,7 @@ function FiltersDialog({
       title="Filters"
       opened={opened}
       onClose={() => onClose(localFilters)}
-      size={isMobile ? "90vw" : "md"}
+      size="90vw"
       transitionProps={{ transition: "fade", duration: 200 }}
       removeScrollProps={{ removeScrollBar: false }}
     >
