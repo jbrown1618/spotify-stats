@@ -22,6 +22,8 @@ SELECT
     t.uri IN (SELECT track_uri FROM liked_track) AS track_liked,
     sc.stream_count AS track_stream_count,
 
+    ARRAY_AGG(DISTINCT a.name) AS artist_names,
+
     al.uri AS album_uri,
     al.name AS album_name,
     al.short_name AS album_short_name,

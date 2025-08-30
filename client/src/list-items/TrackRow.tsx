@@ -3,8 +3,7 @@ import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { Fragment } from "react/jsx-runtime";
 
 import { RowDesign, RowSkeleton } from "../design/RowDesign";
-import { TextSkeleton } from "../design/TextSkeleton";
-import { useArtists, useTrack } from "../useApi";
+import { useTrack } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
 
@@ -15,7 +14,6 @@ interface TrackRowProps {
 export function TrackRow({ trackUri }: TrackRowProps) {
   const setFilters = useSetFilters();
   const { data: track } = useTrack(trackUri);
-  const { data: artists } = useArtists({ tracks: [trackUri] });
   const isMobile = useIsMobile();
 
   if (!track) return <RowSkeleton />;
@@ -33,20 +31,16 @@ export function TrackRow({ trackUri }: TrackRowProps) {
       }
       tertiaryText={
         <div style={{ display: "flex" }}>
-          {!artists ? (
-            <TextSkeleton style="regular" />
-          ) : (
-            Object.values(artists).map((artist, i) => {
-              return (
-                <Fragment key={artist.artist_uri}>
-                  <Text c="dimmed">{artist.artist_name}</Text>
-                  {i < Object.values(artists).length - 1 ? (
-                    <Text c="dimmed">,&nbsp;</Text>
-                  ) : null}
-                </Fragment>
-              );
-            })
-          )}
+          {Object.values(track.artist_names).map((artist_name, i) => {
+            return (
+              <Fragment key={artist_name}>
+                <Text c="dimmed">{artist_name}</Text>
+                {i < Object.values(track.artist_names).length - 1 ? (
+                  <Text c="dimmed">,&nbsp;</Text>
+                ) : null}
+              </Fragment>
+            );
+          })}
         </div>
       }
       stats={[
