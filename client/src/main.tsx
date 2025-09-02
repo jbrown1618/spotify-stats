@@ -2,7 +2,9 @@ import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 
 import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -11,17 +13,26 @@ import { FiltersProvider } from "./FiltersProvider.tsx";
 
 const queryClient = new QueryClient();
 
+const persister = createAsyncStoragePersister({
+  storage: window.localStorage,
+});
+
+const maxPersistAge = 2 * 24 * 60 * 60 * 1000; // 2 days
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <FiltersProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister, maxAge: maxPersistAge }}
+      >
         <MantineProvider
           defaultColorScheme="dark"
           theme={{ primaryColor: "green" }}
         >
           <App />
         </MantineProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </FiltersProvider>
   </StrictMode>
 );
