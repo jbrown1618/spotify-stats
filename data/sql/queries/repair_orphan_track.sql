@@ -38,11 +38,6 @@ AND EXISTS (
     AND listening_period_id = h.listening_period_id   
 );
 
-
-UPDATE top_track
-SET track_uri = %(replacement_uri)s
-WHERE track_uri = %(orphan_uri)s;
-
 UPDATE sp_track_mb_recording r
 SET spotify_track_uri = %(replacement_uri)s
 WHERE r.spotify_track_uri = %(orphan_uri)s
