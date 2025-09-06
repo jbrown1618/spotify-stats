@@ -7,6 +7,7 @@ from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
 
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+alternate_date_format = "%Y-%m-%dT%H:%M:%SZ"
 max_listening_period_s = 7 * 24 * 60 * 60  # 7 days
 
 def save_listening_data():
@@ -18,7 +19,7 @@ def save_listening_data():
     for recent_play in recents['items']:
         track_uri = recent_play['track']['uri']
         played_at = recent_play['played_at']
-        time = datetime.strptime(played_at, played_at_date_format).timestamp()
+        time = to_timestamp(played_at)
         plays_data.append({ "track_uri": track_uri, "time": time })
     plays = pd.DataFrame(plays_data)
 
@@ -59,6 +60,12 @@ def save_listening_data():
         save_tracks_by_uri(unsaved_uris)
 
 
+def to_timestamp(date_str: str) -> float:
+    try:
+        return datetime.strptime(date_str, played_at_date_format).timestamp()
+    except ValueError:
+        return datetime.strptime(date_str, alternate_date_format).timestamp()
+    
 
 def get_listening_period(min_time: float, max_time: float):
     """
