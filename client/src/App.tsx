@@ -1,6 +1,6 @@
 import "./global.css";
 
-import { Anchor, Container, useMantineTheme } from "@mantine/core";
+import { Anchor, Container } from "@mantine/core";
 
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
@@ -8,7 +8,7 @@ import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
 import { WrappedDetails } from "./details/WrappedDetails";
-import { Filters } from "./Filters";
+import { Header, HeaderBackground } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
 import { GenresSection } from "./sections/GenresSection";
@@ -26,7 +26,7 @@ export function App() {
     <>
       <HeaderBackground />
       <Container size="lg">
-        <AppHeader />
+        <Header />
 
         {filters.wrapped && <WrappedDetails />}
         {filters.tracks?.length === 1 && (
@@ -65,35 +65,6 @@ export function App() {
         <AppFooter />
       </Container>
     </>
-  );
-}
-
-function AppHeader() {
-  return (
-    <nav
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-      }}
-    >
-      <h1 style={{ margin: 0, whiteSpace: "nowrap" }}>Spotify Stats</h1>
-      <Filters />
-    </nav>
-  );
-}
-
-function HeaderBackground() {
-  const t = useMantineTheme();
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: 40,
-        backgroundColor: t.colors.green[9],
-        position: "absolute",
-        zIndex: -1,
-      }}
-    />
   );
 }
 

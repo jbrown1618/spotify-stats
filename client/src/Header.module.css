@@ -1,0 +1,19 @@
+.headerNav {
+    display: flex;
+    justify-content: space-between;
+}
+
+.headerText {
+    margin: 0;
+    white-space: nowrap;
+    line-height: 40px;
+    font-size: 1.75em;
+}
+
+.headerBackground {
+    width: 100%;
+    height: 40px;
+    background-color: var(--mantine-color-green-9);
+    position: absolute;
+    z-index: -1;
+}
