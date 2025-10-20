@@ -48,7 +48,7 @@ function AlbumTile({ href }: { href: string }) {
   );
 }
 
-const maxItems = 50;
+const maxItems = 100;
 
 interface Tile {
   href: string;
@@ -61,7 +61,7 @@ function useAlbumTiles(): Tile[] | null {
 
   const tiles = deduplicateBy(
     Object.values(tracks).sort(mostStreamedTracks).map(toTile),
-    "key"
+    "href"
   );
 
   // Return null if fewer than 3 albums
