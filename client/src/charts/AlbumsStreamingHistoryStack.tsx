@@ -30,7 +30,7 @@ export function AlbumsStreamingHistoryStack() {
             }}
           >
             <img height={20} src={album.album_image_url} />
-            {album.album_name}
+            {album.album_short_name}
           </h4>
         )}
       />

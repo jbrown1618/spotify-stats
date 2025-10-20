@@ -8,7 +8,7 @@ import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
 import { WrappedDetails } from "./details/WrappedDetails";
-import { Header, HeaderBackground } from "./Header";
+import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
 import { GenresSection } from "./sections/GenresSection";
@@ -18,13 +18,14 @@ import { ProducersSection } from "./sections/ProducersSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
 import { useFilters } from "./useFilters";
+import { Backdrop } from "./Backdrop";
 
 export function App() {
   const filters = useFilters();
 
   return (
     <>
-      <HeaderBackground />
+      <Backdrop />
       <Container size="lg">
         <Header />
 

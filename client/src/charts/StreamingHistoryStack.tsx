@@ -46,22 +46,24 @@ export function StreamingHistoryStack<TItem>({
         .sort((a, b) => sortItems(getItem(a), getItem(b)))
         .map((key, i) => (
           <div key={key}>
-            <div style={{ marginLeft: 30 }}>{renderItem(getItem(key))}</div>
-            <StreamingHistoryAreaChart
-              streams_by_month={data[key]}
-              height={
-                i === Object.keys(data).length - 1
-                  ? itemHeight + 15
-                  : itemHeight
-              }
-              color={colors[i]}
-              withXAxis={i === Object.keys(data).length - 1}
-              dataMax={dataMax}
-              minYear={minYear}
-              minMonth={minMonth}
-              maxYear={maxYear}
-              maxMonth={maxMonth}
-            />
+            <div style={{ marginLeft: 0 }}>{renderItem(getItem(key))}</div>
+            <div style={{ marginLeft: -25 }}>
+              <StreamingHistoryAreaChart
+                streams_by_month={data[key]}
+                height={
+                  i === Object.keys(data).length - 1
+                    ? itemHeight + 15
+                    : itemHeight
+                }
+                color={colors[i]}
+                withXAxis={i === Object.keys(data).length - 1}
+                dataMax={dataMax}
+                minYear={minYear}
+                minMonth={minMonth}
+                maxYear={maxYear}
+                maxMonth={maxMonth}
+              />
+            </div>
           </div>
         ))}
     </div>

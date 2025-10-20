@@ -9,7 +9,3 @@ export function Header() {
     </nav>
   );
 }
-
-export function HeaderBackground() {
-  return <div className={styles.headerBackground} />;
-}
