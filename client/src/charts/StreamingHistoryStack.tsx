@@ -1,5 +1,6 @@
 import { colors } from "./colors";
 import { StreamingHistoryAreaChart } from "./StreamingHistoryAreaChart";
+import styles from "./StreamingHistoryStack.module.css";
 
 const totalMaxHeight = 600;
 const itemHeaderHeight = 32;
@@ -40,14 +41,16 @@ export function StreamingHistoryStack<TItem>({
     (totalMaxHeight - xAxisHeight - itemHeaderHeight * itemCount) / itemCount
   );
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className={styles.stackContainer}>
       {Object.keys(data)
         .filter(getItem)
         .sort((a, b) => sortItems(getItem(a), getItem(b)))
         .map((key, i) => (
           <div key={key}>
-            <div style={{ marginLeft: 0 }}>{renderItem(getItem(key))}</div>
-            <div style={{ marginLeft: -25 }}>
+            <div className={styles.itemContainer}>
+              {renderItem(getItem(key))}
+            </div>
+            <div className={styles.chartContainer}>
               <StreamingHistoryAreaChart
                 streams_by_month={data[key]}
                 height={

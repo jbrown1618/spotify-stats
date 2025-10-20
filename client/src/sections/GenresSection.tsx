@@ -2,6 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { GenresBarChart } from "../charts/GenresBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
+import sharedStyles from "../shared.module.css";
 import { useGenres } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
 
@@ -41,7 +42,7 @@ function GenrePill({ genre }: { genre: string }) {
     <Pill
       bg="gray"
       size="lg"
-      style={{ cursor: "pointer" }}
+      className={sharedStyles.clickable}
       onClick={() => setFilters({ genres: [genre] })}
     >
       {genre}

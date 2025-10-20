@@ -6,6 +6,7 @@ import { RowDesign, RowSkeleton } from "../design/RowDesign";
 import { useTrack } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
+import styles from "./TrackRow.module.css";
 
 interface TrackRowProps {
   trackUri: string;
@@ -30,7 +31,7 @@ export function TrackRow({ trackUri }: TrackRowProps) {
         })
       }
       tertiaryText={
-        <div style={{ display: "flex" }}>
+        <div className={styles.artistsContainer}>
           {Object.values(track.artist_names).map((artist_name, i) => {
             return (
               <Fragment key={artist_name}>
@@ -53,12 +54,12 @@ export function TrackRow({ trackUri }: TrackRowProps) {
           value: track.track_liked ? (
             <IconHeartFilled
               title="Liked"
-              style={{ color: "green", marginTop: 4 }}
+              className={`${styles.likedIcon} ${styles.likedIconGreen}`}
             />
           ) : (
             <IconHeart
               title="Unliked"
-              style={{ color: "gray", marginTop: 4 }}
+              className={`${styles.likedIcon} ${styles.likedIconGray}`}
             />
           ),
         },

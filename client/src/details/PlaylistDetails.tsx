@@ -1,5 +1,6 @@
 import { PlaylistTile } from "../list-items/PlaylistTile";
 import { usePlaylists } from "../useApi";
+import styles from "./PlaylistDetails.module.css";
 
 export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
   const { data: playlists } = usePlaylists({ playlists: [playlistURI] });
@@ -11,7 +12,7 @@ export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
   return (
     <>
       <h2>{playlist.playlist_name}</h2>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={styles.centeredContainer}>
         <PlaylistTile playlist={playlist} />
       </div>
     </>

@@ -1,0 +1,13 @@
+.stackContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itemContainer {
+  margin-left: 0;
+}
+
+.chartContainer {
+  margin-left: -25px;
+}

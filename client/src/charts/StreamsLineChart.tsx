@@ -4,6 +4,7 @@ import { Paper } from "@mantine/core";
 import { useIsMobile } from "../useIsMobile";
 import { formatDate } from "../utils";
 import { colors } from "./colors";
+import styles from "./StreamsLineChart.module.css";
 
 interface RankLineChartProps<TStreams> {
   ranks: TStreams[];
@@ -67,7 +68,7 @@ export function StreamsLineChart<TStreams>({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className={styles.chartContainer}>
       <LineChart
         h={height ?? 550}
         data={Array.from(dataPoints.values()).sort(
@@ -131,16 +132,13 @@ function RankLineChartTooltip({
   getLabel,
 }: RankLineChartTooltipProps) {
   return (
-    <Paper
-      withBorder
-      style={{ display: "flex", flexDirection: "column", padding: 20, gap: 5 }}
-    >
-      <h3 style={{ margin: 0, alignSelf: "center" }}>{formatDate(label)}</h3>
+    <Paper withBorder className={styles.tooltipContainer}>
+      <h3 className={styles.tooltipTitle}>{formatDate(label)}</h3>
       {payload
         ?.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
         .map((item) => {
           return (
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            <div className={styles.tooltipItem}>
               <div
                 style={{
                   backgroundColor: item.color,
@@ -149,12 +147,10 @@ function RankLineChartTooltip({
                   borderRadius: "0.5em",
                 }}
               />
-              <span style={{ width: 30, textAlign: "right" }}>
-                {item.value}
-              </span>
+              <span className={styles.tooltipValue}>{item.value}</span>
               <img
                 src={item.name && getImageURL(item.name)}
-                style={{ height: "1.5em", width: "1.5em" }}
+                className={styles.tooltipImage}
               />
               <span>{item.name && getLabel(item.name)}</span>
             </div>
@@ -184,26 +180,12 @@ function RankLineChartLegend({
 }: StreamsLineChartLegendProps) {
   if (!payload) return null;
   return (
-    <div
-      style={{
-        margin: 16,
-        display: "flex",
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 8,
-      }}
-    >
+    <div className={styles.legendContainer}>
       {payload
         .sort((a, b) => getStreamCount(a.value) - getStreamCount(b.value))
         .map((item) => {
           return (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 8,
-              }}
-            >
+            <div className={styles.legendItem}>
               <div
                 style={{
                   backgroundColor: item.color,
@@ -214,18 +196,9 @@ function RankLineChartLegend({
               />
               <img
                 src={getImageURL(item.value)}
-                style={{ height: "1.5em", width: "1.5em" }}
+                className={styles.legendImage}
               />
-              <span
-                style={{
-                  width: "20vw",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {getLabel(item.value)}
-              </span>
+              <span className={styles.legendLabel}>{getLabel(item.value)}</span>
             </div>
           );
         })}

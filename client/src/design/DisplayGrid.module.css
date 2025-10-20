@@ -1,0 +1,25 @@
+.noDataContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.selectContainer {
+  max-width: 150px;
+}
+
+.gridContainer {
+  margin-top: 8px;
+  display: flex;
+}
+
+.moreButton {
+  margin-top: 16px;
+}

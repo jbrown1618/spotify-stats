@@ -1,0 +1,16 @@
+.centeredContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.flexContainer {
+  display: flex;
+}
+
+.marginBottom {
+  margin-bottom: 16px;
+}
+
+.clickable {
+  cursor: pointer;
+}

@@ -1,6 +1,7 @@
 import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { ArtistTile } from "../list-items/ArtistTile";
+import sharedStyles from "../shared.module.css";
 import { useArtists } from "../useApi";
 
 interface ArtistDetailsProps {
@@ -17,7 +18,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   return (
     <>
       <h2>{artist.artist_name}</h2>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={sharedStyles.centeredContainer}>
         <ArtistTile large artist={artist} />
       </div>
 

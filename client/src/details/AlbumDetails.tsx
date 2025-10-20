@@ -1,6 +1,7 @@
 import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { AlbumTile } from "../list-items/AlbumTile";
+import sharedStyles from "../shared.module.css";
 import { useAlbums } from "../useApi";
 
 interface AlbumDetailsProps {
@@ -19,7 +20,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
     <>
       <h2>{album.album_name}</h2>
 
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={sharedStyles.centeredContainer}>
         <AlbumTile large album={album} />
       </div>
       <AlbumsStreamingHistoryStack />

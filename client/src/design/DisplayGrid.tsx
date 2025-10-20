@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 
 import { SortOptions } from "../sorting";
+import styles from "./DisplayGrid.module.css";
 import { LargeTileSkeleton } from "./LargeTileDesign";
 import { PillSkeleton } from "./PillDesign";
 import { RowSkeleton } from "./RowDesign";
@@ -82,22 +83,14 @@ export function DisplayGrid<T>({
 
   if (!loading && displayItems?.length === 0)
     return (
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={styles.noDataContainer}>
         <Text fs="italic">No data</Text>
       </div>
     );
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          marginTop: 8,
-          alignItems: "center",
-        }}
-      >
+      <div className={styles.controlsContainer}>
         {displayOptions.length > 1 ? (
           <SegmentedControl
             onChange={(v) => setVariant(v as DisplayVariant)}
@@ -109,7 +102,7 @@ export function DisplayGrid<T>({
         )}
 
         {sortOptions && Object.keys(sortOptions).length > 0 && (
-          <div style={{ maxWidth: 150 }}>
+          <div className={styles.selectContainer}>
             <Select
               data={Object.keys(sortOptions)}
               value={sort}
@@ -153,7 +146,7 @@ export function DisplayGrid<T>({
             ))}
       </div>
       {count < (items?.length ?? 0) ? (
-        <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
+        <Button variant="light" onClick={onMore} className={styles.moreButton}>
           More
         </Button>
       ) : null}

@@ -1,0 +1,11 @@
+.tileCard {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.tileContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+}

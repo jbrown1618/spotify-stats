@@ -1,0 +1,10 @@
+.artistsContainer {
+  display: flex;
+}
+
+.skeletonContainer {
+  height: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

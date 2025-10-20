@@ -8,6 +8,7 @@ import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
 import { WrappedDetails } from "./details/WrappedDetails";
+import styles from "./App.module.css";
 import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -71,7 +72,7 @@ export function App() {
 
 function AppFooter() {
   return (
-    <footer style={{ padding: 16, textAlign: "center" }}>
+    <footer className={styles.footer}>
       <Anchor
         href="https://www.github.com/jbrown1618/spotify-stats"
         target="_blank"
