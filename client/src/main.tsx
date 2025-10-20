@@ -4,6 +4,7 @@ import "@mantine/charts/styles.css";
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")!).render(
       >
         <MantineProvider defaultColorScheme="dark" theme={theme}>
           <App />
+          <ReactQueryDevtools initialIsOpen={false} />
         </MantineProvider>
       </PersistQueryClientProvider>
     </FiltersProvider>

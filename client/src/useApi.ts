@@ -49,11 +49,13 @@ export function useFilterOptions() {
 
 export function useTracks(filters?: ActiveFilters) {
   const globalFilters = useFilters();
-  const query = toFiltersQuery(filters ?? globalFilters);
+  const activeFilters = filters ?? globalFilters
+
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
   return useQuery<Record<string, Track>>({
     ...defaultQueryOptions,
     queryKey: ["tracks", query],
-    queryFn: async () => searchTracks(filters ?? globalFilters),
+    queryFn: async () => searchTracks(activeFilters),
   });
 }
 
@@ -251,7 +253,7 @@ function useTracksDependentQuery<T>(
     toFiltersQuery({ wrapped: filters.wrapped, ...filters }) ||
     DEFAULT_QUERY_KEY;
 
-  const { data: tracks } = useTracks(filters);
+  const { data: tracks, isSuccess } = useTracks(filters);
   const tracksFilter = {
     tracks: tracks ? Object.keys(tracks) : [],
     wrapped: filters.wrapped,
@@ -259,7 +261,7 @@ function useTracksDependentQuery<T>(
 
   const result = useQuery<T>({
     ...defaultQueryOptions,
-    enabled: !!tracks,
+    enabled: isSuccess,
     queryKey: [key, query],
     queryFn: async () =>
       tracksFilter.tracks.length === 0

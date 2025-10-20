@@ -2,6 +2,7 @@ import "./global.css";
 
 import { Anchor, Container } from "@mantine/core";
 
+import { Backdrop } from "./Backdrop";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
@@ -18,7 +19,6 @@ import { ProducersSection } from "./sections/ProducersSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
 import { useFilters } from "./useFilters";
-import { Backdrop } from "./Backdrop";
 
 export function App() {
   const filters = useFilters();

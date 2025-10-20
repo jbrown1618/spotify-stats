@@ -1,25 +1,13 @@
+import { Track } from "./api";
 import styles from "./Backdrop.module.css";
-import { mostStreamedAlbums } from "./sorting";
-import { useAlbums } from "./useApi";
+import { mostStreamedTracks } from "./sorting";
+import { useTracks } from "./useApi";
 
 export function Backdrop() {
-  const albumTiles = useAlbumTiles();
   return (
     <div className={styles.backdrop}>
       <HeaderBackdrop />
-      {albumTiles && (
-        <div className={styles.tileContainer}>
-          {albumTiles.map((album) => (
-            <div
-              key={album.album_uri}
-              className={styles.tile}
-              style={{
-                backgroundImage: `url(${album.album_image_url})`,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <AlbumTiles />
     </div>
   );
 }
@@ -28,29 +16,90 @@ function HeaderBackdrop() {
   return <div className={styles.headerBackground} />;
 }
 
-const maxItems = 100;
+function AlbumTiles() {
+  const tiles = useAlbumTiles();
+  return tiles ? <AlbumTilesDesign tiles={tiles} /> : null;
+}
 
-function useAlbumTiles() {
-  const { data: albums } = useAlbums();
-  if (!albums) return null;
+function AlbumTilesDesign({ tiles }: { tiles: Tile[] }) {
+  return (
+    <div
+      className={styles.tileContainer}
+      key={tiles
+        .slice(10)
+        .map((t) => t.key)
+        .join("-")}
+    >
+      {tiles.map((tile) => (
+        <AlbumTile key={tile.key} href={tile.href} />
+      ))}
+    </div>
+  );
+}
 
-  const sortedAlbums = Object.values(albums).sort(mostStreamedAlbums);
+function AlbumTile({ href }: { href: string }) {
+  return (
+    <div
+      className={styles.tile}
+      style={{
+        backgroundImage: `url(${href})`,
+      }}
+    />
+  );
+}
+
+const maxItems = 50;
+
+interface Tile {
+  href: string;
+  key: string;
+}
+
+function useAlbumTiles(): Tile[] | null {
+  const { data: tracks } = useTracks();
+  if (!tracks) return null;
+
+  const tiles = deduplicateBy(
+    Object.values(tracks).sort(mostStreamedTracks).map(toTile),
+    "key"
+  );
 
   // Return null if fewer than 3 albums
-  if (sortedAlbums.length < 3) return null;
+  if (tiles.length < 3) return null;
 
   // If we have enough albums, just slice to maxItems
-  if (sortedAlbums.length >= maxItems) {
-    return sortedAlbums.slice(0, maxItems);
+  if (tiles.length >= maxItems) {
+    return tiles.slice(0, maxItems);
   }
 
   // If fewer than maxItems albums, repeat items until we have maxItems
   const result = [];
   while (result.length < maxItems) {
-    for (let i = 0; i < sortedAlbums.length && result.length < maxItems; i++) {
-      result.push(sortedAlbums[i]);
+    for (let i = 0; i < tiles.length && result.length < maxItems; i++) {
+      result.push({ key: `${tiles[i].key}-${i}`, href: tiles[i].href });
     }
   }
 
   return result;
+}
+
+const prefixLength = "spotify:track".length;
+
+function toTile(track: Track): Tile {
+  return {
+    key: track.track_uri.slice(prefixLength + 1),
+    href: track.album_image_url,
+  };
+}
+
+function deduplicateBy<T, K extends keyof T>(array: T[], key: K): T[] {
+  const seen = new Set();
+  return array.filter((item) => {
+    const value = item[key];
+    if (seen.has(value)) {
+      return false;
+    }
+    seen.add(value);
+    return true;
+  });
 }
