@@ -56,10 +56,7 @@ export function TrackRow({ trackUri }: TrackRowProps) {
               style={{ color: "green", marginTop: 4 }}
             />
           ) : (
-            <IconHeart
-              title="Unliked"
-              style={{ color: "gray", marginTop: 4 }}
-            />
+            <IconHeart title="Liked" style={{ color: "gray", marginTop: 4 }} />
           ),
         },
       ]}

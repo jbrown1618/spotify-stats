@@ -1,4 +1,4 @@
-import { PlaylistTile } from "../list-items/PlaylistTile";
+import { KPIsList } from "../design/KPI";
 import { usePlaylists } from "../useApi";
 
 export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
@@ -12,7 +12,12 @@ export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
     <>
       <h2>{playlist.playlist_name}</h2>
       <div style={{ display: "flex", justifyContent: "center" }}>
-        <PlaylistTile playlist={playlist} />
+        <KPIsList
+          items={[
+            { label: "Tracks", value: playlist.playlist_track_count },
+            { label: "Liked", value: playlist.playlist_liked_track_count },
+          ]}
+        />
       </div>
     </>
   );

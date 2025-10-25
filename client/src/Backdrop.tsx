@@ -18,7 +18,13 @@ function HeaderBackdrop() {
 
 function AlbumTiles() {
   const tiles = useAlbumTiles();
-  return tiles ? <AlbumTilesDesign tiles={tiles} /> : null;
+  return tiles && tiles.length > 0 ? (
+    tiles.length >= 4 ? (
+      <AlbumTilesDesign tiles={tiles} />
+    ) : (
+      <SingleAlbumTileDesign tile={tiles[0]} />
+    )
+  ) : null;
 }
 
 function AlbumTilesDesign({ tiles }: { tiles: Tile[] }) {
@@ -33,6 +39,19 @@ function AlbumTilesDesign({ tiles }: { tiles: Tile[] }) {
       {tiles.map((tile) => (
         <AlbumTile key={tile.key} href={tile.href} />
       ))}
+    </div>
+  );
+}
+
+function SingleAlbumTileDesign({ tile }: { tile: Tile }) {
+  return (
+    <div className={styles.singleTileContainer} key={tile.key}>
+      <div
+        className={styles.singleTile}
+        style={{
+          backgroundImage: `url(${tile.href})`,
+        }}
+      />
     </div>
   );
 }
@@ -64,8 +83,13 @@ function useAlbumTiles(): Tile[] | null {
     "href"
   );
 
-  // Return null if fewer than 3 albums
-  if (tiles.length < 3) return null;
+  if (tiles.length === 0) {
+    return null;
+  }
+
+  if (tiles.length < 4) {
+    return [tiles[0]];
+  }
 
   // If we have enough albums, just slice to maxItems
   if (tiles.length >= maxItems) {
