@@ -9,6 +9,7 @@ import { RowSkeleton } from "../design/RowDesign";
 import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
+import { mostStreamedArtists } from "../sorting";
 import { useArtists, useTrack } from "../useApi";
 import styles from "./TrackDetails.module.css";
 
@@ -72,6 +73,7 @@ function ArtistPills({ uris }: { uris: string[] }) {
     <div className={styles.artistPills}>
       {uris
         .map((uri) => artists[uri])
+        .sort(mostStreamedArtists)
         .map((artist) => (
           <ArtistPill key={artist.artist_uri} artist={artist} />
         ))}
