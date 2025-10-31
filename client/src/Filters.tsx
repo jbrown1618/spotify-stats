@@ -75,7 +75,6 @@ function FiltersDialog({
       title="Filters"
       opened={opened}
       onClose={() => onClose(localFilters)}
-      size="90vw"
       transitionProps={{ transition: "fade", duration: 200 }}
       removeScrollProps={{ removeScrollBar: false }}
     >
