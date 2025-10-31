@@ -1,14 +1,16 @@
-import { Text } from "@mantine/core";
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
-import { Fragment } from "react/jsx-runtime";
 
 import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList } from "../design/KPI";
+import { PillSkeleton } from "../design/PillDesign";
 import { RowSkeleton } from "../design/RowDesign";
 import { TextSkeleton } from "../design/TextSkeleton";
-import { useTrack } from "../useApi";
+import { AlbumPill } from "../list-items/AlbumPill";
+import { ArtistPill } from "../list-items/ArtistPill";
+import { useArtists, useTrack } from "../useApi";
+import styles from "./TrackDetails.module.css";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { data: track } = useTrack(trackURI);
@@ -30,23 +32,10 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
       <div style={{ display: "flex", justifyContent: "center" }}>
         <KPIsList
           items={[
-            { label: "Album", value: <Text>{track.album_short_name}</Text> },
+            { label: "Album", value: <AlbumPill album={track} /> },
             {
               label: track.artist_names.length > 1 ? "Artists" : "Artist",
-              value: (
-                <>
-                  {Object.values(track.artist_names).map((artist_name, i) => {
-                    return (
-                      <Fragment key={artist_name}>
-                        <Text>{artist_name}</Text>
-                        {i < Object.values(track.artist_names).length - 1 ? (
-                          <Text>,&nbsp;</Text>
-                        ) : null}
-                      </Fragment>
-                    );
-                  })}
-                </>
-              ),
+              value: <ArtistPills uris={track.artist_uris} />,
             },
             { label: "Streams", value: track.track_stream_count ?? 0 },
             { label: "Popularity", value: track.track_popularity },
@@ -70,5 +59,22 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
       <TracksStreamingHistoryStack />
       <TrackStreamsLineChart height={300} />
     </>
+  );
+}
+
+function ArtistPills({ uris }: { uris: string[] }) {
+  const { data: artists } = useArtists({ artists: uris });
+  if (!artists) {
+    return <PillSkeleton />;
+  }
+
+  return (
+    <div className={styles.artistPills}>
+      {uris
+        .map((uri) => artists[uri])
+        .map((artist) => (
+          <ArtistPill key={artist.artist_uri} artist={artist} />
+        ))}
+    </div>
   );
 }

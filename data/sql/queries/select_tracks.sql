@@ -23,6 +23,7 @@ SELECT
     sc.stream_count AS track_stream_count,
 
     ARRAY_AGG(DISTINCT a.name) AS artist_names,
+    ARRAY_AGG(DISTINCT a.uri) AS artist_uris,
 
     al.uri AS album_uri,
     al.name AS album_name,
