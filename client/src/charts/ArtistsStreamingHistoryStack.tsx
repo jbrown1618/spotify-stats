@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { Artist } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedArtists } from "../sorting";
@@ -9,8 +11,9 @@ export function ArtistsStreamingHistoryStack({
 }: {
   onlyArtist?: string;
 }) {
+  const [n, setN] = useState(5);
   const { data: artists } = useArtists();
-  const { data: history, shouldRender } = useArtistsStreamsByMonth();
+  const { data: history, shouldRender } = useArtistsStreamsByMonth(n);
 
   if (!artists || !history) return <ChartSkeleton />;
 
@@ -31,6 +34,12 @@ export function ArtistsStreamingHistoryStack({
         data={data}
         getItem={(key) => artists[key]}
         sortItems={mostStreamedArtists}
+        onMore={
+          n < Object.keys(artists).length
+            ? () => setN((prev) => prev + 5)
+            : undefined
+        }
+        onLess={n > 5 ? () => setN(5) : undefined}
         renderItem={(artist: Artist) => (
           <h4
             style={{

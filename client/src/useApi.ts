@@ -59,6 +59,19 @@ export function useTracks(filters?: ActiveFilters) {
   });
 }
 
+export function useTracksCount(filters?: ActiveFilters) {
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters
+
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery({
+    ...defaultQueryOptions,
+    queryKey: ["tracks", query],
+    queryFn: async () => searchTracks(activeFilters),
+    select: (data) => Object.keys(data).length,
+  });
+}
+
 export function useTrack(uri: string) {
   const { wrapped } = useFilters();
   return useQuery<TrackDetails>({
@@ -165,21 +178,21 @@ export function useAlbumsStreamingHistory() {
   return { ...result, shouldRender };
 }
 
-export function useTracksStreamsByMonth() {
-  function getTopFiveTracksStreamsByMonth(
+export function useTracksStreamsByMonth(n: number = 5) {
+  function getTopNTracksStreamsByMonth(
     filters: ActiveFilters,
     tracks: Record<string, Track>
   ) {
-    const topFiveUris = Object.values(tracks ?? {})
+    const topNUris = Object.values(tracks ?? {})
       .sort(mostStreamedTracks)
-      .slice(0, 5)
+      .slice(0, n)
       .map((t) => t.track_uri);
-    return getTracksStreamsByMonth({ ...filters, tracks: topFiveUris });
+    return getTracksStreamsByMonth({ ...filters, tracks: topNUris });
   }
 
   const result = useTracksDependentQuery(
-    "tracks-streams-by-month",
-    getTopFiveTracksStreamsByMonth,
+    "tracks-streams-by-month-" + n,
+    getTopNTracksStreamsByMonth,
     {}
   );
 
@@ -188,22 +201,22 @@ export function useTracksStreamsByMonth() {
   return { ...result, shouldRender };
 }
 
-export function useArtistsStreamsByMonth() {
+export function useArtistsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
   const { data: artists } = useArtists();
 
-  const topFiveUris = Object.values(artists ?? {})
+  const topNUris = Object.values(artists ?? {})
     .sort(mostStreamedArtists)
-    .slice(0, 5)
+    .slice(0, n)
     .map((t) => t.artist_uri);
 
-  const artistsFilter = { artists: topFiveUris, wrapped: filters.wrapped };
+  const artistsFilter = { artists: topNUris, wrapped: filters.wrapped };
   const query = toFiltersQuery(artistsFilter);
   const result = useQuery<
     Record<string, Record<number, Record<number, number>>>
   >({
     ...defaultQueryOptions,
-    queryKey: ["artists-streams-by-month", query],
+    queryKey: ["artists-streams-by-month", query, n],
     enabled: !!artists,
     queryFn: async () => getArtistsStreamsByMonth(artistsFilter),
   });
@@ -213,22 +226,22 @@ export function useArtistsStreamsByMonth() {
   return { ...result, shouldRender };
 }
 
-export function useAlbumsStreamsByMonth() {
+export function useAlbumsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
   const { data: albums } = useAlbums();
 
-  const topFiveUris = Object.values(albums ?? {})
+  const topNUris = Object.values(albums ?? {})
     .sort(mostStreamedAlbums)
-    .slice(0, 5)
+    .slice(0, n)
     .map((t) => t.album_uri);
 
-  const albumsFilter = { albums: topFiveUris, wrapped: filters.wrapped };
+  const albumsFilter = { albums: topNUris, wrapped: filters.wrapped };
   const query = toFiltersQuery(albumsFilter);
   const result = useQuery<
     Record<string, Record<number, Record<number, number>>>
   >({
     ...defaultQueryOptions,
-    queryKey: ["albums-streams-by-month", query],
+    queryKey: ["albums-streams-by-month", query, n],
     enabled: !!albums,
     queryFn: async () => getAlbumsStreamsByMonth(albumsFilter),
   });

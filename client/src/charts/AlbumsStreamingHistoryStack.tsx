@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { Album } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedAlbums } from "../sorting";
@@ -5,8 +7,9 @@ import { useAlbums, useAlbumsStreamsByMonth } from "../useApi";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function AlbumsStreamingHistoryStack() {
+  const [n, setN] = useState(5);
   const { data: albums } = useAlbums();
-  const { data: history, shouldRender } = useAlbumsStreamsByMonth();
+  const { data: history, shouldRender } = useAlbumsStreamsByMonth(n);
 
   if (!albums || !history) return <ChartSkeleton />;
 
@@ -19,6 +22,12 @@ export function AlbumsStreamingHistoryStack() {
         data={history}
         getItem={(key) => albums[key]}
         sortItems={mostStreamedAlbums}
+        onMore={
+          n < Object.keys(albums).length
+            ? () => setN((prev) => prev + 5)
+            : undefined
+        }
+        onLess={n > 5 ? () => setN(5) : undefined}
         renderItem={(album: Album) => (
           <h4
             style={{

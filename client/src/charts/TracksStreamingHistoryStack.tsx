@@ -1,15 +1,19 @@
+import { useState } from "react";
+
 import { Track } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
-import { useTracksStreamsByMonth } from "../useApi";
+import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function TracksStreamingHistoryStack() {
+  const [n, setN] = useState(5);
+  const { data: trackCount } = useTracksCount();
   const {
     data: streamsByMonth,
     tracks,
     shouldRender,
-  } = useTracksStreamsByMonth();
+  } = useTracksStreamsByMonth(n);
 
   if (!shouldRender) return null;
 
@@ -22,6 +26,10 @@ export function TracksStreamingHistoryStack() {
         data={streamsByMonth}
         getItem={(key) => tracks[key]}
         sortItems={mostStreamedTracks}
+        onMore={
+          n < (trackCount ?? 0) ? () => setN((prev) => prev + 5) : undefined
+        }
+        onLess={n > 5 ? () => setN(5) : undefined}
         renderItem={(track: Track) => (
           <h4
             style={{
