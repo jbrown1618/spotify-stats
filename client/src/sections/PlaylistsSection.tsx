@@ -1,5 +1,6 @@
 import { PlaylistsBarChart } from "../charts/PlaylistsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
+import { PlaylistRow } from "../list-items/PlaylistRow";
 import { PlaylistTile } from "../list-items/PlaylistTile";
 import { usePlaylists } from "../useApi";
 import { useFilters } from "../useFilters";
@@ -32,6 +33,7 @@ function PlaylistsDisplayGrid() {
       }
       getKey={(playlist) => playlist.playlist_uri}
       renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
+      renderRow={(playlist) => <PlaylistRow playlist={playlist} />}
     />
   );
 }

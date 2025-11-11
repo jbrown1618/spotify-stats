@@ -9,9 +9,11 @@ import {
   IconGridDots,
   IconLayoutGridFilled,
   IconList,
+  IconMinus,
   IconPill,
+  IconPlus,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { SortOptions } from "../sorting";
 import { LargeTileSkeleton } from "./LargeTileDesign";
@@ -45,6 +47,7 @@ export function DisplayGrid<T>({
   renderPill,
   getKey,
 }: DisplayGridProps<T>) {
+  const ref = useRef<HTMLDivElement>(null);
   const [variant, setVariant] = useState<DisplayVariant>(
     renderRow
       ? "row"
@@ -65,6 +68,10 @@ export function DisplayGrid<T>({
   );
 
   const onMore = () => setCount((count) => count * 2);
+  const onLess = () => {
+    setCount(defaultCount);
+    ref.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const displayOptions: SegmentedControlItem[] = [];
   if (renderRow) displayOptions.push({ label: <IconList />, value: "row" });
@@ -90,6 +97,7 @@ export function DisplayGrid<T>({
   return (
     <>
       <div
+        ref={ref}
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -152,11 +160,18 @@ export function DisplayGrid<T>({
               </div>
             ))}
       </div>
-      {count < (items?.length ?? 0) ? (
-        <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
-          More
-        </Button>
-      ) : null}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        {count > defaultCount ? (
+          <Button variant="light" onClick={onLess} style={{ marginTop: 16 }}>
+            <IconMinus />
+          </Button>
+        ) : null}
+        {count < (items?.length ?? 0) ? (
+          <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
+            <IconPlus />
+          </Button>
+        ) : null}
+      </div>
     </>
   );
 }
