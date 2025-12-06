@@ -648,13 +648,6 @@ def producer_overview_path(producer_name, relative_to=None):
     )
 
 
-def pairplot_path(relative_to=None):
-    return relative_to_path(
-        os.path.join("images", "audio", "audio_pairplot.png"), 
-        relative_to
-    )
-
-
 def musicbrainz_data_path(table_name: str, relative_to=None):
     return relative_to_path(
         os.path.join(
