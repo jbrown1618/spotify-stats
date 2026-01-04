@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS liked_track (
 CREATE INDEX IF NOT EXISTS i_liked_track_track_uri ON liked_track (track_uri);
 
 CREATE TABLE IF NOT EXISTS track_rank (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     track_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS track_rank (
 CREATE INDEX IF NOT EXISTS i_track_rank_track_uri ON track_rank (track_uri);
 
 CREATE TABLE IF NOT EXISTS artist_rank (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     artist_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS artist_rank (
 CREATE INDEX IF NOT EXISTS i_artist_rank_artist_uri ON artist_rank (artist_uri);
 
 CREATE TABLE IF NOT EXISTS album_rank (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     album_uri TEXT NOT NULL,
     rank INT NOT NULL,
     as_of_date DATE NOT NULL,
