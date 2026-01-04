@@ -7,6 +7,7 @@ from routes.filters import filter_options_payload
 from routes.genres import genres_payload
 from routes.labels import labels_payload
 from routes.playlists import playlists_payload
+from routes.recommendations import recommendations_payload
 from routes.release_years import release_years_payload
 from routes.tracks import track_payload, tracks_search_payload
 from routes.utils import to_date_range, to_json
@@ -131,3 +132,8 @@ def list_album_streams_by_month():
         return {}
     min_date, max_date = to_date_range(request.json.get('wrapped', None))
     return album_streams_by_month(album_uris, min_date, max_date)
+
+
+@app.route("/api/recommendations")
+def get_recommendations():
+    return recommendations_payload()
