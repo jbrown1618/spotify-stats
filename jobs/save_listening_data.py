@@ -23,6 +23,9 @@ def save_listening_data():
         plays_data.append({ "track_uri": track_uri, "time": time })
     plays = pd.DataFrame(plays_data)
 
+    # Dual-write: save individual streams to the new stream table
+    save_streams(plays)
+
     current_min, current_id, new_min, new_id = get_listening_period(plays['time'].min(), plays['time'].max())
 
     current_plays = plays[(plays['time'] >= current_min) & (plays['time'] < new_min)] \
@@ -65,6 +68,22 @@ def to_timestamp(date_str: str) -> float:
         return datetime.strptime(date_str, played_at_date_format).timestamp()
     except ValueError:
         return datetime.strptime(date_str, alternate_date_format).timestamp()
+
+
+def save_streams(plays: pd.DataFrame):
+    """Save individual streams to the new stream table."""
+    print(f'Saving {len(plays)} streams to stream table...')
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        for _, row in plays.iterrows():
+            cursor.execute(
+                query_text('insert_stream'),
+                {
+                    "track_uri": row["track_uri"],
+                    "played_at": row["time"]
+                }
+            )
+        conn.commit()
     
 
 def get_listening_period(min_time: float, max_time: float):

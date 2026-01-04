@@ -151,6 +151,15 @@ CREATE TABLE IF NOT EXISTS listening_history (
     UNIQUE(listening_period_id, track_uri)
 );
 
+CREATE TABLE IF NOT EXISTS stream (
+    id BIGSERIAL PRIMARY KEY,
+    track_uri TEXT NOT NULL,
+    played_at TIMESTAMP NOT NULL,
+    UNIQUE(track_uri, played_at)
+);
+CREATE INDEX IF NOT EXISTS i_stream_track_uri ON stream (track_uri);
+CREATE INDEX IF NOT EXISTS i_stream_played_at ON stream (played_at);
+
 CREATE TABLE IF NOT EXISTS mb_artist_relationship (
     id SERIAL PRIMARY KEY,
     artist_mbid TEXT NOT NULL,
