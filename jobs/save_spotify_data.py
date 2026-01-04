@@ -94,6 +94,8 @@ def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
         tracks = sp.playlist_tracks(playlist_uri, limit=page_size, offset=offset)
         for item in tracks["items"]:
             track = item["track"]
+            if track is None or track.get("type") != "track":
+                continue  # Skip episodes and other non-track items
             playlist_track.append({ "playlist_uri": playlist_uri, "track_uri": track["uri"] })
             process_track(track)
 
@@ -127,6 +129,8 @@ def save_liked_tracks_data(sp: spotipy.Spotify):
 
         for item in saved_tracks["items"]:
             track = item["track"]
+            if track is None or track.get("type") != "track":
+                continue  # Skip episodes and other non-track items
             liked_tracks.append({ "track_uri": track["uri"] })
             process_track(track)
 
