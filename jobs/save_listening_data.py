@@ -5,18 +5,11 @@ from data.raw import get_connection
 from jobs.queue import queue_job
 from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
+from utils.track import is_blacklisted
 
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 alternate_date_format = "%Y-%m-%dT%H:%M:%SZ"
 max_listening_period_s = 7 * 24 * 60 * 60  # 7 days
-
-# Tracks containing these phrases (case-insensitive) will be excluded from listening history
-blacklisted_phrases = ["white noise", "loopable"]
-
-def is_blacklisted(track_name: str) -> bool:
-    """Check if a track name contains any blacklisted phrases."""
-    track_name_lower = track_name.lower()
-    return any(phrase in track_name_lower for phrase in blacklisted_phrases)
 
 def save_listening_data():
     sp = get_spotify_client()
