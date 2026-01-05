@@ -280,7 +280,7 @@ export async function getAlbumsStreamsByMonth(
 }
 
 export interface RecommendationList {
-  type: "track" | "artist";
+  type: "track" | "artist" | "album";
   uris: string[];
 }
 

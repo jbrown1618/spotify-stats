@@ -59,4 +59,19 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 "uris": artist_recs['artist_uri'].tolist()
             }
 
+        album_recs = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_album_recommendations_rediscover')),
+            conn,
+            params={
+                'percentile': 0.9,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
+        )
+        if not album_recs.empty:
+            recommendations["Rediscover albums"] = {
+                "type": "album",
+                "uris": album_recs['album_uri'].tolist()
+            }
+
     return recommendations

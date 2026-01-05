@@ -1,11 +1,17 @@
 import { Select } from "@mantine/core";
 import { useState } from "react";
 
-import { Artist } from "../api";
+import { Album, Artist } from "../api";
 import { DisplayGrid } from "../design/DisplayGrid";
+import { AlbumRow } from "../list-items/AlbumRow";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { TrackRow } from "../list-items/TrackRow";
-import { useArtists, useRecommendations, useTracks } from "../useApi";
+import {
+  useAlbums,
+  useArtists,
+  useRecommendations,
+  useTracks,
+} from "../useApi";
 
 export function RecommendationsSection() {
   const { data: recommendations, isLoading } = useRecommendations();
@@ -43,6 +49,10 @@ export function RecommendationsSection() {
       {activeRecommendation?.type === "artist" && (
         <ArtistRecommendations uris={activeRecommendation.uris} />
       )}
+
+      {activeRecommendation?.type === "album" && (
+        <AlbumRecommendations uris={activeRecommendation.uris} />
+      )}
     </div>
   );
 }
@@ -79,6 +89,24 @@ function ArtistRecommendations({ uris }: { uris: string[] }) {
       items={artists}
       getKey={(artist) => artist.artist_uri}
       renderRow={(artist) => <ArtistRow artist={artist} />}
+    />
+  );
+}
+
+function AlbumRecommendations({ uris }: { uris: string[] }) {
+  const { data: allAlbums, isLoading } = useAlbums({ albums: uris });
+
+  // Filter and sort albums to match the order from recommendations
+  const albums = uris
+    .map((uri) => allAlbums?.[uri])
+    .filter((a): a is Album => !!a);
+
+  return (
+    <DisplayGrid
+      loading={isLoading}
+      items={albums}
+      getKey={(album) => album.album_uri}
+      renderRow={(album) => <AlbumRow album={album} />}
     />
   );
 }
