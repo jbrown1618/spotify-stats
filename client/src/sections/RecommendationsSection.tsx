@@ -6,27 +6,11 @@ import { DisplayGrid } from "../design/DisplayGrid";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { TrackRow } from "../list-items/TrackRow";
 import { useArtists, useRecommendations, useTracks } from "../useApi";
-import { useFilters } from "../useFilters";
 
 export function RecommendationsSection() {
-  const filters = useFilters();
   const { data: recommendations, isLoading } = useRecommendations();
   const [selectedList, setSelectedList] = useState<string | null>(null);
 
-  // Don't show recommendations if filters are applied
-  const hasFilters =
-    filters.tracks?.length ||
-    filters.artists?.length ||
-    filters.albums?.length ||
-    filters.playlists?.length ||
-    filters.labels?.length ||
-    filters.genres?.length ||
-    filters.years?.length ||
-    filters.producers?.length ||
-    filters.liked ||
-    filters.wrapped;
-
-  if (hasFilters) return null;
   if (
     !isLoading &&
     (!recommendations || Object.keys(recommendations).length === 0)

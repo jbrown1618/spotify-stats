@@ -286,8 +286,10 @@ export interface RecommendationList {
 
 export type Recommendations = Record<string, RecommendationList>;
 
-export async function getRecommendations(): Promise<Recommendations> {
-  return sendRequest(`/api/recommendations`, "recommendations");
+export async function getRecommendations(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Recommendations> {
+  return sendRequest(`/api/recommendations`, "recommendations", filters);
 }
 
 async function sendRequest<T>(

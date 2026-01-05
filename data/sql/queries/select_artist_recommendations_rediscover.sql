@@ -1,5 +1,5 @@
 -- Find artists with significant listening history that haven't been played recently
--- Parameter: :percentile (0.0 to 1.0)
+-- Parameters: :percentile (0.0 to 1.0), :filter_tracks (boolean), :track_uris (array)
 WITH artist_stats AS (
     SELECT 
         ta.artist_uri,
@@ -8,6 +8,7 @@ WITH artist_stats AS (
     FROM listening_history h
     INNER JOIN listening_period p ON p.id = h.listening_period_id
     INNER JOIN track_artist ta ON ta.track_uri = h.track_uri
+    WHERE (:filter_tracks = FALSE OR h.track_uri IN :track_uris)
     GROUP BY ta.artist_uri
 ),
 stream_percentiles AS (

@@ -1,3 +1,4 @@
+import typing
 import pandas as pd
 import sqlalchemy
 
@@ -5,14 +6,22 @@ from data.query import query_text
 from data.raw import get_engine
 
 
-def recommendations_payload():
+def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None):
     recommendations = {}
+    
+    filter_tracks = track_uris is not None and len(track_uris) > 0
+    # Use a tuple for SQL IN clause, with a dummy value if empty to avoid SQL errors
+    track_uris_tuple = tuple(track_uris) if filter_tracks else ('__none__',)
 
     with get_engine().begin() as conn:
         track_recs = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
             conn,
-            params={'percentile': 0.6}
+            params={
+                'percentile': 0.6,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
         )
         if not track_recs.empty:
             recommendations["It's been a long time"] = {
@@ -23,7 +32,11 @@ def recommendations_payload():
         top_tracks = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
             conn,
-            params={'percentile': 0.9}
+            params={
+                'percentile': 0.9,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
         )
         if not top_tracks.empty:
             recommendations["Jump back in"] = {
@@ -34,7 +47,11 @@ def recommendations_payload():
         artist_recs = pd.read_sql_query(
             sqlalchemy.text(query_text('select_artist_recommendations_rediscover')),
             conn,
-            params={'percentile': 0.95}
+            params={
+                'percentile': 0.95,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
         )
         if not artist_recs.empty:
             recommendations["Rediscover artists"] = {

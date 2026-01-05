@@ -21,7 +21,6 @@ import {
   getTrack,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
-  Recommendations,
   searchTracks,
   toFiltersQuery,
   Track,
@@ -254,11 +253,7 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
 }
 
 export function useRecommendations() {
-  return useQuery<Recommendations>({
-    ...defaultQueryOptions,
-    queryKey: ["recommendations"],
-    queryFn: async () => getRecommendations(),
-  });
+  return useTracksDependentQuery("recommendations", getRecommendations, {});
 }
 
 function useTracksDependentQuery<T>(

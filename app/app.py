@@ -134,6 +134,6 @@ def list_album_streams_by_month():
     return album_streams_by_month(album_uris, min_date, max_date)
 
 
-@app.route("/api/recommendations")
+@app.route("/api/recommendations", methods = ['POST'])
 def get_recommendations():
-    return recommendations_payload()
+    return recommendations_payload(request.json.get('tracks', None))
