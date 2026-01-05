@@ -6,7 +6,7 @@ from data.raw import get_engine
 
 
 # Percentile thresholds for recommendations
-TRACK_PERCENTILE = 0.75  # Top 25% most-listened liked tracks
+TRACK_PERCENTILE = 0.60  # Top 40% most-listened liked tracks
 ARTIST_PERCENTILE = 0.80  # Top 20% most-listened artists
 
 
