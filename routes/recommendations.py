@@ -18,7 +18,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
             conn,
             params={
-                'percentile': 0.4,
+                'percentile': 0.6,
                 'filter_tracks': filter_tracks,
                 'track_uris': track_uris_tuple
             }
