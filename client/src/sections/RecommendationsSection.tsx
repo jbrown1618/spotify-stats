@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Album, Artist } from "../api";
 import { DisplayGrid } from "../design/DisplayGrid";
+import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumRow } from "../list-items/AlbumRow";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { TrackRow } from "../list-items/TrackRow";
@@ -27,6 +28,21 @@ export function RecommendationsSection() {
   const activeList = selectedList ?? listNames[0] ?? null;
   const activeRecommendation =
     activeList && recommendations ? recommendations[activeList] : null;
+
+  if (isLoading) {
+    return (
+      <div>
+        <h2>Recommendations</h2>
+        <TextSkeleton style="regular" />
+        <DisplayGrid
+          loading={true}
+          items={undefined}
+          getKey={() => ""}
+          renderRow={() => <></>}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
