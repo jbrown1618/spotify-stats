@@ -3,8 +3,10 @@ import { Skeleton } from "@mantine/core";
 import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { KPIsList } from "../design/KPI";
+import { PillWithAvatar } from "../design/PillDesign";
 import { ArtistPill } from "../list-items/ArtistPill";
 import { useAlbums, useArtistCredits, useArtists } from "../useApi";
+import { useSetFilters } from "../useFilters";
 
 interface ArtistDetailsProps {
   artistURI: string;
@@ -79,7 +81,21 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           <h3>Members</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {artistCredits.members.map((member) => (
-              member.artist_uri && <ArtistPill key={member.artist_uri} artist={member as any} />
+              member.artist_uri && member.artist_name && (
+                <ArtistPill 
+                  key={member.artist_uri} 
+                  artist={{
+                    artist_uri: member.artist_uri,
+                    artist_name: member.artist_name,
+                    artist_image_url: member.artist_image_url || "",
+                    artist_followers: 0,
+                    artist_liked_track_count: 0,
+                    artist_popularity: 0,
+                    artist_track_count: 0,
+                    artist_stream_count: 0
+                  }}
+                />
+              )
             ))}
           </div>
         </div>
@@ -91,7 +107,12 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {artistCredits.groups.map((group) => (
               group.artist_uri ? (
-                <ArtistPill key={group.artist_mbid} artist={{ artist_uri: group.artist_uri, artist_name: group.artist_name!, artist_image_url: group.artist_image_url! } as any} />
+                <RelatedArtistPill
+                  key={group.artist_mbid}
+                  artistUri={group.artist_uri}
+                  artistName={group.artist_name || group.artist_mb_name}
+                  artistImageUrl={group.artist_image_url}
+                />
               ) : (
                 <span key={group.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
                   {group.artist_name || group.artist_mb_name}
@@ -108,7 +129,12 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {artistCredits.subgroups.map((subgroup) => (
               subgroup.artist_uri ? (
-                <ArtistPill key={subgroup.artist_mbid} artist={{ artist_uri: subgroup.artist_uri, artist_name: subgroup.artist_name!, artist_image_url: subgroup.artist_image_url! } as any} />
+                <RelatedArtistPill
+                  key={subgroup.artist_mbid}
+                  artistUri={subgroup.artist_uri}
+                  artistName={subgroup.artist_name || subgroup.artist_mb_name}
+                  artistImageUrl={subgroup.artist_image_url}
+                />
               ) : (
                 <span key={subgroup.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
                   {subgroup.artist_name || subgroup.artist_mb_name}
@@ -150,5 +176,27 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
       <ArtistsStreamingHistoryStack onlyArtist={artistURI} />
       <ArtistStreamsLineChart height={300} onlyArtist={artistURI} />
     </>
+  );
+}
+
+function RelatedArtistPill({ 
+  artistUri, 
+  artistName, 
+  artistImageUrl 
+}: { 
+  artistUri: string; 
+  artistName: string; 
+  artistImageUrl: string | null | undefined; 
+}) {
+  const setFilters = useSetFilters();
+
+  const onClick = () => {
+    setFilters({ artists: [artistUri] });
+  };
+
+  return (
+    <PillWithAvatar imageHref={artistImageUrl || ""} onClick={onClick}>
+      {artistName}
+    </PillWithAvatar>
   );
 }
