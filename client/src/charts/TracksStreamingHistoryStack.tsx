@@ -4,8 +4,8 @@ import { Track } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
 import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
-import { StreamingHistoryStack } from "./StreamingHistoryStack";
 import styles from "./StreamingHistoryItem.module.css";
+import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function TracksStreamingHistoryStack() {
   const [n, setN] = useState(5);

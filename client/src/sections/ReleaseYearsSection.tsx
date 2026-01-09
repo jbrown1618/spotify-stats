@@ -4,6 +4,7 @@ import { YearsBarChart } from "../charts/YearsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useReleaseYears } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import styles from "./Sections.module.css";
 
 export function ReleaseYearsSection() {
   return (
@@ -40,7 +41,7 @@ function ReleaseYearPill({ year }: { year: number }) {
     <Pill
       bg="gray"
       size="lg"
-      style={{ cursor: "pointer" }}
+      className={styles.clickable}
       onClick={() => setFilters({ years: [year] })}
     >
       {year}

@@ -4,8 +4,8 @@ import { Album } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedAlbums } from "../sorting";
 import { useAlbums, useAlbumsStreamsByMonth } from "../useApi";
-import { StreamingHistoryStack } from "./StreamingHistoryStack";
 import styles from "./StreamingHistoryItem.module.css";
+import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function AlbumsStreamingHistoryStack() {
   const [n, setN] = useState(5);

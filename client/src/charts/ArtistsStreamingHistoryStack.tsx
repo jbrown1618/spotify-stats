@@ -4,8 +4,8 @@ import { Artist } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useArtistsStreamsByMonth } from "../useApi";
-import { StreamingHistoryStack } from "./StreamingHistoryStack";
 import styles from "./StreamingHistoryItem.module.css";
+import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function ArtistsStreamingHistoryStack({
   onlyArtist,
