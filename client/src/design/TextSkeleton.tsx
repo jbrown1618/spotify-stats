@@ -1,16 +1,16 @@
 import { Skeleton } from "@mantine/core";
 
+import styles from "./TextSkeleton.module.css";
+
 export function TextSkeleton({ style }: { style: keyof typeof styleMap }) {
   const { height, lineHeight, marginY, width } = styleMap[style];
   return (
     <div
+      className={styles.textSkeleton}
       style={{
         height: lineHeight,
         marginTop: marginY,
         marginBottom: marginY,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
       }}
     >
       <Skeleton width={width} height={height} />

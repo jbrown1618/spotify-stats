@@ -3,6 +3,7 @@ import { IconFilter, IconX } from "@tabler/icons-react";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
 import { ActiveFilters, defaultFilterOptions, FilterOptions } from "./api";
+import styles from "./Filters.module.css";
 import { useFilterOptions } from "./useApi";
 import { useFilters, useSetFilters } from "./useFilters";
 import { namedWrappedOptions } from "./utils";
@@ -21,9 +22,9 @@ export function Filters() {
   const lastOptions = lastOptionsRef.current;
 
   return (
-    <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center" }}>
+    <div className={styles.filtersContainer}>
       <Button variant="subtle" size="xs" onClick={() => setDialogOpen(true)}>
-        <IconFilter style={{ marginRight: 8 }} />
+        <IconFilter className={styles.filterIcon} />
         Filters
       </Button>
       {Object.keys(filters).length > 0 && (
@@ -78,7 +79,7 @@ function FiltersDialog({
       transitionProps={{ transition: "fade", duration: 200 }}
       removeScrollProps={{ removeScrollBar: false }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className={styles.dialogContent}>
         <ListeningPeriodFilter {...props} />
         <PlaylistsFilter {...props} />
         <ArtistsFilter {...props} />

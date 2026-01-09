@@ -2,6 +2,7 @@ import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { KPIsList } from "../design/KPI";
 import { useAlbums } from "../useApi";
+import styles from "./Details.module.css";
 
 interface AlbumDetailsProps {
   albumURI: string;
@@ -19,7 +20,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
     <>
       <h2>{album.album_name}</h2>
 
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={styles.centered}>
         <KPIsList
           items={[
             { label: "Streams", value: album.album_stream_count ?? 0 },

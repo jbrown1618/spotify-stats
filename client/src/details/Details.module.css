@@ -1,0 +1,33 @@
+.centered {
+  display: flex;
+  justify-content: center;
+}
+
+.marginBottom {
+  margin-bottom: 16px;
+}
+
+.likedIcon {
+  margin-top: 4px;
+}
+
+.likedIconGreen {
+  color: green;
+}
+
+.likedIconGray {
+  color: gray;
+}
+
+.artistImageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.artistImage {
+  height: 200px;
+  width: 200px;
+  border-radius: 100px;
+  margin: 16px;
+}

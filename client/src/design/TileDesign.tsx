@@ -2,6 +2,7 @@ import { Card, Skeleton, Text } from "@mantine/core";
 
 import { KPIProps, KPIsList } from "./KPI";
 import { SpotifyLink } from "./SpotifyLink";
+import styles from "./TileDesign.module.css";
 
 interface TileDesignProps {
   title: string;
@@ -25,7 +26,7 @@ export function TileDesign({
       w={150}
       shadow="md"
       withBorder
-      style={{ padding: 10, cursor: "pointer" }}
+      className={styles.tile}
       onClick={onClick}
     >
       <Card.Section
@@ -37,14 +38,7 @@ export function TileDesign({
         }}
       />
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          paddingTop: 8,
-        }}
-      >
+      <div className={styles.tileContent}>
         <Text fw={700}>{title}</Text>
         {subtitle && <Text>{subtitle}</Text>}
         {stats && <KPIsList items={stats} />}
