@@ -14,15 +14,15 @@ FROM mb_recording_credit rc
     LEFT JOIN artist a ON sama.spotify_artist_uri = a.uri
 WHERE :filter_tracks = FALSE OR stmr.spotify_track_uri IN :track_uris
     AND rc.credit_type IN (
-        'premiere',
+        'songwriter',
         'lyricist',
-        'mastering',
-        'instrument technician',
-        'publishing',
-        'translator',
         'producer',
+        'arranger',
         'sound',
-        'arranger'
+        'mastering',
+        'audio director',
+        'video director',
+        'publishing'
     ) 
 GROUP BY
     mb.artist_mb_name,
