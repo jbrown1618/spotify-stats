@@ -1,5 +1,6 @@
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 
+import type { Credit } from "../api";
 import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { ChartSkeleton } from "../design/ChartSkeleton";
@@ -12,7 +13,6 @@ import { ArtistPill } from "../list-items/ArtistPill";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useTrack, useTrackCredits } from "../useApi";
 import styles from "./TrackDetails.module.css";
-import type { Credit } from "../api";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { data: track } = useTrack(trackURI);
