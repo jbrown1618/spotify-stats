@@ -21,6 +21,7 @@ import {
   getTrack,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  Recommendations,
   searchTracks,
   toFiltersQuery,
   Track,
@@ -253,7 +254,31 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
 }
 
 export function useRecommendations() {
-  return useTracksDependentQuery("recommendations", getRecommendations, {});
+  const globalFilters = useFilters();
+  const filters = globalFilters;
+  const query = toFiltersQuery({ wrapped: filters.wrapped, ...filters }) || DEFAULT_QUERY_KEY;
+
+  const { data: tracks, isSuccess } = useTracks(filters);
+  
+  // When no filters are applied, don't pass track URIs to avoid performance issues
+  // The server will handle unfiltered queries more efficiently without URIs
+  const hasFilters = Object.keys(filters).length > 0;
+  const tracksFilter = {
+    tracks: hasFilters && tracks ? Object.keys(tracks) : undefined,
+    wrapped: filters.wrapped,
+  };
+
+  const result = useQuery<Recommendations>({
+    ...defaultQueryOptions,
+    enabled: isSuccess,
+    queryKey: ["recommendations", query],
+    queryFn: async () =>
+      hasFilters && tracksFilter.tracks && tracksFilter.tracks.length === 0
+        ? {}
+        : getRecommendations(tracksFilter),
+  });
+
+  return { ...result, tracks };
 }
 
 function useTracksDependentQuery<T>(
@@ -272,12 +297,8 @@ function useTracksDependentQuery<T>(
     DEFAULT_QUERY_KEY;
 
   const { data: tracks, isSuccess } = useTracks(filters);
-  
-  // When no filters are applied, don't pass track URIs to avoid performance issues
-  // The server will handle unfiltered queries more efficiently without URIs
-  const hasFilters = Object.keys(filters).length > 0;
   const tracksFilter = {
-    tracks: hasFilters && tracks ? Object.keys(tracks) : undefined,
+    tracks: tracks ? Object.keys(tracks) : [],
     wrapped: filters.wrapped,
   };
 
@@ -286,7 +307,7 @@ function useTracksDependentQuery<T>(
     enabled: isSuccess,
     queryKey: [key, query],
     queryFn: async () =>
-      hasFilters && tracksFilter.tracks && tracksFilter.tracks.length === 0
+      tracksFilter.tracks.length === 0
         ? defaultValue
         : getValue(tracksFilter, tracks!),
   });
