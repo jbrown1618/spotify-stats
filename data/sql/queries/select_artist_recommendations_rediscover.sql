@@ -23,5 +23,6 @@ SELECT
 FROM artist_stats ast
 CROSS JOIN stream_percentiles sp
 WHERE ast.total_streams >= sp.percentile_streams
+  AND ast.last_played < NOW() - INTERVAL '2 months'
 ORDER BY ast.last_played ASC
 LIMIT 20;

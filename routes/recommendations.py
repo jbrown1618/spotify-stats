@@ -10,6 +10,11 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
     recommendations = {}
     
     filter_tracks = track_uris is not None and len(track_uris) > 0
+    
+    # Don't show recommendations if viewing fewer than 60 tracks
+    if filter_tracks and len(track_uris) < 60:
+        return recommendations
+    
     # Use a tuple for SQL IN clause, with a dummy value if empty to avoid SQL errors
     track_uris_tuple = tuple(track_uris) if filter_tracks else ('__none__',)
 
@@ -23,7 +28,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 'track_uris': track_uris_tuple
             }
         )
-        if not still_interested_tracks.empty:
+        if not still_interested_tracks.empty and len(still_interested_tracks) >= 5:
             recommendations["Still interested?"] = {
                 "type": "track",
                 "uris": still_interested_tracks['track_uri'].tolist()
@@ -38,7 +43,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 'track_uris': track_uris_tuple
             }
         )
-        if not track_recs.empty:
+        if not track_recs.empty and len(track_recs) >= 5:
             recommendations["It's been a long time"] = {
                 "type": "track",
                 "uris": track_recs['track_uri'].tolist()
@@ -53,7 +58,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 'track_uris': track_uris_tuple
             }
         )
-        if not top_tracks.empty:
+        if not top_tracks.empty and len(top_tracks) >= 5:
             recommendations["Jump back in"] = {
                 "type": "track",
                 "uris": top_tracks['track_uri'].tolist()
@@ -68,7 +73,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 'track_uris': track_uris_tuple
             }
         )
-        if not artist_recs.empty:
+        if not artist_recs.empty and len(artist_recs) >= 5:
             recommendations["Rediscover artists"] = {
                 "type": "artist",
                 "uris": artist_recs['artist_uri'].tolist()
@@ -83,7 +88,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 'track_uris': track_uris_tuple
             }
         )
-        if not album_recs.empty:
+        if not album_recs.empty and len(album_recs) >= 5:
             recommendations["Rediscover albums"] = {
                 "type": "album",
                 "uris": album_recs['album_uri'].tolist()

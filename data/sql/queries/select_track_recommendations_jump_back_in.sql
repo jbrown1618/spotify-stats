@@ -24,5 +24,6 @@ SELECT
 FROM track_stats ts
 CROSS JOIN stream_percentiles sp
 WHERE ts.total_streams >= sp.percentile_streams
+  AND ts.last_played < NOW() - INTERVAL '2 months'
 ORDER BY ts.last_played ASC
 LIMIT 20;

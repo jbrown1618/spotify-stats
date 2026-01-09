@@ -26,5 +26,6 @@ SELECT
 FROM album_stats als
 CROSS JOIN stream_percentiles sp
 WHERE als.total_streams >= sp.percentile_streams
+  AND als.last_played < NOW() - INTERVAL '2 months'
 ORDER BY als.last_played ASC
 LIMIT 20;
