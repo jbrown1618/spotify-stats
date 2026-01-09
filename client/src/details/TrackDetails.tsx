@@ -10,6 +10,7 @@ import { RowSkeleton } from "../design/RowDesign";
 import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
+import sharedStyles from "../list-items/ListItems.module.css";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useTrack } from "../useApi";
 import styles from "./Details.module.css";
@@ -47,12 +48,12 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
               value: track.track_liked ? (
                 <IconHeartFilled
                   title="Liked"
-                  className={clsx(styles.likedIcon, styles.likedIconGreen)}
+                  className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGreen)}
                 />
               ) : (
                 <IconHeart
                   title="Liked"
-                  className={clsx(styles.likedIcon, styles.likedIconGray)}
+                  className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGray)}
                 />
               ),
             },

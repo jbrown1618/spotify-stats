@@ -16,12 +16,6 @@
   gap: 10px;
 }
 
-.tooltipColorBox {
-  height: 1em;
-  width: 1em;
-  border-radius: 0.5em;
-}
-
 .tooltipValue {
   width: 30px;
   text-align: right;

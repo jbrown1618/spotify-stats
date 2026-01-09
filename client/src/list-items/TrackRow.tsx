@@ -7,7 +7,7 @@ import { RowDesign, RowSkeleton } from "../design/RowDesign";
 import { useTrack } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
-import styles from "./TrackRow.module.css";
+import sharedStyles from "./ListItems.module.css";
 
 interface TrackRowProps {
   trackUri: string;
@@ -32,7 +32,7 @@ export function TrackRow({ trackUri }: TrackRowProps) {
         })
       }
       tertiaryText={
-        <div className={styles.artistsList}>
+        <div className={sharedStyles.artistsList}>
           {Object.values(track.artist_names).map((artist_name, i) => {
             return (
               <Fragment key={artist_name}>
@@ -55,12 +55,12 @@ export function TrackRow({ trackUri }: TrackRowProps) {
           value: track.track_liked ? (
             <IconHeartFilled
               title="Liked"
-              className={clsx(styles.likedIcon, styles.likedIconGreen)}
+              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGreen)}
             />
           ) : (
             <IconHeart
               title="Liked"
-              className={clsx(styles.likedIcon, styles.likedIconGray)}
+              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGray)}
             />
           ),
         },

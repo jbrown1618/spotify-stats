@@ -7,18 +7,6 @@
   margin-bottom: 16px;
 }
 
-.likedIcon {
-  margin-top: 4px;
-}
-
-.likedIconGreen {
-  color: green;
-}
-
-.likedIconGray {
-  color: gray;
-}
-
 .artistImageContainer {
   display: flex;
   flex-direction: column;

@@ -8,6 +8,7 @@ import { useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
 import styles from "./AlbumRow.module.css";
+import sharedStyles from "./ListItems.module.css";
 
 interface AlbumTileProps {
   album: Album;
@@ -52,7 +53,7 @@ function ArtistsList({ albumURI }: { albumURI: string }) {
     );
 
   return (
-    <div className={styles.artistsList}>
+    <div className={sharedStyles.artistsList}>
       {Object.values(albumArtists)
         .sort(mostStreamedArtists)
         .map((artist, i) => {

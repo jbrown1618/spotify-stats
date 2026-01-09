@@ -3,6 +3,7 @@ import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
 import { formatDate } from "../utils";
+import sharedStyles from "./ChartTooltip.module.css";
 import { colors } from "./colors";
 import styles from "./StreamsLineChart.module.css";
 
@@ -140,13 +141,13 @@ function RankLineChartTooltip({
           return (
             <div className={styles.tooltipItem}>
               <div
-                className={styles.tooltipColorBox}
+                className={sharedStyles.tooltipColorBox}
                 style={{ backgroundColor: item.color }}
               />
               <span className={styles.tooltipValue}>{item.value}</span>
               <img
                 src={item.name && getImageURL(item.name)}
-                className={styles.tooltipImage}
+                className={sharedStyles.tooltipImage}
               />
               <span>{item.name && getLabel(item.name)}</span>
             </div>
@@ -183,12 +184,12 @@ function RankLineChartLegend({
           return (
             <div className={styles.legendItem}>
               <div
-                className={styles.tooltipColorBox}
+                className={sharedStyles.tooltipColorBox}
                 style={{ backgroundColor: item.color }}
               />
               <img
                 src={getImageURL(item.value)}
-                className={styles.tooltipImage}
+                className={sharedStyles.tooltipImage}
               />
               <span className={styles.legendLabel}>
                 {getLabel(item.value)}

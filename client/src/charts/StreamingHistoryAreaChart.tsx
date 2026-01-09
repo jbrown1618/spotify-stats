@@ -3,6 +3,7 @@ import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
 import { formatMonth } from "../utils";
+import sharedStyles from "./ChartTooltip.module.css";
 import styles from "./StreamingHistoryAreaChart.module.css";
 
 export function StreamingHistoryAreaChart({
@@ -117,7 +118,7 @@ function AreaChartTooltip({ label, payload }: AreaChartTooltipProps) {
           return (
             <div key={item.value} className={styles.tooltipItem}>
               <div
-                className={styles.tooltipColorBox}
+                className={sharedStyles.tooltipColorBox}
                 style={{ backgroundColor: item.color }}
               />
               <span>Streams</span>
