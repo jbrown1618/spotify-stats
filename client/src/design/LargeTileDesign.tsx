@@ -1,6 +1,7 @@
 import { Card, Skeleton, Text } from "@mantine/core";
 
 import { KPIProps, KPIsList } from "./KPI";
+import styles from "./LargeTileDesign.module.css";
 import { SpotifyLink } from "./SpotifyLink";
 
 interface LargeTileDesignProps {
@@ -27,7 +28,7 @@ export function LargeTileDesign({
       w={300}
       shadow="md"
       withBorder
-      style={{ padding: 10, cursor: "pointer" }}
+      className={styles.largeTile}
       onClick={onClick}
     >
       <Card.Section
@@ -39,34 +40,11 @@ export function LargeTileDesign({
         }}
       />
       {secondarySrc && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            position: "relative",
-            top: -150,
-            marginBottom: -150,
-          }}
-        >
-          <img
-            src={src}
-            style={{
-              height: 200,
-              width: 200,
-              borderRadius: 100,
-            }}
-          />
+        <div className={styles.largeTileImageContainer}>
+          <img src={src} className={styles.largeTileImage} />
         </div>
       )}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-          paddingTop: 8,
-        }}
-      >
+      <div className={styles.largeTileContent}>
         <Text size={"xl"} fw={700}>
           {title}
         </Text>

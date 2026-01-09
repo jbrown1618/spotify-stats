@@ -1,5 +1,6 @@
 import { ArtistTile } from "../list-items/ArtistTile";
 import { useArtists, useProducers } from "../useApi";
+import styles from "./Details.module.css";
 
 export function ProducerDetails({ mbid }: { mbid: string }) {
   const { data: producers } = useProducers({ producers: [mbid] });
@@ -18,7 +19,7 @@ export function ProducerDetails({ mbid }: { mbid: string }) {
     <>
       <h2>{producer.producer_name}</h2>
       {artist && (
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <div className={styles.centered}>
           <ArtistTile large artist={artist} />
         </div>
       )}

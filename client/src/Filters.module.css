@@ -1,0 +1,15 @@
+.filtersContainer {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.filterIcon {
+  margin-right: 8px;
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
