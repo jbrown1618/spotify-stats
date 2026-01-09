@@ -74,4 +74,19 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
                 "uris": album_recs['album_uri'].tolist()
             }
 
+        still_interested = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
+            conn,
+            params={
+                'percentile': 0.6,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
+        )
+        if not still_interested.empty:
+            recommendations["Still interested?"] = {
+                "type": "track",
+                "uris": still_interested['track_uri'].tolist()
+            }
+
     return recommendations
