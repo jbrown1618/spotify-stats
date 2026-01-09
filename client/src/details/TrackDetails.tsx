@@ -116,23 +116,53 @@ function Credits({ credits }: { credits: Credit[] }) {
               marginLeft: 16
             }}>
               {creditsForType.map((credit) => (
-                <div
-                  key={`${credit.artist_mbid}-${credit.credit_type}`}
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: "16px",
-                    backgroundColor: "var(--mantine-color-default-hover)",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  {credit.artist_name || credit.artist_mb_name}
-                  {credit.credit_details && ` (${credit.credit_details})`}
-                </div>
+                <CreditItem key={`${credit.artist_mbid}-${credit.credit_type}`} credit={credit} />
               ))}
             </div>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function CreditItem({ credit }: { credit: Credit }) {
+  // If we have a Spotify artist URI, show it as an ArtistPill
+  if (credit.artist_uri && credit.artist_name) {
+    const artist = {
+      artist_uri: credit.artist_uri,
+      artist_name: credit.artist_name,
+      artist_image_url: credit.artist_image_url || "",
+      artist_followers: 0,
+      artist_liked_track_count: 0,
+      artist_popularity: 0,
+      artist_track_count: 0,
+      artist_stream_count: 0,
+    };
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <ArtistPill artist={artist} />
+        {credit.credit_details && (
+          <span style={{ fontSize: "0.875rem", color: "var(--mantine-color-dimmed)" }}>
+            ({credit.credit_details})
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Otherwise, show as plain text
+  return (
+    <div
+      style={{
+        padding: "4px 12px",
+        borderRadius: "16px",
+        backgroundColor: "var(--mantine-color-default-hover)",
+        fontSize: "0.875rem",
+      }}
+    >
+      {credit.artist_name || credit.artist_mb_name}
+      {credit.credit_details && ` (${credit.credit_details})`}
     </div>
   );
 }
