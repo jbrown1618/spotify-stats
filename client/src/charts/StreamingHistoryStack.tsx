@@ -4,6 +4,7 @@ import { useRef } from "react";
 
 import { colors } from "./colors";
 import { StreamingHistoryAreaChart } from "./StreamingHistoryAreaChart";
+import styles from "./StreamingHistoryStack.module.css";
 
 const itemHeaderHeight = 32;
 const xAxisHeight = 15;
@@ -54,14 +55,14 @@ export function StreamingHistoryStack<TItem>({
     (totalMaxHeight - xAxisHeight - itemHeaderHeight * itemCount) / itemCount
   );
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div ref={ref} className={styles.container}>
       {Object.keys(data)
         .filter(getItem)
         .sort((a, b) => sortItems(getItem(a), getItem(b)))
         .map((key, i) => (
           <div key={key}>
-            <div style={{ marginLeft: 0 }}>{renderItem(getItem(key))}</div>
-            <div style={{ marginLeft: -25 }}>
+            <div className={styles.itemHeader}>{renderItem(getItem(key))}</div>
+            <div className={styles.chartContainer}>
               <StreamingHistoryAreaChart
                 streams_by_month={data[key]}
                 height={
@@ -80,9 +81,7 @@ export function StreamingHistoryStack<TItem>({
             </div>
           </div>
         ))}
-      <div
-        style={{ display: "flex", gap: 8, marginTop: 8, alignSelf: "flex-end" }}
-      >
+      <div className={styles.buttons}>
         {onLess && (
           <Button
             size="compact-md"

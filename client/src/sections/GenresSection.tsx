@@ -4,6 +4,7 @@ import { GenresBarChart } from "../charts/GenresBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useGenres } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
+import styles from "./Sections.module.css";
 
 export function GenresSection() {
   const filters = useFilters();
@@ -41,7 +42,7 @@ function GenrePill({ genre }: { genre: string }) {
     <Pill
       bg="gray"
       size="lg"
-      style={{ cursor: "pointer" }}
+      className={styles.clickable}
       onClick={() => setFilters({ genres: [genre] })}
     >
       {genre}

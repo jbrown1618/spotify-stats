@@ -1,0 +1,43 @@
+.noData {
+  display: flex;
+  justify-content: center;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.sortSelect {
+  max-width: 150px;
+}
+
+.itemsContainer {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.itemsContainerRow {
+  flex-direction: column;
+  justify-content: left;
+}
+
+.itemsContainerGrid {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.button {
+  margin-top: 16px;
+}

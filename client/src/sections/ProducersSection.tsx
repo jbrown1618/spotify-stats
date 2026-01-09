@@ -5,6 +5,7 @@ import { ProducersBarChart } from "../charts/ProducersBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useProducers } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import styles from "./Sections.module.css";
 
 export function ProducersSection() {
   return (
@@ -40,7 +41,7 @@ function ProducerPill({ producer }: { producer: Producer }) {
     <Pill
       bg="gray"
       size="lg"
-      style={{ cursor: "pointer" }}
+      className={styles.clickable}
       onClick={() => setFilters({ producers: [producer.producer_mbid] })}
     >
       {producer.producer_name}

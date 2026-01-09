@@ -1,7 +1,9 @@
 import { Paper, Pill, Skeleton, Text } from "@mantine/core";
+import clsx from "clsx";
 
 import { useIsMobile } from "../useIsMobile";
 import { KPI, KPIProps } from "./KPI";
+import styles from "./RowDesign.module.css";
 import { SpotifyLink } from "./SpotifyLink";
 
 interface RowDesignProps {
@@ -31,59 +33,16 @@ export function RowDesign({
   return (
     <Paper
       onClick={onClick}
-      style={{
-        width: "100%",
-        position: "relative",
-        display: "flex",
-        gap: 16,
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 4,
-        overflow: "hidden",
-        cursor: onClick ? "pointer" : undefined,
-      }}
+      className={clsx(styles.row, onClick && styles.rowClickable)}
     >
       <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          opacity: 0.15,
-          backgroundImage: `url(${secondarySrc ?? src})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+        className={styles.rowBackground}
+        style={{ backgroundImage: `url(${secondarySrc ?? src})` }}
       />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          flexShrink: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          position: "relative",
-        }}
-      >
-        <img src={src} style={{ height: 70 }} />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
+      <div className={styles.rowContent}>
+        <img src={src} className={styles.rowImage} />
+        <div className={styles.rowText}>
+          <div className={styles.rowTextPrimary}>
             <Text fw={700}>{primaryText}</Text>
             {labels?.map((labelText) => (
               <Pill bg="gray">{labelText}</Pill>
@@ -102,23 +61,14 @@ export function RowDesign({
         </div>
       </div>
 
-      <div
-        style={{
-          flexShrink: 0,
-          display: "flex",
-          gap: 16,
-          alignItems: "start",
-          paddingRight: 8,
-          position: "relative",
-        }}
-      >
+      <div className={styles.rowStats}>
         {stats?.map((stat) =>
           stat ? <KPI key={stat.label} {...stat} /> : null
         )}
         {!isMobile && (
           <KPI
             value={
-              <div style={{ marginTop: 5 }}>
+              <div className={styles.spotifyLinkContainer}>
                 <SpotifyLink uri={itemURI} size={20} />
               </div>
             }
@@ -127,13 +77,7 @@ export function RowDesign({
         )}
       </div>
       {isMobile && (
-        <div
-          style={{
-            position: "absolute",
-            left: 7,
-            bottom: 3,
-          }}
-        >
+        <div className={styles.spotifyLinkMobile}>
           <SpotifyLink uri={itemURI} />
         </div>
       )}

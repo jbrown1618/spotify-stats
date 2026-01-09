@@ -1,0 +1,11 @@
+.itemHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.itemImage {
+  height: 20px;
+}

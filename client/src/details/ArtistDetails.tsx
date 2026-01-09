@@ -4,6 +4,7 @@ import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { KPIsList } from "../design/KPI";
 import { useAlbums, useArtists } from "../useApi";
+import styles from "./Details.module.css";
 
 interface ArtistDetailsProps {
   artistURI: string;
@@ -22,22 +23,8 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   return (
     <>
       <h2>{artist.artist_name}</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <img
-          src={artist.artist_image_url}
-          style={{
-            height: 200,
-            width: 200,
-            borderRadius: 100,
-            margin: 16,
-          }}
-        />
+      <div className={styles.artistImageContainer}>
+        <img src={artist.artist_image_url} className={styles.artistImage} />
         <KPIsList
           items={[
             { label: "Streams", value: artist.artist_stream_count ?? 0 },

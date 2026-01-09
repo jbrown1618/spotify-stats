@@ -1,0 +1,16 @@
+/* Shared styles for list item components */
+.artistsList {
+  display: flex;
+}
+
+.likedIcon {
+  margin-top: 4px;
+}
+
+.likedIconGreen {
+  color: green;
+}
+
+.likedIconGray {
+  color: gray;
+}

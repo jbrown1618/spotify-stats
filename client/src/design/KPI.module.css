@@ -1,0 +1,16 @@
+.kpisList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  gap: 16px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.noWrap {
+  text-wrap: nowrap;
+}

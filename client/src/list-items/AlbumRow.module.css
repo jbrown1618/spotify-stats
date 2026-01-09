@@ -1,0 +1,6 @@
+.artistsListSkeleton {
+  height: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

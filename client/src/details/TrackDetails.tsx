@@ -1,4 +1,5 @@
 import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import clsx from "clsx";
 
 import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
@@ -9,9 +10,11 @@ import { RowSkeleton } from "../design/RowDesign";
 import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
+import sharedStyles from "../list-items/ListItems.module.css";
 import { mostStreamedArtists } from "../sorting";
 import { useArtists, useTrack } from "../useApi";
-import styles from "./TrackDetails.module.css";
+import styles from "./Details.module.css";
+import trackStyles from "./TrackDetails.module.css";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { data: track } = useTrack(trackURI);
@@ -20,7 +23,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
     return (
       <>
         <TextSkeleton style="h2" />
-        <div style={{ marginBottom: 16 }}>
+        <div className={styles.marginBottom}>
           <RowSkeleton />
         </div>
         <ChartSkeleton />
@@ -30,7 +33,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
   return (
     <>
       <h2>{track.track_name}</h2>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={styles.centered}>
         <KPIsList
           items={[
             { label: "Album", value: <AlbumPill album={track} /> },
@@ -45,12 +48,12 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
               value: track.track_liked ? (
                 <IconHeartFilled
                   title="Liked"
-                  style={{ color: "green", marginTop: 4 }}
+                  className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGreen)}
                 />
               ) : (
                 <IconHeart
                   title="Liked"
-                  style={{ color: "gray", marginTop: 4 }}
+                  className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGray)}
                 />
               ),
             },
@@ -70,7 +73,7 @@ function ArtistPills({ uris }: { uris: string[] }) {
   }
 
   return (
-    <div className={styles.artistPills}>
+    <div className={trackStyles.artistPills}>
       {uris
         .map((uri) => artists[uri])
         .sort(mostStreamedArtists)

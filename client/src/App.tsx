@@ -2,6 +2,7 @@ import "./global.css";
 
 import { Anchor, Container } from "@mantine/core";
 
+import styles from "./App.module.css";
 import { Backdrop } from "./Backdrop";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
@@ -73,7 +74,7 @@ export function App() {
 
 function AppFooter() {
   return (
-    <footer style={{ padding: 16, textAlign: "center" }}>
+    <footer className={styles.appFooter}>
       <Anchor
         href="https://www.github.com/jbrown1618/spotify-stats"
         target="_blank"
