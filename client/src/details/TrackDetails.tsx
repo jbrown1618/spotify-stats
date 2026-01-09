@@ -90,8 +90,7 @@ function ArtistPills({ uris }: { uris: string[] }) {
 function Credits({ credits }: { credits: Credit[] }) {
   // Group credits by artist (using artist_mbid as the key)
   const creditsByArtist = credits.reduce((acc, credit) => {
-    // Use artist_mbid as key, fallback to artist_mb_name if mbid is missing
-    const artistKey = credit.artist_mbid || credit.artist_mb_name || 'unknown';
+    const artistKey = credit.artist_mbid;
     if (!acc[artistKey]) {
       acc[artistKey] = {
         artist: credit,
@@ -142,7 +141,7 @@ function Credits({ credits }: { credits: Credit[] }) {
         </thead>
         <tbody>
           {sortedArtists.map(({ artist, creditTypes }) => (
-            <tr key={artist.artist_mbid || artist.artist_mb_name || 'unknown'} style={{ 
+            <tr key={artist.artist_mbid} style={{ 
               borderBottom: "1px solid var(--mantine-color-default-border)"
             }}>
               <td style={{ padding: "12px 8px" }}>
