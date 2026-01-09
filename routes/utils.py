@@ -36,4 +36,4 @@ def to_json(df: pd.DataFrame, col: str = None):
         df = df.set_index(index_col)
         return json.loads(df.to_json(orient="index"))
     
-    return json.loads(df.to_json(orient="records", index=True))
+    return json.loads(df.to_json(orient="records"))
