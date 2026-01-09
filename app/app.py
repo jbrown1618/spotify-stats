@@ -2,7 +2,7 @@ import pandas as pd
 from flask import Flask, request, send_file
 
 from routes.albums import albums_payload
-from routes.artists import artists_payload
+from routes.artists import artists_payload, artist_credits_payload
 from routes.filters import filter_options_payload
 from routes.genres import genres_payload
 from routes.labels import labels_payload
@@ -52,6 +52,11 @@ def list_playlists():
 def list_artists():
     min_date, max_date = to_date_range(request.json.get("wrapped"))
     return artists_payload(request.json.get('tracks', None), min_date, max_date)
+
+
+@app.route("/api/artists/<artist_uri>/credits")
+def get_artist_credits(artist_uri):
+    return artist_credits_payload(artist_uri)
 
 
 @app.route("/api/albums", methods = ['POST'])

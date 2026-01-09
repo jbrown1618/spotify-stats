@@ -11,3 +11,36 @@ def artists_payload(track_uris: typing.Iterable[str], min_date, max_date):
     dp = DataProvider()
     artists = dp.artists(track_uris=track_uris, start_date=min_date, end_date=max_date)
     return to_json(artists, 'artist_uri')
+
+
+def artist_credits_payload(artist_uri: str):
+    dp = DataProvider()
+    
+    result = {}
+    
+    # Get songwriting/producing credits
+    credits = dp.artist_credits(artist_uri)
+    if credits is not None and len(credits) > 0:
+        result['credits'] = credits.to_dict('records')
+    
+    # Get aliases
+    aliases = dp.artist_aliases(artist_uri)
+    if aliases is not None and len(aliases) > 0:
+        result['aliases'] = aliases[['artist_mbid', 'artist_mb_name', 'artist_sort_name', 'relationship_type', 'relationship_direction', 'artist_uri', 'artist_name', 'artist_image_url']].to_dict('records')
+    
+    # Get group members (for groups)
+    members = dp.group_members(artist_uri)
+    if members is not None and len(members) > 0:
+        result['members'] = members.to_dict('records')
+    
+    # Get groups (for individuals)
+    groups = dp.artist_groups(artist_uri)
+    if groups is not None and len(groups) > 0:
+        result['groups'] = groups[['artist_mbid', 'artist_mb_name', 'artist_sort_name', 'relationship_type', 'relationship_direction', 'artist_uri', 'artist_name', 'artist_image_url']].to_dict('records')
+    
+    # Get subgroups (for groups)
+    subgroups = dp.artist_subgroups(artist_uri)
+    if subgroups is not None and len(subgroups) > 0:
+        result['subgroups'] = subgroups[['artist_mbid', 'artist_mb_name', 'artist_sort_name', 'relationship_type', 'relationship_direction', 'artist_uri', 'artist_name', 'artist_image_url']].to_dict('records')
+    
+    return result

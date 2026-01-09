@@ -299,6 +299,53 @@ class DataProvider:
         return members[[col for col in members.columns if col.startswith('artist_')]]
 
 
+    def artist_credits(self, artist_uri: str) -> pd.DataFrame:
+        with get_engine().begin() as conn:
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_artist_credits')), conn, params={
+                "artist_uri": artist_uri
+            })
+
+
+    def artist_aliases(self, artist_uri: str) -> pd.DataFrame:
+        related = self.related_artists(artist_uri)
+        if related is None:
+            return None
+        
+        alias_types = {'is person', 'artist rename'}
+        aliases = related[related['relationship_type'].isin(alias_types)]
+
+        if len(aliases) == 0:
+            return None
+
+        return aliases
+
+
+    def artist_groups(self, artist_uri: str) -> pd.DataFrame:
+        related = self.related_artists(artist_uri)
+        if related is None:
+            return None
+        
+        groups = related[(related['relationship_type'] == 'member of band') & (related['relationship_direction'] == 'forward')]
+
+        if len(groups) == 0:
+            return None
+
+        return groups
+
+
+    def artist_subgroups(self, artist_uri: str) -> pd.DataFrame:
+        related = self.related_artists(artist_uri)
+        if related is None:
+            return None
+        
+        subgroups = related[(related['relationship_type'] == 'subgroup') & (related['relationship_direction'] == 'backward')]
+
+        if len(subgroups) == 0:
+            return None
+
+        return subgroups
+
+
     def top_artists(self, current: bool = None, top: int = None, term: str = None, artist_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         out = RawData()['top_artists']
 
