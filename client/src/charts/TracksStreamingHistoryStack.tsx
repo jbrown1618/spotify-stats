@@ -5,6 +5,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
 import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
+import styles from "./StreamingHistoryItem.module.css";
 
 export function TracksStreamingHistoryStack() {
   const [n, setN] = useState(5);
@@ -31,16 +32,8 @@ export function TracksStreamingHistoryStack() {
         }
         onLess={n > 5 ? () => setN(5) : undefined}
         renderItem={(track: Track) => (
-          <h4
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              margin: 0,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <img height={20} src={track.album_image_url} />
+          <h4 className={styles.itemHeading}>
+            <img className={styles.itemImage} src={track.album_image_url} />
             {track.track_name}
           </h4>
         )}

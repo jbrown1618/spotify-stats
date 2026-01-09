@@ -1,6 +1,7 @@
 import { Anchor } from "@mantine/core";
 
 import SpotifyIcon from "../../spotify.svg";
+import styles from "./SpotifyLink.module.css";
 
 export function SpotifyLink({
   uri,
@@ -27,7 +28,8 @@ export function SpotifyLink({
     >
       <img
         src={SpotifyIcon}
-        style={{ height: size, width: size, marginRight: 4 }}
+        className={styles.spotifyIcon}
+        style={{ height: size, width: size }}
       />
       {text}
     </Anchor>

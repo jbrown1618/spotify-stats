@@ -7,6 +7,7 @@ import { mostStreamedArtists } from "../sorting";
 import { useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
+import styles from "./AlbumRow.module.css";
 
 interface AlbumTileProps {
   album: Album;
@@ -45,20 +46,13 @@ function ArtistsList({ albumURI }: { albumURI: string }) {
 
   if (!albumArtists)
     return (
-      <div
-        style={{
-          height: 24,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
+      <div className={styles.artistsListSkeleton}>
         <Skeleton width={100} height={14} />
       </div>
     );
 
   return (
-    <div style={{ display: "flex" }}>
+    <div className={styles.artistsList}>
       {Object.values(albumArtists)
         .sort(mostStreamedArtists)
         .map((artist, i) => {

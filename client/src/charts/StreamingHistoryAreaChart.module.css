@@ -1,0 +1,28 @@
+.tooltip {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 5px;
+}
+
+.tooltipTitle {
+  margin: 0;
+  align-self: center;
+}
+
+.tooltipItem {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.tooltipColorBox {
+  height: 1em;
+  width: 1em;
+  border-radius: 0.5em;
+}
+
+.tooltipValue {
+  width: 30px;
+  text-align: right;
+}
