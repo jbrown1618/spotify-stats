@@ -296,7 +296,10 @@ class DataProvider:
         if len(members) == 0:
             return None
 
-        return members[[col for col in members.columns if col.startswith('artist_')]]
+        artist_columns = [col for col in members.columns if col.startswith('artist_')]
+        members = members[artist_columns]
+        members.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
+        return members
 
 
     def artist_credits(self, artist_uri: str) -> pd.DataFrame:
@@ -317,6 +320,7 @@ class DataProvider:
         if len(aliases) == 0:
             return None
 
+        aliases.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
         return aliases
 
 
@@ -330,6 +334,7 @@ class DataProvider:
         if len(groups) == 0:
             return None
 
+        groups.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
         return groups
 
 
@@ -343,6 +348,7 @@ class DataProvider:
         if len(subgroups) == 0:
             return None
 
+        subgroups.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
         return subgroups
 
 
