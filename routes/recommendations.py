@@ -14,6 +14,21 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
     track_uris_tuple = tuple(track_uris) if filter_tracks else ('__none__',)
 
     with get_engine().begin() as conn:
+        still_interested_tracks = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
+            conn,
+            params={
+                'percentile': 0.6,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
+        )
+        if not still_interested_tracks.empty:
+            recommendations["Still interested?"] = {
+                "type": "track",
+                "uris": still_interested_tracks['track_uri'].tolist()
+            }
+
         track_recs = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
             conn,
