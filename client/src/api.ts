@@ -105,6 +105,18 @@ export interface Producer {
   credit_types: string[];
 }
 
+export interface Credit {
+  credit_type: string;
+  credit_details: string | null;
+  artist_mbid: string;
+  artist_mb_name: string;
+  artist_sort_name: string | null;
+  artist_type: string | null;
+  artist_uri: string | null;
+  artist_name: string | null;
+  artist_image_url: string | null;
+}
+
 export interface ReleaseYear {
   release_year: number;
   track_count: number;
@@ -175,6 +187,10 @@ export async function getTrack(
     `/api/tracks/${uri}${wrapped ? "?wrapped=" + wrapped : ""}`,
     `track ${uri}`
   );
+}
+
+export async function getTrackCredits(uri: string): Promise<Credit[]> {
+  return sendRequest(`/api/tracks/${uri}/credits`, `track credits for ${uri}`);
 }
 
 export async function getPlaylists(
