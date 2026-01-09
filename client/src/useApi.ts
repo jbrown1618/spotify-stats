@@ -254,8 +254,7 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
 }
 
 export function useRecommendations() {
-  const globalFilters = useFilters();
-  const filters = globalFilters;
+  const filters = useFilters();
   const query = toFiltersQuery({ wrapped: filters.wrapped, ...filters }) || DEFAULT_QUERY_KEY;
 
   const { data: tracks, isSuccess } = useTracks(filters);
@@ -264,7 +263,7 @@ export function useRecommendations() {
   // The server will handle unfiltered queries more efficiently without URIs
   const hasFilters = Object.keys(filters).length > 0;
   const tracksFilter = {
-    tracks: hasFilters && tracks ? Object.keys(tracks) : undefined,
+    tracks: hasFilters ? (tracks ? Object.keys(tracks) : []) : undefined,
     wrapped: filters.wrapped,
   };
 
