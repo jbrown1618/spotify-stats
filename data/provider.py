@@ -298,7 +298,7 @@ class DataProvider:
 
         artist_columns = [col for col in members.columns if col.startswith('artist_')]
         members = members[artist_columns]
-        members.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
+        members = members.drop_duplicates(subset=['artist_mbid'], keep='first')
         return members
 
 
@@ -320,7 +320,7 @@ class DataProvider:
         if len(aliases) == 0:
             return None
 
-        aliases.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
+        aliases = aliases.drop_duplicates(subset=['artist_mbid'], keep='first')
         return aliases
 
 
@@ -334,7 +334,7 @@ class DataProvider:
         if len(groups) == 0:
             return None
 
-        groups.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
+        groups = groups.drop_duplicates(subset=['artist_mbid'], keep='first')
         return groups
 
 
@@ -348,7 +348,7 @@ class DataProvider:
         if len(subgroups) == 0:
             return None
 
-        subgroups.drop_duplicates(subset=['artist_mbid'], keep='first', inplace=True)
+        subgroups = subgroups.drop_duplicates(subset=['artist_mbid'], keep='first')
         return subgroups
 
 
