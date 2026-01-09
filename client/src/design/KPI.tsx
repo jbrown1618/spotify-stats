@@ -1,5 +1,7 @@
 import { Text } from "@mantine/core";
 
+import styles from "./KPI.module.css";
+
 export interface KPIProps {
   label: string;
   value: number | string | JSX.Element;
@@ -7,14 +9,7 @@ export interface KPIProps {
 
 export function KPIsList({ items }: { items: KPIProps[] }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "space-evenly",
-        gap: 16,
-      }}
-    >
+    <div className={styles.kpisList}>
       {items.map((kpi) => (
         <KPI key={kpi.label} {...kpi} />
       ))}
@@ -24,18 +19,12 @@ export function KPIsList({ items }: { items: KPIProps[] }) {
 
 export function KPI({ label, value }: KPIProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <Text c="dimmed" style={{ textWrap: "nowrap" }}>
+    <div className={styles.kpi}>
+      <Text c="dimmed" className={styles.noWrap}>
         {label}
       </Text>
       {typeof value === "string" || typeof value === "number" ? (
-        <Text size={"xl"} style={{ textWrap: "nowrap" }}>
+        <Text size={"xl"} className={styles.noWrap}>
           {value}
         </Text>
       ) : (

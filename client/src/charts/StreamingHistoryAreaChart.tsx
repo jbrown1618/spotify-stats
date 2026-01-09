@@ -3,6 +3,8 @@ import { Paper } from "@mantine/core";
 
 import { useIsMobile } from "../useIsMobile";
 import { formatMonth } from "../utils";
+import sharedStyles from "./ChartTooltip.module.css";
+import styles from "./StreamingHistoryAreaChart.module.css";
 
 export function StreamingHistoryAreaChart({
   streams_by_month,
@@ -108,31 +110,19 @@ interface TooltipItem {
 
 function AreaChartTooltip({ label, payload }: AreaChartTooltipProps) {
   return (
-    <Paper
-      withBorder
-      style={{ display: "flex", flexDirection: "column", padding: 20, gap: 5 }}
-    >
-      <h3 style={{ margin: 0, alignSelf: "center" }}>{formatMonth(label)}</h3>
+    <Paper withBorder className={styles.tooltip}>
+      <h3 className={styles.tooltipTitle}>{formatMonth(label)}</h3>
       {payload
         ?.sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
         .map((item) => {
           return (
-            <div
-              key={item.value}
-              style={{ display: "flex", flexDirection: "row", gap: 10 }}
-            >
+            <div key={item.value} className={styles.tooltipItem}>
               <div
-                style={{
-                  backgroundColor: item.color,
-                  height: "1em",
-                  width: "1em",
-                  borderRadius: "0.5em",
-                }}
+                className={sharedStyles.tooltipColorBox}
+                style={{ backgroundColor: item.color }}
               />
               <span>Streams</span>
-              <span style={{ width: 30, textAlign: "right" }}>
-                {item.value}
-              </span>
+              <span className={styles.tooltipValue}>{item.value}</span>
             </div>
           );
         })}

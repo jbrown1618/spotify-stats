@@ -1,0 +1,11 @@
+/* Shared styles for chart tooltips and legends */
+.tooltipColorBox {
+  height: 1em;
+  width: 1em;
+  border-radius: 0.5em;
+}
+
+.tooltipImage {
+  height: 1.5em;
+  width: 1.5em;
+}

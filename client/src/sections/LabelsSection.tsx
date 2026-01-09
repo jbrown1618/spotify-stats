@@ -4,6 +4,7 @@ import { LabelsBarChart } from "../charts/LabelsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useLabels } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
+import styles from "./Sections.module.css";
 
 export function LabelsSection() {
   const filters = useFilters();
@@ -41,7 +42,7 @@ function RecordLabelPill({ label }: { label: string }) {
     <Pill
       bg="gray"
       size="lg"
-      style={{ cursor: "pointer" }}
+      className={styles.clickable}
       onClick={() => setFilters({ labels: [label] })}
     >
       {label}

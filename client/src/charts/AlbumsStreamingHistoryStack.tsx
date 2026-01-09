@@ -4,6 +4,7 @@ import { Album } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedAlbums } from "../sorting";
 import { useAlbums, useAlbumsStreamsByMonth } from "../useApi";
+import styles from "./StreamingHistoryItem.module.css";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function AlbumsStreamingHistoryStack() {
@@ -29,16 +30,8 @@ export function AlbumsStreamingHistoryStack() {
         }
         onLess={n > 5 ? () => setN(5) : undefined}
         renderItem={(album: Album) => (
-          <h4
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              margin: 0,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <img height={20} src={album.album_image_url} />
+          <h4 className={styles.itemHeading}>
+            <img className={styles.itemImage} src={album.album_image_url} />
             {album.album_short_name}
           </h4>
         )}

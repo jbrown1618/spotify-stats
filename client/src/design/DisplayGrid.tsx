@@ -13,9 +13,11 @@ import {
   IconPill,
   IconPlus,
 } from "@tabler/icons-react";
+import clsx from "clsx";
 import { useRef, useState } from "react";
 
 import { SortOptions } from "../sorting";
+import styles from "./DisplayGrid.module.css";
 import { LargeTileSkeleton } from "./LargeTileDesign";
 import { PillSkeleton } from "./PillDesign";
 import { RowSkeleton } from "./RowDesign";
@@ -89,23 +91,14 @@ export function DisplayGrid<T>({
 
   if (!loading && displayItems?.length === 0)
     return (
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className={styles.noData}>
         <Text fs="italic">No data</Text>
       </div>
     );
 
   return (
     <>
-      <div
-        ref={ref}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          marginTop: 8,
-          alignItems: "center",
-        }}
-      >
+      <div ref={ref} className={styles.controls}>
         {displayOptions.length > 1 ? (
           <SegmentedControl
             onChange={(v) => setVariant(v as DisplayVariant)}
@@ -117,7 +110,7 @@ export function DisplayGrid<T>({
         )}
 
         {sortOptions && Object.keys(sortOptions).length > 0 && (
-          <div style={{ maxWidth: 150 }}>
+          <div className={styles.sortSelect}>
             <Select
               data={Object.keys(sortOptions)}
               value={sort}
@@ -133,14 +126,10 @@ export function DisplayGrid<T>({
       </div>
 
       <div
-        style={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: variant === "row" ? "column" : "row",
-          flexWrap: variant === "row" ? undefined : "wrap",
-          gap: 16,
-          justifyContent: variant === "row" ? "left" : "center",
-        }}
+        className={clsx(
+          styles.itemsContainer,
+          variant === "row" ? styles.itemsContainerRow : styles.itemsContainerGrid
+        )}
       >
         {displayItems
           ? displayItems.slice(0, count).map((item) => (
@@ -160,14 +149,14 @@ export function DisplayGrid<T>({
               </div>
             ))}
       </div>
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+      <div className={styles.buttons}>
         {count > defaultCount ? (
-          <Button variant="light" onClick={onLess} style={{ marginTop: 16 }}>
+          <Button variant="light" onClick={onLess} className={styles.button}>
             <IconMinus />
           </Button>
         ) : null}
         {count < (items?.length ?? 0) ? (
-          <Button variant="light" onClick={onMore} style={{ marginTop: 16 }}>
+          <Button variant="light" onClick={onMore} className={styles.button}>
             <IconPlus />
           </Button>
         ) : null}

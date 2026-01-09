@@ -13,6 +13,7 @@ import {
   useRecommendations,
   useTracks,
 } from "../useApi";
+import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
   const { data: recommendations, isLoading } = useRecommendations();
@@ -54,7 +55,7 @@ export function RecommendationsSection() {
           data={listNames}
           value={activeList}
           onChange={setSelectedList}
-          style={{ maxWidth: 300, marginBottom: 16 }}
+          className={styles.recommendationCard}
         />
       )}
 
