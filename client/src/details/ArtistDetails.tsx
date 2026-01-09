@@ -14,7 +14,12 @@ interface ArtistDetailsProps {
 
 // Helper function to format MusicBrainz artist names
 // If the name contains only non-latin characters, append the sort name
-function formatMBArtistName(mbName: string, sortName: string): string {
+function formatMBArtistName(mbName: string, sortName: string | null | undefined): string {
+  // If sortName is not available, just return the name
+  if (!sortName) {
+    return mbName;
+  }
+  
   // Check if the name is ASCII (latin characters only)
   // eslint-disable-next-line no-control-regex
   const isAscii = /^[\x00-\x7F]*$/.test(mbName);
