@@ -48,7 +48,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             sqlalchemy.text(query_text('select_artist_recommendations_rediscover')),
             conn,
             params={
-                'percentile': 0.95,
+                'percentile': 0.7,
                 'filter_tracks': filter_tracks,
                 'track_uris': track_uris_tuple
             }
@@ -63,7 +63,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             sqlalchemy.text(query_text('select_album_recommendations_rediscover')),
             conn,
             params={
-                'percentile': 0.9,
+                'percentile': 0.65,
                 'filter_tracks': filter_tracks,
                 'track_uris': track_uris_tuple
             }
