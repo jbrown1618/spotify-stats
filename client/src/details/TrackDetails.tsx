@@ -115,9 +115,9 @@ function Credits({ credits }: { credits: Credit[] }) {
               gap: 8,
               marginLeft: 16
             }}>
-              {creditsForType.map((credit, idx) => (
+              {creditsForType.map((credit) => (
                 <div
-                  key={`${credit.artist_mbid}-${idx}`}
+                  key={`${credit.artist_mbid}-${credit.credit_type}`}
                   style={{
                     padding: "4px 12px",
                     borderRadius: "16px",
