@@ -272,8 +272,12 @@ function useTracksDependentQuery<T>(
     DEFAULT_QUERY_KEY;
 
   const { data: tracks, isSuccess } = useTracks(filters);
+  
+  // When no filters are applied, don't pass track URIs to avoid performance issues
+  // The server will handle unfiltered queries more efficiently without URIs
+  const hasFilters = Object.keys(filters).length > 0;
   const tracksFilter = {
-    tracks: tracks ? Object.keys(tracks) : [],
+    tracks: hasFilters && tracks ? Object.keys(tracks) : undefined,
     wrapped: filters.wrapped,
   };
 
@@ -282,7 +286,7 @@ function useTracksDependentQuery<T>(
     enabled: isSuccess,
     queryKey: [key, query],
     queryFn: async () =>
-      tracksFilter.tracks.length === 0
+      !hasFilters || (tracksFilter.tracks && tracksFilter.tracks.length === 0)
         ? defaultValue
         : getValue(tracksFilter, tracks!),
   });
