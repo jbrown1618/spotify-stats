@@ -90,7 +90,8 @@ function ArtistPills({ uris }: { uris: string[] }) {
 function Credits({ credits }: { credits: Credit[] }) {
   // Group credits by artist (using artist_mbid as the key)
   const creditsByArtist = credits.reduce((acc, credit) => {
-    const artistKey = credit.artist_mbid;
+    // Use artist_mbid as key, fallback to artist_mb_name if mbid is missing
+    const artistKey = credit.artist_mbid || credit.artist_mb_name || 'unknown';
     if (!acc[artistKey]) {
       acc[artistKey] = {
         artist: credit,
@@ -104,8 +105,8 @@ function Credits({ credits }: { credits: Credit[] }) {
 
   // Sort artists by name
   const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
-    const nameA = a.artist.artist_name || a.artist.artist_mb_name;
-    const nameB = b.artist.artist_name || b.artist.artist_mb_name;
+    const nameA = a.artist.artist_name || a.artist.artist_mb_name || '';
+    const nameB = b.artist.artist_name || b.artist.artist_mb_name || '';
     return nameA.localeCompare(nameB);
   });
 
@@ -141,7 +142,7 @@ function Credits({ credits }: { credits: Credit[] }) {
         </thead>
         <tbody>
           {sortedArtists.map(({ artist, creditTypes }) => (
-            <tr key={artist.artist_mbid} style={{ 
+            <tr key={artist.artist_mbid || artist.artist_mb_name || 'unknown'} style={{ 
               borderBottom: "1px solid var(--mantine-color-default-border)"
             }}>
               <td style={{ padding: "12px 8px" }}>
@@ -199,7 +200,7 @@ function CreditArtist({ credit }: { credit: Credit }) {
         fontSize: "0.875rem",
       }}
     >
-      {credit.artist_name || credit.artist_mb_name}
+      {credit.artist_name || credit.artist_mb_name || 'Unknown Artist'}
     </div>
   );
 }
