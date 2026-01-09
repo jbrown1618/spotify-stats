@@ -286,7 +286,7 @@ function useTracksDependentQuery<T>(
     enabled: isSuccess,
     queryKey: [key, query],
     queryFn: async () =>
-      !hasFilters || (tracksFilter.tracks && tracksFilter.tracks.length === 0)
+      hasFilters && tracksFilter.tracks && tracksFilter.tracks.length === 0
         ? defaultValue
         : getValue(tracksFilter, tracks!),
   });
