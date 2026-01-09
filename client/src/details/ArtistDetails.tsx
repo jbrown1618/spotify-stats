@@ -3,7 +3,8 @@ import { Skeleton } from "@mantine/core";
 import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { KPIsList } from "../design/KPI";
-import { useAlbums, useArtists } from "../useApi";
+import { ArtistPill } from "../list-items/ArtistPill";
+import { useAlbums, useArtistCredits, useArtists } from "../useApi";
 
 interface ArtistDetailsProps {
   artistURI: string;
@@ -16,6 +17,8 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   const { data: artistAlbums } = useAlbums({
     artists: artist ? [artist.artist_uri] : ["NO-ARTIST"],
   });
+
+  const { data: artistCredits } = useArtistCredits(artistURI);
 
   if (!artist) return null;
 
@@ -57,6 +60,92 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           ]}
         />
       </div>
+
+      {artistCredits?.aliases && artistCredits.aliases.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Also Known As</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {artistCredits.aliases.map((alias) => (
+              <span key={alias.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
+                {alias.artist_name || alias.artist_mb_name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {artistCredits?.members && artistCredits.members.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Members</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {artistCredits.members.map((member) => (
+              member.artist_uri && <ArtistPill key={member.artist_uri} artist={member as any} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {artistCredits?.groups && artistCredits.groups.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Member Of</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {artistCredits.groups.map((group) => (
+              group.artist_uri ? (
+                <ArtistPill key={group.artist_mbid} artist={{ artist_uri: group.artist_uri, artist_name: group.artist_name!, artist_image_url: group.artist_image_url! } as any} />
+              ) : (
+                <span key={group.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
+                  {group.artist_name || group.artist_mb_name}
+                </span>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+
+      {artistCredits?.subgroups && artistCredits.subgroups.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Subgroups</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {artistCredits.subgroups.map((subgroup) => (
+              subgroup.artist_uri ? (
+                <ArtistPill key={subgroup.artist_mbid} artist={{ artist_uri: subgroup.artist_uri, artist_name: subgroup.artist_name!, artist_image_url: subgroup.artist_image_url! } as any} />
+              ) : (
+                <span key={subgroup.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
+                  {subgroup.artist_name || subgroup.artist_mb_name}
+                </span>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+
+      {artistCredits?.credits && artistCredits.credits.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Songwriting & Production Credits</h3>
+          <div style={{ maxHeight: 400, overflowY: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #ddd" }}>
+                  <th style={{ textAlign: "left", padding: 8 }}>Track</th>
+                  <th style={{ textAlign: "left", padding: 8 }}>Credit Type</th>
+                  <th style={{ textAlign: "left", padding: 8 }}>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {artistCredits.credits.map((credit, idx) => (
+                  <tr key={`${credit.recording_mbid}-${idx}`} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: 8 }}>
+                      {credit.track_name || credit.recording_title}
+                    </td>
+                    <td style={{ padding: 8 }}>{credit.credit_type}</td>
+                    <td style={{ padding: 8 }}>{credit.credit_details || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <ArtistsStreamingHistoryStack onlyArtist={artistURI} />
       <ArtistStreamsLineChart height={300} onlyArtist={artistURI} />

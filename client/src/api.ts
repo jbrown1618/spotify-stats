@@ -57,6 +57,35 @@ export interface ArtistRank {
   as_of_date: string;
 }
 
+export interface ArtistCredit {
+  recording_mbid: string;
+  credit_type: string;
+  credit_details: string | null;
+  recording_title: string;
+  spotify_track_uri: string | null;
+  track_name: string | null;
+  track_uri: string | null;
+}
+
+export interface ArtistRelationship {
+  artist_mbid: string;
+  artist_mb_name: string;
+  artist_sort_name: string;
+  relationship_type: string;
+  relationship_direction: string;
+  artist_uri: string | null;
+  artist_name: string | null;
+  artist_image_url: string | null;
+}
+
+export interface ArtistCreditsData {
+  credits?: ArtistCredit[];
+  aliases?: ArtistRelationship[];
+  members?: Partial<Artist>[];
+  groups?: ArtistRelationship[];
+  subgroups?: ArtistRelationship[];
+}
+
 export interface Album {
   album_uri: string;
   album_name: string;
@@ -159,6 +188,15 @@ export type StreamsByMonth = Record<
 
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
+}
+
+export async function getArtistCredits(
+  artistUri: string
+): Promise<ArtistCreditsData> {
+  return sendRequest(
+    `/api/artists/${artistUri}/credits`,
+    `artist credits for ${artistUri}`
+  );
 }
 
 export async function searchTracks(
