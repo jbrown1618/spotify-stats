@@ -15,4 +15,15 @@ WHERE rc.artist_mbid IN (
     FROM sp_artist_mb_artist 
     WHERE spotify_artist_uri = :artist_uri
 )
+AND rc.credit_type IN (
+    'songwriter',
+    'lyricist',
+    'producer',
+    'arranger',
+    'sound',
+    'mastering',
+    'audio director',
+    'video director',
+    'publishing'
+)
 ORDER BY rc.credit_type, mr.recording_title;

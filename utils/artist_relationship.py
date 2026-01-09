@@ -3,7 +3,18 @@ from utils.markdown import md_link
 from utils.path import artist_overview_path, producer_overview_path
 
 
-producer_credit_types = {'producer', 'arranger', 'songwriter', 'lyricist'}
+# Credit types for songwriting and production work (excludes performance credits)
+producer_credit_types = {
+    'songwriter', 
+    'lyricist', 
+    'producer', 
+    'arranger', 
+    'sound', 
+    'mastering',
+    'audio director',
+    'video director',
+    'publishing'
+}
 
 def relationship_description(relationship_row, relative_to_path):
     return relationship_phrase(relationship_row) + " " + mb_artist_display_name(relationship_row, relative_to_path)
