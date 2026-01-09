@@ -81,9 +81,15 @@ export interface ArtistRelationship {
 export interface ArtistCreditsData {
   credits?: ArtistCredit[];
   aliases?: ArtistRelationship[];
-  members?: Partial<Artist>[];
+  members?: Partial<ArtistWithMBData>[];
   groups?: ArtistRelationship[];
   subgroups?: ArtistRelationship[];
+}
+
+export interface ArtistWithMBData extends Artist {
+  artist_mbid: string;
+  artist_mb_name: string;
+  artist_sort_name: string;
 }
 
 export interface Album {
