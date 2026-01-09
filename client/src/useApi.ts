@@ -3,12 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ActiveFilters,
   AlbumRank,
+  ArtistCreditsData,
   ArtistRank,
   Credit,
   FilterOptions,
   getAlbums,
   getAlbumsStreamingHistory,
   getAlbumsStreamsByMonth,
+  getArtistCredits,
   getArtists,
   getArtistsStreamingHistory,
   getArtistsStreamsByMonth,
@@ -99,6 +101,14 @@ export function usePlaylists(filters?: ActiveFilters) {
 
 export function useArtists(filters?: ActiveFilters) {
   return useTracksDependentQuery("artists", getArtists, {}, filters);
+}
+
+export function useArtistCredits(artistUri: string) {
+  return useQuery<ArtistCreditsData>({
+    ...defaultQueryOptions,
+    queryKey: ["artist-credits", artistUri],
+    queryFn: async () => getArtistCredits(artistUri),
+  });
 }
 
 export function useAlbums(filters?: ActiveFilters) {
