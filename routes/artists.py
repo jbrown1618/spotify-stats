@@ -29,26 +29,26 @@ def artist_credits_payload(artist_uri: str):
     # Get songwriting/producing credits
     credits = dp.artist_credits(artist_uri)
     if credits is not None and len(credits) > 0:
-        result['credits'] = credits.to_dict('records')
+        result['credits'] = to_json(credits)
     
     # Get aliases
     aliases = dp.artist_aliases(artist_uri)
     if aliases is not None and len(aliases) > 0:
-        result['aliases'] = aliases[RELATIONSHIP_COLUMNS].to_dict('records')
+        result['aliases'] = to_json(aliases[RELATIONSHIP_COLUMNS])
     
     # Get group members (for groups)
     members = dp.group_members(artist_uri)
     if members is not None and len(members) > 0:
-        result['members'] = members.to_dict('records')
+        result['members'] = to_json(members)
     
     # Get groups (for individuals)
     groups = dp.artist_groups(artist_uri)
     if groups is not None and len(groups) > 0:
-        result['groups'] = groups[RELATIONSHIP_COLUMNS].to_dict('records')
+        result['groups'] = to_json(groups[RELATIONSHIP_COLUMNS])
     
     # Get subgroups (for groups)
     subgroups = dp.artist_subgroups(artist_uri)
     if subgroups is not None and len(subgroups) > 0:
-        result['subgroups'] = subgroups[RELATIONSHIP_COLUMNS].to_dict('records')
+        result['subgroups'] = to_json(subgroups[RELATIONSHIP_COLUMNS])
     
     return result
