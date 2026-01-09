@@ -10,6 +10,7 @@ from data.sql.migrations.v009_add_short_names import AddShortNames
 from data.sql.migrations.v010_remove_top_tracks import RemoveTopTracks
 from data.sql.migrations.v011_rank_id_to_bigint import RankIdToBigint
 from data.sql.migrations.v012_add_stream_table import AddStreamTable
+from data.sql.migrations.v013_remove_audio_features import RemoveAudioFeatures
 
 migrations = [
     AddTrackRanks(),
@@ -22,7 +23,8 @@ migrations = [
     AddShortNames(),
     RemoveTopTracks(),
     RankIdToBigint(),
-    AddStreamTable()
+    AddStreamTable(),
+    RemoveAudioFeatures()
 ]
 
 def perform_all_migrations():
