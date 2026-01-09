@@ -16,6 +16,7 @@ import {
   getLabels,
   getPlaylists,
   getProducers,
+  getRecommendations,
   getReleaseYears,
   getTrack,
   getTracksStreamingHistory,
@@ -249,6 +250,10 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
   const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
 
   return { ...result, shouldRender };
+}
+
+export function useRecommendations() {
+  return useTracksDependentQuery("recommendations", getRecommendations, {});
 }
 
 function useTracksDependentQuery<T>(

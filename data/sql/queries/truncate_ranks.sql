@@ -1,3 +1,3 @@
-TRUNCATE track_rank;
-TRUNCATE album_rank;
-TRUNCATE artist_rank;
+TRUNCATE track_rank RESTART IDENTITY;
+TRUNCATE album_rank RESTART IDENTITY;
+TRUNCATE artist_rank RESTART IDENTITY;

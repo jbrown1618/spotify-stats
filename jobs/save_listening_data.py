@@ -5,6 +5,7 @@ from data.raw import get_connection
 from jobs.queue import queue_job
 from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
+from utils.track import is_blacklisted
 
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 alternate_date_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -17,11 +18,23 @@ def save_listening_data():
 
     plays_data = []
     for recent_play in recents['items']:
-        track_uri = recent_play['track']['uri']
+        track = recent_play['track']
+        track_name = track['name']
+        if is_blacklisted(track_name):
+            print(f"Skipping blacklisted track: {track_name}")
+            continue
+        track_uri = track['uri']
         played_at = recent_play['played_at']
         time = to_timestamp(played_at)
         plays_data.append({ "track_uri": track_uri, "time": time })
     plays = pd.DataFrame(plays_data)
+
+    if len(plays) == 0:
+        print("No non-blacklisted tracks to save")
+        return
+
+    # Dual-write: save individual streams to the new stream table
+    save_streams(plays)
 
     current_min, current_id, new_min, new_id = get_listening_period(plays['time'].min(), plays['time'].max())
 
@@ -65,6 +78,22 @@ def to_timestamp(date_str: str) -> float:
         return datetime.strptime(date_str, played_at_date_format).timestamp()
     except ValueError:
         return datetime.strptime(date_str, alternate_date_format).timestamp()
+
+
+def save_streams(plays: pd.DataFrame):
+    """Save individual streams to the new stream table."""
+    print(f'Saving {len(plays)} streams to stream table...')
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        for _, row in plays.iterrows():
+            cursor.execute(
+                query_text('insert_stream'),
+                {
+                    "track_uri": row["track_uri"],
+                    "played_at": row["time"]
+                }
+            )
+        conn.commit()
     
 
 def get_listening_period(min_time: float, max_time: float):

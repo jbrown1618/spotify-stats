@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS audio_features;
 
 class RemoveAudioFeatures(Migration):
     def __init__(self):
-        super().__init__("v11")
+        super().__init__("v13")
 
 
     def migrate(self, cursor):

@@ -8,7 +8,9 @@ from data.sql.migrations.v007_add_standardized_label import AddLabelTable
 from data.sql.migrations.v008_add_indices import AddIndices
 from data.sql.migrations.v009_add_short_names import AddShortNames
 from data.sql.migrations.v010_remove_top_tracks import RemoveTopTracks
-from data.sql.migrations.v011_remove_audio_features import RemoveAudioFeatures
+from data.sql.migrations.v011_rank_id_to_bigint import RankIdToBigint
+from data.sql.migrations.v012_add_stream_table import AddStreamTable
+from data.sql.migrations.v013_remove_audio_features import RemoveAudioFeatures
 
 migrations = [
     AddTrackRanks(),
@@ -20,6 +22,8 @@ migrations = [
     AddIndices(),
     AddShortNames(),
     RemoveTopTracks(),
+    RankIdToBigint(),
+    AddStreamTable(),
     RemoveAudioFeatures()
 ]
 

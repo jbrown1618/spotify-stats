@@ -279,6 +279,19 @@ export async function getAlbumsStreamsByMonth(
   );
 }
 
+export interface RecommendationList {
+  type: "track" | "artist" | "album";
+  uris: string[];
+}
+
+export type Recommendations = Record<string, RecommendationList>;
+
+export async function getRecommendations(
+  filters: Pick<ActiveFilters, "tracks">
+): Promise<Recommendations> {
+  return sendRequest(`/api/recommendations`, "recommendations", filters);
+}
+
 async function sendRequest<T>(
   url: string,
   dataName: string,
