@@ -57,4 +57,4 @@ def track_credits_payload(track_uri):
             conn,
             params={'track_uri': track_uri}
         )
-        return credits.to_dict('records')
+        return to_json(credits)
