@@ -12,6 +12,20 @@ interface ArtistDetailsProps {
   artistURI: string;
 }
 
+// Helper function to format MusicBrainz artist names
+// If the name contains only non-latin characters, append the sort name
+function formatMBArtistName(mbName: string, sortName: string): string {
+  // Check if the name is ASCII (latin characters only)
+  // eslint-disable-next-line no-control-regex
+  const isAscii = /^[\x00-\x7F]*$/.test(mbName);
+  
+  if (!isAscii) {
+    return `${mbName} (${sortName})`;
+  }
+  
+  return mbName;
+}
+
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   const { data: artists } = useArtists({ artists: [artistURI] });
   const artist = artists?.[artistURI];
@@ -67,11 +81,14 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         <div style={{ marginTop: 24 }}>
           <h3>Also Known As</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {artistCredits.aliases.map((alias) => (
-              <span key={alias.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
-                {alias.artist_name || alias.artist_mb_name}
-              </span>
-            ))}
+            {artistCredits.aliases.map((alias) => {
+              const displayName = alias.artist_name || formatMBArtistName(alias.artist_mb_name, alias.artist_sort_name);
+              return (
+                <span key={alias.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
+                  {displayName}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -105,20 +122,21 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         <div style={{ marginTop: 24 }}>
           <h3>Member Of</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {artistCredits.groups.map((group) => (
-              group.artist_uri ? (
+            {artistCredits.groups.map((group) => {
+              const displayName = group.artist_name || formatMBArtistName(group.artist_mb_name, group.artist_sort_name);
+              return group.artist_uri ? (
                 <RelatedArtistPill
                   key={group.artist_mbid}
                   artistUri={group.artist_uri}
-                  artistName={group.artist_name || group.artist_mb_name}
+                  artistName={displayName}
                   artistImageUrl={group.artist_image_url}
                 />
               ) : (
                 <span key={group.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
-                  {group.artist_name || group.artist_mb_name}
+                  {displayName}
                 </span>
-              )
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -127,20 +145,21 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         <div style={{ marginTop: 24 }}>
           <h3>Subgroups</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {artistCredits.subgroups.map((subgroup) => (
-              subgroup.artist_uri ? (
+            {artistCredits.subgroups.map((subgroup) => {
+              const displayName = subgroup.artist_name || formatMBArtistName(subgroup.artist_mb_name, subgroup.artist_sort_name);
+              return subgroup.artist_uri ? (
                 <RelatedArtistPill
                   key={subgroup.artist_mbid}
                   artistUri={subgroup.artist_uri}
-                  artistName={subgroup.artist_name || subgroup.artist_mb_name}
+                  artistName={displayName}
                   artistImageUrl={subgroup.artist_image_url}
                 />
               ) : (
                 <span key={subgroup.artist_mbid} style={{ padding: "4px 8px", backgroundColor: "#f0f0f0", borderRadius: 4 }}>
-                  {subgroup.artist_name || subgroup.artist_mb_name}
+                  {displayName}
                 </span>
-              )
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
