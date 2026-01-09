@@ -88,48 +88,94 @@ function ArtistPills({ uris }: { uris: string[] }) {
 }
 
 function Credits({ credits }: { credits: Credit[] }) {
-  // Group credits by type
-  const creditsByType = credits.reduce((acc, credit) => {
-    if (!acc[credit.credit_type]) {
-      acc[credit.credit_type] = [];
+  // Group credits by artist (using artist_mbid as the key)
+  const creditsByArtist = credits.reduce((acc, credit) => {
+    const artistKey = credit.artist_mbid;
+    if (!acc[artistKey]) {
+      acc[artistKey] = {
+        artist: credit,
+        creditTypes: [],
+      };
     }
-    acc[credit.credit_type].push(credit);
+    // Only add credit type if it's not already in the list
+    if (!acc[artistKey].creditTypes.includes(credit.credit_type)) {
+      acc[artistKey].creditTypes.push(credit.credit_type);
+    }
     return acc;
-  }, {} as Record<string, Credit[]>);
+  }, {} as Record<string, { artist: Credit; creditTypes: string[] }>);
+
+  // Sort artists by name
+  const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
+    const nameA = a.artist.artist_name || a.artist.artist_mb_name;
+    const nameB = b.artist.artist_name || b.artist.artist_mb_name;
+    return nameA.localeCompare(nameB);
+  });
 
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
       <h3 style={{ marginBottom: 16 }}>Credits</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {Object.entries(creditsByType).map(([creditType, creditsForType]) => (
-          <div key={creditType}>
-            <h4 style={{ 
-              textTransform: "capitalize", 
-              marginBottom: 8,
-              fontSize: "0.9rem",
+      <table style={{ 
+        width: "100%",
+        borderCollapse: "collapse",
+      }}>
+        <thead>
+          <tr style={{ 
+            borderBottom: "1px solid var(--mantine-color-default-border)",
+            textAlign: "left"
+          }}>
+            <th style={{ 
+              padding: "12px 8px",
               fontWeight: 600,
+              fontSize: "0.875rem",
               color: "var(--mantine-color-dimmed)"
             }}>
-              {creditType}
-            </h4>
-            <div style={{ 
-              display: "flex", 
-              flexWrap: "wrap", 
-              gap: 8,
-              marginLeft: 16
+              Artist
+            </th>
+            <th style={{ 
+              padding: "12px 8px",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              color: "var(--mantine-color-dimmed)"
             }}>
-              {creditsForType.map((credit) => (
-                <CreditItem key={`${credit.artist_mbid}-${credit.credit_type}`} credit={credit} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+              Credits
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedArtists.map(({ artist, creditTypes }) => (
+            <tr key={artist.artist_mbid} style={{ 
+              borderBottom: "1px solid var(--mantine-color-default-border)"
+            }}>
+              <td style={{ padding: "12px 8px" }}>
+                <CreditArtist credit={artist} />
+              </td>
+              <td style={{ padding: "12px 8px" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {creditTypes.map((creditType) => (
+                    <div
+                      key={creditType}
+                      style={{
+                        padding: "4px 12px",
+                        borderRadius: "16px",
+                        backgroundColor: "var(--mantine-color-default-hover)",
+                        fontSize: "0.875rem",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {creditType}
+                    </div>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-function CreditItem({ credit }: { credit: Credit }) {
+function CreditArtist({ credit }: { credit: Credit }) {
   // If we have a Spotify artist URI, show it as an ArtistPill
   if (credit.artist_uri && credit.artist_name) {
     const artist = {
@@ -142,16 +188,7 @@ function CreditItem({ credit }: { credit: Credit }) {
       artist_track_count: 0,
       artist_stream_count: 0,
     };
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <ArtistPill artist={artist} />
-        {credit.credit_details && (
-          <span style={{ fontSize: "0.875rem", color: "var(--mantine-color-dimmed)" }}>
-            ({credit.credit_details})
-          </span>
-        )}
-      </div>
-    );
+    return <ArtistPill artist={artist} />;
   }
 
   // Otherwise, show as plain text
@@ -165,7 +202,6 @@ function CreditItem({ credit }: { credit: Credit }) {
       }}
     >
       {credit.artist_name || credit.artist_mb_name}
-      {credit.credit_details && ` (${credit.credit_details})`}
     </div>
   );
 }
