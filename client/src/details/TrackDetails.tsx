@@ -94,15 +94,13 @@ function Credits({ credits }: { credits: Credit[] }) {
     if (!acc[artistKey]) {
       acc[artistKey] = {
         artist: credit,
-        creditTypes: [],
+        creditTypes: new Set<string>(),
       };
     }
-    // Only add credit type if it's not already in the list
-    if (!acc[artistKey].creditTypes.includes(credit.credit_type)) {
-      acc[artistKey].creditTypes.push(credit.credit_type);
-    }
+    // Add credit type to the set (automatically handles duplicates)
+    acc[artistKey].creditTypes.add(credit.credit_type);
     return acc;
-  }, {} as Record<string, { artist: Credit; creditTypes: string[] }>);
+  }, {} as Record<string, { artist: Credit; creditTypes: Set<string> }>);
 
   // Sort artists by name
   const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
@@ -151,7 +149,7 @@ function Credits({ credits }: { credits: Credit[] }) {
               </td>
               <td style={{ padding: "12px 8px" }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {creditTypes.map((creditType) => (
+                  {Array.from(creditTypes).map((creditType) => (
                     <div
                       key={creditType}
                       style={{
