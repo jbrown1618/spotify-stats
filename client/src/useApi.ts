@@ -4,6 +4,7 @@ import {
   ActiveFilters,
   AlbumRank,
   ArtistRank,
+  Credit,
   FilterOptions,
   getAlbums,
   getAlbumsStreamingHistory,
@@ -19,6 +20,7 @@ import {
   getRecommendations,
   getReleaseYears,
   getTrack,
+  getTrackCredits,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
   Recommendations,
@@ -80,6 +82,14 @@ export function useTrack(uri: string) {
     ...defaultQueryOptions,
     queryKey: ["track", uri, wrapped],
     queryFn: async () => getTrack(uri, wrapped),
+  });
+}
+
+export function useTrackCredits(uri: string) {
+  return useQuery<Credit[]>({
+    ...defaultQueryOptions,
+    queryKey: ["track-credits", uri],
+    queryFn: async () => getTrackCredits(uri),
   });
 }
 

@@ -48,3 +48,13 @@ def top_tracks(from_date, to_date):
                 'max_stream_date': to_date
             }
         )['track_uri']
+
+
+def track_credits_payload(track_uri):
+    with get_engine().begin() as conn:
+        credits = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_track_credits')),
+            conn,
+            params={'track_uri': track_uri}
+        )
+        return to_json(credits)
