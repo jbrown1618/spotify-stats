@@ -1,12 +1,11 @@
 SELECT 
     track_uri,
-    SUM(h.stream_count) AS track_stream_count,
-    ROW_NUMBER() OVER(ORDER BY SUM(h.stream_count) DESC, track_uri) AS track_rank
-FROM listening_period p
-    INNER JOIN listening_history h ON p.id = h.listening_period_id
+    COUNT(*) AS track_stream_count,
+    ROW_NUMBER() OVER(ORDER BY COUNT(*) DESC, track_uri) AS track_rank
+FROM track_stream
 WHERE
-    p.from_time >= :min_stream_date 
-    AND p.to_time < :max_stream_date
-GROUP BY h.track_uri
-ORDER BY SUM(h.stream_count) DESC, track_uri
+    played_at >= :min_stream_date 
+    AND played_at < :max_stream_date
+GROUP BY track_uri
+ORDER BY COUNT(*) DESC, track_uri
 LIMIT 100;

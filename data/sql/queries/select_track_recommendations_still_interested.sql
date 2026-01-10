@@ -4,14 +4,13 @@
 -- Note: Using <= with percentile 0.6 returns tracks at or below the 60th percentile (the bottom 60%)
 WITH track_stats AS (
     SELECT 
-        h.track_uri,
-        SUM(h.stream_count) AS total_streams,
-        MAX(p.to_time) AS last_played
-    FROM listening_history h
-    INNER JOIN listening_period p ON p.id = h.listening_period_id
-    INNER JOIN liked_track lt ON lt.track_uri = h.track_uri
-    WHERE (:filter_tracks = FALSE OR h.track_uri IN :track_uris)
-    GROUP BY h.track_uri
+        s.track_uri,
+        COUNT(*) AS total_streams,
+        MAX(s.played_at) AS last_played
+    FROM track_stream s
+    INNER JOIN liked_track lt ON lt.track_uri = s.track_uri
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
+    GROUP BY s.track_uri
 ),
 stream_percentiles AS (
     SELECT 
