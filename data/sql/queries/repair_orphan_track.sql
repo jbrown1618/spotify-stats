@@ -1,3 +1,9 @@
+-- Update all streams from orphan track to replacement track in track_stream table
+UPDATE track_stream
+SET track_uri = %(replacement_uri)s
+WHERE track_uri = %(orphan_uri)s;
+
+-- Also update the legacy listening_history table (dual-write during migration)
 UPDATE listening_history h
 SET track_uri = %(replacement_uri)s
 WHERE h.track_uri = %(orphan_uri)s

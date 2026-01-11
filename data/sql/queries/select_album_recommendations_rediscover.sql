@@ -4,15 +4,14 @@
 WITH album_stats AS (
     SELECT 
         t.album_uri,
-        SUM(h.stream_count) AS total_streams,
-        COUNT(DISTINCT h.track_uri) AS tracks_with_listens,
-        MAX(p.to_time) AS last_played
-    FROM listening_history h
-    INNER JOIN listening_period p ON p.id = h.listening_period_id
-    INNER JOIN track t ON t.uri = h.track_uri
-    WHERE (:filter_tracks = FALSE OR h.track_uri IN :track_uris)
+        COUNT(*) AS total_streams,
+        COUNT(DISTINCT s.track_uri) AS tracks_with_listens,
+        MAX(s.played_at) AS last_played
+    FROM track_stream s
+    INNER JOIN track t ON t.uri = s.track_uri
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
     GROUP BY t.album_uri
-    HAVING COUNT(DISTINCT h.track_uri) >= 2
+    HAVING COUNT(DISTINCT s.track_uri) >= 2
 ),
 stream_percentiles AS (
     SELECT 

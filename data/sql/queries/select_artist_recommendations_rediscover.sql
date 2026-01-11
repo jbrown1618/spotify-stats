@@ -3,12 +3,11 @@
 WITH artist_stats AS (
     SELECT 
         ta.artist_uri,
-        SUM(h.stream_count) AS total_streams,
-        MAX(p.to_time) AS last_played
-    FROM listening_history h
-    INNER JOIN listening_period p ON p.id = h.listening_period_id
-    INNER JOIN track_artist ta ON ta.track_uri = h.track_uri
-    WHERE (:filter_tracks = FALSE OR h.track_uri IN :track_uris)
+        COUNT(*) AS total_streams,
+        MAX(s.played_at) AS last_played
+    FROM track_stream s
+    INNER JOIN track_artist ta ON ta.track_uri = s.track_uri
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
     GROUP BY ta.artist_uri
 ),
 stream_percentiles AS (

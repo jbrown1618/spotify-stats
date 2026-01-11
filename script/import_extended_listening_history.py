@@ -7,11 +7,13 @@ import pandas as pd
 
 from data.raw import get_connection
 from jobs.repair_orphan_tracks import repair_orphan_tracks
-from jobs.save_listening_data import create_listening_period, update_play_counts
 from jobs.save_spotify_data import save_tracks_by_uri
 from utils.ranking import ensure_ranks
 
 """
+DEPRECATED: This script imports to the old listening_history and listening_period tables.
+Use import_track_streams.py instead, which imports to the new track_stream table.
+
 This script imports extended listening history from a Spotify data request.
 
 Args:
@@ -47,17 +49,11 @@ def to_ts(date_str: str):
 
 
 def import_history_df(df: pd.DataFrame):
-    for from_ts, to_ts in make_periods(df['time'].min(), df['time'].max()):
-        period_history = df[(df['time'] >= from_ts) & (df['time'] < to_ts)]
-
-        stream_counts = period_history.groupby('track_uri')\
-            .agg({"time": "count"})\
-            .reset_index()\
-            .rename(columns={"time": "stream_count"})
-        
-        create_listening_period(from_ts, to_ts)
-        period_id = get_listening_period_id(from_ts)
-        update_play_counts(period_id, stream_counts)
+    raise NotImplementedError(
+        "This function is deprecated. Use import_track_streams.py instead."
+    )
+    # The old implementation used create_listening_period and update_play_counts
+    # which have been removed in favor of the track_stream table.
 
 
 def make_periods(min_time: float, max_time: float):

@@ -1,16 +1,14 @@
 DROP TABLE IF EXISTS tmp_album_stream_counts;
 
 CREATE TEMPORARY TABLE tmp_album_stream_counts AS
-SELECT t.album_uri, SUM(h.stream_count) AS stream_count
-FROM listening_history h
-INNER JOIN listening_period p
-    ON h.listening_period_id = p.id
+SELECT t.album_uri, COUNT(*) AS stream_count
+FROM track_stream s
 INNER JOIN track t
-    ON t.uri = h.track_uri
+    ON t.uri = s.track_uri
 WHERE 
-    (:wrapped_start_date IS NULL OR :wrapped_start_date <= p.to_time)
+    (:wrapped_start_date IS NULL OR :wrapped_start_date <= s.played_at)
     AND 
-    (:wrapped_end_date IS NULL OR :wrapped_end_date >= p.from_time)
+    (:wrapped_end_date IS NULL OR :wrapped_end_date >= s.played_at)
 GROUP BY t.album_uri;
 
 SELECT 
