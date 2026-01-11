@@ -15,6 +15,7 @@ import random
 from datetime import datetime
 
 from data.raw import get_connection
+from jobs.repair_orphan_tracks import repair_orphan_tracks
 
 
 # Minimum difference threshold - skip tracks with fewer missing streams
@@ -156,6 +157,12 @@ def add_streams_for_track(track_uri: str, streams_needed: int, conn, commit: boo
 
 def reconcile_stream_counts(commit: bool = False):
     """Main function to reconcile stream counts."""
+    
+    if commit:
+        print("Running repair_orphan_tracks first...")
+        repair_orphan_tracks()
+        print()
+    
     print("Finding tracks with discrepancies between listening_history and track_stream...")
     track_totals = get_track_totals()
     
