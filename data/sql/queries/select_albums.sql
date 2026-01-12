@@ -53,9 +53,6 @@ SELECT
     ) AS album_release_year
 FROM album al
     INNER JOIN track t ON t.album_uri = al.uri
-    LEFT JOIN album_rank alr
-        ON alr.album_uri = al.uri
-        AND as_of_date = (SELECT MAX(as_of_date) FROM album_rank)
     LEFT JOIN tmp_album_stream_counts sc ON sc.album_uri = al.uri
 WHERE (:filter_tracks = FALSE OR t.uri IN :track_uris)
 GROUP BY 

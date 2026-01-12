@@ -379,7 +379,7 @@ class DataProvider:
 
         return self._track_artist[self._track_artist['track_uri'].isin(track_uris)]\
             .groupby("artist_uri")\
-            .agg({"track_uri": "count", "track_liked": "sum", "artist_name": first, "artist_image_url": first, "artist_rank": first})\
+            .agg({"track_uri": "count", "track_liked": "sum", "artist_name": first, "artist_image_url": first, "artist_stream_count": first})\
             .reset_index()
     
 
