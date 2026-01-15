@@ -47,6 +47,7 @@ def save_spotify_data():
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
     queue_job("standardize_record_labels")
+    queue_job("repair_orphan_tracks")
 
 
 def save_tracks_by_uri(uris):

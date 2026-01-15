@@ -74,6 +74,7 @@ def save_listening_data():
     unsaved_uris = get_unsaved_track_uris()
     if len(unsaved_uris) > 0:
         save_tracks_by_uri(unsaved_uris)
+        queue_job("repair_orphan_tracks")
 
 
 def to_timestamp(date_str: str) -> float:
@@ -195,7 +196,7 @@ def update_play_counts(period_id: int, play_counts: pd.DataFrame):
 def get_unsaved_track_uris():
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(query_text('select_tracks_without_streams'))
+        cursor.execute(query_text('select_streams_without_tracks'))
         return [row[0] for row in cursor.fetchall()]
 
 
