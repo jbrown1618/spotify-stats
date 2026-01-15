@@ -14,8 +14,10 @@ def get_album_url(album_uri):
     """
     Convert a Spotify album URI to a web URL.
     
-    Returns album URL string.
+    Returns album URL string or "N/A" if the URI is invalid.
     """
+    if not album_uri or ':' not in album_uri:
+        return "N/A"
     return f"https://open.spotify.com/album/{album_uri.split(':')[-1]}"
 
 
