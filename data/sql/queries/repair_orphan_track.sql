@@ -1,21 +1,21 @@
 -- Update streams from orphan track to replacement track in track_stream table,
 -- but only where the replacement doesn't already have a stream at that played_at time
-UPDATE track_stream
+UPDATE track_stream ts1
 SET track_uri = %(replacement_uri)s
 WHERE track_uri = %(orphan_uri)s
 AND NOT EXISTS (
     SELECT 1 FROM track_stream
     WHERE track_uri = %(replacement_uri)s
-    AND played_at = track_stream.played_at
+    AND played_at = ts1.played_at
 );
 
 -- Delete any orphan streams that would cause duplicates (replacement already has a stream at that time)
-DELETE FROM track_stream
+DELETE FROM track_stream ts1
 WHERE track_uri = %(orphan_uri)s
 AND EXISTS (
     SELECT 1 FROM track_stream ts2
     WHERE ts2.track_uri = %(replacement_uri)s
-    AND ts2.played_at = track_stream.played_at
+    AND ts2.played_at = ts1.played_at
 );
 
 -- Also update the legacy listening_history table (dual-write during migration)
