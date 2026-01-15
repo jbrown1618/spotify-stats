@@ -8,7 +8,15 @@ Usage:
 
 from data.raw import get_connection
 from spotify.spotify_client import get_spotify_client
-from tabulate import tabulate
+
+
+def get_album_url(album_uri):
+    """
+    Convert a Spotify album URI to a web URL.
+    
+    Returns album URL string.
+    """
+    return f"https://open.spotify.com/album/{album_uri.split(':')[-1]}"
 
 
 def get_deprecated_tracks():
@@ -143,7 +151,7 @@ def find_deprecated_tracks():
             replacement_uri, replacement_name, replacement_album_uri, markets_count = replacement
             replacement_type = "Database"
             replacement_info = f"{replacement_name} ({replacement_uri})"
-            replacement_album = f"https://open.spotify.com/album/{replacement_album_uri.split(':')[-1]}"
+            replacement_album = get_album_url(replacement_album_uri)
         else:
             # Try to find replacement in Spotify API
             spotify_replacement = find_replacement_in_spotify(isrc, track_uri)
@@ -151,7 +159,7 @@ def find_deprecated_tracks():
             if spotify_replacement:
                 replacement_type = "Spotify API"
                 replacement_info = f"{spotify_replacement['name']} ({spotify_replacement['uri']})"
-                replacement_album = f"https://open.spotify.com/album/{spotify_replacement['album_uri'].split(':')[-1]}"
+                replacement_album = get_album_url(spotify_replacement['album_uri'])
             else:
                 replacement_type = "Not Found"
                 replacement_info = "No replacement found"
