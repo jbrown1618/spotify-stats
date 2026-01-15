@@ -49,8 +49,6 @@ def save_listening_data():
                 if new_min is not None \
                 else plays.head(0)
 
-    should_re_rank = False
-
     if len(current_plays) > 0:
         current_play_counts = current_plays.groupby('track_uri')\
             .agg({"time": "count"})\
@@ -58,7 +56,6 @@ def save_listening_data():
             .rename(columns={"time": "stream_count"})
         
         update_play_counts(current_id, current_play_counts)
-        should_re_rank = True
     
     if len(new_plays) > 0:
         new_play_counts = new_plays.groupby('track_uri')\
@@ -66,10 +63,6 @@ def save_listening_data():
             .reset_index()\
             .rename(columns={"time": "stream_count"})
         update_play_counts(new_id, new_play_counts)
-        should_re_rank = True
-    
-    if should_re_rank:
-        queue_job("ensure_ranks", {"force": True})
 
     unsaved_uris = get_unsaved_track_uris()
     if len(unsaved_uris) > 0:

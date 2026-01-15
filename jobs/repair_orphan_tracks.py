@@ -1,6 +1,5 @@
 from data.query import query_text
 from data.raw import get_connection
-from jobs.queue import queue_job
 
 def repair_orphan_tracks():
     did_update = False
@@ -14,10 +13,6 @@ def repair_orphan_tracks():
         print(f"Repairing '{matching_name}'...")
         repair_orphan(orphan_uri, matching_uri)
         did_update = True
-    
-    if did_update:
-        print('Recalculating track and album ranks...')
-        queue_job("ensure_ranks", { "force": True })
 
     delete_orphan_albums()
     delete_orphan_artists()

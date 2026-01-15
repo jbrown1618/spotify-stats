@@ -8,7 +8,6 @@ import pandas as pd
 from data.raw import get_connection
 from jobs.repair_orphan_tracks import repair_orphan_tracks
 from jobs.save_spotify_data import save_tracks_by_uri
-from utils.ranking import ensure_ranks
 
 """
 DEPRECATED: This script imports to the old listening_history and listening_period tables.
@@ -109,4 +108,4 @@ if __name__ == '__main__':
     # import_extended_listening_history(datetime.strptime(min_date, "%Y-%m-%d").timestamp(), datetime.strptime(max_date, "%Y-%m-%d").timestamp(), filenames)
     # import_missing_tracks()
     # repair_orphan_tracks()
-    ensure_ranks()
+    pass
