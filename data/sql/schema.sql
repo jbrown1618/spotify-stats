@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS track (
     explicit BOOLEAN,
     duration_ms INT,
     album_uri TEXT,
-    isrc TEXT
+    isrc TEXT,
+    available_markets_count INT DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS i_track_uri ON track (uri);
 

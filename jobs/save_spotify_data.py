@@ -165,6 +165,7 @@ def track_data(track):
     data["album_uri"] = track["album"]["uri"]
     data["isrc"] = track["external_ids"].get("isrc", None)
     data["short_name"] = short_name(track['name'])
+    data["available_markets_count"] = len(track.get("available_markets", []))
 
     return data
 
