@@ -23,7 +23,8 @@ def get_album_url(album_uri):
 
 def get_deprecated_tracks():
     """
-    Get all tracks with 0 available markets.
+    Get all tracks with 0 available markets that have a matching track (by ISRC)
+    in the playlist_track table.
     
     Returns list of tuples: (track_uri, track_name, isrc, album_uri)
     """
@@ -35,6 +36,14 @@ def get_deprecated_tracks():
         t.album_uri
     FROM track t
     WHERE t.available_markets_count = 0
+        AND t.isrc IS NOT NULL
+        AND EXISTS (
+            SELECT 1
+            FROM track t2
+            INNER JOIN playlist_track pt ON pt.track_uri = t2.uri
+            WHERE t2.isrc = t.isrc
+                AND t2.uri != t.uri
+        )
     ORDER BY t.name;
     """
     
