@@ -82,6 +82,7 @@ function AppFooter() {
       >
         jbrown1618/spotify-stats
       </Anchor>
+      <span> | bar</span>
     </footer>
   );
 }
