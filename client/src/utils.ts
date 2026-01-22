@@ -1,5 +1,9 @@
 import { AlbumRank, ArtistRank, StreamsByMonth, TrackRank } from "./api";
 
+export function foo(): string {
+  return "foo";
+}
+
 export function formatDate(ts: number | Date | undefined) {
   if (!ts) return "Unknown Date";
   const date = new Date(ts);
