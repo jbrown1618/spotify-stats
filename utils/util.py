@@ -33,3 +33,8 @@ def aggregate_to_unique_list(series: pd.Series):
         return ""
     
     return ", ".join(series.unique())
+
+
+def baz():
+    """Simple utility function that returns 'baz'."""
+    return "baz"
