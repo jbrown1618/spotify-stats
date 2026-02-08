@@ -3,11 +3,7 @@ import pandas as pd
 import sqlalchemy
 
 from data.query import query_text
-from data.raw import get_connection, get_engine
-from utils.date import this_date
-
-track_score_factor = 0.5
-as_of_now = this_date()
+from data.raw import get_engine
 
 
 def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
@@ -49,34 +45,6 @@ def album_ranks_over_time(album_uris: typing.Iterable[str], from_date, to_date):
                 "from_date": from_date,
                 "to_date": to_date
             })
-
-
-def ensure_ranks(force: bool = False):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-
-        if force:
-            print('Clearing existing ranks...')
-            cursor.execute(query_text('truncate_ranks'))
-            conn.commit()
-
-        print('Getting dates to populate ranks...')
-        cursor.execute(query_text('select_ranking_dates'))
-        unranked_dates = [row[0] for row in cursor.fetchall()]
-
-        for date in unranked_dates:
-            print(f'Populating track ranks for {date}')
-            cursor.execute(query_text('populate_track_ranks'), {"as_of_date": date})
-
-        for date in unranked_dates:
-            print(f'Populating album ranks for {date}')
-            cursor.execute(query_text('populate_album_ranks'), {"as_of_date": date})
-        
-        for date in unranked_dates:
-            print(f'Populating artist ranks for {date}')
-            cursor.execute(query_text('populate_artist_ranks'), {"as_of_date": date})
-        
-        conn.commit()
 
 
 def track_streams_by_month(track_uris, from_date, to_date):

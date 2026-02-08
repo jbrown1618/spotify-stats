@@ -34,7 +34,6 @@ export type Track = Pick<
 
 export interface TrackRank {
   track_uri: string;
-  track_rank: number;
   track_stream_count: number;
   as_of_date: string;
 }
@@ -52,7 +51,6 @@ export interface Artist {
 
 export interface ArtistRank {
   artist_uri: string;
-  artist_rank: number;
   artist_stream_count: number;
   as_of_date: string;
 }
@@ -109,7 +107,6 @@ export interface Album {
 
 export interface AlbumRank {
   album_uri: string;
-  album_rank: number;
   album_stream_count: number;
   as_of_date: string;
 }
