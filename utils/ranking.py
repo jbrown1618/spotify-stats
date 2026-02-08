@@ -3,7 +3,7 @@ import pandas as pd
 import sqlalchemy
 
 from data.query import query_text
-from data.raw import get_engine
+from data.raw import get_connection, get_engine
 
 
 def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
