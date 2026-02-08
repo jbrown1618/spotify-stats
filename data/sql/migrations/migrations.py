@@ -11,6 +11,8 @@ from data.sql.migrations.v010_remove_top_tracks import RemoveTopTracks
 from data.sql.migrations.v011_rank_id_to_bigint import RankIdToBigint
 from data.sql.migrations.v012_add_stream_table import AddStreamTable
 from data.sql.migrations.v013_remove_audio_features import RemoveAudioFeatures
+from data.sql.migrations.v014_remove_listening_tables import RemoveListeningTables
+from data.sql.migrations.v015_remove_rank_tables import RemoveRankTables
 
 migrations = [
     AddTrackRanks(),
@@ -24,7 +26,9 @@ migrations = [
     RemoveTopTracks(),
     RankIdToBigint(),
     AddStreamTable(),
-    RemoveAudioFeatures()
+    RemoveAudioFeatures(),
+    RemoveListeningTables(),
+    RemoveRankTables()
 ]
 
 def perform_all_migrations():
