@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS tmp_stream_counts;
 
 CREATE TEMPORARY TABLE tmp_stream_counts AS
-SELECT s.track_uri, COUNT(*) AS stream_count
+SELECT s.track_uri, COUNT(*) AS stream_count, MAX(s.played_at) AS last_played_at
 FROM track_stream s
 WHERE 
     (:wrapped_start_date IS NULL OR :wrapped_start_date <= s.played_at)
@@ -19,6 +19,7 @@ SELECT
     t.isrc AS track_isrc,
     t.uri IN (SELECT track_uri FROM liked_track) AS track_liked,
     sc.stream_count AS track_stream_count,
+    sc.last_played_at AS track_last_played_at,
 
     ARRAY_AGG(DISTINCT a.name) AS artist_names,
     ARRAY_AGG(DISTINCT a.uri) AS artist_uris,
@@ -95,6 +96,7 @@ GROUP BY
     t.duration_ms,
     t.isrc,
     sc.stream_count,
+    sc.last_played_at,
 
     al.uri,
     al.name,

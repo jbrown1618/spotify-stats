@@ -17,6 +17,7 @@ export interface TrackDetails extends Album {
   track_short_name: string;
   track_popularity: number;
   track_stream_count: number;
+  track_last_played_at: string | null;
   track_uri: string;
   artist_names: string[];
   artist_uris: string[];
@@ -28,6 +29,7 @@ export type Track = Pick<
   | "track_name"
   | "track_short_name"
   | "track_stream_count"
+  | "track_last_played_at"
   | "album_image_url"
   | "album_release_date"
 >;

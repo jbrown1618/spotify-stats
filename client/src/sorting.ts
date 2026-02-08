@@ -31,76 +31,85 @@ function compareValue<T>(cb: (val: T) => string | number) {
 
 const alphabeticalTracks: Comparator<Track> = prioritize(
   reverse(compareValue((t) => t.track_name)),
-  compareValue((t) => t.track_uri)
+  compareValue((t) => t.track_uri),
 );
 
 export const mostStreamedTracks: Comparator<Track> = prioritize(
   compareValue((t) => t.track_stream_count),
-  alphabeticalTracks
+  alphabeticalTracks,
 );
 
 const mostRecentTracks: Comparator<Track> = prioritize(
   compareValue((a) => new Date(a.album_release_date).getTime()),
-  alphabeticalTracks
+  alphabeticalTracks,
+);
+
+const lastPlayedTracks: Comparator<Track> = prioritize(
+  compareValue((t) =>
+    t.track_last_played_at ? new Date(t.track_last_played_at).getTime() : 0,
+  ),
+  alphabeticalTracks,
 );
 
 const alphabeticalAlbums: Comparator<Album> = prioritize(
   reverse(compareValue((t) => t.album_name)),
-  compareValue((t) => t.album_uri)
+  compareValue((t) => t.album_uri),
 );
 
 export const mostStreamedAlbums: Comparator<Album> = prioritize(
   compareValue((a) => a.album_stream_count),
-  alphabeticalAlbums
+  alphabeticalAlbums,
 );
 
 const mostRecentAlbums: Comparator<Album> = prioritize(
   compareValue((a) => new Date(a.album_release_date).getTime()),
-  alphabeticalAlbums
+  alphabeticalAlbums,
 );
 
 export const mostLikedAlbums: Comparator<Album> = prioritize(
   compareValue((a) => a.album_liked_track_count),
   compareValue((a) => a.album_track_count),
-  mostStreamedAlbums
+  mostStreamedAlbums,
 );
 
 const alphabeticalArtists: Comparator<Artist> = prioritize(
   reverse(compareValue((t) => t.artist_name)),
-  compareValue((t) => t.artist_uri)
+  compareValue((t) => t.artist_uri),
 );
 
 export const mostStreamedArtists: Comparator<Artist> = prioritize(
   compareValue((a) => a.artist_stream_count),
   compareValue((a) => a.artist_popularity),
   compareValue((a) => a.artist_followers),
-  alphabeticalArtists
+  alphabeticalArtists,
 );
 
 export const mostLikedArtists: Comparator<Artist> = prioritize(
   compareValue((a) => a.artist_liked_track_count),
   compareValue((a) => a.artist_track_count),
-  mostStreamedArtists
+  mostStreamedArtists,
 );
 
 export const trackSortOptions: Record<string, Comparator<Track>> = {
-  "Most streamed": mostStreamedTracks,
-  "Least streamed": reverse(mostStreamedTracks),
+  "Most streams": mostStreamedTracks,
+  "Least streams": reverse(mostStreamedTracks),
+  "Recently played": lastPlayedTracks,
+  "Least recently played": reverse(lastPlayedTracks),
   Newest: prioritize(mostRecentTracks, alphabeticalTracks),
   Oldest: reverse(prioritize(mostRecentTracks, alphabeticalTracks)),
   Alphabetical: alphabeticalTracks,
 };
 
 export const albumSortOptions: Record<string, Comparator<Album>> = {
-  "Most streamed": mostStreamedAlbums,
-  "Least streamed": reverse(mostStreamedAlbums),
+  "Most streams": mostStreamedAlbums,
+  "Least streams": reverse(mostStreamedAlbums),
   Newest: mostRecentAlbums,
   Oldest: reverse(mostRecentAlbums),
   Alphabetical: alphabeticalAlbums,
 };
 
 export const artistSortOptions: Record<string, Comparator<Artist>> = {
-  "Most streamed": mostStreamedArtists,
-  "Least streamed": reverse(mostStreamedArtists),
+  "Most streams": mostStreamedArtists,
+  "Least streams": reverse(mostStreamedArtists),
   Alphabetical: alphabeticalArtists,
 };
