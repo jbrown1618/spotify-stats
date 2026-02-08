@@ -29,7 +29,11 @@ createRoot(document.getElementById("root")!).render(
     <FiltersProvider>
       <PersistQueryClientProvider
         client={queryClient}
-        persistOptions={{ persister, maxAge: maxPersistAge }}
+        persistOptions={{
+          persister,
+          maxAge: maxPersistAge,
+          buster: import.meta.env.VITE_BUILD_ID ?? "dev",
+        }}
       >
         <MantineProvider defaultColorScheme="dark" theme={theme}>
           <App />
@@ -37,5 +41,5 @@ createRoot(document.getElementById("root")!).render(
         </MantineProvider>
       </PersistQueryClientProvider>
     </FiltersProvider>
-  </StrictMode>
+  </StrictMode>,
 );
