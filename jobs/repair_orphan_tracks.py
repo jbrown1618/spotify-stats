@@ -2,7 +2,6 @@ from data.query import query_text
 from data.raw import get_connection
 
 def repair_orphan_tracks():
-    did_update = False
     print('Identifying orphan tracks...')
     for orphan_uri, _ in get_orphan_tracks():
         matching_track = get_matching_track(orphan_uri)
@@ -12,7 +11,6 @@ def repair_orphan_tracks():
         matching_uri, matching_name = matching_track
         print(f"Repairing '{matching_name}'...")
         repair_orphan(orphan_uri, matching_uri)
-        did_update = True
 
     delete_orphan_albums()
     delete_orphan_artists()
