@@ -41,6 +41,10 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
               label: track.artist_names.length > 1 ? "Artists" : "Artist",
               value: <ArtistPills filters={{ tracks: [trackURI] }} />,
             },
+            {
+              label: "Release date",
+              value: track.album_release_date || "Unknown",
+            },
             { label: "Streams", value: track.track_stream_count ?? 0 },
             { label: "Popularity", value: track.track_popularity },
             {
