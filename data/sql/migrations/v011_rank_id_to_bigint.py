@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 migrate_to_bigint = """
@@ -33,11 +34,11 @@ class RankIdToBigint(Migration):
     def __init__(self):
         super().__init__("v11")
 
-    def migrate(self, cursor):
-        cursor.execute(migrate_to_bigint)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(migrate_to_bigint))
 
-    def reverse(self, cursor):
-        cursor.execute(reverse_to_int)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(reverse_to_int))
 
 
 if __name__ == '__main__':

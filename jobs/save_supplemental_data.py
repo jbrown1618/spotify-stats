@@ -1,9 +1,10 @@
 from datetime import datetime
 import pandas as pd
 import musicbrainzngs as mb
+import sqlalchemy
 
 from data.query import query_text
-from data.raw import RawData, get_connection
+from data.raw import RawData, get_engine
 from utils.settings import musicbrainz_max_tracks_per_run, musicbrainz_retry_days, musicbrainz_useragent, musicbrainz_version, musicbrainz_contact, musicbrainz_save_batch_size
 
 recordings = []
@@ -32,14 +33,11 @@ def save_supplemental_data():
         raw['mb_unmatchable_artists'] = None
 
     
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('unfetched_isrcs'))
-        unfetched = cursor.fetchall()
+    with get_engine().begin() as conn:
+        unfetched = conn.execute(sqlalchemy.text(query_text('unfetched_isrcs'))).fetchall()
 
         if should_retry_unfetchable_data():
-            cursor.execute(query_text('missing_credits'))
-            missing_credits = cursor.fetchall()
+            missing_credits = conn.execute(sqlalchemy.text(query_text('missing_credits'))).fetchall()
             unfetched = set(unfetched + missing_credits)
 
     i = 1

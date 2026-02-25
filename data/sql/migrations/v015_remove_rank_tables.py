@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 drop_tables = """
@@ -11,8 +12,8 @@ class RemoveRankTables(Migration):
     def __init__(self):
         super().__init__("v15")
 
-    def migrate(self, cursor):
-        cursor.execute(drop_tables)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(drop_tables))
 
     def reverse(self, _):
         print('Cannot reverse this migration')

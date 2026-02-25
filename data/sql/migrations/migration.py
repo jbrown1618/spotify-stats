@@ -1,4 +1,6 @@
-from data.raw import get_connection
+import sqlalchemy
+
+from data.raw import get_engine
 
 get_latest_version = """
 SELECT v.version FROM version v
@@ -19,21 +21,19 @@ class Migration:
 
 
     def perform_migration(self):
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
+        with get_engine().connect() as conn:
             try:
-                cursor.execute(get_latest_version)
-                current_version = cursor.fetchone()[0]
+                result = conn.execute(sqlalchemy.text(get_latest_version))
+                current_version = result.fetchone()[0]
 
                 if int(current_version[1:]) >= int(self.__version[1:]):
                     print(f'Current version is {current_version}; skipping migration to {self.__version}')
                     return True
                 
                 print(f'Beginning migration to {self.__version}')
-                self.migrate(cursor)
+                self.migrate(conn)
 
-                cursor.execute(update_version.format(version=self.__version))
+                conn.execute(sqlalchemy.text(update_version.format(version=self.__version)))
                 conn.commit()
                 print(f'Completed migration to {self.__version}')
                 return True
@@ -44,21 +44,19 @@ class Migration:
 
 
     def reverse_migration(self):
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
+        with get_engine().connect() as conn:
             try:
-                cursor.execute(get_latest_version)
-                current_version = cursor.fetchone()[0]
+                result = conn.execute(sqlalchemy.text(get_latest_version))
+                current_version = result.fetchone()[0]
 
                 if int(current_version[1:]) != int(self.__version[1:]):
                     print(f'Current version is {current_version}; skipping reversal of {self.__version}')
                     return True
                 
                 print(f'Reversing migration to {self.__version}')
-                self.reverse(cursor)
+                self.reverse(conn)
 
-                cursor.execute(update_version.format(version=f"v{int(self.__version[1:]) - 1}"))
+                conn.execute(sqlalchemy.text(update_version.format(version=f"v{int(self.__version[1:]) - 1}")))
                 conn.commit()
                 print(f'Reversed migration to {self.__version}')
                 return True
@@ -68,9 +66,9 @@ class Migration:
                 return False
 
 
-    def migrate(self, cursor):
+    def migrate(self, conn):
         raise NotImplementedError('Subclasses must implement migrate()')
 
 
-    def reverse(self, cursor):
+    def reverse(self, conn):
         raise NotImplementedError('Subclasses must implement reverse()')

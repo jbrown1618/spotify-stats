@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import sqlalchemy
-from data.raw import get_connection, get_engine
+from data.raw import get_engine
 from utils.util import md_link
 from utils.path import label_path
 
@@ -102,16 +102,14 @@ def standardize_record_labels():
                 "album_standardized_label": label
             })
         
-    with get_connection() as conn:
-        cursor = conn.cursor()
-
-        cursor.execute('TRUNCATE record_label')
+    with get_engine().begin() as conn:
+        conn.execute(sqlalchemy.text('TRUNCATE record_label'))
         for entry in standardized_labels_data:
-            cursor.execute("""
+            conn.execute(sqlalchemy.text("""
             INSERT INTO record_label
             (album_uri, standardized_label)
-            VALUES (%(album_uri)s, %(album_standardized_label)s)
-            """, entry)
+            VALUES (:album_uri, :album_standardized_label)
+            """), entry)
 
 
 def split(record_labels_str: str):

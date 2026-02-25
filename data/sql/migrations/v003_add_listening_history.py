@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 add_listening_tables = """
@@ -26,13 +27,13 @@ class AddListeningHistory(Migration):
     def __init__(self):
         super().__init__("v3")
 
-    def migrate(self, cursor):
-        cursor.execute(remove_listening_tables)
-        cursor.execute(add_listening_tables)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(remove_listening_tables))
+        conn.execute(sqlalchemy.text(add_listening_tables))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_listening_tables)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_listening_tables))
 
 if __name__ == '__main__':
     AddListeningHistory().reverse_migration()

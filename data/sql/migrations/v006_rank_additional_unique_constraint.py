@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 remove_constraints = """
@@ -27,17 +28,17 @@ class AddRankURIConstraint(Migration):
         super().__init__("v6")
 
 
-    def migrate(self, cursor):
-        cursor.execute('''
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text('''
         TRUNCATE track_rank;
         TRUNCATE album_rank;
         TRUNCATE artist_rank;
-        ''')
-        cursor.execute(add_constraints)
+        '''))
+        conn.execute(sqlalchemy.text(add_constraints))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_constraints)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_constraints))
 
 
 if __name__ == '__main__':
