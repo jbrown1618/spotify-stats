@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 drop_table = """
@@ -10,8 +11,8 @@ class RemoveAudioFeatures(Migration):
         super().__init__("v13")
 
 
-    def migrate(self, cursor):
-        cursor.execute(drop_table)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(drop_table))
 
     def reverse(self, _):
         print('Cannot reverse this migration')

@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 create_stream_table = """
@@ -20,11 +21,11 @@ class AddStreamTable(Migration):
     def __init__(self):
         super().__init__("v12")
 
-    def migrate(self, cursor):
-        cursor.execute(create_stream_table)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(create_stream_table))
 
-    def reverse(self, cursor):
-        cursor.execute(drop_stream_table)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(drop_stream_table))
 
 
 if __name__ == '__main__':

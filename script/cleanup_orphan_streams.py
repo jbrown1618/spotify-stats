@@ -16,8 +16,9 @@ Usage:
     python -m script.cleanup_orphan_streams --commit  # Actually delete orphan streams
 """
 import sys
+import sqlalchemy
 
-from data.raw import get_connection
+from data.raw import get_engine
 from spotify.spotify_client import get_spotify_client
 
 
@@ -32,19 +33,15 @@ def get_orphan_stream_uris():
     LEFT JOIN playlist_track pt ON pt.track_uri = ts.track_uri
     WHERE pt.track_uri IS NULL
     """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query)
-        return [row[0] for row in cursor.fetchall()]
+    with get_engine().begin() as conn:
+        return [row[0] for row in conn.execute(sqlalchemy.text(query)).fetchall()]
 
 
 def get_stream_count(track_uri: str) -> int:
     """Get the number of streams for a track."""
-    query = "SELECT COUNT(*) FROM track_stream WHERE track_uri = %s"
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_uri,))
-        return cursor.fetchone()[0]
+    query = "SELECT COUNT(*) FROM track_stream WHERE track_uri = :track_uri"
+    with get_engine().begin() as conn:
+        return conn.execute(sqlalchemy.text(query), {"track_uri": track_uri}).fetchone()[0]
 
 
 def find_matching_track(track_name: str, artist_name: str):
@@ -58,21 +55,18 @@ def find_matching_track(track_name: str, artist_name: str):
     INNER JOIN track_artist ta ON ta.track_uri = t.uri AND ta.artist_index = 0
     INNER JOIN artist a ON a.uri = ta.artist_uri
     INNER JOIN playlist_track pt ON pt.track_uri = t.uri
-    WHERE t.name = %s AND a.name = %s
+    WHERE t.name = :track_name AND a.name = :artist_name
     LIMIT 1
     """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_name, artist_name))
-        return cursor.fetchone()
+    with get_engine().begin() as conn:
+        return conn.execute(sqlalchemy.text(query), {"track_name": track_name, "artist_name": artist_name}).fetchone()
 
 
 def delete_streams_for_track(track_uri: str, commit: bool = False):
     """Delete all streams for a given track URI."""
-    query = "DELETE FROM track_stream WHERE track_uri = %s"
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_uri,))
+    query = "DELETE FROM track_stream WHERE track_uri = :track_uri"
+    with get_engine().connect() as conn:
+        conn.execute(sqlalchemy.text(query), {"track_uri": track_uri})
         if commit:
             conn.commit()
         else:

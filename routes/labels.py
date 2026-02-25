@@ -1,29 +1,31 @@
 import typing
 
+import pandas as pd
+import sqlalchemy
+
 from data.query import query_text
-from data.raw import get_connection
+from data.raw import get_engine
 
 
 def labels_payload(track_uris: typing.Iterable[str]):
     if len(track_uris) == 0:
         return []
     
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            query_text('select_label_track_counts'), 
-            { "track_uris": tuple(track_uris) }
+    with get_engine().begin() as conn:
+        result = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_label_track_counts')),
+            conn,
+            params={"track_uris": tuple(track_uris)}
         )
-        result = cursor.fetchall()
 
     out = []
-    for label, track_count, total_track_count, liked_track_count, total_liked_track_count in result:
+    for _, row in result.iterrows():
         out.append({
-            "label": label,
-            "track_count": track_count,
-            "total_track_count": total_track_count,
-            "liked_track_count": liked_track_count,
-            "total_liked_track_count": total_liked_track_count
+            "label": row['label'],
+            "track_count": row['label_track_count'],
+            "total_track_count": row['label_total_track_count'],
+            "liked_track_count": row['label_liked_track_count'],
+            "total_liked_track_count": row['label_total_liked_track_count']
         })
 
     return out

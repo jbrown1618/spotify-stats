@@ -1,3 +1,4 @@
+import sqlalchemy
 from data.sql.migrations.migration import Migration
 
 remove_indices = """
@@ -41,12 +42,12 @@ class AddIndices(Migration):
         super().__init__("v8")
 
 
-    def migrate(self, cursor):
-        cursor.execute(add_indices)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(add_indices))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_indices)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_indices))
 
 
 if __name__ == '__main__':

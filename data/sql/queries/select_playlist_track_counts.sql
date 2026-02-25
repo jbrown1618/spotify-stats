@@ -6,5 +6,5 @@ SELECT
 FROM playlist_track pt
     INNER JOIN playlist p ON p.uri = pt.playlist_uri
     LEFT JOIN liked_track lt ON lt.track_uri = pt.track_uri
-WHERE pt.track_uri in %(track_uris)s
+WHERE pt.track_uri in :track_uris
 GROUP BY pt.playlist_uri, p.name;

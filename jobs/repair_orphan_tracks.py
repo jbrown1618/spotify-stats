@@ -1,5 +1,7 @@
+import sqlalchemy
+
 from data.query import query_text
-from data.raw import get_connection
+from data.raw import get_engine
 
 def repair_orphan_tracks():
     print('Identifying orphan tracks...')
@@ -18,41 +20,31 @@ def repair_orphan_tracks():
 
 
 def get_orphan_tracks():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('select_orphan_tracks'))
-        return cursor.fetchall()
+    with get_engine().begin() as conn:
+        return conn.execute(sqlalchemy.text(query_text('select_orphan_tracks'))).fetchall()
 
 
 def get_matching_track(track_uri):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('select_matching_track'), {"orphan_uri": track_uri})
-        return cursor.fetchone()
+    with get_engine().begin() as conn:
+        return conn.execute(sqlalchemy.text(query_text('select_matching_track')), {"orphan_uri": track_uri}).fetchone()
 
 
 def repair_orphan(orphan_uri, replacement_uri):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            query_text('repair_orphan_track'), 
+    with get_engine().begin() as conn:
+        conn.execute(
+            sqlalchemy.text(query_text('repair_orphan_track')), 
             {"orphan_uri": orphan_uri, "replacement_uri": replacement_uri}
         )
-        conn.commit()
 
 
 def delete_orphan_albums():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('delete_orphan_albums'))
-        conn.commit()
+    with get_engine().begin() as conn:
+        conn.execute(sqlalchemy.text(query_text('delete_orphan_albums')))
 
 
 def delete_orphan_artists():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('delete_orphan_artists'))
-        conn.commit()
+    with get_engine().begin() as conn:
+        conn.execute(sqlalchemy.text(query_text('delete_orphan_artists')))
 
 
 if __name__ == '__main__':

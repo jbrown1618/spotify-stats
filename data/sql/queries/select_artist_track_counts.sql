@@ -6,5 +6,5 @@ SELECT
 FROM track_artist ta
     INNER JOIN artist a ON a.uri = ta.artist_uri
     LEFT JOIN liked_track lt ON lt.track_uri = ta.track_uri
-WHERE ta.track_uri in %(track_uris)s
+WHERE ta.track_uri in :track_uris
 GROUP BY ta.artist_uri, a.name;
