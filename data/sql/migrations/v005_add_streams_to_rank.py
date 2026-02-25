@@ -1,4 +1,5 @@
 from data.sql.migrations.migration import Migration
+import sqlalchemy
 
 remove_stream_count_column = """
 ALTER TABLE track_rank
@@ -27,12 +28,12 @@ class AddStreamColumns(Migration):
         super().__init__("v5")
 
 
-    def migrate(self, cursor):
-        cursor.execute(add_stream_count_column)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(add_stream_count_column))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_stream_count_column)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_stream_count_column))
 
 
 if __name__ == '__main__':

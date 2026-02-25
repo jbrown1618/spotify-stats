@@ -1,5 +1,6 @@
 from data.sql.migrations.migration import Migration
 from utils.name import short_name
+import sqlalchemy
 
 remove_short_names = """
 ALTER TABLE track
@@ -22,37 +23,37 @@ class AddShortNames(Migration):
         super().__init__("v9")
 
 
-    def migrate(self, cursor):
-        cursor.execute(remove_short_names)
-        cursor.execute(add_short_names)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(remove_short_names))
+        conn.execute(sqlalchemy.text(add_short_names))
 
-        cursor.execute("SELECT uri, name FROM track")
-        track_rows = cursor.fetchall()
+        result = conn.execute(sqlalchemy.text("SELECT uri, name FROM track"))
+        track_rows = result.fetchall()
         for uri, name in track_rows:
             short = short_name(name)
             if short != name:
                 print(f'Updating {name} --> {short}')
                 
-            cursor.execute(
-                "UPDATE track SET short_name = %(short_name)s WHERE uri = %(uri)s", 
+            conn.execute(
+                sqlalchemy.text("UPDATE track SET short_name = :short_name WHERE uri = :uri"), 
                 {"short_name": short, "uri": uri}
             )
 
-        cursor.execute("SELECT uri, name FROM album")
-        album_rows = cursor.fetchall()
+        result = conn.execute(sqlalchemy.text("SELECT uri, name FROM album"))
+        album_rows = result.fetchall()
         for uri, name in album_rows:
             short = short_name(name)
             if short != name:
                 print(f'Updating {name} --> {short}')
 
-            cursor.execute(
-                "UPDATE album SET short_name = %(short_name)s WHERE uri = %(uri)s", 
+            conn.execute(
+                sqlalchemy.text("UPDATE album SET short_name = :short_name WHERE uri = :uri"), 
                 {"short_name": short, "uri": uri}
             )
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_short_names)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_short_names))
 
 
 if __name__ == '__main__':

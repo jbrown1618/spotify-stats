@@ -1,4 +1,5 @@
 from data.sql.migrations.migration import Migration
+import sqlalchemy
 
 remove_label_table = """
 DROP TABLE IF EXISTS record_label;
@@ -17,13 +18,13 @@ class AddLabelTable(Migration):
         super().__init__("v7")
 
 
-    def migrate(self, cursor):
-        cursor.execute(remove_label_table)
-        cursor.execute(add_label_table)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(remove_label_table))
+        conn.execute(sqlalchemy.text(add_label_table))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_label_table)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_label_table))
 
 
 if __name__ == '__main__':

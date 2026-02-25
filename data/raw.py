@@ -1,11 +1,8 @@
 import pandas as pd
-import psycopg2
 import sqlalchemy
-import sqlalchemy.dialects
-import sqlalchemy.dialects.postgresql
 
 from utils.date import this_date
-from utils.settings import postgres_host, postgres_password, postgres_port, postgres_url, postgres_user
+from utils.settings import postgres_host, postgres_password, postgres_url, postgres_user
 
 _engine = None
 def get_engine():
@@ -21,26 +18,6 @@ def get_engine():
             print('Connecting to local Postgres instance: ' + postgres_host())
             _engine = sqlalchemy.create_engine(f"postgresql+psycopg2://{postgres_user()}:{postgres_password()}@{postgres_host()}/spotifystats")
     return _engine
-
-
-_displayed_connection = False
-def get_connection():
-    global _displayed_connection
-    url = postgres_url()
-    if url is not None:
-        if not _displayed_connection:
-            print('Connecting to Postgres via DATABASE_URL')
-            _displayed_connection = True
-        return psycopg2.connect(url, sslmode="require")
-    else:
-        if not _displayed_connection:
-            print('Connecting to local Postgres instance: ' + postgres_host())
-            _displayed_connection = True
-        return psycopg2.connect(database="spotifystats",
-                                host=postgres_host(),
-                                user=postgres_user(),
-                                password=postgres_password(),
-                                port=postgres_port())
     
 update_batch_size = 500
 
@@ -116,19 +93,18 @@ class DataSource:
         
 
         if self.delete_before_set:
-            with get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f'TRUNCATE {self._table_name()};')
+            with get_engine().begin() as conn:
+                conn.execute(sqlalchemy.text(f'TRUNCATE {self._table_name()};'))
 
         if self.persistent and 'as_of_date' not in value.columns:
             value['as_of_date'] = this_date()
 
-        placeholders = [f"%({col})s" for col in value.columns]
+        placeholders = [f":{col}" for col in value.columns]
 
         conflict_keys = self.index + ["as_of_date"] if self.persistent else self.index
 
         non_conflict_keys = [col for col in value.columns if col not in conflict_keys]
-        non_conflict_placeholders = [f"%({col})s" for col in non_conflict_keys]
+        non_conflict_placeholders = [f":{col}" for col in non_conflict_keys]
 
         conflict_operation = f"""
             ON CONFLICT ({", ".join(conflict_keys)}) DO UPDATE
@@ -145,16 +121,14 @@ class DataSource:
             {conflict_operation}
         """
 
-        with get_connection() as conn:
-            cursor = conn.cursor()
-
+        with get_engine().connect() as conn:
             for i, row in value.iterrows():
                 value_map = {
                     col: row[col]
                     for col in value.columns
                 }
                 
-                cursor.execute(insert_statement, value_map)
+                conn.execute(sqlalchemy.text(insert_statement), value_map)
 
                 if i > 0 and i % update_batch_size == 0:
                     conn.commit()

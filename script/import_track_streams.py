@@ -16,8 +16,9 @@ import json
 import re
 from datetime import datetime
 
+import sqlalchemy
 from data.query import query_text
-from data.raw import get_connection
+from data.raw import get_engine
 from utils.track import is_blacklisted
 
 
@@ -56,7 +57,6 @@ def import_streams_from_file(filepath: str, conn) -> tuple[int, int]:
     with open(filepath) as f:
         records = json.load(f)
     
-    cursor = conn.cursor()
     imported = 0
     skipped = 0
     
@@ -85,8 +85,8 @@ def import_streams_from_file(filepath: str, conn) -> tuple[int, int]:
             continue
         
         # Insert the stream
-        cursor.execute(
-            query_text('insert_stream'),
+        conn.execute(
+            sqlalchemy.text(query_text('insert_stream')),
             {
                 "track_uri": track_uri,
                 "played_at": played_at.timestamp()
@@ -116,7 +116,7 @@ def import_track_streams(directory: str):
     total_imported = 0
     total_skipped = 0
     
-    with get_connection() as conn:
+    with get_engine().connect() as conn:
         for filepath in files:
             imported, skipped = import_streams_from_file(filepath, conn)
             total_imported += imported

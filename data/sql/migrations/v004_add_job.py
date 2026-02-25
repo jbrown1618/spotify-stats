@@ -1,4 +1,5 @@
 from data.sql.migrations.migration import Migration
+import sqlalchemy
 
 remove_job_table = """
 DROP TABLE IF EXISTS job;
@@ -22,13 +23,13 @@ class AddJobTable(Migration):
         super().__init__("v4")
 
 
-    def migrate(self, cursor):
-        cursor.execute(remove_job_table)
-        cursor.execute(add_job_table)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(remove_job_table))
+        conn.execute(sqlalchemy.text(add_job_table))
 
 
-    def reverse(self, cursor):
-        cursor.execute(remove_job_table)
+    def reverse(self, conn):
+        conn.execute(sqlalchemy.text(remove_job_table))
 
 
 if __name__ == '__main__':

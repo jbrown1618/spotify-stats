@@ -1,4 +1,5 @@
 from data.sql.migrations.migration import Migration
+import sqlalchemy
 
 drop_tables = """
 DROP TABLE IF EXISTS listening_history;
@@ -10,8 +11,8 @@ class RemoveListeningTables(Migration):
     def __init__(self):
         super().__init__("v14")
 
-    def migrate(self, cursor):
-        cursor.execute(drop_tables)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(drop_tables))
 
     def reverse(self, _):
         print('Cannot reverse this migration')

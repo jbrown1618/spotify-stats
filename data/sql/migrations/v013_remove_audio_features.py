@@ -1,4 +1,5 @@
 from data.sql.migrations.migration import Migration
+import sqlalchemy
 
 drop_table = """
 DROP TABLE IF EXISTS audio_features;
@@ -10,8 +11,8 @@ class RemoveAudioFeatures(Migration):
         super().__init__("v13")
 
 
-    def migrate(self, cursor):
-        cursor.execute(drop_table)
+    def migrate(self, conn):
+        conn.execute(sqlalchemy.text(drop_table))
 
     def reverse(self, _):
         print('Cannot reverse this migration')
