@@ -114,7 +114,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
                   }}
                 />
               ) : (
-                <Pill>
+                <Pill size="lg">
                   {formatMBArtistName(
                     member.artist_mb_name!,
                     member.artist_sort_name
