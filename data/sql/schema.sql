@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS album (
     popularity INT,
     total_tracks INT,
     release_date TEXT,
-    image_url TEXT
+    image_url TEXT,
+    last_updated TIMESTAMP DEFAULT current_timestamp
 );
 CREATE INDEX IF NOT EXISTS i_album_uri ON album (uri);
 
@@ -43,7 +44,8 @@ CREATE TABLE IF NOT EXISTS artist (
     name TEXT NOT NULL,
     popularity INT,
     followers INT,
-    image_url TEXT
+    image_url TEXT,
+    last_updated TIMESTAMP DEFAULT current_timestamp
 );
 CREATE INDEX IF NOT EXISTS i_artist_uri ON artist (uri);
 
@@ -56,7 +58,8 @@ CREATE TABLE IF NOT EXISTS track (
     explicit BOOLEAN,
     duration_ms INT,
     album_uri TEXT,
-    isrc TEXT
+    isrc TEXT,
+    last_updated TIMESTAMP DEFAULT current_timestamp
 );
 CREATE INDEX IF NOT EXISTS i_track_uri ON track (uri);
 

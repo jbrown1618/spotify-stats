@@ -13,6 +13,7 @@ from data.sql.migrations.v012_add_stream_table import AddStreamTable
 from data.sql.migrations.v013_remove_audio_features import RemoveAudioFeatures
 from data.sql.migrations.v014_remove_listening_tables import RemoveListeningTables
 from data.sql.migrations.v015_remove_rank_tables import RemoveRankTables
+from data.sql.migrations.v016_add_last_updated import AddLastUpdated
 
 migrations = [
     AddTrackRanks(),
@@ -28,7 +29,8 @@ migrations = [
     AddStreamTable(),
     RemoveAudioFeatures(),
     RemoveListeningTables(),
-    RemoveRankTables()
+    RemoveRankTables(),
+    AddLastUpdated()
 ]
 
 def perform_all_migrations():
