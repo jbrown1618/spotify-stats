@@ -1,26 +1,26 @@
 -- Update streams from orphan track to replacement track in track_stream table,
 -- but only where the replacement doesn't already have a stream at that played_at time
 UPDATE track_stream ts1
-SET track_uri = %(replacement_uri)s
-WHERE track_uri = %(orphan_uri)s
+SET track_uri = :replacement_uri
+WHERE track_uri = :orphan_uri
 AND NOT EXISTS (
     SELECT 1 FROM track_stream
-    WHERE track_uri = %(replacement_uri)s
+    WHERE track_uri = :replacement_uri
     AND played_at = ts1.played_at
 );
 
 -- Delete any orphan streams that would cause duplicates (replacement already has a stream at that time)
 DELETE FROM track_stream ts1
-WHERE track_uri = %(orphan_uri)s
+WHERE track_uri = :orphan_uri
 AND EXISTS (
     SELECT 1 FROM track_stream ts2
-    WHERE ts2.track_uri = %(replacement_uri)s
+    WHERE ts2.track_uri = :replacement_uri
     AND ts2.played_at = ts1.played_at
 );
 
 UPDATE sp_track_mb_recording r
-SET spotify_track_uri = %(replacement_uri)s
-WHERE r.spotify_track_uri = %(orphan_uri)s
+SET spotify_track_uri = :replacement_uri
+WHERE r.spotify_track_uri = :orphan_uri
 AND NOT EXISTS (
     SELECT spotify_track_uri
     FROM sp_track_mb_recording
@@ -29,7 +29,7 @@ AND NOT EXISTS (
 );
 
 DELETE FROM track
-WHERE uri = %(orphan_uri)s;
+WHERE uri = :orphan_uri;
 
 DELETE FROM track_artist
-WHERE track_uri = %(orphan_uri)s;
+WHERE track_uri = :orphan_uri;

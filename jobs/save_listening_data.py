@@ -1,7 +1,8 @@
 from datetime import datetime
 import pandas as pd
+import sqlalchemy
 from data.query import query_text
-from data.raw import get_connection
+from data.raw import get_engine
 from jobs.queue import queue_job
 from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
@@ -51,24 +52,21 @@ def to_timestamp(date_str: str) -> float:
 def save_streams(plays: pd.DataFrame):
     """Save individual streams to the track_stream table."""
     print(f'Saving {len(plays)} streams to track_stream table...')
-    with get_connection() as conn:
-        cursor = conn.cursor()
+    with get_engine().begin() as conn:
         for _, row in plays.iterrows():
-            cursor.execute(
-                query_text('insert_stream'),
+            conn.execute(
+                sqlalchemy.text(query_text('insert_stream')),
                 {
                     "track_uri": row["track_uri"],
                     "played_at": row["time"]
                 }
             )
-        conn.commit()
 
 
 def get_unsaved_track_uris():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('select_streams_without_tracks'))
-        return [row[0] for row in cursor.fetchall()]
+    with get_engine().begin() as conn:
+        result = conn.execute(sqlalchemy.text(query_text('select_streams_without_tracks')))
+        return [row[0] for row in result.fetchall()]
 
 
 if __name__ == '__main__':
