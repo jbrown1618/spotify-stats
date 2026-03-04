@@ -13,6 +13,7 @@ import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
 import { useTrack, useTrackCredits } from "../useApi";
+import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
@@ -46,6 +47,12 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
               value: track.album_release_date || "Unknown",
             },
             { label: "Streams", value: track.track_stream_count ?? 0 },
+            {
+              label: "Last played",
+              value: track.track_last_played_at
+                ? formatDate(new Date(track.track_last_played_at))
+                : "Never",
+            },
             { label: "Popularity", value: track.track_popularity },
             {
               label: "Liked",
