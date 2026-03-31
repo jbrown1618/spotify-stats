@@ -53,6 +53,6 @@ FROM (
     FROM album ial
     INNER JOIN track it ON it.album_uri = ial.uri
     LEFT JOIN liked_track ilt ON ilt.track_uri = it.uri
-    WHERE it.uri IN %(track_uris)s
+    WHERE it.uri IN :track_uris
 ) i
 GROUP BY i.album_release_year

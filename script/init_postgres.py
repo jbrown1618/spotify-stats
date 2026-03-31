@@ -1,7 +1,7 @@
-from data.raw import get_connection
+import sqlalchemy
+from data.raw import get_engine
 
-with open("./data/sql/schema.sql") as f, get_connection() as conn:
+with open("./data/sql/schema.sql") as f:
     schema = f.read()
-    cursor = conn.cursor()
-    cursor.execute(schema)
-    conn.commit()
+    with get_engine().begin() as conn:
+        conn.execute(sqlalchemy.text(schema))
