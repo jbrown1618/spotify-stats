@@ -1,6 +1,7 @@
 import spotipy
 import pandas as pd
-from data.raw import RawData
+from datetime import datetime, timedelta, timezone
+from data.raw import RawData, get_connection
 from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
 from utils.name import short_name
@@ -8,6 +9,7 @@ from utils.track import is_blacklisted
 
 page_size = 50
 small_page_size = 20
+staleness_days = 7
 
 queued_artists = set()
 queued_albums = set()
@@ -16,6 +18,10 @@ processed_playlists = set()
 processed_tracks = set()
 processed_albums = set()
 processed_artists = set()
+
+fresh_tracks = set()
+fresh_albums = set()
+fresh_artists = set()
 
 playlists_data = []
 tracks_data = []
@@ -28,7 +34,23 @@ track_artist = []
 album_artist = []
 artist_genre = []
 
+def load_fresh_uris():
+    threshold = datetime.now(timezone.utc) - timedelta(days=staleness_days)
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT uri FROM track WHERE last_updated > %s", (threshold,))
+        for row in cursor.fetchall():
+            fresh_tracks.add(row[0])
+        cursor.execute("SELECT uri FROM album WHERE last_updated > %s", (threshold,))
+        for row in cursor.fetchall():
+            fresh_albums.add(row[0])
+        cursor.execute("SELECT uri FROM artist WHERE last_updated > %s", (threshold,))
+        for row in cursor.fetchall():
+            fresh_artists.add(row[0])
+    print(f'Found {len(fresh_tracks)} fresh tracks, {len(fresh_albums)} fresh albums, {len(fresh_artists)} fresh artists')
+
 def save_spotify_data():
+    load_fresh_uris()
     sp = get_spotify_client()
     save_playlists_data(sp)
     save_liked_tracks_data(sp)
@@ -51,6 +73,7 @@ def save_spotify_data():
 
 
 def save_tracks_by_uri(uris):
+    load_fresh_uris()
     sp = get_spotify_client()
     while len(uris) > 0:
         print(f'Fetching {page_size} tracks...')
@@ -147,16 +170,17 @@ def save_liked_tracks_data(sp: spotipy.Spotify):
 def process_track(track):
     if track["uri"] in processed_tracks:
         return
-
-    tracks_data.append(track_data(track))
     processed_tracks.add(track["uri"])
-    
+
+    if track["uri"] not in fresh_tracks:
+        tracks_data.append(track_data(track))
+        for i, artist in enumerate(track["artists"]):
+            track_artist.append({ "track_uri": track["uri"], "artist_uri": artist["uri"], "artist_index": i })
+
     for i, artist in enumerate(track["artists"]):
-        track_artist.append({ "track_uri": track["uri"], "artist_uri": artist["uri"], "artist_index": i })
         queue_artist(artist)
-    
-    album = track["album"]
-    queue_album(album)
+
+    queue_album(track["album"])
 
 
 def track_data(track):
@@ -165,6 +189,7 @@ def track_data(track):
     data["album_uri"] = track["album"]["uri"]
     data["isrc"] = track["external_ids"].get("isrc", None)
     data["short_name"] = short_name(track['name'])
+    data["last_updated"] = datetime.now(timezone.utc)
 
     return data
 
@@ -183,6 +208,8 @@ def save_albums_data(sp: spotipy.Spotify):
 
 def queue_album(album):
     if album["uri"] in queued_albums:
+        return
+    if album["uri"] in fresh_albums:
         return
 
     queued_albums.add(album["uri"])
@@ -208,6 +235,7 @@ def album_data(album):
         data["image_url"] = album["images"][0]["url"]
 
     data["short_name"] = short_name(album['name'])
+    data["last_updated"] = datetime.now(timezone.utc)
 
     return data
 
@@ -226,6 +254,8 @@ def save_artists_data(sp: spotipy.Spotify):
             
 def queue_artist(artist):
     if artist["uri"] in queued_artists:
+        return
+    if artist["uri"] in fresh_artists:
         return
 
     queued_artists.add(artist["uri"])
@@ -250,6 +280,8 @@ def artist_data(artist):
 
     if artist["images"] is not None and len(artist["images"]) > 0:
         data["image_url"] = artist["images"][0]["url"]
+
+    data["last_updated"] = datetime.now(timezone.utc)
 
     return data
 
