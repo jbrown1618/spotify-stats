@@ -19,6 +19,22 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
     track_uris_tuple = tuple(track_uris) if filter_tracks else ('__none__',)
 
     with get_engine().begin() as conn:
+        top_tracks = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
+            conn,
+            params={
+                'percentile': 0.9,
+                'filter_by_date': False,
+                'filter_tracks': filter_tracks,
+                'track_uris': track_uris_tuple
+            }
+        )
+        if not top_tracks.empty and len(top_tracks) >= 5:
+            recommendations["Jump back in"] = {
+                "type": "track",
+                "uris": top_tracks['track_uri'].tolist()
+            }
+
         still_interested_tracks = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
             conn,
@@ -39,6 +55,7 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             conn,
             params={
                 'percentile': 0.6,
+                'filter_by_date': True,
                 'filter_tracks': filter_tracks,
                 'track_uris': track_uris_tuple
             }
@@ -47,21 +64,6 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             recommendations["It's been a long time"] = {
                 "type": "track",
                 "uris": track_recs['track_uri'].tolist()
-            }
-
-        top_tracks = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
-            conn,
-            params={
-                'percentile': 0.9,
-                'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
-            }
-        )
-        if not top_tracks.empty and len(top_tracks) >= 5:
-            recommendations["Jump back in"] = {
-                "type": "track",
-                "uris": top_tracks['track_uri'].tolist()
             }
 
         artist_recs = pd.read_sql_query(
