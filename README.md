@@ -1,5 +1,7 @@
 # Spotify Stats
 
+TEST
+
 ## Setup
 
 ```bash
