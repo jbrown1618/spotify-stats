@@ -1,6 +1,6 @@
 # Spotify Stats
 
-test
+TEST
 
 ## Setup
 
