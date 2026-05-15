@@ -12,7 +12,7 @@ FROM mb_recording_credit rc
     LEFT JOIN liked_track lt ON stmr.spotify_track_uri = lt.track_uri
     LEFT JOIN sp_artist_mb_artist sama ON sama.artist_mbid = mb.artist_mbid
     LEFT JOIN artist a ON sama.spotify_artist_uri = a.uri
-WHERE :filter_tracks = FALSE OR stmr.spotify_track_uri IN :track_uris
+WHERE stmr.spotify_track_uri IN (SELECT track_uri FROM matching_track_uris)
     AND rc.credit_type IN (
         'songwriter',
         'lyricist',

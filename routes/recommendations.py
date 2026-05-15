@@ -1,31 +1,47 @@
-import typing
 import pandas as pd
 import sqlalchemy
 
+from data.filters import filtered_connection, parse_filters
 from data.query import query_text
-from data.raw import get_engine
 
 
-def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None):
+def recommendations_payload(filters: dict):
     recommendations = {}
     
-    filter_tracks = track_uris is not None and len(track_uris) > 0
+    params = parse_filters(filters)
     
-    # Don't show recommendations if viewing fewer than 60 tracks
-    if filter_tracks and len(track_uris) < 60:
-        return recommendations
-    
-    # Use a tuple for SQL IN clause, with a dummy value if empty to avoid SQL errors
-    track_uris_tuple = tuple(track_uris) if filter_tracks else ('__none__',)
+    # Determine if any filters are active
+    has_filters = any([
+        params["filter_tracks"],
+        params["filter_playlists"],
+        params["filter_artists"],
+        params["filter_albums"],
+        params["filter_labels"],
+        params["filter_genres"],
+        params["filter_producers"],
+        params["filter_years"],
+        params["liked"],
+        params["wrapped_start_date"] is not None,
+    ])
 
-    with get_engine().begin() as conn:
+    with filtered_connection(filters) as (conn, filter_params):
+        if has_filters:
+            # Check track count to avoid showing recommendations for very small filter sets
+            track_count = pd.read_sql_query(
+                sqlalchemy.text("SELECT COUNT(*) AS cnt FROM matching_track_uris"),
+                conn
+            ).iloc[0]['cnt']
+            if track_count < 60:
+                return recommendations
+        
+        filter_tracks = has_filters
+
         still_interested_tracks = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
             conn,
             params={
                 'percentile': 0.6,
                 'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
             }
         )
         if not still_interested_tracks.empty and len(still_interested_tracks) >= 5:
@@ -40,7 +56,6 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             params={
                 'percentile': 0.6,
                 'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
             }
         )
         if not track_recs.empty and len(track_recs) >= 5:
@@ -55,7 +70,6 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             params={
                 'percentile': 0.9,
                 'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
             }
         )
         if not top_tracks.empty and len(top_tracks) >= 5:
@@ -70,7 +84,6 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             params={
                 'percentile': 0.85,
                 'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
             }
         )
         if not artist_recs.empty and len(artist_recs) >= 5:
@@ -85,7 +98,6 @@ def recommendations_payload(track_uris: typing.Optional[typing.List[str]] = None
             params={
                 'percentile': 0.8,
                 'filter_tracks': filter_tracks,
-                'track_uris': track_uris_tuple
             }
         )
         if not album_recs.empty and len(album_recs) >= 5:

@@ -28,7 +28,7 @@ SELECT
             FROM track it 
             INNER JOIN liked_track ilt ON ilt.track_uri = it.uri
             WHERE it.album_uri = al.uri
-            AND (:filter_tracks = FALSE OR it.uri IN :track_uris)
+            AND it.uri IN (SELECT track_uri FROM matching_track_uris)
         )
     ) AS album_liked_track_count,
     (
@@ -37,7 +37,7 @@ SELECT
             SELECT DISTINCT it.uri
             FROM track it 
             WHERE it.album_uri = al.uri
-            AND (:filter_tracks = FALSE OR it.uri IN :track_uris)
+            AND it.uri IN (SELECT track_uri FROM matching_track_uris)
         )
     ) AS album_track_count,
     (
@@ -54,7 +54,7 @@ SELECT
 FROM album al
     INNER JOIN track t ON t.album_uri = al.uri
     LEFT JOIN tmp_album_stream_counts sc ON sc.album_uri = al.uri
-WHERE (:filter_tracks = FALSE OR t.uri IN :track_uris)
+WHERE t.uri IN (SELECT track_uri FROM matching_track_uris)
 GROUP BY 
     al.uri,
     al.name,

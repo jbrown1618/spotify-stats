@@ -2,10 +2,46 @@ import typing
 import pandas as pd
 import sqlalchemy
 
+from data.filters import create_matching_tracks_table
 from data.query import query_text
 from data.raw import RawData, get_engine
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
+
+
+def _to_tuple(value, empty_sentinel='EMPTY'):
+    if value is None or len(value) == 0:
+        return (empty_sentinel,)
+    return tuple(value)
+
+
+def _matching_tracks_params(
+    track_uris=None, playlist_uris=None, artist_uris=None, album_uris=None,
+    labels=None, genres=None, producers=None, years=None, liked=None,
+    start_date=None, end_date=None
+):
+    """Build the params dict for create_matching_track_uris.sql from individual arguments."""
+    return {
+        "filter_tracks": track_uris is not None,
+        "track_uris": _to_tuple(track_uris),
+        "liked": bool(liked),
+        "filter_playlists": playlist_uris is not None,
+        "playlist_uris": _to_tuple(playlist_uris),
+        "filter_artists": artist_uris is not None,
+        "artist_uris": _to_tuple(artist_uris),
+        "filter_albums": album_uris is not None,
+        "album_uris": _to_tuple(album_uris),
+        "filter_labels": labels is not None,
+        "labels": _to_tuple(labels),
+        "filter_genres": genres is not None,
+        "genres": _to_tuple(genres),
+        "filter_producers": producers is not None,
+        "producers": _to_tuple(producers),
+        "filter_years": years is not None,
+        "years": _to_tuple(years, 0),
+        "wrapped_start_date": start_date,
+        "wrapped_end_date": end_date,
+    }
 
 class DataProvider:
     _instance = None
@@ -85,10 +121,8 @@ class DataProvider:
 
     def playlists(self, track_uris: str = None) -> pd.DataFrame:
         with get_engine().begin() as conn:
-            return pd.read_sql_query(sqlalchemy.text(query_text('select_playlists')), conn, params={
-                "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
-            })
+            create_matching_tracks_table(conn, _matching_tracks_params(track_uris=track_uris))
+            return pd.read_sql_query(sqlalchemy.text(query_text('select_playlists')), conn)
 
 
     def albums(self, 
@@ -96,9 +130,8 @@ class DataProvider:
                start_date: str = None,
                end_date: str = None) -> pd.DataFrame:
         with get_engine().begin() as conn:
+            create_matching_tracks_table(conn, _matching_tracks_params(track_uris=track_uris, start_date=start_date, end_date=end_date))
             albums = pd.read_sql_query(sqlalchemy.text(query_text('select_albums')), conn, params={
-                "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris),
                 "wrapped_start_date": start_date,
                 "wrapped_end_date": end_date
             })
@@ -199,13 +232,12 @@ class DataProvider:
                 start_date: str = None,
                 end_date: str = None):
         with get_engine().begin() as conn:
+            create_matching_tracks_table(conn, _matching_tracks_params(track_uris=track_uris, start_date=start_date, end_date=end_date))
             return pd.read_sql_query(sqlalchemy.text(query_text('select_artists')), conn, params={
-                "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris),
                 "filter_artists": uris is not None,
-                "artist_uris": tuple(['EMPTY']) if uris is None or len(uris) == 0 else tuple(uris),
+                "artist_uris": _to_tuple(uris),
                 "filter_mbids": mbids is not None,
-                "mbids": tuple(['EMPTY']) if mbids is None or len(mbids) == 0 else tuple(mbids),
+                "mbids": _to_tuple(mbids),
                 "wrapped_start_date": start_date,
                 "wrapped_end_date": end_date
             })
@@ -241,10 +273,8 @@ class DataProvider:
 
     def producers(self, track_uris: typing.Iterable[str] = None) -> pd.DataFrame:
         with get_engine().begin() as conn:
-            producers = pd.read_sql_query(sqlalchemy.text(query_text('select_producers')), conn, params={
-                "filter_tracks": track_uris is not None,
-                "track_uris": tuple(['EMPTY']) if track_uris is None or len(track_uris) == 0 else tuple(track_uris)
-            })
+            create_matching_tracks_table(conn, _matching_tracks_params(track_uris=track_uris))
+            producers = pd.read_sql_query(sqlalchemy.text(query_text('select_producers')), conn)
             producers.drop_duplicates(subset=['producer_mbid'], keep='first', inplace=True)
             return producers
 

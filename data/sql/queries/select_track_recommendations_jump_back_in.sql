@@ -8,7 +8,7 @@ WITH track_stats AS (
         MAX(s.played_at) AS last_played
     FROM track_stream s
     INNER JOIN liked_track lt ON lt.track_uri = s.track_uri
-    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN (SELECT track_uri FROM matching_track_uris))
     GROUP BY s.track_uri
 ),
 stream_percentiles AS (

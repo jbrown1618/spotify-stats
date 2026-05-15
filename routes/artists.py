@@ -1,15 +1,28 @@
-import typing
+import pandas as pd
+import sqlalchemy
 
 from routes.utils import to_json
+from data.filters import filtered_connection
 from data.provider import DataProvider
+from data.query import query_text
 
 
-def artists_payload(track_uris: typing.Iterable[str], min_date, max_date):
-    if track_uris is None or len(track_uris) == 0:
+def artists_payload(filters: dict):
+    with filtered_connection(filters) as (conn, params):
+        artists = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_artists')),
+            conn,
+            params={
+                "filter_artists": False,
+                "artist_uris": ('EMPTY',),
+                "filter_mbids": False,
+                "mbids": ('EMPTY',),
+                "wrapped_start_date": params["wrapped_start_date"],
+                "wrapped_end_date": params["wrapped_end_date"],
+            }
+        )
+    if artists.empty:
         return {}
-
-    dp = DataProvider()
-    artists = dp.artists(track_uris=track_uris, start_date=min_date, end_date=max_date)
     return to_json(artists, 'artist_uri')
 
 

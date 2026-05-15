@@ -37,7 +37,7 @@ SELECT
             FROM track_artist ita 
             INNER JOIN liked_track ilt ON ilt.track_uri = ita.track_uri
             WHERE ita.artist_uri = a.uri
-            AND (:filter_tracks = FALSE OR ita.track_uri IN :track_uris)
+            AND ita.track_uri IN (SELECT track_uri FROM matching_track_uris)
         )
     ) AS artist_liked_track_count,
     (
@@ -57,7 +57,7 @@ SELECT
             SELECT DISTINCT ita.track_uri
             FROM track_artist ita 
             WHERE ita.artist_uri = a.uri
-            AND (:filter_tracks = FALSE OR ita.track_uri IN :track_uris)
+            AND ita.track_uri IN (SELECT track_uri FROM matching_track_uris)
         )
     ) AS artist_track_count
 
@@ -70,7 +70,7 @@ FROM artist a
 WHERE
     (:filter_artists = FALSE OR a.uri IN :artist_uris)
     AND
-    (:filter_tracks = FALSE OR ta.track_uri IN :track_uris)
+    ta.track_uri IN (SELECT track_uri FROM matching_track_uris)
     AND
     (:filter_mbids = FALSE OR mba.artist_mbid IN :mbids)
     AND

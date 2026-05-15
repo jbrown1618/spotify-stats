@@ -50,13 +50,12 @@ def get_track_credits(track_uri):
 
 @app.route("/api/playlists", methods = ['POST'])
 def list_playlists():
-    return playlists_payload(request.json.get('tracks', None))
+    return playlists_payload(request.json)
 
 
 @app.route("/api/artists", methods = ['POST'])
 def list_artists():
-    min_date, max_date = to_date_range(request.json.get("wrapped"))
-    return artists_payload(request.json.get('tracks', None), min_date, max_date)
+    return artists_payload(request.json)
 
 
 @app.route("/api/artists/<artist_uri>/credits")
@@ -66,28 +65,27 @@ def get_artist_credits(artist_uri):
 
 @app.route("/api/albums", methods = ['POST'])
 def list_albums():
-    min_date, max_date = to_date_range(request.json.get("wrapped"))
-    return albums_payload(request.json.get('tracks', None), min_date, max_date)
+    return albums_payload(request.json)
 
 
 @app.route("/api/labels", methods = ['POST'])
 def list_labels():
-    return labels_payload(request.json.get('tracks', None))
+    return labels_payload(request.json)
 
 
 @app.route("/api/genres", methods = ['POST'])
 def list_genres():
-    return genres_payload(request.json.get('tracks', None))
+    return genres_payload(request.json)
 
 
 @app.route("/api/producers", methods=['POST'])
 def list_producers():
-    return producers_payload(request.json.get('tracks', None))
+    return producers_payload(request.json)
 
 
 @app.route("/api/release-years", methods = ['POST'])
 def list_release_years():
-    return release_years_payload(request.json.get('tracks', None))
+    return release_years_payload(request.json)
 
 
 @app.route("/api/streams/tracks/history", methods = ['POST'])
@@ -146,4 +144,4 @@ def list_album_streams_by_month():
 
 @app.route("/api/recommendations", methods = ['POST'])
 def get_recommendations():
-    return recommendations_payload(request.json.get('tracks', None))
+    return recommendations_payload(request.json)
