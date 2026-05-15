@@ -3,6 +3,7 @@ import sqlalchemy
 
 from data.filters import filtered_connection
 from data.query import query_text
+from routes.pagination import paginate_df, RELEASE_YEAR_SORT_COLUMNS
 
 
 def release_years_payload(filters: dict):
@@ -14,6 +15,10 @@ def release_years_payload(filters: dict):
 
     if years.empty:
         return []
+
+    paginated = paginate_df(years, filters, RELEASE_YEAR_SORT_COLUMNS, "Most liked tracks")
+    if paginated is not None:
+        return paginated
 
     out = []
     for _, row in years.iterrows():

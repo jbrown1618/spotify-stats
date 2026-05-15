@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import {
   ActiveFilters,
@@ -11,6 +11,7 @@ import {
   FilterOptions,
   Genre,
   Label,
+  PaginatedResponse,
   Playlist,
   Producer,
   getAlbums,
@@ -23,6 +24,14 @@ import {
   getFilterOptions,
   getGenres,
   getLabels,
+  getPaginatedAlbums,
+  getPaginatedArtists,
+  getPaginatedGenres,
+  getPaginatedLabels,
+  getPaginatedPlaylists,
+  getPaginatedProducers,
+  getPaginatedReleaseYears,
+  getPaginatedTracks,
   getPlaylists,
   getProducers,
   getRecommendations,
@@ -275,6 +284,86 @@ export function useRecommendations() {
     queryKey: ["recommendations", query],
     queryFn: async () => getRecommendations(filters),
   });
+}
+
+const PAGE_SIZE = 24;
+
+function usePaginatedQuery<T>(
+  key: string,
+  sort: string,
+  fetcher: (
+    filters: ActiveFilters & { limit: number; offset: number; sort: string }
+  ) => Promise<PaginatedResponse<T>>,
+  filters?: ActiveFilters
+) {
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+
+  return useInfiniteQuery<PaginatedResponse<T>>({
+    ...defaultQueryOptions,
+    queryKey: [key, query, sort],
+    queryFn: async ({ pageParam = 0 }) =>
+      fetcher({ ...activeFilters, limit: PAGE_SIZE, offset: pageParam, sort }),
+    initialPageParam: 0,
+    getNextPageParam: (_lastPage, allPages) => {
+      const total = allPages[0]?.total ?? 0;
+      const loaded = allPages.reduce((n, p) => n + p.items.length, 0);
+      return loaded < total ? loaded : undefined;
+    },
+  });
+}
+
+export function usePaginatedTracks(sort: string) {
+  return usePaginatedQuery("tracks-paginated", sort, getPaginatedTracks);
+}
+
+export function usePaginatedArtists(sort: string) {
+  return usePaginatedQuery("artists-paginated", sort, getPaginatedArtists);
+}
+
+export function usePaginatedAlbums(sort: string) {
+  return usePaginatedQuery("albums-paginated", sort, getPaginatedAlbums);
+}
+
+export function usePaginatedPlaylists() {
+  return usePaginatedQuery(
+    "playlists-paginated",
+    "Most liked tracks",
+    getPaginatedPlaylists
+  );
+}
+
+export function usePaginatedLabels() {
+  return usePaginatedQuery(
+    "labels-paginated",
+    "Most liked tracks",
+    getPaginatedLabels
+  );
+}
+
+export function usePaginatedGenres() {
+  return usePaginatedQuery(
+    "genres-paginated",
+    "Most liked tracks",
+    getPaginatedGenres
+  );
+}
+
+export function usePaginatedReleaseYears() {
+  return usePaginatedQuery(
+    "release-years-paginated",
+    "Most liked tracks",
+    getPaginatedReleaseYears
+  );
+}
+
+export function usePaginatedProducers() {
+  return usePaginatedQuery(
+    "producers-paginated",
+    "Most tracks",
+    getPaginatedProducers
+  );
 }
 
 // If a piece of a query key is an empty string, the request will not fire

@@ -5,13 +5,22 @@ import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
-import { trackSortOptions } from "../sorting";
 import {
-  useTracks,
+  usePaginatedTracks,
   useTracksStreamingHistory,
   useTracksStreamsByMonth,
 } from "../useApi";
 import { useFilters } from "../useFilters";
+
+const trackSortOptions = [
+  "Most streams",
+  "Least streams",
+  "Recently played",
+  "Least recently played",
+  "Newest",
+  "Oldest",
+  "Alphabetical",
+];
 
 export function TracksSection() {
   const filters = useFilters();
@@ -71,14 +80,26 @@ export function TracksSection() {
 }
 
 function TracksDisplayGrid() {
-  const { data: tracks, isLoading } = useTracks();
+  const [sort, setSort] = useState("Most streams");
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedTracks(sort);
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={tracks ? Object.values(tracks) : undefined}
-      sortOptions={trackSortOptions}
+      items={items}
+      total={total}
+      serverSortOptions={trackSortOptions}
+      serverSort={sort}
+      onServerSortChange={setSort}
       getKey={(track) => track.track_uri}
       renderRow={(track) => <TrackRow trackUri={track.track_uri} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

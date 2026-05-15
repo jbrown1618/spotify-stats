@@ -2,7 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { LabelsBarChart } from "../charts/LabelsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useLabels } from "../useApi";
+import { usePaginatedLabels } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -19,19 +19,22 @@ export function LabelsSection() {
 }
 
 function LabelsDisplayGrid() {
-  const { data: labels, isLoading } = useLabels();
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedLabels();
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={
-        labels
-          ? labels.sort(
-              (a, b) => (b.liked_track_count ?? 0) - (a.liked_track_count ?? 0)
-            )
-          : undefined
-      }
+      items={items}
+      total={total}
       getKey={(ltc) => ltc.label}
       renderPill={(ltc) => <RecordLabelPill label={ltc.label} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

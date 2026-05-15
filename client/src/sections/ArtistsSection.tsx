@@ -7,13 +7,15 @@ import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryS
 import { DisplayGrid } from "../design/DisplayGrid";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { ArtistTile } from "../list-items/ArtistTile";
-import { artistSortOptions } from "../sorting";
 import {
   useArtists,
   useArtistsStreamingHistory,
   useArtistsStreamsByMonth,
+  usePaginatedArtists,
 } from "../useApi";
 import { useFilters } from "../useFilters";
+
+const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 
 export function ArtistsSection() {
   const filters = useFilters();
@@ -94,16 +96,28 @@ export function ArtistsSection() {
 }
 
 function ArtistsDisplayGrid() {
-  const { data: artists, isLoading } = useArtists();
+  const [sort, setSort] = useState("Most streams");
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedArtists(sort);
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={artists ? Object.values(artists) : undefined}
-      sortOptions={artistSortOptions}
+      items={items}
+      total={total}
+      serverSortOptions={artistSortOptions}
+      serverSort={sort}
+      onServerSortChange={setSort}
       getKey={(artist) => artist.artist_uri}
       renderTile={(artist) => <ArtistTile artist={artist} />}
       renderLargeTile={(artist) => <ArtistTile large artist={artist} />}
       renderRow={(artist) => <ArtistRow artist={artist} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

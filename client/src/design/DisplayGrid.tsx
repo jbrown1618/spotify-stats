@@ -26,12 +26,19 @@ import { TileSkeleton } from "./TileDesign";
 interface DisplayGridProps<T> {
   loading: boolean;
   items: T[] | undefined;
+  total?: number;
   sortOptions?: SortOptions<T>;
+  serverSortOptions?: string[];
+  serverSort?: string;
+  onServerSortChange?: (sort: string) => void;
   getKey: (item: T) => string;
   renderTile?: (item: T) => JSX.Element;
   renderLargeTile?: (item: T) => JSX.Element;
   renderRow?: (item: T) => JSX.Element;
   renderPill?: (item: T) => JSX.Element;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
@@ -42,12 +49,19 @@ const loadingItems = Array.from(Array(defaultCount).keys());
 export function DisplayGrid<T>({
   loading,
   items,
+  total,
   sortOptions,
+  serverSortOptions,
+  serverSort,
+  onServerSortChange,
   renderTile,
   renderLargeTile,
   renderRow,
   renderPill,
   getKey,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
 }: DisplayGridProps<T>) {
   const ref = useRef<HTMLDivElement>(null);
   const [variant, setVariant] = useState<DisplayVariant>(
@@ -62,6 +76,8 @@ export function DisplayGrid<T>({
       : "tile"
   );
 
+  const isServerPaginated = !!onLoadMore;
+
   const [count, setCount] = useState(defaultCount);
   const [sort, setSort] = useState<string | null>(
     sortOptions && Object.keys(sortOptions).length > 0
@@ -69,7 +85,14 @@ export function DisplayGrid<T>({
       : null
   );
 
-  const onMore = () => setCount((count) => count * 2);
+  const handleMore = () => {
+    if (isServerPaginated) {
+      onLoadMore?.();
+    } else {
+      setCount((count) => count * 2);
+    }
+  };
+
   const onLess = () => {
     setCount(defaultCount);
     ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -86,8 +109,26 @@ export function DisplayGrid<T>({
       value: "large-tile",
     });
 
-  const comparator = sortOptions && sort ? sortOptions[sort] : null;
-  const displayItems = comparator && items ? items.sort(comparator) : items;
+  const comparator = !isServerPaginated && sortOptions && sort ? sortOptions[sort] : null;
+  const sortedItems = comparator && items ? items.sort(comparator) : items;
+  const displayItems = isServerPaginated ? sortedItems : sortedItems?.slice(0, count);
+
+  const activeSortOptions = isServerPaginated ? serverSortOptions : (sortOptions ? Object.keys(sortOptions) : undefined);
+  const activeSort = isServerPaginated ? (serverSort ?? null) : sort;
+  const handleSortChange = (s: string | null) => {
+    if (isServerPaginated) {
+      if (s) onServerSortChange?.(s);
+    } else {
+      setSort(s);
+      setCount(defaultCount);
+    }
+  };
+
+  const totalItems = total ?? items?.length ?? 0;
+  const showMore = isServerPaginated
+    ? (hasNextPage ?? false)
+    : count < totalItems;
+  const showLess = isServerPaginated ? false : count > defaultCount;
 
   if (!loading && displayItems?.length === 0)
     return (
@@ -109,15 +150,12 @@ export function DisplayGrid<T>({
           <div />
         )}
 
-        {sortOptions && Object.keys(sortOptions).length > 0 && (
+        {activeSortOptions && activeSortOptions.length > 0 && (
           <div className={styles.sortSelect}>
             <Select
-              data={Object.keys(sortOptions)}
-              value={sort}
-              onChange={(s) => {
-                setSort(s);
-                setCount(defaultCount);
-              }}
+              data={activeSortOptions}
+              value={activeSort}
+              onChange={handleSortChange}
               checkIconPosition="right"
               radius="xl"
             />
@@ -132,7 +170,7 @@ export function DisplayGrid<T>({
         )}
       >
         {displayItems
-          ? displayItems.slice(0, count).map((item) => (
+          ? displayItems.map((item) => (
               <div key={getKey(item)}>
                 {variant === "row" && renderRow?.(item)}
                 {variant === "large-tile" && renderLargeTile?.(item)}
@@ -148,15 +186,24 @@ export function DisplayGrid<T>({
                 {variant === "pill" && <PillSkeleton />}
               </div>
             ))}
+        {isFetchingNextPage &&
+          loadingItems.map((i) => (
+            <div key={`loading-${i}`}>
+              {variant === "row" && <RowSkeleton />}
+              {variant === "large-tile" && <LargeTileSkeleton />}
+              {variant === "tile" && <TileSkeleton />}
+              {variant === "pill" && <PillSkeleton />}
+            </div>
+          ))}
       </div>
       <div className={styles.buttons}>
-        {count > defaultCount ? (
+        {showLess ? (
           <Button variant="light" onClick={onLess} className={styles.button}>
             <IconMinus />
           </Button>
         ) : null}
-        {count < (items?.length ?? 0) ? (
-          <Button variant="light" onClick={onMore} className={styles.button}>
+        {showMore ? (
+          <Button variant="light" onClick={handleMore} className={styles.button}>
             <IconPlus />
           </Button>
         ) : null}

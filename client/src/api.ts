@@ -178,6 +178,17 @@ export interface ActiveFilters {
   producers?: string[];
 }
 
+export interface PaginationParams {
+  limit: number;
+  offset: number;
+  sort: string;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+}
+
 export interface FilterOptions {
   artists: Record<string, Pick<Artist, "artist_uri" | "artist_name">>;
   albums: Record<string, Pick<Album, "album_uri" | "album_name">>;
@@ -351,18 +362,66 @@ export async function getRecommendations(
   return sendRequest(`/api/recommendations`, "recommendations", filters);
 }
 
+export async function getPaginatedTracks(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Track>> {
+  return sendRequest(`/api/tracks/search`, "tracks", filters);
+}
+
+export async function getPaginatedArtists(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Artist>> {
+  return sendRequest(`/api/artists`, "artists", filters);
+}
+
+export async function getPaginatedAlbums(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Album>> {
+  return sendRequest(`/api/albums`, "albums", filters);
+}
+
+export async function getPaginatedPlaylists(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Playlist>> {
+  return sendRequest(`/api/playlists`, "playlists", filters);
+}
+
+export async function getPaginatedLabels(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Label>> {
+  return sendRequest(`/api/labels`, "labels", filters);
+}
+
+export async function getPaginatedGenres(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Genre>> {
+  return sendRequest(`/api/genres`, "genres", filters);
+}
+
+export async function getPaginatedReleaseYears(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<ReleaseYear>> {
+  return sendRequest(`/api/release-years`, "release years", filters);
+}
+
+export async function getPaginatedProducers(
+  filters: ActiveFilters & PaginationParams
+): Promise<PaginatedResponse<Producer>> {
+  return sendRequest(`/api/producers`, "producers", filters);
+}
+
 async function sendRequest<T>(
   url: string,
   dataName: string,
-  filters?: ActiveFilters
+  body?: Record<string, unknown>
 ): Promise<T> {
   try {
-    const headers = filters
+    const headers = body
       ? new Headers({ "Content-Type": "application/json" })
       : undefined;
     const res = await fetch(url, {
-      method: filters ? "POST" : "GET",
-      body: filters ? JSON.stringify(filters) : undefined,
+      method: body ? "POST" : "GET",
+      body: body ? JSON.stringify(body) : undefined,
       headers,
     });
     if (!res.ok)

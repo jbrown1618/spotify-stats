@@ -2,7 +2,7 @@ import { PlaylistsBarChart } from "../charts/PlaylistsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { PlaylistRow } from "../list-items/PlaylistRow";
 import { PlaylistTile } from "../list-items/PlaylistTile";
-import { usePlaylists } from "../useApi";
+import { usePaginatedPlaylists } from "../useApi";
 import { useFilters } from "../useFilters";
 
 export function PlaylistsSection() {
@@ -19,21 +19,23 @@ export function PlaylistsSection() {
 }
 
 function PlaylistsDisplayGrid() {
-  const { data: playlists, isLoading } = usePlaylists();
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedPlaylists();
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={
-        playlists
-          ? Object.values(playlists).sort(
-              (a, b) =>
-                b.playlist_liked_track_count - a.playlist_liked_track_count
-            )
-          : undefined
-      }
+      items={items}
+      total={total}
       getKey={(playlist) => playlist.playlist_uri}
       renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
       renderRow={(playlist) => <PlaylistRow playlist={playlist} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

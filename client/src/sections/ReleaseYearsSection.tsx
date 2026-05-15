@@ -2,7 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { YearsBarChart } from "../charts/YearsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useReleaseYears } from "../useApi";
+import { usePaginatedReleaseYears } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -18,19 +18,22 @@ export function ReleaseYearsSection() {
 }
 
 function YearsDisplayGrid() {
-  const { data: years, isLoading } = useReleaseYears();
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedReleaseYears();
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={
-        years
-          ? Object.values(years).sort(
-              (a, b) => (b.liked_track_count ?? 0) - (a.liked_track_count ?? 0)
-            )
-          : undefined
-      }
+      items={items}
+      total={total}
       getKey={(yc) => "" + yc.release_year}
       renderPill={(yc) => <ReleaseYearPill year={yc.release_year} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

@@ -2,6 +2,7 @@ import pandas as pd
 import sqlalchemy
 
 from routes.utils import to_json
+from routes.pagination import paginate_df, ARTIST_SORT_COLUMNS
 from data.filters import filtered_connection
 from data.provider import DataProvider
 from data.query import query_text
@@ -23,6 +24,11 @@ def artists_payload(filters: dict):
         )
     if artists.empty:
         return {}
+
+    paginated = paginate_df(artists, filters, ARTIST_SORT_COLUMNS, "Most streams")
+    if paginated is not None:
+        return paginated
+
     return to_json(artists, 'artist_uri')
 
 

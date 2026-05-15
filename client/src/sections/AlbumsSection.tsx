@@ -7,13 +7,21 @@ import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistorySta
 import { DisplayGrid } from "../design/DisplayGrid";
 import { AlbumRow } from "../list-items/AlbumRow";
 import { AlbumTile } from "../list-items/AlbumTile";
-import { albumSortOptions } from "../sorting";
 import {
   useAlbums,
   useAlbumsStreamingHistory,
   useAlbumsStreamsByMonth,
+  usePaginatedAlbums,
 } from "../useApi";
 import { useFilters } from "../useFilters";
+
+const albumSortOptions = [
+  "Most streams",
+  "Least streams",
+  "Newest",
+  "Oldest",
+  "Alphabetical",
+];
 
 export function AlbumsSection() {
   const filters = useFilters();
@@ -92,16 +100,28 @@ export function AlbumsSection() {
 }
 
 function AlbumsDisplayGrid() {
-  const { data: albums, isLoading } = useAlbums();
+  const [sort, setSort] = useState("Most streams");
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePaginatedAlbums(sort);
+
+  const items = data?.pages.flatMap((p) => p.items);
+  const total = data?.pages[0]?.total ?? 0;
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={albums ? Object.values(albums) : undefined}
-      sortOptions={albumSortOptions}
+      items={items}
+      total={total}
+      serverSortOptions={albumSortOptions}
+      serverSort={sort}
+      onServerSortChange={setSort}
       getKey={(album) => album.album_uri}
       renderTile={(album) => <AlbumTile album={album} />}
       renderLargeTile={(album) => <AlbumTile large album={album} />}
       renderRow={(album) => <AlbumRow album={album} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }
