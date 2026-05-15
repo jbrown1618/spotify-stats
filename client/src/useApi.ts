@@ -2,11 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   ActiveFilters,
+  Album,
   AlbumRank,
+  Artist,
   ArtistCreditsData,
   ArtistRank,
   Credit,
   FilterOptions,
+  Genre,
+  Label,
+  Playlist,
+  Producer,
   getAlbums,
   getAlbumsStreamingHistory,
   getAlbumsStreamsByMonth,
@@ -26,17 +32,14 @@ import {
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
   Recommendations,
+  ReleaseYear,
   searchTracks,
+  StreamsByMonth,
   toFiltersQuery,
   Track,
   TrackDetails,
   TrackRank,
 } from "./api";
-import {
-  mostStreamedAlbums,
-  mostStreamedArtists,
-  mostStreamedTracks,
-} from "./sorting";
 import { useFilters } from "./useFilters";
 import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
 
@@ -96,11 +99,25 @@ export function useTrackCredits(uri: string) {
 }
 
 export function usePlaylists(filters?: ActiveFilters) {
-  return useTracksDependentQuery("playlists", getPlaylists, {}, filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Record<string, Playlist>>({
+    ...defaultQueryOptions,
+    queryKey: ["playlists", query],
+    queryFn: async () => getPlaylists(activeFilters),
+  });
 }
 
 export function useArtists(filters?: ActiveFilters) {
-  return useTracksDependentQuery("artists", getArtists, {}, filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Record<string, Artist>>({
+    ...defaultQueryOptions,
+    queryKey: ["artists", query],
+    queryFn: async () => getArtists(activeFilters),
+  });
 }
 
 export function useArtistCredits(artistUri: string) {
@@ -112,41 +129,67 @@ export function useArtistCredits(artistUri: string) {
 }
 
 export function useAlbums(filters?: ActiveFilters) {
-  return useTracksDependentQuery("albums", getAlbums, {}, filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Record<string, Album>>({
+    ...defaultQueryOptions,
+    queryKey: ["albums", query],
+    queryFn: async () => getAlbums(activeFilters),
+  });
 }
 
 export function useLabels(filters?: ActiveFilters) {
-  return useTracksDependentQuery("labels", getLabels, [], filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Label[]>({
+    ...defaultQueryOptions,
+    queryKey: ["labels", query],
+    queryFn: async () => getLabels(activeFilters),
+  });
 }
 
 export function useGenres(filters?: ActiveFilters) {
-  return useTracksDependentQuery("genres", getGenres, [], filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Genre[]>({
+    ...defaultQueryOptions,
+    queryKey: ["genres", query],
+    queryFn: async () => getGenres(activeFilters),
+  });
 }
 
 export function useReleaseYears(filters?: ActiveFilters) {
-  return useTracksDependentQuery("release-years", getReleaseYears, [], filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<ReleaseYear[]>({
+    ...defaultQueryOptions,
+    queryKey: ["release-years", query],
+    queryFn: async () => getReleaseYears(activeFilters),
+  });
 }
 
 export function useProducers(filters?: ActiveFilters) {
-  return useTracksDependentQuery("producers", getProducers, {}, filters);
+  const globalFilters = useFilters();
+  const activeFilters = filters ?? globalFilters;
+  const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
+  return useQuery<Record<string, Producer>>({
+    ...defaultQueryOptions,
+    queryKey: ["producers", query],
+    queryFn: async () => getProducers(activeFilters),
+  });
 }
 
 export function useTracksStreamingHistory() {
   const filters = useFilters();
-  const { data: tracks } = useTracks();
-
-  const topTenUris = Object.values(tracks ?? {})
-    .sort(mostStreamedTracks)
-    .slice(0, 10)
-    .map((t) => t.track_uri);
-
-  const tracksFilter = { tracks: topTenUris, wrapped: filters.wrapped };
-  const query = toFiltersQuery(tracksFilter);
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
   const result = useQuery<TrackRank[]>({
     ...defaultQueryOptions,
     queryKey: ["tracks-streaming-history", query],
-    enabled: !!tracks,
-    queryFn: async () => getTracksStreamingHistory(tracksFilter),
+    queryFn: async () => getTracksStreamingHistory({ ...filters, n: 10 }),
   });
 
   const shouldRender = !result.data || countUniqueAsOfDates(result.data) > 4;
@@ -156,20 +199,11 @@ export function useTracksStreamingHistory() {
 
 export function useArtistsStreamingHistory() {
   const filters = useFilters();
-  const { data: artists } = useArtists();
-
-  const topTenUris = Object.values(artists ?? {})
-    .sort(mostStreamedArtists)
-    .slice(0, 10)
-    .map((t) => t.artist_uri);
-
-  const artistsFilter = { artists: topTenUris, wrapped: filters.wrapped };
-  const query = toFiltersQuery(artistsFilter);
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
   const result = useQuery<ArtistRank[]>({
     ...defaultQueryOptions,
     queryKey: ["artists-streaming-history", query],
-    enabled: !!artists,
-    queryFn: async () => getArtistsStreamingHistory(artistsFilter),
+    queryFn: async () => getArtistsStreamingHistory({ ...filters, n: 10 }),
   });
 
   const shouldRender = !result.data || countUniqueAsOfDates(result.data) > 4;
@@ -179,20 +213,11 @@ export function useArtistsStreamingHistory() {
 
 export function useAlbumsStreamingHistory() {
   const filters = useFilters();
-  const { data: albums } = useAlbums();
-
-  const topTenUris = Object.values(albums ?? {})
-    .sort(mostStreamedAlbums)
-    .slice(0, 10)
-    .map((t) => t.album_uri);
-
-  const albumsFilter = { albums: topTenUris, wrapped: filters.wrapped };
-  const query = toFiltersQuery(albumsFilter);
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
   const result = useQuery<AlbumRank[]>({
     ...defaultQueryOptions,
     queryKey: ["albums-streaming-history", query],
-    enabled: !!albums,
-    queryFn: async () => getAlbumsStreamingHistory(albumsFilter),
+    queryFn: async () => getAlbumsStreamingHistory({ ...filters, n: 10 }),
   });
 
   const shouldRender = !result.data || countUniqueAsOfDates(result.data) > 4;
@@ -201,22 +226,13 @@ export function useAlbumsStreamingHistory() {
 }
 
 export function useTracksStreamsByMonth(n: number = 5) {
-  function getTopNTracksStreamsByMonth(
-    filters: ActiveFilters,
-    tracks: Record<string, Track>
-  ) {
-    const topNUris = Object.values(tracks ?? {})
-      .sort(mostStreamedTracks)
-      .slice(0, n)
-      .map((t) => t.track_uri);
-    return getTracksStreamsByMonth({ ...filters, tracks: topNUris });
-  }
-
-  const result = useTracksDependentQuery(
-    "tracks-streams-by-month-" + n,
-    getTopNTracksStreamsByMonth,
-    {}
-  );
+  const filters = useFilters();
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  const result = useQuery<StreamsByMonth>({
+    ...defaultQueryOptions,
+    queryKey: ["tracks-streams-by-month", query, n],
+    queryFn: async () => getTracksStreamsByMonth({ ...filters, n }),
+  });
 
   const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
 
@@ -225,22 +241,11 @@ export function useTracksStreamsByMonth(n: number = 5) {
 
 export function useArtistsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
-  const { data: artists } = useArtists();
-
-  const topNUris = Object.values(artists ?? {})
-    .sort(mostStreamedArtists)
-    .slice(0, n)
-    .map((t) => t.artist_uri);
-
-  const artistsFilter = { artists: topNUris, wrapped: filters.wrapped };
-  const query = toFiltersQuery(artistsFilter);
-  const result = useQuery<
-    Record<string, Record<number, Record<number, number>>>
-  >({
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  const result = useQuery<StreamsByMonth>({
     ...defaultQueryOptions,
     queryKey: ["artists-streams-by-month", query, n],
-    enabled: !!artists,
-    queryFn: async () => getArtistsStreamsByMonth(artistsFilter),
+    queryFn: async () => getArtistsStreamsByMonth({ ...filters, n }),
   });
 
   const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
@@ -250,22 +255,11 @@ export function useArtistsStreamsByMonth(n: number = 5) {
 
 export function useAlbumsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
-  const { data: albums } = useAlbums();
-
-  const topNUris = Object.values(albums ?? {})
-    .sort(mostStreamedAlbums)
-    .slice(0, n)
-    .map((t) => t.album_uri);
-
-  const albumsFilter = { albums: topNUris, wrapped: filters.wrapped };
-  const query = toFiltersQuery(albumsFilter);
-  const result = useQuery<
-    Record<string, Record<number, Record<number, number>>>
-  >({
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  const result = useQuery<StreamsByMonth>({
     ...defaultQueryOptions,
     queryKey: ["albums-streams-by-month", query, n],
-    enabled: !!albums,
-    queryFn: async () => getAlbumsStreamsByMonth(albumsFilter),
+    queryFn: async () => getAlbumsStreamsByMonth({ ...filters, n }),
   });
 
   const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
@@ -275,63 +269,12 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
 
 export function useRecommendations() {
   const filters = useFilters();
-  const query = toFiltersQuery({ wrapped: filters.wrapped, ...filters }) || DEFAULT_QUERY_KEY;
-
-  const { data: tracks, isSuccess } = useTracks(filters);
-  
-  // When no filters are applied, don't pass track URIs to avoid performance issues
-  // The server will handle unfiltered queries more efficiently without URIs
-  const hasFilters = Object.keys(filters).length > 0;
-  const tracksFilter = {
-    tracks: hasFilters ? (tracks ? Object.keys(tracks) : []) : undefined,
-    wrapped: filters.wrapped,
-  };
-
-  const result = useQuery<Recommendations>({
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  return useQuery<Recommendations>({
     ...defaultQueryOptions,
-    enabled: isSuccess,
     queryKey: ["recommendations", query],
-    queryFn: async () =>
-      hasFilters && tracksFilter.tracks && tracksFilter.tracks.length === 0
-        ? {}
-        : getRecommendations(tracksFilter),
+    queryFn: async () => getRecommendations(filters),
   });
-
-  return { ...result, tracks };
-}
-
-function useTracksDependentQuery<T>(
-  key: string,
-  getValue: (
-    filters: ActiveFilters,
-    tracks: Record<string, Track>
-  ) => Promise<T>,
-  defaultValue: T,
-  filters?: ActiveFilters
-) {
-  const globalFilters = useFilters();
-  filters ??= globalFilters;
-  const query =
-    toFiltersQuery({ wrapped: filters.wrapped, ...filters }) ||
-    DEFAULT_QUERY_KEY;
-
-  const { data: tracks, isSuccess } = useTracks(filters);
-  const tracksFilter = {
-    tracks: tracks ? Object.keys(tracks) : [],
-    wrapped: filters.wrapped,
-  };
-
-  const result = useQuery<T>({
-    ...defaultQueryOptions,
-    enabled: isSuccess,
-    queryKey: [key, query],
-    queryFn: async () =>
-      tracksFilter.tracks.length === 0
-        ? defaultValue
-        : getValue(tracksFilter, tracks!),
-  });
-
-  return { ...result, tracks };
 }
 
 // If a piece of a query key is an empty string, the request will not fire
