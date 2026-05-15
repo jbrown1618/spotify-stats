@@ -11,7 +11,7 @@ import {
   useAlbums,
   useAlbumsStreamingHistory,
   useAlbumsStreamsByMonth,
-  usePaginatedAlbums,
+  PAGE_SIZE,
 } from "../useApi";
 import { useFilters } from "../useFilters";
 
@@ -25,10 +25,10 @@ const albumSortOptions = [
 
 export function AlbumsSection() {
   const filters = useFilters();
-  const { data: albums } = useAlbums();
+  const { items: albums } = useAlbums();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
-  const shouldRenderCounts = albums && albums.items.length >= 3;
+  const shouldRenderCounts = albums && albums.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -101,11 +101,8 @@ export function AlbumsSection() {
 
 function AlbumsDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedAlbums(sort);
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useAlbums({ sort, limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

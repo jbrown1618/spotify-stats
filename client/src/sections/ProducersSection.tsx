@@ -3,7 +3,7 @@ import { Pill } from "@mantine/core";
 import { Producer } from "../api";
 import { ProducersBarChart } from "../charts/ProducersBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { usePaginatedProducers } from "../useApi";
+import { useProducers, PAGE_SIZE } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -18,11 +18,8 @@ export function ProducersSection() {
 }
 
 function ProducersDisplayGrid() {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedProducers();
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useProducers({ sort: "Most tracks", limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

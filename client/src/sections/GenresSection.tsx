@@ -2,7 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { GenresBarChart } from "../charts/GenresBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { usePaginatedGenres } from "../useApi";
+import { useGenres, PAGE_SIZE } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -19,11 +19,8 @@ export function GenresSection() {
 }
 
 function GenresDisplayGrid() {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedGenres();
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useGenres({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

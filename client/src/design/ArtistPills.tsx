@@ -6,14 +6,14 @@ import styles from "./ArtistPills.module.css";
 import { PillSkeleton } from "./PillDesign";
 
 export function ArtistPills({ filters }: { filters: ActiveFilters }) {
-  const { data: artists } = useArtists(filters);
+  const { items: artists } = useArtists({ filters });
   if (!artists) {
     return <PillSkeleton />;
   }
 
   return (
     <div className={styles.artistPills}>
-      {artists.items
+      {artists
         .sort(mostStreamedArtists)
         .map((artist) => (
           <ArtistPill key={artist.artist_uri} artist={artist} />

@@ -76,11 +76,11 @@ export function RecommendationsSection() {
 }
 
 function TrackRecommendations({ uris }: { uris: string[] }) {
-  const { data: allTracks, isLoading } = useTracks({ tracks: uris });
+  const { items: allTracks, isLoading } = useTracks({ filters: { tracks: uris } });
 
   // Filter and sort tracks to match the order from recommendations
   const tracks = uris
-    .map((uri) => allTracks?.items.find((t) => t.track_uri === uri))
+    .map((uri) => allTracks?.find((t) => t.track_uri === uri))
     .filter((t): t is NonNullable<typeof t> => !!t);
 
   return (
@@ -106,11 +106,11 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
 }
 
 function ArtistRecommendations({ uris }: { uris: string[] }) {
-  const { data: allArtists, isLoading } = useArtists({ artists: uris });
+  const { items: allArtists, isLoading } = useArtists({ filters: { artists: uris } });
 
   // Filter and sort artists to match the order from recommendations
   const artists = uris
-    .map((uri) => allArtists?.items.find((a) => a.artist_uri === uri))
+    .map((uri) => allArtists?.find((a) => a.artist_uri === uri))
     .filter((a): a is Artist => !!a);
 
   return (
@@ -124,11 +124,11 @@ function ArtistRecommendations({ uris }: { uris: string[] }) {
 }
 
 function AlbumRecommendations({ uris }: { uris: string[] }) {
-  const { data: allAlbums, isLoading } = useAlbums({ albums: uris });
+  const { items: allAlbums, isLoading } = useAlbums({ filters: { albums: uris } });
 
   // Filter and sort albums to match the order from recommendations
   const albums = uris
-    .map((uri) => allAlbums?.items.find((a) => a.album_uri === uri))
+    .map((uri) => allAlbums?.find((a) => a.album_uri === uri))
     .filter((a): a is Album => !!a);
 
   return (

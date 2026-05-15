@@ -5,13 +5,13 @@ import { useReleaseYears } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function YearsBarChart() {
-  const { data: years } = useReleaseYears();
+  const { items: years } = useReleaseYears();
   const isMobile = useIsMobile();
 
   if (!years) return <ChartSkeleton />;
-  if (years && years.items.length < 3) return null;
+  if (years && years.length < 3) return null;
 
-  const yearItems = [...years.items];
+  const yearItems = [...years];
   const distinctYears = new Set(yearItems.map((c) => c.release_year));
   const minYear = Math.min(...distinctYears);
   const maxYear = Math.max(...distinctYears);

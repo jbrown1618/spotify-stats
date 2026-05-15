@@ -6,21 +6,21 @@ import { useArtists } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function ArtistsBarChart() {
-  const { data: artists } = useArtists();
+  const { items: artists } = useArtists();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
-  if (artists && artists.items.length < 3) return null;
+  if (artists && artists.length < 3) return null;
 
   if (!artists) return <ChartSkeleton />;
 
-  const height = 100 + 30 * Math.min(maxCount, artists.items.length);
+  const height = 100 + 30 * Math.min(maxCount, artists.length);
   return (
     <>
       <h3>Artists by liked tracks</h3>
       <BarChart
         h={height}
-        data={artists.items
+        data={artists
           .sort(mostLikedArtists)
           .slice(0, maxCount)
           .map((p) => ({

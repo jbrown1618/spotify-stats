@@ -75,11 +75,11 @@ interface Tile {
 }
 
 function useAlbumTiles(): Tile[] | null {
-  const { data: tracks } = useTracks();
+  const { items: tracks } = useTracks();
   if (!tracks) return null;
 
   const tiles = deduplicateBy(
-    tracks.items.sort(mostStreamedTracks).map(toTile),
+    tracks.sort(mostStreamedTracks).map(toTile),
     "href"
   );
 

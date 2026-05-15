@@ -5,20 +5,20 @@ import { useGenres } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function GenresBarChart() {
-  const { data: genres } = useGenres();
+  const { items: genres } = useGenres();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
   if (!genres) return <ChartSkeleton />;
-  if (genres && genres.items.length < 3) return null;
+  if (genres && genres.length < 3) return null;
 
-  const height = 100 + 30 * Math.min(maxCount, genres.items.length);
+  const height = 100 + 30 * Math.min(maxCount, genres.length);
   return (
     <>
       <h3>Top genres by liked tracks</h3>
       <BarChart
         h={height}
-        data={genres.items
+        data={genres
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({

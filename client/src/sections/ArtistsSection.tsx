@@ -11,7 +11,7 @@ import {
   useArtists,
   useArtistsStreamingHistory,
   useArtistsStreamsByMonth,
-  usePaginatedArtists,
+  PAGE_SIZE,
 } from "../useApi";
 import { useFilters } from "../useFilters";
 
@@ -19,10 +19,10 @@ const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 
 export function ArtistsSection() {
   const filters = useFilters();
-  const { data: artists } = useArtists();
+  const { items: artists } = useArtists();
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
-  const shouldRenderCounts = artists && artists.items.length >= 3;
+  const shouldRenderCounts = artists && artists.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -97,11 +97,8 @@ export function ArtistsSection() {
 
 function ArtistsDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedArtists(sort);
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useArtists({ sort, limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

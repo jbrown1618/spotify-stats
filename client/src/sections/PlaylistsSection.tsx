@@ -2,7 +2,7 @@ import { PlaylistsBarChart } from "../charts/PlaylistsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { PlaylistRow } from "../list-items/PlaylistRow";
 import { PlaylistTile } from "../list-items/PlaylistTile";
-import { usePaginatedPlaylists } from "../useApi";
+import { usePlaylists, PAGE_SIZE } from "../useApi";
 import { useFilters } from "../useFilters";
 
 export function PlaylistsSection() {
@@ -19,11 +19,8 @@ export function PlaylistsSection() {
 }
 
 function PlaylistsDisplayGrid() {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedPlaylists();
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    usePlaylists({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

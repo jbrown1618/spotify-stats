@@ -5,20 +5,20 @@ import { useProducers } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function ProducersBarChart() {
-  const { data: producers } = useProducers();
+  const { items: producers } = useProducers();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
   if (!producers) return <ChartSkeleton />;
-  if (producers && producers.items.length < 3) return null;
+  if (producers && producers.length < 3) return null;
 
-  const height = 100 + 30 * Math.min(maxCount, producers.items.length);
+  const height = 100 + 30 * Math.min(maxCount, producers.length);
   return (
     <>
       <h3>Top producers by liked tracks</h3>
       <BarChart
         h={height}
-        data={producers.items
+        data={producers
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({

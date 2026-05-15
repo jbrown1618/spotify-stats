@@ -13,7 +13,7 @@ export function ArtistsStreamingHistoryStack({
   onlyArtist?: string;
 }) {
   const [n, setN] = useState(5);
-  const { data: artists } = useArtists();
+  const { items: artists } = useArtists();
   const { data: history, shouldRender } = useArtistsStreamsByMonth(n);
 
   if (!artists || !history) return <ChartSkeleton />;
@@ -33,10 +33,10 @@ export function ArtistsStreamingHistoryStack({
       <h3>Artist streams by month</h3>
       <StreamingHistoryStack
         data={data}
-        getItem={(key) => artists.items.find((a) => a.artist_uri === key)!}
+        getItem={(key) => artists.find((a) => a.artist_uri === key)!}
         sortItems={mostStreamedArtists}
         onMore={
-          n < artists.items.length
+          n < artists.length
             ? () => setN((prev) => prev + 5)
             : undefined
         }

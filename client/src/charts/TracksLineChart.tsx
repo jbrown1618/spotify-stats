@@ -3,7 +3,7 @@ import { useTracks, useTracksStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function TrackStreamsLineChart({ height }: { height?: number }) {
-  const { data: tracks } = useTracks();
+  const { items: tracks } = useTracks();
   const { data: ranks, shouldRender } = useTracksStreamingHistory();
 
   if (!shouldRender) return null;
@@ -20,9 +20,9 @@ export function TrackStreamsLineChart({ height }: { height?: number }) {
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.track_uri}
         getStreams={(r) => r.track_stream_count}
-        getLabel={(k) => tracks.items.find((t) => t.track_uri === k)?.track_short_name}
-        getCurrentRank={(k) => -1 * (tracks.items.find((t) => t.track_uri === k)?.track_stream_count ?? 0)}
-        getImageURL={(k) => tracks.items.find((t) => t.track_uri === k)?.album_image_url}
+        getLabel={(k) => tracks.find((t) => t.track_uri === k)?.track_short_name}
+        getCurrentRank={(k) => -1 * (tracks.find((t) => t.track_uri === k)?.track_stream_count ?? 0)}
+        getImageURL={(k) => tracks.find((t) => t.track_uri === k)?.album_image_url}
       />
     </>
   );

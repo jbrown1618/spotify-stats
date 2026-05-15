@@ -6,9 +6,10 @@ import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistorySta
 import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
 import {
-  usePaginatedTracks,
+  useTracks,
   useTracksStreamingHistory,
   useTracksStreamsByMonth,
+  PAGE_SIZE,
 } from "../useApi";
 import { useFilters } from "../useFilters";
 
@@ -81,11 +82,8 @@ export function TracksSection() {
 
 function TracksDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedTracks(sort);
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useTracks({ sort, limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

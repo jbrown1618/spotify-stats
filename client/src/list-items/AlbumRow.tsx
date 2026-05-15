@@ -43,7 +43,7 @@ export function AlbumRow({ album }: AlbumTileProps) {
 }
 
 function ArtistsList({ albumURI }: { albumURI: string }) {
-  const { data: albumArtists } = useArtists({ albums: [albumURI] });
+  const { items: albumArtists } = useArtists({ filters: { albums: [albumURI] } });
 
   if (!albumArtists)
     return (
@@ -54,13 +54,13 @@ function ArtistsList({ albumURI }: { albumURI: string }) {
 
   return (
     <div className={sharedStyles.artistsList}>
-      {albumArtists.items
+      {albumArtists
         .sort(mostStreamedArtists)
         .map((artist, i) => {
           return (
             <Fragment key={artist.artist_uri}>
               <Text>{artist.artist_name}</Text>
-              {i < albumArtists.items.length - 1 ? (
+              {i < albumArtists.length - 1 ? (
                 <Text>,&nbsp;</Text>
               ) : null}
             </Fragment>

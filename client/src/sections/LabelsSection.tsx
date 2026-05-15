@@ -2,7 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { LabelsBarChart } from "../charts/LabelsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { usePaginatedLabels } from "../useApi";
+import { useLabels, PAGE_SIZE } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -19,11 +19,8 @@ export function LabelsSection() {
 }
 
 function LabelsDisplayGrid() {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePaginatedLabels();
-
-  const items = data?.pages.flatMap((p) => p.items);
-  const total = data?.pages[0]?.total ?? 0;
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useLabels({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
     <DisplayGrid

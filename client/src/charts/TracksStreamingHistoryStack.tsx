@@ -10,7 +10,7 @@ import { StreamingHistoryStack } from "./StreamingHistoryStack";
 export function TracksStreamingHistoryStack() {
   const [n, setN] = useState(5);
   const { data: trackCount } = useTracksCount();
-  const { data: tracks } = useTracks();
+  const { items: tracks } = useTracks();
   const {
     data: streamsByMonth,
     shouldRender,
@@ -25,7 +25,7 @@ export function TracksStreamingHistoryStack() {
       <h3>Track streams by month</h3>
       <StreamingHistoryStack
         data={streamsByMonth}
-        getItem={(key) => tracks.items.find((t) => t.track_uri === key)!}
+        getItem={(key) => tracks.find((t) => t.track_uri === key)!}
         sortItems={mostStreamedTracks}
         onMore={
           n < (trackCount ?? 0) ? () => setN((prev) => prev + 5) : undefined

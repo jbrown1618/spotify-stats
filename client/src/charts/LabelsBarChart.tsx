@@ -5,20 +5,20 @@ import { useLabels } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function LabelsBarChart() {
-  const { data: labels } = useLabels();
+  const { items: labels } = useLabels();
   const isMobile = useIsMobile();
   if (!labels) return <ChartSkeleton />;
-  if (labels && labels.items.length < 3) return null;
+  if (labels && labels.length < 3) return null;
 
   const maxCount = isMobile ? 15 : 20;
 
-  const height = 100 + 30 * Math.min(maxCount, labels.items.length);
+  const height = 100 + 30 * Math.min(maxCount, labels.length);
   return (
     <>
       <h3>Top record labels by liked tracks</h3>
       <BarChart
         h={height}
-        data={labels.items
+        data={labels
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({
