@@ -16,7 +16,6 @@ import {
 import clsx from "clsx";
 import { useRef, useState } from "react";
 
-import { SortOptions } from "../sorting";
 import styles from "./DisplayGrid.module.css";
 import { LargeTileSkeleton } from "./LargeTileDesign";
 import { PillSkeleton } from "./PillDesign";
@@ -27,10 +26,9 @@ interface DisplayGridProps<T> {
   loading: boolean;
   items: T[] | undefined;
   total?: number;
-  sortOptions?: SortOptions<T>;
-  serverSortOptions?: string[];
-  serverSort?: string;
-  onServerSortChange?: (sort: string) => void;
+  sortOptions?: string[];
+  sort?: string;
+  onSortChange?: (sort: string) => void;
   getKey: (item: T) => string;
   renderTile?: (item: T) => JSX.Element;
   renderLargeTile?: (item: T) => JSX.Element;
@@ -51,9 +49,8 @@ export function DisplayGrid<T>({
   items,
   total,
   sortOptions,
-  serverSortOptions,
-  serverSort,
-  onServerSortChange,
+  sort,
+  onSortChange,
   renderTile,
   renderLargeTile,
   renderRow,
@@ -79,11 +76,6 @@ export function DisplayGrid<T>({
   const isServerPaginated = !!onLoadMore;
 
   const [count, setCount] = useState(defaultCount);
-  const [sort, setSort] = useState<string | null>(
-    sortOptions && Object.keys(sortOptions).length > 0
-      ? Object.keys(sortOptions)[0]
-      : null
-  );
 
   const handleMore = () => {
     if (isServerPaginated) {
@@ -109,20 +101,7 @@ export function DisplayGrid<T>({
       value: "large-tile",
     });
 
-  const comparator = !isServerPaginated && sortOptions && sort ? sortOptions[sort] : null;
-  const sortedItems = comparator && items ? items.sort(comparator) : items;
-  const displayItems = isServerPaginated ? sortedItems : sortedItems?.slice(0, count);
-
-  const activeSortOptions = isServerPaginated ? serverSortOptions : (sortOptions ? Object.keys(sortOptions) : undefined);
-  const activeSort = isServerPaginated ? (serverSort ?? null) : sort;
-  const handleSortChange = (s: string | null) => {
-    if (isServerPaginated) {
-      if (s) onServerSortChange?.(s);
-    } else {
-      setSort(s);
-      setCount(defaultCount);
-    }
-  };
+  const displayItems = isServerPaginated ? items : items?.slice(0, count);
 
   const totalItems = total ?? items?.length ?? 0;
   const showMore = isServerPaginated
@@ -150,12 +129,12 @@ export function DisplayGrid<T>({
           <div />
         )}
 
-        {activeSortOptions && activeSortOptions.length > 0 && (
+        {sortOptions && sortOptions.length > 0 && (
           <div className={styles.sortSelect}>
             <Select
-              data={activeSortOptions}
-              value={activeSort}
-              onChange={handleSortChange}
+              data={sortOptions}
+              value={sort ?? null}
+              onChange={(s) => { if (s) onSortChange?.(s); }}
               checkIconPosition="right"
               radius="xl"
             />

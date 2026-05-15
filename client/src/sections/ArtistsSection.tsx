@@ -108,9 +108,9 @@ function ArtistsDisplayGrid() {
       loading={isLoading}
       items={items}
       total={total}
-      serverSortOptions={artistSortOptions}
-      serverSort={sort}
-      onServerSortChange={setSort}
+      sortOptions={artistSortOptions}
+      sort={sort}
+      onSortChange={setSort}
       getKey={(artist) => artist.artist_uri}
       renderTile={(artist) => <ArtistTile artist={artist} />}
       renderLargeTile={(artist) => <ArtistTile large artist={artist} />}

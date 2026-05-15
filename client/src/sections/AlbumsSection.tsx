@@ -112,9 +112,9 @@ function AlbumsDisplayGrid() {
       loading={isLoading}
       items={items}
       total={total}
-      serverSortOptions={albumSortOptions}
-      serverSort={sort}
-      onServerSortChange={setSort}
+      sortOptions={albumSortOptions}
+      sort={sort}
+      onSortChange={setSort}
       getKey={(album) => album.album_uri}
       renderTile={(album) => <AlbumTile album={album} />}
       renderLargeTile={(album) => <AlbumTile large album={album} />}
