@@ -394,7 +394,7 @@ export function toFiltersQuery(filters: ActiveFilters): string {
   for (const key of arrayKeys) {
     const value = filters[key];
     if (!value || value.length === 0) continue;
-    const filterString = encodeURIComponent(JSON.stringify(value.sort()));
+    const filterString = encodeURIComponent(JSON.stringify([...value].sort()));
     query.append(key, filterString);
   }
   if (filters.liked) {
