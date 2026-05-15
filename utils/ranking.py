@@ -2,8 +2,10 @@ import typing
 import pandas as pd
 import sqlalchemy
 
+from data.filters import filtered_connection
 from data.query import query_text
 from data.raw import get_connection, get_engine
+from routes.utils import to_json
 
 
 def track_ranks_over_time(track_uris: typing.Iterable[str], from_date, to_date):
@@ -61,17 +63,7 @@ def track_streams_by_month(track_uris, from_date, to_date):
         )
         results = cursor.fetchall()
 
-    out = {}
-    for track_uri, year, month, stream_count in results:
-        year = int(year)
-        month = int(month)
-        if track_uri not in out:
-            out[track_uri] = {}
-        if year not in out[track_uri]:
-            out[track_uri][year] = {}
-        if month not in out[track_uri][year]:
-            out[track_uri][year][month] = stream_count
-    return out
+    return _streams_by_month_dict(results, 0)
 
 
 def artist_streams_by_month(artist_uris, from_date, to_date):
@@ -88,17 +80,7 @@ def artist_streams_by_month(artist_uris, from_date, to_date):
         )
         results = cursor.fetchall()
 
-    out = {}
-    for artist_uri, year, month, stream_count in results:
-        year = int(year)
-        month = int(month)
-        if artist_uri not in out:
-            out[artist_uri] = {}
-        if year not in out[artist_uri]:
-            out[artist_uri][year] = {}
-        if month not in out[artist_uri][year]:
-            out[artist_uri][year][month] = stream_count
-    return out
+    return _streams_by_month_dict(results, 0)
 
 
 def album_streams_by_month(album_uris, from_date, to_date):
@@ -115,14 +97,121 @@ def album_streams_by_month(album_uris, from_date, to_date):
         )
         results = cursor.fetchall()
 
+    return _streams_by_month_dict(results, 0)
+
+
+# --- Filter-based variants (server-side top-N selection) ---
+
+def filtered_track_ranks_over_time(filters: dict, n: int = 10):
+    with filtered_connection(filters) as (conn, params):
+        return pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_track_ranks_over_time')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+
+
+def filtered_track_streams_by_month(filters: dict, n: int = 5):
+    with filtered_connection(filters) as (conn, params):
+        df = pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_track_streams_by_month')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+    return _streams_by_month_dict_from_df(df)
+
+
+def filtered_artist_ranks_over_time(filters: dict, n: int = 10):
+    with filtered_connection(filters) as (conn, params):
+        return pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_artist_ranks_over_time')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+
+
+def filtered_artist_streams_by_month(filters: dict, n: int = 5):
+    with filtered_connection(filters) as (conn, params):
+        df = pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_artist_streams_by_month')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+    return _streams_by_month_dict_from_df(df)
+
+
+def filtered_album_ranks_over_time(filters: dict, n: int = 10):
+    with filtered_connection(filters) as (conn, params):
+        return pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_album_ranks_over_time')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+
+
+def filtered_album_streams_by_month(filters: dict, n: int = 5):
+    with filtered_connection(filters) as (conn, params):
+        df = pd.read_sql_query(
+            sqlalchemy.text(query_text('filtered_album_streams_by_month')),
+            conn,
+            params={
+                "from_date": params["wrapped_start_date"],
+                "to_date": params["wrapped_end_date"],
+                "n": n,
+            }
+        )
+    return _streams_by_month_dict_from_df(df)
+
+
+def _streams_by_month_dict(results, uri_index):
+    """Convert raw cursor results (uri, year, month, count) to nested dict."""
     out = {}
-    for album_uri, year, month, stream_count in results:
-        year = int(year)
-        month = int(month)
-        if album_uri not in out:
-            out[album_uri] = {}
-        if year not in out[album_uri]:
-            out[album_uri][year] = {}
-        if month not in out[album_uri][year]:
-            out[album_uri][year][month] = stream_count
+    for row in results:
+        uri = row[uri_index]
+        year = int(row[1])
+        month = int(row[2])
+        stream_count = row[3]
+        if uri not in out:
+            out[uri] = {}
+        if year not in out[uri]:
+            out[uri][year] = {}
+        if month not in out[uri][year]:
+            out[uri][year][month] = stream_count
+    return out
+
+
+def _streams_by_month_dict_from_df(df):
+    """Convert a DataFrame with columns (uri, year, month, stream_count) to nested dict."""
+    out = {}
+    for _, row in df.iterrows():
+        uri = row.iloc[0]
+        year = int(row.iloc[1])
+        month = int(row.iloc[2])
+        stream_count = int(row.iloc[3])
+        if uri not in out:
+            out[uri] = {}
+        if year not in out[uri]:
+            out[uri][year] = {}
+        if month not in out[uri][year]:
+            out[uri][year][month] = stream_count
     return out
