@@ -1,6 +1,6 @@
 -- Find liked tracks with significant listening history that haven't been played recently
 -- Uses percentile to find tracks with above-average play counts
--- Parameters: :percentile (0.0 to 1.0), :filter_tracks (boolean), :track_uris (array)
+-- Parameters: percentile (0.0 to 1.0), filter_tracks (boolean)
 WITH track_stats AS (
     SELECT 
         s.track_uri,
