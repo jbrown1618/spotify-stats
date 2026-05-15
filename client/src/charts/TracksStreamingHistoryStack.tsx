@@ -3,16 +3,16 @@ import { useState } from "react";
 import { Track } from "../api";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { mostStreamedTracks } from "../sorting";
-import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
+import { useTracksCount, useTracksStreamsByMonth, useTracks } from "../useApi";
 import styles from "./StreamingHistoryItem.module.css";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function TracksStreamingHistoryStack() {
   const [n, setN] = useState(5);
   const { data: trackCount } = useTracksCount();
+  const { data: tracks } = useTracks();
   const {
     data: streamsByMonth,
-    tracks,
     shouldRender,
   } = useTracksStreamsByMonth(n);
 
