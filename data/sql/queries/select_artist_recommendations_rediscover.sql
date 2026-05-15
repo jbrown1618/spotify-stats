@@ -1,5 +1,5 @@
 -- Find artists with significant listening history that haven't been played recently
--- Parameters: :percentile (0.0 to 1.0), :filter_tracks (boolean), :track_uris (array)
+-- Parameters: percentile (0.0 to 1.0), filter_tracks (boolean)
 WITH artist_stats AS (
     SELECT 
         ta.artist_uri,
