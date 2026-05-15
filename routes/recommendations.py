@@ -55,6 +55,7 @@ def recommendations_payload(filters: dict):
             conn,
             params={
                 'percentile': 0.6,
+                'filter_by_date': True,
                 'filter_tracks': filter_tracks,
             }
         )
@@ -69,6 +70,7 @@ def recommendations_payload(filters: dict):
             conn,
             params={
                 'percentile': 0.9,
+                'filter_by_date': False,
                 'filter_tracks': filter_tracks,
             }
         )

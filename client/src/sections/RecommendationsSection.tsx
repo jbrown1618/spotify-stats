@@ -13,6 +13,7 @@ import {
   useRecommendations,
   useTracks,
 } from "../useApi";
+import { formatDate } from "../utils";
 import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
@@ -87,7 +88,19 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
       loading={isLoading}
       items={tracks}
       getKey={(track) => track.track_uri}
-      renderRow={(track) => <TrackRow trackUri={track.track_uri} />}
+      renderRow={(track) => (
+        <TrackRow
+          trackUri={track.track_uri}
+          kpis={(t) => [
+            {
+              label: "Last Played",
+              value: t.track_last_played_at
+                ? formatDate(new Date(t.track_last_played_at))
+                : "Never",
+            },
+          ]}
+        />
+      )}
     />
   );
 }

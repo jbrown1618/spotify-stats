@@ -3,6 +3,8 @@ import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import clsx from "clsx";
 import { Fragment } from "react/jsx-runtime";
 
+import { TrackDetails } from "../api";
+import { KPIProps } from "../design/KPI";
 import { RowDesign, RowSkeleton } from "../design/RowDesign";
 import { useTrack } from "../useApi";
 import { useSetFilters } from "../useFilters";
@@ -11,14 +13,38 @@ import sharedStyles from "./ListItems.module.css";
 
 interface TrackRowProps {
   trackUri: string;
+  kpis?: (track: TrackDetails) => (KPIProps | null)[];
 }
 
-export function TrackRow({ trackUri }: TrackRowProps) {
+export function TrackRow({ trackUri, kpis }: TrackRowProps) {
   const setFilters = useSetFilters();
   const { data: track } = useTrack(trackUri);
   const isMobile = useIsMobile();
 
   if (!track) return <RowSkeleton />;
+
+  const stats = kpis
+    ? kpis(track)
+    : [
+        { label: "Streams", value: track.track_stream_count ?? 0 },
+        isMobile
+          ? null
+          : { label: "Popularity", value: track.track_popularity },
+        {
+          label: "Liked",
+          value: track.track_liked ? (
+            <IconHeartFilled
+              title="Liked"
+              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGreen)}
+            />
+          ) : (
+            <IconHeart
+              title="Liked"
+              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGray)}
+            />
+          ),
+        },
+      ];
 
   return (
     <RowDesign
@@ -45,26 +71,7 @@ export function TrackRow({ trackUri }: TrackRowProps) {
           })}
         </div>
       }
-      stats={[
-        { label: "Streams", value: track.track_stream_count ?? 0 },
-        isMobile
-          ? null
-          : { label: "Popularity", value: track.track_popularity },
-        {
-          label: "Liked",
-          value: track.track_liked ? (
-            <IconHeartFilled
-              title="Liked"
-              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGreen)}
-            />
-          ) : (
-            <IconHeart
-              title="Liked"
-              className={clsx(sharedStyles.likedIcon, sharedStyles.likedIconGray)}
-            />
-          ),
-        },
-      ]}
+      stats={stats}
     />
   );
 }
