@@ -1,29 +1,28 @@
-import typing
+import pandas as pd
+import sqlalchemy
 
+from data.filters import filtered_connection
 from data.query import query_text
-from data.raw import get_connection
 
 
-def release_years_payload(track_uris: typing.Iterable[str]):
-    if len(track_uris) == 0:
-        return []
-    
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            query_text('select_release_year_track_counts'), 
-            { "track_uris": tuple(track_uris) }
+def release_years_payload(filters: dict):
+    with filtered_connection(filters) as (conn, params):
+        years = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_release_year_track_counts')),
+            conn
         )
-        result = cursor.fetchall()
+
+    if years.empty:
+        return []
 
     out = []
-    for release_year, track_count, liked_track_count, total_track_count, total_liked_track_count in result:
+    for _, row in years.iterrows():
         out.append({
-            "release_year": int(release_year),
-            "track_count": track_count,
-            "liked_track_count": liked_track_count,
-            "total_track_count": total_track_count,
-            "total_liked_track_count": total_liked_track_count
+            "release_year": int(row['release_year']),
+            "track_count": int(row['track_count']),
+            "liked_track_count": int(row['liked_track_count']),
+            "total_track_count": int(row['total_track_count']),
+            "total_liked_track_count": int(row['total_liked_track_count']),
         })
 
     return out

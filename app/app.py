@@ -14,6 +14,7 @@ from routes.utils import to_date_range, to_json
 from routes.producers import producers_payload
 from data.sql.migrations.migrations import perform_all_migrations
 from utils.ranking import album_ranks_over_time, album_streams_by_month, artist_ranks_over_time, artist_streams_by_month, track_ranks_over_time, track_streams_by_month
+from utils.ranking import filtered_track_ranks_over_time, filtered_track_streams_by_month, filtered_artist_ranks_over_time, filtered_artist_streams_by_month, filtered_album_ranks_over_time, filtered_album_streams_by_month
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
@@ -50,13 +51,12 @@ def get_track_credits(track_uri):
 
 @app.route("/api/playlists", methods = ['POST'])
 def list_playlists():
-    return playlists_payload(request.json.get('tracks', None))
+    return playlists_payload(request.json)
 
 
 @app.route("/api/artists", methods = ['POST'])
 def list_artists():
-    min_date, max_date = to_date_range(request.json.get("wrapped"))
-    return artists_payload(request.json.get('tracks', None), min_date, max_date)
+    return artists_payload(request.json)
 
 
 @app.route("/api/artists/<artist_uri>/credits")
@@ -66,84 +66,101 @@ def get_artist_credits(artist_uri):
 
 @app.route("/api/albums", methods = ['POST'])
 def list_albums():
-    min_date, max_date = to_date_range(request.json.get("wrapped"))
-    return albums_payload(request.json.get('tracks', None), min_date, max_date)
+    return albums_payload(request.json)
 
 
 @app.route("/api/labels", methods = ['POST'])
 def list_labels():
-    return labels_payload(request.json.get('tracks', None))
+    return labels_payload(request.json)
 
 
 @app.route("/api/genres", methods = ['POST'])
 def list_genres():
-    return genres_payload(request.json.get('tracks', None))
+    return genres_payload(request.json)
 
 
 @app.route("/api/producers", methods=['POST'])
 def list_producers():
-    return producers_payload(request.json.get('tracks', None))
+    return producers_payload(request.json)
 
 
 @app.route("/api/release-years", methods = ['POST'])
 def list_release_years():
-    return release_years_payload(request.json.get('tracks', None))
+    return release_years_payload(request.json)
 
 
 @app.route("/api/streams/tracks/history", methods = ['POST'])
 def list_track_stream_history():
+    n = request.json.get('n', 10)
     track_uris = request.json.get('tracks', None)
-    if track_uris is None or len(track_uris) == 0:
-        return []
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return to_json(track_ranks_over_time(track_uris, min_date, max_date))
+    if track_uris is not None:
+        if len(track_uris) == 0:
+            return []
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return to_json(track_ranks_over_time(track_uris, min_date, max_date))
+    return to_json(filtered_track_ranks_over_time(request.json, n))
 
 
 @app.route("/api/streams/tracks/months", methods = ['POST'])
 def list_track_streams_by_month():
+    n = request.json.get('n', 5)
     track_uris = request.json.get('tracks', None)
-    if track_uris is None or len(track_uris) == 0:
-        return {}
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return track_streams_by_month(track_uris, min_date, max_date)
+    if track_uris is not None:
+        if len(track_uris) == 0:
+            return {}
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return track_streams_by_month(track_uris, min_date, max_date)
+    return filtered_track_streams_by_month(request.json, n)
 
 
 @app.route("/api/streams/artists/history", methods = ['POST'])
 def list_artist_stream_history():
+    n = request.json.get('n', 10)
     artist_uris = request.json.get('artists', None)
-    if artist_uris is None or len(artist_uris) == 0:
-        return []
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return to_json(artist_ranks_over_time(artist_uris, min_date, max_date))
+    if artist_uris is not None:
+        if len(artist_uris) == 0:
+            return []
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return to_json(artist_ranks_over_time(artist_uris, min_date, max_date))
+    return to_json(filtered_artist_ranks_over_time(request.json, n))
 
 
 @app.route("/api/streams/artists/months", methods = ['POST'])
 def list_artist_streams_by_month():
+    n = request.json.get('n', 5)
     artist_uris = request.json.get('artists', None)
-    if artist_uris is None or len(artist_uris) == 0:
-        return {}
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return artist_streams_by_month(artist_uris, min_date, max_date)
+    if artist_uris is not None:
+        if len(artist_uris) == 0:
+            return {}
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return artist_streams_by_month(artist_uris, min_date, max_date)
+    return filtered_artist_streams_by_month(request.json, n)
 
 
 @app.route("/api/streams/albums/history", methods = ['POST'])
 def list_album_stream_history():
+    n = request.json.get('n', 10)
     album_uris = request.json.get('albums', None)
-    if album_uris is None or len(album_uris) == 0:
-        return []
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return to_json(album_ranks_over_time(album_uris, min_date, max_date))
+    if album_uris is not None:
+        if len(album_uris) == 0:
+            return []
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return to_json(album_ranks_over_time(album_uris, min_date, max_date))
+    return to_json(filtered_album_ranks_over_time(request.json, n))
 
 
 @app.route("/api/streams/albums/months", methods = ['POST'])
 def list_album_streams_by_month():
+    n = request.json.get('n', 5)
     album_uris = request.json.get('albums', None)
-    if album_uris is None or len(album_uris) == 0:
-        return {}
-    min_date, max_date = to_date_range(request.json.get('wrapped', None))
-    return album_streams_by_month(album_uris, min_date, max_date)
+    if album_uris is not None:
+        if len(album_uris) == 0:
+            return {}
+        min_date, max_date = to_date_range(request.json.get('wrapped', None))
+        return album_streams_by_month(album_uris, min_date, max_date)
+    return filtered_album_streams_by_month(request.json, n)
 
 
 @app.route("/api/recommendations", methods = ['POST'])
 def get_recommendations():
-    return recommendations_payload(request.json.get('tracks', None))
+    return recommendations_payload(request.json)

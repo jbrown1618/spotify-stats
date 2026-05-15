@@ -1,6 +1,6 @@
 -- Find liked tracks in the bottom 60% by streams that haven't been played recently
 -- Uses percentile to find tracks with below-average play counts
--- Parameters: :percentile (0.0 to 1.0) - typically 0.6 for bottom 60%, :filter_tracks (boolean), :track_uris (array)
+-- Parameters: percentile (0.0 to 1.0) - typically 0.6 for bottom 60%, filter_tracks (boolean)
 -- Note: Using <= with percentile 0.6 returns tracks at or below the 60th percentile (the bottom 60%)
 WITH track_stats AS (
     SELECT 
@@ -9,7 +9,7 @@ WITH track_stats AS (
         MAX(s.played_at) AS last_played
     FROM track_stream s
     INNER JOIN liked_track lt ON lt.track_uri = s.track_uri
-    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN (SELECT track_uri FROM matching_track_uris))
     GROUP BY s.track_uri
 ),
 stream_percentiles AS (

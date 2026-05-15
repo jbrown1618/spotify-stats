@@ -1,6 +1,6 @@
 -- Find albums with significant listening history that haven't been played recently
 -- Only considers albums with at least 2 tracks with listens
--- Parameters: :percentile (0.0 to 1.0), :filter_tracks (boolean), :track_uris (array)
+-- Parameters: percentile (0.0 to 1.0), filter_tracks (boolean)
 WITH album_stats AS (
     SELECT 
         t.album_uri,
@@ -9,7 +9,7 @@ WITH album_stats AS (
         MAX(s.played_at) AS last_played
     FROM track_stream s
     INNER JOIN track t ON t.uri = s.track_uri
-    WHERE (:filter_tracks = FALSE OR s.track_uri IN :track_uris)
+    WHERE (:filter_tracks = FALSE OR s.track_uri IN (SELECT track_uri FROM matching_track_uris))
     GROUP BY t.album_uri
     HAVING COUNT(DISTINCT s.track_uri) >= 2
 ),

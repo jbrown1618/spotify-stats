@@ -237,49 +237,49 @@ export async function getTrackCredits(uri: string): Promise<Credit[]> {
 }
 
 export async function getPlaylists(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Record<string, Playlist>> {
   return sendRequest(`/api/playlists`, "playlists", filters);
 }
 
 export async function getArtists(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Record<string, Artist>> {
   return sendRequest(`/api/artists`, "artists", filters);
 }
 
 export async function getAlbums(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Record<string, Album>> {
   return sendRequest(`/api/albums`, "albums", filters);
 }
 
 export async function getLabels(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Label[]> {
   return sendRequest(`/api/labels`, "labels", filters);
 }
 
 export async function getGenres(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Genre[]> {
   return sendRequest(`/api/genres`, "genres", filters);
 }
 
 export async function getProducers(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Record<string, Producer>> {
   return sendRequest(`/api/producers`, "producers", filters);
 }
 
 export async function getReleaseYears(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<ReleaseYear[]> {
   return sendRequest(`/api/release-years`, "release years", filters);
 }
 
 export async function getTracksStreamingHistory(
-  filters: Pick<ActiveFilters, "tracks" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<TrackRank[]> {
   return sendRequest(
     `/api/streams/tracks/history`,
@@ -289,7 +289,7 @@ export async function getTracksStreamingHistory(
 }
 
 export async function getArtistsStreamingHistory(
-  filters: Pick<ActiveFilters, "artists" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<ArtistRank[]> {
   return sendRequest(
     `/api/streams/artists/history`,
@@ -299,7 +299,7 @@ export async function getArtistsStreamingHistory(
 }
 
 export async function getAlbumsStreamingHistory(
-  filters: Pick<ActiveFilters, "albums" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<AlbumRank[]> {
   return sendRequest(
     `/api/streams/albums/history`,
@@ -309,7 +309,7 @@ export async function getAlbumsStreamingHistory(
 }
 
 export async function getTracksStreamsByMonth(
-  filters: Pick<ActiveFilters, "tracks" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/tracks/months`,
@@ -319,7 +319,7 @@ export async function getTracksStreamsByMonth(
 }
 
 export async function getArtistsStreamsByMonth(
-  filters: Pick<ActiveFilters, "artists" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/artists/months`,
@@ -329,7 +329,7 @@ export async function getArtistsStreamsByMonth(
 }
 
 export async function getAlbumsStreamsByMonth(
-  filters: Pick<ActiveFilters, "albums" | "wrapped">
+  filters: ActiveFilters & { n?: number }
 ): Promise<StreamsByMonth> {
   return sendRequest(
     `/api/streams/albums/months`,
@@ -346,7 +346,7 @@ export interface RecommendationList {
 export type Recommendations = Record<string, RecommendationList>;
 
 export async function getRecommendations(
-  filters: Pick<ActiveFilters, "tracks">
+  filters: ActiveFilters
 ): Promise<Recommendations> {
   return sendRequest(`/api/recommendations`, "recommendations", filters);
 }

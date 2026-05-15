@@ -1,12 +1,17 @@
-import typing
+import pandas as pd
+import sqlalchemy
 
 from routes.utils import to_json
-from data.provider import DataProvider
+from data.filters import filtered_connection
+from data.query import query_text
 
 
-def playlists_payload(track_uris: typing.Iterable[str]):
-    if track_uris is None or len(track_uris) == 0:
+def playlists_payload(filters: dict):
+    with filtered_connection(filters) as (conn, params):
+        playlists = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_playlists')),
+            conn
+        )
+    if playlists.empty:
         return {}
-    dp = DataProvider()
-    playlists = dp.playlists(track_uris=track_uris)
     return to_json(playlists, 'playlist_uri')
