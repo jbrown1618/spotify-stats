@@ -14,7 +14,7 @@ def genres_payload(filters: dict):
         )
 
     if genres.empty:
-        return []
+        return {"items": [], "total": 0}
 
     genres = genres.rename(columns={
         'genre_track_count': 'track_count',
@@ -23,18 +23,4 @@ def genres_payload(filters: dict):
         'genre_total_liked_track_count': 'total_liked_track_count',
     })
 
-    paginated = paginate_df(genres, filters, GENRE_SORT_COLUMNS, "Most liked tracks")
-    if paginated is not None:
-        return paginated
-
-    out = []
-    for _, row in genres.iterrows():
-        out.append({
-            "genre": row['genre'],
-            "track_count": int(row['track_count']),
-            "total_track_count": int(row['total_track_count']),
-            "liked_track_count": int(row['liked_track_count']),
-            "total_liked_track_count": int(row['total_liked_track_count']),
-        })
-
-    return out
+    return paginate_df(genres, filters, GENRE_SORT_COLUMNS, "Most liked tracks")

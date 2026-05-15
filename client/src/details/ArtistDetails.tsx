@@ -37,7 +37,7 @@ function formatMBArtistName(
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
   const { data: artists } = useArtists({ artists: [artistURI] });
-  const artist = artists?.[artistURI];
+  const artist = artists?.items.find((a) => a.artist_uri === artistURI);
 
   const { data: artistAlbums } = useAlbums({
     artists: artist ? [artist.artist_uri] : ["NO-ARTIST"],
@@ -63,7 +63,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
             {
               label: "Albums",
               value: artistAlbums ? (
-                Object.keys(artistAlbums).length
+                artistAlbums.items.length
               ) : (
                 <Skeleton height={24} width={24} />
               ),

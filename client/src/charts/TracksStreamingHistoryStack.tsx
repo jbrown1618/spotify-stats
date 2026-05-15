@@ -25,7 +25,7 @@ export function TracksStreamingHistoryStack() {
       <h3>Track streams by month</h3>
       <StreamingHistoryStack
         data={streamsByMonth}
-        getItem={(key) => tracks[key]}
+        getItem={(key) => tracks.items.find((t) => t.track_uri === key)!}
         sortItems={mostStreamedTracks}
         onMore={
           n < (trackCount ?? 0) ? () => setN((prev) => prev + 5) : undefined

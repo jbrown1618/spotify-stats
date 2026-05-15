@@ -49,22 +49,22 @@ PRODUCER_SORT_COLUMNS = {
 
 
 def paginate_df(df, filters, sort_columns, default_sort):
-    """If pagination params are present, sort and slice the DataFrame.
+    """Sort and optionally paginate the DataFrame.
     
-    Returns a dict with 'items' and 'total' if paginating, or None if not.
+    Always returns a dict with 'items' and 'total'.
+    If 'limit' is present in filters, slices to the requested page.
+    Otherwise returns all items.
     """
-    limit = filters.get('limit')
-    if limit is None:
-        return None
-
-    offset = filters.get('offset', 0)
     sort = filters.get('sort', default_sort)
-
     col, ascending = sort_columns.get(sort, sort_columns[default_sort])
     df = df.sort_values(col, ascending=ascending, na_position='last')
 
     total = len(df)
-    page = df.iloc[offset:offset + limit]
 
-    items = json.loads(page.fillna(value=pd.NA).to_json(orient="records"))
+    limit = filters.get('limit')
+    if limit is not None:
+        offset = filters.get('offset', 0)
+        df = df.iloc[offset:offset + limit]
+
+    items = json.loads(df.fillna(value=pd.NA).to_json(orient="records"))
     return {"items": items, "total": total}

@@ -54,13 +54,13 @@ function ArtistsList({ albumURI }: { albumURI: string }) {
 
   return (
     <div className={sharedStyles.artistsList}>
-      {Object.values(albumArtists)
+      {albumArtists.items
         .sort(mostStreamedArtists)
         .map((artist, i) => {
           return (
             <Fragment key={artist.artist_uri}>
               <Text>{artist.artist_name}</Text>
-              {i < Object.values(albumArtists).length - 1 ? (
+              {i < albumArtists.items.length - 1 ? (
                 <Text>,&nbsp;</Text>
               ) : null}
             </Fragment>

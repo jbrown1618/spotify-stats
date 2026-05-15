@@ -10,17 +10,17 @@ export function ArtistsBarChart() {
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
-  if (artists && Object.keys(artists).length < 3) return null;
+  if (artists && artists.items.length < 3) return null;
 
   if (!artists) return <ChartSkeleton />;
 
-  const height = 100 + 30 * Math.min(maxCount, Object.keys(artists).length);
+  const height = 100 + 30 * Math.min(maxCount, artists.items.length);
   return (
     <>
       <h3>Artists by liked tracks</h3>
       <BarChart
         h={height}
-        data={Object.values(artists)
+        data={artists.items
           .sort(mostLikedArtists)
           .slice(0, maxCount)
           .map((p) => ({

@@ -80,7 +80,7 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
 
   // Filter and sort tracks to match the order from recommendations
   const tracks = uris
-    .map((uri) => allTracks?.[uri])
+    .map((uri) => allTracks?.items.find((t) => t.track_uri === uri))
     .filter((t): t is NonNullable<typeof t> => !!t);
 
   return (
@@ -110,7 +110,7 @@ function ArtistRecommendations({ uris }: { uris: string[] }) {
 
   // Filter and sort artists to match the order from recommendations
   const artists = uris
-    .map((uri) => allArtists?.[uri])
+    .map((uri) => allArtists?.items.find((a) => a.artist_uri === uri))
     .filter((a): a is Artist => !!a);
 
   return (
@@ -128,7 +128,7 @@ function AlbumRecommendations({ uris }: { uris: string[] }) {
 
   // Filter and sort albums to match the order from recommendations
   const albums = uris
-    .map((uri) => allAlbums?.[uri])
+    .map((uri) => allAlbums?.items.find((a) => a.album_uri === uri))
     .filter((a): a is Album => !!a);
 
   return (

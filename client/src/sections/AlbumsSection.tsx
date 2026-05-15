@@ -28,7 +28,7 @@ export function AlbumsSection() {
   const { data: albums } = useAlbums();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
-  const shouldRenderCounts = albums && Object.keys(albums).length >= 3;
+  const shouldRenderCounts = albums && albums.items.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {

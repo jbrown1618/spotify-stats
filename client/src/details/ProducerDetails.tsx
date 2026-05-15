@@ -4,14 +4,14 @@ import styles from "./Details.module.css";
 
 export function ProducerDetails({ mbid }: { mbid: string }) {
   const { data: producers } = useProducers({ producers: [mbid] });
+  const producer = producers?.items.find((p) => p.producer_mbid === mbid);
   const { data: artists } = useArtists({
-    artists: producers?.[mbid].artist_uri ? [producers?.[mbid].artist_uri] : [],
+    artists: producer?.artist_uri ? [producer.artist_uri] : [],
   });
   if (!producers) return null;
 
-  const producer = producers[mbid];
   const artist = producer?.artist_uri
-    ? artists?.[producer.artist_uri]
+    ? artists?.items.find((a) => a.artist_uri === producer.artist_uri)
     : undefined;
   if (!producer) return null;
 

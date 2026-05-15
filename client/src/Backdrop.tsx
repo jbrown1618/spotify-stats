@@ -79,7 +79,7 @@ function useAlbumTiles(): Tile[] | null {
   if (!tracks) return null;
 
   const tiles = deduplicateBy(
-    Object.values(tracks).sort(mostStreamedTracks).map(toTile),
+    tracks.items.sort(mostStreamedTracks).map(toTile),
     "href"
   );
 

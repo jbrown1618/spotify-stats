@@ -9,15 +9,16 @@ export function YearsBarChart() {
   const isMobile = useIsMobile();
 
   if (!years) return <ChartSkeleton />;
-  if (years && years.length < 3) return null;
+  if (years && years.items.length < 3) return null;
 
-  const distinctYears = new Set(years.map((c) => c.release_year));
+  const yearItems = [...years.items];
+  const distinctYears = new Set(yearItems.map((c) => c.release_year));
   const minYear = Math.min(...distinctYears);
   const maxYear = Math.max(...distinctYears);
 
   for (let y = minYear + 1; y < maxYear; y++) {
     if (!distinctYears.has(y)) {
-      years.push({
+      yearItems.push({
         release_year: y,
         liked_track_count: 0,
         track_count: 0,
@@ -32,7 +33,7 @@ export function YearsBarChart() {
       <h3>Liked tracks by release year</h3>
       <BarChart
         h={500}
-        data={years
+        data={yearItems
           .sort((a, b) => (a.release_year > b.release_year ? 1 : -1))
           .map((p) => ({
             Year: p.release_year,

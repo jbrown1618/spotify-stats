@@ -30,11 +30,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
 
     tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count', 'track_last_played_at']]
 
-    paginated = paginate_df(tracks, filters, TRACK_SORT_COLUMNS, "Most streams")
-    if paginated is not None:
-        return paginated
-
-    return to_json(tracks, 'track_uri')
+    return paginate_df(tracks, filters, TRACK_SORT_COLUMNS, "Most streams")
 
 
 def track_payload(track_uri, min_date, max_date):

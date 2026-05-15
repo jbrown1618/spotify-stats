@@ -13,7 +13,7 @@ interface AlbumDetailsProps {
 export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
   const { data: albums } = useAlbums({ albums: [albumURI] });
 
-  const album = albums?.[albumURI];
+  const album = albums?.items.find((a) => a.album_uri === albumURI);
 
   return (
     <>

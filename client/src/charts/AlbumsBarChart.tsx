@@ -10,17 +10,17 @@ export function AlbumsBarChart() {
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 
-  if (albums && Object.keys(albums).length < 3) return null;
+  if (albums && albums.items.length < 3) return null;
 
   if (!albums) return <ChartSkeleton />;
 
-  const height = 100 + 30 * Math.min(maxCount, Object.keys(albums).length);
+  const height = 100 + 30 * Math.min(maxCount, albums.items.length);
   return (
     <>
       <h3>Albums by liked tracks</h3>
       <BarChart
         h={height}
-        data={Object.values(albums)
+        data={albums.items
           .sort(mostLikedAlbums)
           .slice(0, maxCount)
           .map((p) => ({

@@ -6,7 +6,7 @@ export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
   const { data: playlists } = usePlaylists({ playlists: [playlistURI] });
   if (!playlists) return null;
 
-  const playlist = playlists[playlistURI];
+  const playlist = playlists.items.find((p) => p.playlist_uri === playlistURI);
   if (!playlist) return null;
 
   return (

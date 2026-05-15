@@ -10,15 +10,15 @@ export function ProducersBarChart() {
   const maxCount = isMobile ? 15 : 20;
 
   if (!producers) return <ChartSkeleton />;
-  if (producers && Object.keys(producers).length < 3) return null;
+  if (producers && producers.items.length < 3) return null;
 
-  const height = 100 + 30 * Math.min(maxCount, Object.values(producers).length);
+  const height = 100 + 30 * Math.min(maxCount, producers.items.length);
   return (
     <>
       <h3>Top producers by liked tracks</h3>
       <BarChart
         h={height}
-        data={Object.values(producers)
+        data={producers.items
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({

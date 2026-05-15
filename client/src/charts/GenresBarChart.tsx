@@ -10,15 +10,15 @@ export function GenresBarChart() {
   const maxCount = isMobile ? 15 : 20;
 
   if (!genres) return <ChartSkeleton />;
-  if (genres && genres.length < 3) return null;
+  if (genres && genres.items.length < 3) return null;
 
-  const height = 100 + 30 * Math.min(maxCount, genres.length);
+  const height = 100 + 30 * Math.min(maxCount, genres.items.length);
   return (
     <>
       <h3>Top genres by liked tracks</h3>
       <BarChart
         h={height}
-        data={genres
+        data={genres.items
           .sort((a, b) => b.liked_track_count - a.liked_track_count)
           .slice(0, maxCount)
           .map((p) => ({

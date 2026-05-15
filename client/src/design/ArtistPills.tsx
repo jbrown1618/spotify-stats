@@ -13,7 +13,7 @@ export function ArtistPills({ filters }: { filters: ActiveFilters }) {
 
   return (
     <div className={styles.artistPills}>
-      {Object.values(artists)
+      {artists.items
         .sort(mostStreamedArtists)
         .map((artist) => (
           <ArtistPill key={artist.artist_uri} artist={artist} />

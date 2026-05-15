@@ -21,10 +21,10 @@ export function AlbumsStreamingHistoryStack() {
       <h3>Album streams by month</h3>
       <StreamingHistoryStack
         data={history}
-        getItem={(key) => albums[key]}
+        getItem={(key) => albums.items.find((a) => a.album_uri === key)!}
         sortItems={mostStreamedAlbums}
         onMore={
-          n < Object.keys(albums).length
+          n < albums.items.length
             ? () => setN((prev) => prev + 5)
             : undefined
         }

@@ -14,20 +14,6 @@ def release_years_payload(filters: dict):
         )
 
     if years.empty:
-        return []
+        return {"items": [], "total": 0}
 
-    paginated = paginate_df(years, filters, RELEASE_YEAR_SORT_COLUMNS, "Most liked tracks")
-    if paginated is not None:
-        return paginated
-
-    out = []
-    for _, row in years.iterrows():
-        out.append({
-            "release_year": int(row['release_year']),
-            "track_count": int(row['track_count']),
-            "liked_track_count": int(row['liked_track_count']),
-            "total_track_count": int(row['total_track_count']),
-            "total_liked_track_count": int(row['total_liked_track_count']),
-        })
-
-    return out
+    return paginate_df(years, filters, RELEASE_YEAR_SORT_COLUMNS, "Most liked tracks")

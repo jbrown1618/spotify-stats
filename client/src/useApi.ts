@@ -24,14 +24,6 @@ import {
   getFilterOptions,
   getGenres,
   getLabels,
-  getPaginatedAlbums,
-  getPaginatedArtists,
-  getPaginatedGenres,
-  getPaginatedLabels,
-  getPaginatedPlaylists,
-  getPaginatedProducers,
-  getPaginatedReleaseYears,
-  getPaginatedTracks,
   getPlaylists,
   getProducers,
   getRecommendations,
@@ -70,7 +62,7 @@ export function useTracks(filters?: ActiveFilters) {
   const activeFilters = filters ?? globalFilters
 
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Record<string, Track>>({
+  return useQuery<PaginatedResponse<Track>>({
     ...defaultQueryOptions,
     queryKey: ["tracks", query],
     queryFn: async () => searchTracks(activeFilters),
@@ -86,7 +78,7 @@ export function useTracksCount(filters?: ActiveFilters) {
     ...defaultQueryOptions,
     queryKey: ["tracks", query],
     queryFn: async () => searchTracks(activeFilters),
-    select: (data) => Object.keys(data).length,
+    select: (data) => data.total,
   });
 }
 
@@ -111,7 +103,7 @@ export function usePlaylists(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Record<string, Playlist>>({
+  return useQuery<PaginatedResponse<Playlist>>({
     ...defaultQueryOptions,
     queryKey: ["playlists", query],
     queryFn: async () => getPlaylists(activeFilters),
@@ -122,7 +114,7 @@ export function useArtists(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Record<string, Artist>>({
+  return useQuery<PaginatedResponse<Artist>>({
     ...defaultQueryOptions,
     queryKey: ["artists", query],
     queryFn: async () => getArtists(activeFilters),
@@ -141,7 +133,7 @@ export function useAlbums(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Record<string, Album>>({
+  return useQuery<PaginatedResponse<Album>>({
     ...defaultQueryOptions,
     queryKey: ["albums", query],
     queryFn: async () => getAlbums(activeFilters),
@@ -152,7 +144,7 @@ export function useLabels(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Label[]>({
+  return useQuery<PaginatedResponse<Label>>({
     ...defaultQueryOptions,
     queryKey: ["labels", query],
     queryFn: async () => getLabels(activeFilters),
@@ -163,7 +155,7 @@ export function useGenres(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Genre[]>({
+  return useQuery<PaginatedResponse<Genre>>({
     ...defaultQueryOptions,
     queryKey: ["genres", query],
     queryFn: async () => getGenres(activeFilters),
@@ -174,7 +166,7 @@ export function useReleaseYears(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<ReleaseYear[]>({
+  return useQuery<PaginatedResponse<ReleaseYear>>({
     ...defaultQueryOptions,
     queryKey: ["release-years", query],
     queryFn: async () => getReleaseYears(activeFilters),
@@ -185,7 +177,7 @@ export function useProducers(filters?: ActiveFilters) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
-  return useQuery<Record<string, Producer>>({
+  return useQuery<PaginatedResponse<Producer>>({
     ...defaultQueryOptions,
     queryKey: ["producers", query],
     queryFn: async () => getProducers(activeFilters),
@@ -315,22 +307,22 @@ function usePaginatedQuery<T>(
 }
 
 export function usePaginatedTracks(sort: string) {
-  return usePaginatedQuery("tracks-paginated", sort, getPaginatedTracks);
+  return usePaginatedQuery("tracks-paginated", sort, searchTracks);
 }
 
 export function usePaginatedArtists(sort: string) {
-  return usePaginatedQuery("artists-paginated", sort, getPaginatedArtists);
+  return usePaginatedQuery("artists-paginated", sort, getArtists);
 }
 
 export function usePaginatedAlbums(sort: string) {
-  return usePaginatedQuery("albums-paginated", sort, getPaginatedAlbums);
+  return usePaginatedQuery("albums-paginated", sort, getAlbums);
 }
 
 export function usePaginatedPlaylists() {
   return usePaginatedQuery(
     "playlists-paginated",
     "Most liked tracks",
-    getPaginatedPlaylists
+    getPlaylists
   );
 }
 
@@ -338,7 +330,7 @@ export function usePaginatedLabels() {
   return usePaginatedQuery(
     "labels-paginated",
     "Most liked tracks",
-    getPaginatedLabels
+    getLabels
   );
 }
 
@@ -346,7 +338,7 @@ export function usePaginatedGenres() {
   return usePaginatedQuery(
     "genres-paginated",
     "Most liked tracks",
-    getPaginatedGenres
+    getGenres
   );
 }
 
@@ -354,7 +346,7 @@ export function usePaginatedReleaseYears() {
   return usePaginatedQuery(
     "release-years-paginated",
     "Most liked tracks",
-    getPaginatedReleaseYears
+    getReleaseYears
   );
 }
 
@@ -362,7 +354,7 @@ export function usePaginatedProducers() {
   return usePaginatedQuery(
     "producers-paginated",
     "Most tracks",
-    getPaginatedProducers
+    getProducers
   );
 }
 

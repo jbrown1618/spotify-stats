@@ -15,7 +15,7 @@ export function ArtistRow({ artist }: { artist: Artist }) {
     });
 
   const highestRankedAlbum = artistAlbums
-    ? Object.values(artistAlbums).sort(
+    ? artistAlbums.items.sort(
         (a, b) => b.album_stream_count - a.album_stream_count
       )[0]
     : undefined;

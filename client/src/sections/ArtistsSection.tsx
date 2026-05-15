@@ -22,7 +22,7 @@ export function ArtistsSection() {
   const { data: artists } = useArtists();
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
-  const shouldRenderCounts = artists && Object.keys(artists).length >= 3;
+  const shouldRenderCounts = artists && artists.items.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {

@@ -20,9 +20,9 @@ export function TrackStreamsLineChart({ height }: { height?: number }) {
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.track_uri}
         getStreams={(r) => r.track_stream_count}
-        getLabel={(k) => tracks[k]?.track_short_name}
-        getCurrentRank={(k) => -1 * tracks[k].track_stream_count}
-        getImageURL={(k) => tracks[k]?.album_image_url}
+        getLabel={(k) => tracks.items.find((t) => t.track_uri === k)?.track_short_name}
+        getCurrentRank={(k) => -1 * (tracks.items.find((t) => t.track_uri === k)?.track_stream_count ?? 0)}
+        getImageURL={(k) => tracks.items.find((t) => t.track_uri === k)?.album_image_url}
       />
     </>
   );

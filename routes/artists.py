@@ -23,13 +23,9 @@ def artists_payload(filters: dict):
             }
         )
     if artists.empty:
-        return {}
+        return {"items": [], "total": 0}
 
-    paginated = paginate_df(artists, filters, ARTIST_SORT_COLUMNS, "Most streams")
-    if paginated is not None:
-        return paginated
-
-    return to_json(artists, 'artist_uri')
+    return paginate_df(artists, filters, ARTIST_SORT_COLUMNS, "Most streams")
 
 
 # Columns to include for artist relationship data

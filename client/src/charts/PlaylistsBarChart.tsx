@@ -8,15 +8,15 @@ export function PlaylistsBarChart() {
   const { data: playlists } = usePlaylists();
   const isMobile = useIsMobile();
   if (!playlists) return <ChartSkeleton />;
-  if (playlists && Object.keys(playlists).length < 3) return null;
+  if (playlists && playlists.items.length < 3) return null;
 
   const maxCount = isMobile ? 15 : 20;
-  const height = 100 + 30 * Math.min(maxCount, Object.keys(playlists).length);
+  const height = 100 + 30 * Math.min(maxCount, playlists.items.length);
 
   return (
     <BarChart
       h={height}
-      data={Object.values(playlists)
+      data={playlists.items
         .sort(
           (a, b) => b.playlist_liked_track_count - a.playlist_liked_track_count
         )
