@@ -61,7 +61,7 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       id: "tracks",
       label: "Tracks",
       icon: <IconMusic size={20} />,
-      hidden: () => false,
+      hidden: (f) => f.tracks?.length === 1,
       content: sectionContent.tracks,
     },
     {
