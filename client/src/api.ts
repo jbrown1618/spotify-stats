@@ -365,7 +365,7 @@ export async function getRecommendations(
 async function sendRequest<T>(
   url: string,
   dataName: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown> | (ActiveFilters & Partial<PaginationParams>)
 ): Promise<T> {
   try {
     const headers = body

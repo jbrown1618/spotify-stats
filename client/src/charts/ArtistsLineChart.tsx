@@ -30,9 +30,9 @@ export function ArtistStreamsLineChart({
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.artist_uri}
         getStreams={(r) => r.artist_stream_count}
-        getLabel={(k) => artists.find((a) => a.artist_uri === k)?.artist_name}
+        getLabel={(k) => artists.find((a) => a.artist_uri === k)?.artist_name ?? k}
         getCurrentRank={(k) => (artists.find((a) => a.artist_uri === k)?.artist_stream_count ?? 0) * -1}
-        getImageURL={(k) => artists.find((a) => a.artist_uri === k)?.artist_image_url}
+        getImageURL={(k) => artists.find((a) => a.artist_uri === k)?.artist_image_url ?? ""}
       />
     </>
   );
