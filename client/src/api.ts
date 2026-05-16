@@ -8,7 +8,7 @@ export interface Playlist {
   playlist_track_count: number;
 }
 
-export interface TrackDetails extends Album {
+export interface Track extends Album {
   track_duration_ms: number;
   track_explicit: boolean;
   track_isrc: string;
@@ -22,17 +22,6 @@ export interface TrackDetails extends Album {
   artist_names: string[];
   artist_uris: string[];
 }
-
-export type Track = Pick<
-  TrackDetails,
-  | "track_uri"
-  | "track_name"
-  | "track_short_name"
-  | "track_stream_count"
-  | "track_last_played_at"
-  | "album_image_url"
-  | "album_release_date"
->;
 
 export interface TrackRank {
   track_uri: string;
@@ -227,20 +216,10 @@ export async function getArtistCredits(
   );
 }
 
-export async function searchTracks(
+export async function getTracks(
   filters: ActiveFilters & Partial<PaginationParams>
 ): Promise<PaginatedResponse<Track>> {
-  return sendRequest(`/api/tracks/search`, "tracks", filters);
-}
-
-export async function getTrack(
-  uri: string,
-  wrapped?: string
-): Promise<TrackDetails> {
-  return sendRequest(
-    `/api/tracks/${uri}${wrapped ? "?wrapped=" + wrapped : ""}`,
-    `track ${uri}`
-  );
+  return sendRequest(`/api/tracks`, "tracks", filters);
 }
 
 export async function getTrackCredits(uri: string): Promise<Credit[]> {

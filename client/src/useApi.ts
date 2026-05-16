@@ -23,15 +23,13 @@ import {
   getProducers,
   getRecommendations,
   getReleaseYears,
-  getTrack,
   getTrackCredits,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  getTracks,
   Recommendations,
-  searchTracks,
   StreamsByMonth,
   toFiltersQuery,
-  TrackDetails,
   TrackRank,
 } from "./api";
 import { useFilters } from "./useFilters";
@@ -40,7 +38,7 @@ import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
 // If a piece of a query key is an empty string, the request will not fire
 const DEFAULT_QUERY_KEY = "DEFAULT";
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 5;
 
 const defaultQueryOptions = {
   staleTime: 1000 * 60 * 60,
@@ -93,7 +91,7 @@ function useEntityQuery<T>(
 // --- Entity hooks ---
 
 export const useTracks = (opts?: EntityQueryOptions) =>
-  useEntityQuery("tracks", searchTracks, opts);
+  useEntityQuery("tracks", getTracks, opts);
 
 export const useArtists = (opts?: EntityQueryOptions) =>
   useEntityQuery("artists", getArtists, opts);
@@ -125,7 +123,7 @@ export function useTracksCount(filters?: ActiveFilters) {
   return useQuery({
     ...defaultQueryOptions,
     queryKey: ["tracks-count", query],
-    queryFn: async () => searchTracks(activeFilters),
+    queryFn: async () => getTracks(activeFilters),
     select: (data) => data.total,
   });
 }
@@ -137,15 +135,6 @@ export function useFilterOptions() {
     ...defaultQueryOptions,
     queryKey: ["filter-options"],
     queryFn: async () => getFilterOptions(),
-  });
-}
-
-export function useTrack(uri: string) {
-  const { wrapped } = useFilters();
-  return useQuery<TrackDetails>({
-    ...defaultQueryOptions,
-    queryKey: ["track", uri, wrapped],
-    queryFn: async () => getTrack(uri, wrapped),
   });
 }
 

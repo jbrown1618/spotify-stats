@@ -1,4 +1,3 @@
-import json
 import typing
 
 import pandas as pd
@@ -28,15 +27,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
         end_date=max_stream_date
     )
 
-    tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count', 'track_last_played_at']]
-
     return paginate_df(tracks, filters, TRACK_SORT_COLUMNS, "Most streams")
-
-
-def track_payload(track_uri, min_date, max_date):
-    dp = DataProvider()
-    track = dp.track(track_uri, start_date=min_date, end_date=max_date)
-    return json.loads(track.to_json())
 
 
 def top_tracks(from_date, to_date):

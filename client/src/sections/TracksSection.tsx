@@ -94,7 +94,7 @@ function TracksDisplayGrid() {
       sort={sort}
       onSortChange={setSort}
       getKey={(track) => track.track_uri}
-      renderRow={(track) => <TrackRow trackUri={track.track_uri} />}
+      renderRow={(track) => <TrackRow track={track} />}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}

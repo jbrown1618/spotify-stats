@@ -90,7 +90,7 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
       getKey={(track) => track.track_uri}
       renderRow={(track) => (
         <TrackRow
-          trackUri={track.track_uri}
+          track={track}
           kpis={(t) => [
             {
               label: "Last Played",

@@ -3,25 +3,21 @@ import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import clsx from "clsx";
 import { Fragment } from "react/jsx-runtime";
 
-import { TrackDetails } from "../api";
+import { Track } from "../api";
 import { KPIProps } from "../design/KPI";
-import { RowDesign, RowSkeleton } from "../design/RowDesign";
-import { useTrack } from "../useApi";
+import { RowDesign } from "../design/RowDesign";
 import { useSetFilters } from "../useFilters";
 import { useIsMobile } from "../useIsMobile";
 import sharedStyles from "./ListItems.module.css";
 
 interface TrackRowProps {
-  trackUri: string;
-  kpis?: (track: TrackDetails) => (KPIProps | null)[];
+  track: Track;
+  kpis?: (track: Track) => (KPIProps | null)[];
 }
 
-export function TrackRow({ trackUri, kpis }: TrackRowProps) {
+export function TrackRow({ track, kpis }: TrackRowProps) {
   const setFilters = useSetFilters();
-  const { data: track } = useTrack(trackUri);
   const isMobile = useIsMobile();
-
-  if (!track) return <RowSkeleton />;
 
   const stats = kpis
     ? kpis(track)
@@ -54,7 +50,7 @@ export function TrackRow({ trackUri, kpis }: TrackRowProps) {
       secondaryText={isMobile ? track.album_short_name : track.album_name}
       onClick={() =>
         setFilters({
-          tracks: [trackUri],
+          tracks: [track.track_uri],
         })
       }
       tertiaryText={
