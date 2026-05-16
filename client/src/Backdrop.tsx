@@ -10,10 +10,6 @@ export function Backdrop() {
   );
 }
 
-export function HeaderBackdrop() {
-  return <div className={styles.headerBackground} />;
-}
-
 function AlbumTiles() {
   const tiles = useAlbumTiles();
   return tiles && tiles.length > 0 ? (

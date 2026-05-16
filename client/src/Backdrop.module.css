@@ -8,12 +8,6 @@
   overflow: hidden;
 }
 
-.headerBackground {
-  width: 100%;
-  height: 40px;
-  background-color: var(--mantine-color-green-9);
-}
-
 .tileContainer {
   display: flex;
   flex-wrap: wrap;
