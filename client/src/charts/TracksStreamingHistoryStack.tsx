@@ -15,7 +15,7 @@ export function TracksStreamingHistoryStack() {
 
   if (!shouldRender) return null;
 
-  if (!response) return <ChartSkeleton />;
+  if (!response?.streams || !response?.metadata) return <ChartSkeleton />;
 
   return (
     <>

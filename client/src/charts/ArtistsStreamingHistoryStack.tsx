@@ -13,7 +13,7 @@ export function ArtistsStreamingHistoryStack({
   const [n, setN] = useState(5);
   const { data: response, shouldRender } = useArtistsStreamsByMonth(n);
 
-  if (!response) return <ChartSkeleton />;
+  if (!response?.streams || !response?.metadata) return <ChartSkeleton />;
 
   if (!shouldRender) return null;
 

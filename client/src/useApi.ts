@@ -210,7 +210,7 @@ export function useTracksStreamsByMonth(n: number = 5) {
     queryKey: ["tracks-streams-by-month", query, n],
     queryFn: async () => getTracksStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data.streams) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }
 
@@ -222,7 +222,7 @@ export function useArtistsStreamsByMonth(n: number = 5) {
     queryKey: ["artists-streams-by-month", query, n],
     queryFn: async () => getArtistsStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data.streams) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }
 
@@ -234,6 +234,6 @@ export function useAlbumsStreamsByMonth(n: number = 5) {
     queryKey: ["albums-streams-by-month", query, n],
     queryFn: async () => getAlbumsStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data.streams) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }

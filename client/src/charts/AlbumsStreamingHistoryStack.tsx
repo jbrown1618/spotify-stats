@@ -9,7 +9,7 @@ export function AlbumsStreamingHistoryStack() {
   const [n, setN] = useState(5);
   const { data: response, shouldRender } = useAlbumsStreamsByMonth(n);
 
-  if (!response) return <ChartSkeleton />;
+  if (!response?.streams || !response?.metadata) return <ChartSkeleton />;
 
   if (!shouldRender) return null;
 
