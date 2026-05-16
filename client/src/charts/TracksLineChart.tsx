@@ -1,14 +1,13 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { useTracks, useTracksStreamingHistory } from "../useApi";
+import { useTracksStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function TrackStreamsLineChart({ height }: { height?: number }) {
-  const { items: tracks } = useTracks();
   const { data: ranks, shouldRender } = useTracksStreamingHistory();
 
   if (!shouldRender) return null;
 
-  if (!tracks || !ranks) return <ChartSkeleton />;
+  if (!ranks) return <ChartSkeleton />;
 
   return (
     <>
@@ -20,9 +19,9 @@ export function TrackStreamsLineChart({ height }: { height?: number }) {
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.track_uri}
         getStreams={(r) => r.track_stream_count}
-        getLabel={(k) => tracks.find((t) => t.track_uri === k)?.track_short_name ?? k}
-        getCurrentRank={(k) => -1 * (tracks.find((t) => t.track_uri === k)?.track_stream_count ?? 0)}
-        getImageURL={(k) => tracks.find((t) => t.track_uri === k)?.album_image_url ?? ""}
+        getLabel={(k) => ranks.find((r) => r.track_uri === k)?.track_short_name ?? k}
+        getCurrentRank={(k) => -1 * (ranks.find((r) => r.track_uri === k)?.track_stream_count ?? 0)}
+        getImageURL={(k) => ranks.find((r) => r.track_uri === k)?.album_image_url ?? ""}
       />
     </>
   );

@@ -19,17 +19,15 @@ const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 
 export function ArtistsSection() {
   const filters = useFilters();
-  const { items: artists } = useArtists();
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
-  const shouldRenderCounts = artists && artists.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
     setActiveTab(
       shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
     );
-  }, [shouldRenderMonths, shouldRenderStreams, shouldRenderCounts]);
+  }, [shouldRenderMonths, shouldRenderStreams]);
 
   if (filters.artists?.length === 1) return null;
 
@@ -42,7 +40,7 @@ export function ArtistsSection() {
         onChange={setActiveTab}
         style={{
           display:
-            shouldRenderCounts || shouldRenderMonths || shouldRenderStreams
+            shouldRenderMonths || shouldRenderStreams
               ? undefined
               : "none",
         }}
@@ -60,10 +58,7 @@ export function ArtistsSection() {
           >
             Streams
           </Tabs.Tab>
-          <Tabs.Tab
-            value="count"
-            style={{ display: shouldRenderCounts ? undefined : "none" }}
-          >
+          <Tabs.Tab value="count">
             Count
           </Tabs.Tab>
         </Tabs.List>
@@ -75,10 +70,7 @@ export function ArtistsSection() {
           <ArtistStreamsLineChart />
         </Tabs.Panel>
 
-        <Tabs.Panel
-          value="count"
-          style={{ display: shouldRenderCounts ? undefined : "none" }}
-        >
+        <Tabs.Panel value="count">
           <ArtistsBarChart />
         </Tabs.Panel>
 

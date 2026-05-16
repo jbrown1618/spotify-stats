@@ -1,6 +1,5 @@
 import { Track } from "./api";
 import styles from "./Backdrop.module.css";
-import { mostStreamedTracks } from "./sorting";
 import { useTracks } from "./useApi";
 
 export function Backdrop() {
@@ -75,11 +74,11 @@ interface Tile {
 }
 
 function useAlbumTiles(): Tile[] | null {
-  const { items: tracks } = useTracks();
+  const { items: tracks } = useTracks({ sort: "Most streams", limit: 100 });
   if (!tracks) return null;
 
   const tiles = deduplicateBy(
-    tracks.sort(mostStreamedTracks).map(toTile),
+    tracks.map(toTile),
     "href"
   );
 
