@@ -1,4 +1,4 @@
-import { Text } from "@mantine/core";
+import { Skeleton, Text } from "@mantine/core";
 
 import styles from "./KPI.module.css";
 
@@ -12,6 +12,19 @@ export function KPIsList({ items }: { items: KPIProps[] }) {
     <div className={styles.kpisList}>
       {items.map((kpi) => (
         <KPI key={kpi.label} {...kpi} />
+      ))}
+    </div>
+  );
+}
+
+export function KPIsListSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className={styles.kpisList}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.kpi}>
+          <Skeleton w={60} h={14} mb={6} />
+          <Skeleton w={80} h={24} />
+        </div>
       ))}
     </div>
   );

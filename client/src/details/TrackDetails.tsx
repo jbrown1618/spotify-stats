@@ -6,8 +6,7 @@ import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { ArtistPills } from "../design/ArtistPills";
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { KPIsList } from "../design/KPI";
-import { RowSkeleton } from "../design/RowDesign";
+import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
@@ -25,8 +24,8 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
     return (
       <>
         <TextSkeleton style="h2" />
-        <div className={styles.marginBottom}>
-          <RowSkeleton />
+        <div className={styles.centered}>
+          <KPIsListSkeleton count={7} />
         </div>
         <ChartSkeleton />
       </>

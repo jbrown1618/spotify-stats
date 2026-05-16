@@ -86,5 +86,20 @@ export function RowDesign({
 }
 
 export function RowSkeleton() {
-  return <Skeleton w={"100%"} h={80} />;
+  return (
+    <Paper className={styles.row}>
+      <div className={styles.rowContent}>
+        <Skeleton w={70} h={70} />
+        <div className={styles.rowText}>
+          <Skeleton w={160} h={16} mb={6} />
+          <Skeleton w={120} h={14} mb={4} />
+          <Skeleton w={80} h={12} />
+        </div>
+      </div>
+      <div className={styles.rowStats}>
+        <Skeleton w={50} h={30} />
+        <Skeleton w={50} h={30} />
+      </div>
+    </Paper>
+  );
 }
