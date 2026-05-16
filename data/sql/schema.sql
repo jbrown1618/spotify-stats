@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS track (
     isrc TEXT
 );
 CREATE INDEX IF NOT EXISTS i_track_uri ON track (uri);
+CREATE INDEX IF NOT EXISTS i_track_album_uri ON track (album_uri);
 
 CREATE TABLE IF NOT EXISTS playlist (
     id SERIAL PRIMARY KEY,

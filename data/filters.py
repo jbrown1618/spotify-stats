@@ -77,16 +77,46 @@ def parse_filters(request_json: dict) -> dict:
     }
 
 
+def _has_active_filters(params: dict) -> bool:
+    """Check if any filters are actually active in the parsed params."""
+    return (
+        params.get("filter_tracks")
+        or params.get("liked")
+        or params.get("filter_playlists")
+        or params.get("filter_artists")
+        or params.get("filter_albums")
+        or params.get("filter_labels")
+        or params.get("filter_genres")
+        or params.get("filter_producers")
+        or params.get("filter_years")
+        or params.get("wrapped_start_date") is not None
+        or params.get("wrapped_end_date") is not None
+    )
+
+
+_UNFILTERED_MATCHING_TRACKS = """
+DROP TABLE IF EXISTS matching_track_uris;
+CREATE TEMPORARY TABLE matching_track_uris AS
+SELECT DISTINCT track_uri FROM playlist_track;
+"""
+
+
 def create_matching_tracks_table(conn, params: dict):
     """Create the matching_track_uris temp table using a SQLAlchemy connection.
     
     Must be called within a connection context (e.g. `with engine.begin() as conn`).
     The temp table persists for the duration of that connection/transaction.
+
+    When no filters are active, skips the expensive multi-table join and just
+    copies track URIs from playlist_track.
     """
-    conn.execute(
-        sqlalchemy.text(query_text('create_matching_track_uris')),
-        params
-    )
+    if _has_active_filters(params):
+        conn.execute(
+            sqlalchemy.text(query_text('create_matching_track_uris')),
+            params
+        )
+    else:
+        conn.execute(sqlalchemy.text(_UNFILTERED_MATCHING_TRACKS))
 
 
 @contextmanager
