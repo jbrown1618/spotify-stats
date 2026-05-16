@@ -1,0 +1,276 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - navigation [ref=e6]:
+        - heading "Spotify Stats" [level=1] [ref=e7]
+        - generic [ref=e8]:
+          - button "Filters" [ref=e9] [cursor=pointer]:
+            - generic [ref=e11]:
+              - img [ref=e12]
+              - text: Filters
+          - button [ref=e6053] [cursor=pointer]:
+            - img [ref=e6056]
+      - heading "#Cookie Jar" [level=2] [ref=e6059]
+      - generic [ref=e6061]:
+        - generic [ref=e6062]:
+          - paragraph [ref=e6063]: Album
+          - generic [ref=e6065] [cursor=pointer]:
+            - img [ref=e6066]
+            - generic [ref=e6067]: "#Cookie Jar"
+        - generic [ref=e6068]:
+          - paragraph [ref=e6069]: Artist
+          - generic [ref=e6072] [cursor=pointer]:
+            - img [ref=e6073]
+            - generic [ref=e6074]: Red Velvet
+        - generic [ref=e6075]:
+          - paragraph [ref=e6076]: Release date
+          - paragraph [ref=e6077]: 2018-07-04
+        - generic [ref=e6078]:
+          - paragraph [ref=e6079]: Streams
+          - paragraph [ref=e6080]: "4"
+        - generic [ref=e6081]:
+          - paragraph [ref=e6082]: Last played
+          - paragraph [ref=e6083]: 2024-01-09
+        - generic [ref=e6084]:
+          - paragraph [ref=e6085]: Popularity
+          - paragraph [ref=e6086]: "40"
+        - generic [ref=e6087]:
+          - paragraph [ref=e6088]: Liked
+          - img "Liked" [ref=e6089]
+      - heading "Track streams by month" [level=3] [ref=e6091]
+      - generic [ref=e6093]:
+        - heading "#Cookie Jar" [level=4] [ref=e6095]:
+          - img [ref=e6096]
+          - text: "#Cookie Jar"
+        - generic [ref=e6100]:
+          - img [ref=e6101]:
+            - generic [ref=e6105]:
+              - generic [ref=e6107]: 2022-4
+              - generic [ref=e6109]: 2022-5
+              - generic [ref=e6111]: 2022-6
+              - generic [ref=e6113]: 2022-7
+              - generic [ref=e6115]: 2022-8
+              - generic [ref=e6117]: 2022-9
+              - generic [ref=e6119]: 2022-10
+              - generic [ref=e6121]: 2022-12
+              - generic [ref=e6123]: 2023-1
+              - generic [ref=e6125]: 2023-2
+              - generic [ref=e6127]: 2023-3
+              - generic [ref=e6129]: 2023-4
+              - generic [ref=e6131]: 2023-5
+              - generic [ref=e6133]: 2023-6
+              - generic [ref=e6135]: 2023-7
+              - generic [ref=e6137]: 2023-8
+              - generic [ref=e6139]: 2023-9
+              - generic [ref=e6141]: 2023-10
+              - generic [ref=e6143]: 2024-1
+            - generic [ref=e6145]:
+              - generic [ref=e6147]: "0"
+              - generic [ref=e6149]: "0.25"
+              - generic [ref=e6151]: "0.5"
+              - generic [ref=e6153]: "0.75"
+              - generic [ref=e6155]: "1"
+          - generic:
+            - generic:
+              - heading "2023-2" [level=3]
+              - generic:
+                - generic: Streams
+                - generic: "0"
+      - generic [ref=e14]:
+        - generic [ref=e45]:
+          - heading "Artists" [level=2] [ref=e46]
+          - generic [ref=e47]:
+            - tablist [ref=e48]:
+              - tab "Months" [selected] [ref=e49] [cursor=pointer]:
+                - generic [ref=e50]: Months
+              - tab "Streams" [ref=e51] [cursor=pointer]:
+                - generic [ref=e52]: Streams
+            - tabpanel "Months" [ref=e53]:
+              - heading "Artist streams by month" [level=3] [ref=e6160]
+              - generic [ref=e6162]:
+                - heading "Red Velvet" [level=4] [ref=e6164]:
+                  - img [ref=e6165]
+                  - text: Red Velvet
+                - img [ref=e6170]:
+                  - generic [ref=e6174]:
+                    - generic [ref=e6176]: 2020-7
+                    - generic [ref=e6178]: 2020-11
+                    - generic [ref=e6180]: 2021-2
+                    - generic [ref=e6182]: 2021-5
+                    - generic [ref=e6184]: 2021-8
+                    - generic [ref=e6186]: 2021-11
+                    - generic [ref=e6188]: 2022-2
+                    - generic [ref=e6190]: 2022-5
+                    - generic [ref=e6192]: 2022-8
+                    - generic [ref=e6194]: 2022-12
+                    - generic [ref=e6196]: 2023-4
+                    - generic [ref=e6198]: 2023-7
+                    - generic [ref=e6200]: 2023-11
+                    - generic [ref=e6202]: 2024-3
+                    - generic [ref=e6204]: 2024-6
+                    - generic [ref=e6206]: 2024-9
+                    - generic [ref=e6208]: 2025-1
+                    - generic [ref=e6210]: 2025-4
+                    - generic [ref=e6212]: 2025-7
+                    - generic [ref=e6214]: 2026-1
+                  - generic [ref=e6216]:
+                    - generic [ref=e6218]: "0"
+                    - generic [ref=e6220]: "30"
+                    - generic [ref=e6222]: "60"
+                    - generic [ref=e6224]: "114"
+          - generic [ref=e57]:
+            - radiogroup [ref=e58]:
+              - generic [ref=e60]:
+                - radio [checked]
+                - img [ref=e63] [cursor=pointer]
+              - generic [ref=e64]:
+                - radio
+                - img [ref=e67] [cursor=pointer]
+              - generic [ref=e77]:
+                - radio
+                - img [ref=e80] [cursor=pointer]
+            - generic [ref=e87]:
+              - textbox [ref=e88] [cursor=pointer]: Most streams
+              - generic:
+                - img
+          - generic [ref=e6230] [cursor=pointer]:
+            - generic [ref=e6232]:
+              - img [ref=e6233]
+              - paragraph [ref=e6236]: Red Velvet
+            - generic [ref=e6237]:
+              - generic [ref=e6238]:
+                - paragraph [ref=e6239]: Streams
+                - paragraph [ref=e6240]: "2565"
+              - generic [ref=e6241]:
+                - paragraph [ref=e6242]: Popularity
+                - paragraph [ref=e6243]: "70"
+              - generic [ref=e6244]:
+                - paragraph [ref=e6245]: Liked Tracks
+                - paragraph [ref=e6246]: 0 / 1
+              - generic [ref=e6247]:
+                - paragraph [ref=e6248]: Open
+                - link [ref=e6250]:
+                  - /url: https://open.spotify.com/artist/1z4g3DjTBBZKhvAroFlhOM
+                  - img [ref=e6251]
+        - generic [ref=e102]:
+          - heading "Albums" [level=2] [ref=e103]
+          - generic [ref=e104]:
+            - tablist [ref=e105]:
+              - tab "Months" [selected] [ref=e106] [cursor=pointer]:
+                - generic [ref=e107]: Months
+              - tab "Streams" [ref=e108] [cursor=pointer]:
+                - generic [ref=e109]: Streams
+            - tabpanel "Months" [ref=e110]:
+              - heading "Album streams by month" [level=3] [ref=e6252]
+              - generic [ref=e6254]:
+                - heading "#Cookie Jar" [level=4] [ref=e6256]:
+                  - img [ref=e6257]
+                  - text: "#Cookie Jar"
+                - img [ref=e6262]:
+                  - generic [ref=e6266]:
+                    - generic [ref=e6268]: 2022-4
+                    - generic [ref=e6270]: 2022-5
+                    - generic [ref=e6272]: 2022-6
+                    - generic [ref=e6274]: 2022-7
+                    - generic [ref=e6276]: 2022-8
+                    - generic [ref=e6278]: 2022-9
+                    - generic [ref=e6280]: 2022-10
+                    - generic [ref=e6282]: 2022-12
+                    - generic [ref=e6284]: 2023-1
+                    - generic [ref=e6286]: 2023-2
+                    - generic [ref=e6288]: 2023-3
+                    - generic [ref=e6290]: 2023-4
+                    - generic [ref=e6292]: 2023-5
+                    - generic [ref=e6294]: 2023-6
+                    - generic [ref=e6296]: 2023-7
+                    - generic [ref=e6298]: 2023-8
+                    - generic [ref=e6300]: 2023-9
+                    - generic [ref=e6302]: 2023-10
+                    - generic [ref=e6304]: 2024-1
+                  - generic [ref=e6306]:
+                    - generic [ref=e6308]: "0"
+                    - generic [ref=e6310]: "0.25"
+                    - generic [ref=e6312]: "0.5"
+                    - generic [ref=e6314]: "0.75"
+                    - generic [ref=e6316]: "1"
+          - generic [ref=e114]:
+            - radiogroup [ref=e115]:
+              - generic [ref=e117]:
+                - radio [checked]
+                - img [ref=e120] [cursor=pointer]
+              - generic [ref=e121]:
+                - radio
+                - img [ref=e124] [cursor=pointer]
+              - generic [ref=e134]:
+                - radio
+                - img [ref=e137] [cursor=pointer]
+            - generic [ref=e144]:
+              - textbox [ref=e145] [cursor=pointer]: Most streams
+              - generic:
+                - img
+          - generic [ref=e6322] [cursor=pointer]:
+            - generic [ref=e6324]:
+              - img [ref=e6325]
+              - generic [ref=e6326]:
+                - paragraph [ref=e6328]: "#Cookie Jar"
+                - paragraph [ref=e6330]: Red Velvet
+                - paragraph [ref=e6331]: 2018-07-04
+            - generic [ref=e6332]:
+              - generic [ref=e6333]:
+                - paragraph [ref=e6334]: Streams
+                - paragraph [ref=e6335]: "5"
+              - generic [ref=e6336]:
+                - paragraph [ref=e6337]: Popularity
+                - paragraph [ref=e6338]: "45"
+              - generic [ref=e6339]:
+                - paragraph [ref=e6340]: Open
+                - link [ref=e6342]:
+                  - /url: https://open.spotify.com/album/4W6K0DP1YlZ48JlvdKCkZh
+                  - img [ref=e6343]
+        - generic [ref=e159]:
+          - heading "Playlists" [level=2] [ref=e160]
+          - radiogroup [ref=e165]:
+            - generic [ref=e167]:
+              - radio [checked]
+              - img [ref=e170] [cursor=pointer]
+            - generic [ref=e171]:
+              - radio
+              - img [ref=e174] [cursor=pointer]
+          - generic [ref=e6345] [cursor=pointer]:
+            - generic [ref=e6347]:
+              - img [ref=e6348]
+              - paragraph [ref=e6351]: K-Pop
+            - generic [ref=e6352]:
+              - generic [ref=e6353]:
+                - paragraph [ref=e6354]: Tracks
+                - paragraph [ref=e6355]: "1"
+              - generic [ref=e6356]:
+                - paragraph [ref=e6357]: Liked
+                - paragraph [ref=e6358]: "0"
+              - generic [ref=e6359]:
+                - paragraph [ref=e6360]: Open
+                - link [ref=e6362]:
+                  - /url: https://open.spotify.com/playlist/0Xp2gQ9p4VMgt5HauIfIq7
+                  - img [ref=e6363]
+        - generic [ref=e197]:
+          - heading "Record Labels" [level=2] [ref=e198]
+          - generic [ref=e6366] [cursor=pointer]: avex trax
+        - generic [ref=e215]:
+          - heading "Genres" [level=2] [ref=e216]
+          - generic [ref=e220]:
+            - generic [ref=e6369] [cursor=pointer]: k-pop
+            - generic [ref=e6372] [cursor=pointer]: k-pop girl group
+        - generic [ref=e233]:
+          - heading "Producers" [level=2] [ref=e234]
+          - paragraph [ref=e6374]: No data
+        - generic [ref=e251]:
+          - heading "Release date" [level=2] [ref=e252]
+          - generic [ref=e6377] [cursor=pointer]: "2018"
+      - contentinfo [ref=e286]:
+        - link "jbrown1618/spotify-stats" [ref=e287] [cursor=pointer]:
+          - /url: https://www.github.com/jbrown1618/spotify-stats
+    - generic [ref=e3818]:
+      - img [ref=e3820]
+      - button "Open Tanstack query devtools" [ref=e3868] [cursor=pointer]:
+        - img [ref=e3869]
+  - generic [ref=e3917]: "114"

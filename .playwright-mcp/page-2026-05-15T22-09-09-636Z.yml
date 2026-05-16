@@ -1,0 +1,1104 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - navigation [ref=e107]:
+        - heading "Spotify Stats" [level=1] [ref=e108]
+        - button "Filters" [ref=e110] [cursor=pointer]:
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - text: Filters
+      - generic [ref=e115]:
+        - generic [ref=e116]:
+          - heading "Tracks" [level=2] [ref=e117]
+          - generic [ref=e118]:
+            - tablist [ref=e119]:
+              - tab "Months" [selected] [ref=e120] [cursor=pointer]:
+                - generic [ref=e121]: Months
+              - tab "Streams" [ref=e122] [cursor=pointer]:
+                - generic [ref=e123]: Streams
+            - tabpanel "Months" [ref=e124]:
+              - heading "Track streams by month" [level=3] [ref=e125]
+              - generic [ref=e126]:
+                - generic [ref=e127]:
+                  - heading "Savage" [level=4] [ref=e129]:
+                    - img [ref=e130]
+                    - text: Savage
+                  - img [ref=e135]:
+                    - generic [ref=e139]:
+                      - generic [ref=e141]: "20"
+                      - generic [ref=e143]: "39"
+                - generic [ref=e148]:
+                  - heading "Armageddon" [level=4] [ref=e150]:
+                    - img [ref=e151]
+                    - text: Armageddon
+                  - img [ref=e156]:
+                    - generic [ref=e160]:
+                      - generic [ref=e162]: "20"
+                      - generic [ref=e164]: "39"
+                - generic [ref=e169]:
+                  - heading "start a war" [level=4] [ref=e171]:
+                    - img [ref=e172]
+                    - text: start a war
+                  - img [ref=e177]:
+                    - generic [ref=e181]:
+                      - generic [ref=e183]: "20"
+                      - generic [ref=e185]: "39"
+                - generic [ref=e190]:
+                  - heading "ZEN" [level=4] [ref=e192]:
+                    - img [ref=e193]
+                    - text: ZEN
+                  - img [ref=e198]:
+                    - generic [ref=e202]:
+                      - generic [ref=e204]: "20"
+                      - generic [ref=e206]: "39"
+                - generic [ref=e211]:
+                  - heading "with the IE (way up)" [level=4] [ref=e213]:
+                    - img [ref=e214]
+                    - text: with the IE (way up)
+                  - img [ref=e219]:
+                    - generic [ref=e223]:
+                      - generic [ref=e225]: 2021-10
+                      - generic [ref=e227]: 2022-1
+                      - generic [ref=e229]: 2022-4
+                      - generic [ref=e231]: 2022-7
+                      - generic [ref=e233]: 2022-10
+                      - generic [ref=e235]: 2023-1
+                      - generic [ref=e237]: 2023-4
+                      - generic [ref=e239]: 2023-7
+                      - generic [ref=e241]: 2023-10
+                      - generic [ref=e243]: 2024-1
+                      - generic [ref=e245]: 2024-4
+                      - generic [ref=e247]: 2024-7
+                      - generic [ref=e249]: 2024-10
+                      - generic [ref=e251]: 2025-1
+                      - generic [ref=e253]: 2025-4
+                      - generic [ref=e255]: 2025-7
+                      - generic [ref=e257]: 2026-1
+                    - generic [ref=e259]:
+                      - generic [ref=e261]: "0"
+                      - generic [ref=e263]: "20"
+                      - generic [ref=e265]: "39"
+                - button [ref=e271] [cursor=pointer]:
+                  - img [ref=e274]
+          - generic [ref=e278]:
+            - textbox [ref=e279] [cursor=pointer]: Most streams
+            - generic:
+              - img
+          - button [ref=e330] [cursor=pointer]:
+            - img [ref=e333]
+        - generic [ref=e334]:
+          - heading "Artists" [level=2] [ref=e335]
+          - generic [ref=e336]:
+            - tablist [ref=e337]:
+              - tab "Months" [selected] [ref=e338] [cursor=pointer]:
+                - generic [ref=e339]: Months
+              - tab "Streams" [ref=e340] [cursor=pointer]:
+                - generic [ref=e341]: Streams
+              - tab "Count" [ref=e342] [cursor=pointer]:
+                - generic [ref=e343]: Count
+            - tabpanel "Months" [ref=e344]:
+              - heading "Artist streams by month" [level=3] [ref=e345]
+              - generic [ref=e346]:
+                - generic [ref=e347]:
+                  - heading "aespa" [level=4] [ref=e349]:
+                    - img [ref=e350]
+                    - text: aespa
+                  - img [ref=e355]:
+                    - generic [ref=e359]:
+                      - generic [ref=e361]: "130"
+                      - generic [ref=e363]: "246"
+                - generic [ref=e368]:
+                  - heading "Red Velvet" [level=4] [ref=e370]:
+                    - img [ref=e371]
+                    - text: Red Velvet
+                  - img [ref=e376]:
+                    - generic [ref=e380]:
+                      - generic [ref=e382]: "130"
+                      - generic [ref=e384]: "246"
+                - generic [ref=e389]:
+                  - heading "ENHYPEN" [level=4] [ref=e391]:
+                    - img [ref=e392]
+                    - text: ENHYPEN
+                  - img [ref=e397]:
+                    - generic [ref=e401]:
+                      - generic [ref=e403]: "130"
+                      - generic [ref=e405]: "246"
+                - generic [ref=e410]:
+                  - heading "ITZY" [level=4] [ref=e412]:
+                    - img [ref=e413]
+                    - text: ITZY
+                  - img [ref=e418]:
+                    - generic [ref=e422]:
+                      - generic [ref=e424]: "130"
+                      - generic [ref=e426]: "246"
+                - generic [ref=e431]:
+                  - heading "BLACKPINK" [level=4] [ref=e433]:
+                    - img [ref=e434]
+                    - text: BLACKPINK
+                  - img [ref=e439]:
+                    - generic [ref=e443]:
+                      - generic [ref=e445]: 2020-7
+                      - generic [ref=e447]: 2020-11
+                      - generic [ref=e449]: 2021-2
+                      - generic [ref=e451]: 2021-5
+                      - generic [ref=e453]: 2021-8
+                      - generic [ref=e455]: 2021-11
+                      - generic [ref=e457]: 2022-2
+                      - generic [ref=e459]: 2022-5
+                      - generic [ref=e461]: 2022-8
+                      - generic [ref=e463]: 2022-12
+                      - generic [ref=e465]: 2023-4
+                      - generic [ref=e467]: 2023-7
+                      - generic [ref=e469]: 2023-11
+                      - generic [ref=e471]: 2024-3
+                      - generic [ref=e473]: 2024-6
+                      - generic [ref=e475]: 2024-9
+                      - generic [ref=e477]: 2025-1
+                      - generic [ref=e479]: 2025-4
+                      - generic [ref=e481]: 2025-7
+                      - generic [ref=e483]: 2026-1
+                    - generic [ref=e485]:
+                      - generic [ref=e487]: "0"
+                      - generic [ref=e489]: "130"
+                      - generic [ref=e491]: "246"
+                - button [ref=e497] [cursor=pointer]:
+                  - img [ref=e500]
+          - generic [ref=e501]:
+            - radiogroup [ref=e502]:
+              - generic [ref=e504]:
+                - radio [checked]
+                - img [ref=e507] [cursor=pointer]
+              - generic [ref=e508]:
+                - radio
+                - img [ref=e511] [cursor=pointer]
+              - generic [ref=e521]:
+                - radio
+                - img [ref=e524] [cursor=pointer]
+            - generic [ref=e531]:
+              - textbox [ref=e532] [cursor=pointer]: Most streams
+              - generic:
+                - img
+          - generic [ref=e533]:
+            - generic [ref=e535] [cursor=pointer]:
+              - generic [ref=e537]:
+                - img [ref=e538]
+                - paragraph [ref=e541]: aespa
+              - generic [ref=e542]:
+                - generic [ref=e543]:
+                  - paragraph [ref=e544]: Streams
+                  - paragraph [ref=e545]: "3349"
+                - generic [ref=e546]:
+                  - paragraph [ref=e547]: Popularity
+                  - paragraph [ref=e548]: "79"
+                - generic [ref=e549]:
+                  - paragraph [ref=e550]: Liked Tracks
+                  - paragraph [ref=e551]: 55 / 65
+                - generic [ref=e552]:
+                  - paragraph [ref=e553]: Open
+                  - link [ref=e555]:
+                    - /url: https://open.spotify.com/artist/6YVMFz59CuY7ngCxTxjpxE
+                    - img [ref=e556]
+            - generic [ref=e558] [cursor=pointer]:
+              - generic [ref=e560]:
+                - img [ref=e561]
+                - paragraph [ref=e564]: Red Velvet
+              - generic [ref=e565]:
+                - generic [ref=e566]:
+                  - paragraph [ref=e567]: Streams
+                  - paragraph [ref=e568]: "2565"
+                - generic [ref=e569]:
+                  - paragraph [ref=e570]: Popularity
+                  - paragraph [ref=e571]: "70"
+                - generic [ref=e572]:
+                  - paragraph [ref=e573]: Liked Tracks
+                  - paragraph [ref=e574]: 63 / 80
+                - generic [ref=e575]:
+                  - paragraph [ref=e576]: Open
+                  - link [ref=e578]:
+                    - /url: https://open.spotify.com/artist/1z4g3DjTBBZKhvAroFlhOM
+                    - img [ref=e579]
+            - generic [ref=e581] [cursor=pointer]:
+              - generic [ref=e583]:
+                - img [ref=e584]
+                - paragraph [ref=e587]: ENHYPEN
+              - generic [ref=e588]:
+                - generic [ref=e589]:
+                  - paragraph [ref=e590]: Streams
+                  - paragraph [ref=e591]: "1521"
+                - generic [ref=e592]:
+                  - paragraph [ref=e593]: Popularity
+                  - paragraph [ref=e594]: "82"
+                - generic [ref=e595]:
+                  - paragraph [ref=e596]: Liked Tracks
+                  - paragraph [ref=e597]: 40 / 50
+                - generic [ref=e598]:
+                  - paragraph [ref=e599]: Open
+                  - link [ref=e601]:
+                    - /url: https://open.spotify.com/artist/5t5FqBwTcgKTaWmfEbwQY9
+                    - img [ref=e602]
+            - generic [ref=e604] [cursor=pointer]:
+              - generic [ref=e606]:
+                - img [ref=e607]
+                - paragraph [ref=e610]: ITZY
+              - generic [ref=e611]:
+                - generic [ref=e612]:
+                  - paragraph [ref=e613]: Streams
+                  - paragraph [ref=e614]: "1449"
+                - generic [ref=e615]:
+                  - paragraph [ref=e616]: Popularity
+                  - paragraph [ref=e617]: "70"
+                - generic [ref=e618]:
+                  - paragraph [ref=e619]: Liked Tracks
+                  - paragraph [ref=e620]: 39 / 47
+                - generic [ref=e621]:
+                  - paragraph [ref=e622]: Open
+                  - link [ref=e624]:
+                    - /url: https://open.spotify.com/artist/2KC9Qb60EaY0kW4eH68vr3
+                    - img [ref=e625]
+            - generic [ref=e627] [cursor=pointer]:
+              - generic [ref=e629]:
+                - img [ref=e630]
+                - paragraph [ref=e633]: BLACKPINK
+              - generic [ref=e634]:
+                - generic [ref=e635]:
+                  - paragraph [ref=e636]: Streams
+                  - paragraph [ref=e637]: "1388"
+                - generic [ref=e638]:
+                  - paragraph [ref=e639]: Popularity
+                  - paragraph [ref=e640]: "82"
+                - generic [ref=e641]:
+                  - paragraph [ref=e642]: Liked Tracks
+                  - paragraph [ref=e643]: 24 / 30
+                - generic [ref=e644]:
+                  - paragraph [ref=e645]: Open
+                  - link [ref=e647]:
+                    - /url: https://open.spotify.com/artist/41MozSoPIsD1dJM0CLPjZF
+                    - img [ref=e648]
+            - generic [ref=e650] [cursor=pointer]:
+              - generic [ref=e652]:
+                - img [ref=e653]
+                - paragraph [ref=e656]: IU
+              - generic [ref=e657]:
+                - generic [ref=e658]:
+                  - paragraph [ref=e659]: Streams
+                  - paragraph [ref=e660]: "1312"
+                - generic [ref=e661]:
+                  - paragraph [ref=e662]: Popularity
+                  - paragraph [ref=e663]: "69"
+                - generic [ref=e664]:
+                  - paragraph [ref=e665]: Liked Tracks
+                  - paragraph [ref=e666]: 41 / 49
+                - generic [ref=e667]:
+                  - paragraph [ref=e668]: Open
+                  - link [ref=e670]:
+                    - /url: https://open.spotify.com/artist/3HqSLMAZ3g3d5poNaI7GOU
+                    - img [ref=e671]
+            - generic [ref=e673] [cursor=pointer]:
+              - generic [ref=e675]:
+                - img [ref=e676]
+                - paragraph [ref=e679]: TWICE
+              - generic [ref=e680]:
+                - generic [ref=e681]:
+                  - paragraph [ref=e682]: Streams
+                  - paragraph [ref=e683]: "1238"
+                - generic [ref=e684]:
+                  - paragraph [ref=e685]: Popularity
+                  - paragraph [ref=e686]: "84"
+                - generic [ref=e687]:
+                  - paragraph [ref=e688]: Liked Tracks
+                  - paragraph [ref=e689]: 38 / 48
+                - generic [ref=e690]:
+                  - paragraph [ref=e691]: Open
+                  - link [ref=e693]:
+                    - /url: https://open.spotify.com/artist/7n2Ycct7Beij7Dj7meI4X0
+                    - img [ref=e694]
+            - generic [ref=e696] [cursor=pointer]:
+              - generic [ref=e698]:
+                - img [ref=e699]
+                - paragraph [ref=e702]: TAEYEON
+              - generic [ref=e703]:
+                - generic [ref=e704]:
+                  - paragraph [ref=e705]: Streams
+                  - paragraph [ref=e706]: "1186"
+                - generic [ref=e707]:
+                  - paragraph [ref=e708]: Popularity
+                  - paragraph [ref=e709]: "66"
+                - generic [ref=e710]:
+                  - paragraph [ref=e711]: Liked Tracks
+                  - paragraph [ref=e712]: 34 / 42
+                - generic [ref=e713]:
+                  - paragraph [ref=e714]: Open
+                  - link [ref=e716]:
+                    - /url: https://open.spotify.com/artist/3qNVuliS40BLgXGxhdBdqu
+                    - img [ref=e717]
+            - generic [ref=e719] [cursor=pointer]:
+              - generic [ref=e721]:
+                - img [ref=e722]
+                - paragraph [ref=e725]: JENNIE
+              - generic [ref=e726]:
+                - generic [ref=e727]:
+                  - paragraph [ref=e728]: Streams
+                  - paragraph [ref=e729]: "1156"
+                - generic [ref=e730]:
+                  - paragraph [ref=e731]: Popularity
+                  - paragraph [ref=e732]: "84"
+                - generic [ref=e733]:
+                  - paragraph [ref=e734]: Liked Tracks
+                  - paragraph [ref=e735]: 12 / 12
+                - generic [ref=e736]:
+                  - paragraph [ref=e737]: Open
+                  - link [ref=e739]:
+                    - /url: https://open.spotify.com/artist/250b0Wlc5Vk0CoUsaCY84M
+                    - img [ref=e740]
+            - generic [ref=e742] [cursor=pointer]:
+              - generic [ref=e744]:
+                - img [ref=e745]
+                - paragraph [ref=e748]: NMIXX
+              - generic [ref=e749]:
+                - generic [ref=e750]:
+                  - paragraph [ref=e751]: Streams
+                  - paragraph [ref=e752]: "1054"
+                - generic [ref=e753]:
+                  - paragraph [ref=e754]: Popularity
+                  - paragraph [ref=e755]: "70"
+                - generic [ref=e756]:
+                  - paragraph [ref=e757]: Liked Tracks
+                  - paragraph [ref=e758]: 23 / 28
+                - generic [ref=e759]:
+                  - paragraph [ref=e760]: Open
+                  - link [ref=e762]:
+                    - /url: https://open.spotify.com/artist/28ot3wh4oNmoFOdVajibBl
+                    - img [ref=e763]
+            - generic [ref=e765] [cursor=pointer]:
+              - generic [ref=e767]:
+                - img [ref=e768]
+                - paragraph [ref=e771]: i-dle
+              - generic [ref=e772]:
+                - generic [ref=e773]:
+                  - paragraph [ref=e774]: Streams
+                  - paragraph [ref=e775]: "920"
+                - generic [ref=e776]:
+                  - paragraph [ref=e777]: Popularity
+                  - paragraph [ref=e778]: "71"
+                - generic [ref=e779]:
+                  - paragraph [ref=e780]: Liked Tracks
+                  - paragraph [ref=e781]: 34 / 47
+                - generic [ref=e782]:
+                  - paragraph [ref=e783]: Open
+                  - link [ref=e785]:
+                    - /url: https://open.spotify.com/artist/2AfmfGFbe0A0WsTYm0SDTx
+                    - img [ref=e786]
+            - generic [ref=e788] [cursor=pointer]:
+              - generic [ref=e790]:
+                - img [ref=e791]
+                - paragraph [ref=e794]: Stray Kids
+              - generic [ref=e795]:
+                - generic [ref=e796]:
+                  - paragraph [ref=e797]: Streams
+                  - paragraph [ref=e798]: "851"
+                - generic [ref=e799]:
+                  - paragraph [ref=e800]: Popularity
+                  - paragraph [ref=e801]: "87"
+                - generic [ref=e802]:
+                  - paragraph [ref=e803]: Liked Tracks
+                  - paragraph [ref=e804]: 36 / 58
+                - generic [ref=e805]:
+                  - paragraph [ref=e806]: Open
+                  - link [ref=e808]:
+                    - /url: https://open.spotify.com/artist/2dIgFjalVxs4ThymZ67YCE
+                    - img [ref=e809]
+            - generic [ref=e811] [cursor=pointer]:
+              - generic [ref=e813]:
+                - img [ref=e814]
+                - paragraph [ref=e817]: BTS
+              - generic [ref=e818]:
+                - generic [ref=e819]:
+                  - paragraph [ref=e820]: Streams
+                  - paragraph [ref=e821]: "846"
+                - generic [ref=e822]:
+                  - paragraph [ref=e823]: Popularity
+                  - paragraph [ref=e824]: "89"
+                - generic [ref=e825]:
+                  - paragraph [ref=e826]: Liked Tracks
+                  - paragraph [ref=e827]: 23 / 36
+                - generic [ref=e828]:
+                  - paragraph [ref=e829]: Open
+                  - link [ref=e831]:
+                    - /url: https://open.spotify.com/artist/3Nrfpe0tUJi4K4DXYWgMUX
+                    - img [ref=e832]
+            - generic [ref=e834] [cursor=pointer]:
+              - generic [ref=e836]:
+                - img [ref=e837]
+                - paragraph [ref=e840]: LE SSERAFIM
+              - generic [ref=e841]:
+                - generic [ref=e842]:
+                  - paragraph [ref=e843]: Streams
+                  - paragraph [ref=e844]: "748"
+                - generic [ref=e845]:
+                  - paragraph [ref=e846]: Popularity
+                  - paragraph [ref=e847]: "82"
+                - generic [ref=e848]:
+                  - paragraph [ref=e849]: Liked Tracks
+                  - paragraph [ref=e850]: 23 / 25
+                - generic [ref=e851]:
+                  - paragraph [ref=e852]: Open
+                  - link [ref=e854]:
+                    - /url: https://open.spotify.com/artist/4SpbR6yFEvexJuaBpgAU5p
+                    - img [ref=e855]
+            - generic [ref=e857] [cursor=pointer]:
+              - generic [ref=e859]:
+                - img [ref=e860]
+                - paragraph [ref=e863]: Taylor Swift
+              - generic [ref=e864]:
+                - generic [ref=e865]:
+                  - paragraph [ref=e866]: Streams
+                  - paragraph [ref=e867]: "618"
+                - generic [ref=e868]:
+                  - paragraph [ref=e869]: Popularity
+                  - paragraph [ref=e870]: "100"
+                - generic [ref=e871]:
+                  - paragraph [ref=e872]: Liked Tracks
+                  - paragraph [ref=e873]: 48 / 82
+                - generic [ref=e874]:
+                  - paragraph [ref=e875]: Open
+                  - link [ref=e877]:
+                    - /url: https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf02
+                    - img [ref=e878]
+            - generic [ref=e880] [cursor=pointer]:
+              - generic [ref=e882]:
+                - img [ref=e883]
+                - paragraph [ref=e886]: STAYC
+              - generic [ref=e887]:
+                - generic [ref=e888]:
+                  - paragraph [ref=e889]: Streams
+                  - paragraph [ref=e890]: "617"
+                - generic [ref=e891]:
+                  - paragraph [ref=e892]: Popularity
+                  - paragraph [ref=e893]: "59"
+                - generic [ref=e894]:
+                  - paragraph [ref=e895]: Liked Tracks
+                  - paragraph [ref=e896]: 18 / 23
+                - generic [ref=e897]:
+                  - paragraph [ref=e898]: Open
+                  - link [ref=e900]:
+                    - /url: https://open.spotify.com/artist/01XYiBYaoMJcNhPokrg0l0
+                    - img [ref=e901]
+            - generic [ref=e903] [cursor=pointer]:
+              - generic [ref=e905]:
+                - img [ref=e906]
+                - paragraph [ref=e909]: CHUNG HA
+              - generic [ref=e910]:
+                - generic [ref=e911]:
+                  - paragraph [ref=e912]: Streams
+                  - paragraph [ref=e913]: "579"
+                - generic [ref=e914]:
+                  - paragraph [ref=e915]: Popularity
+                  - paragraph [ref=e916]: "57"
+                - generic [ref=e917]:
+                  - paragraph [ref=e918]: Liked Tracks
+                  - paragraph [ref=e919]: 18 / 22
+                - generic [ref=e920]:
+                  - paragraph [ref=e921]: Open
+                  - link [ref=e923]:
+                    - /url: https://open.spotify.com/artist/2PSJ6YriU7JsFucxACpU7Y
+                    - img [ref=e924]
+            - generic [ref=e926] [cursor=pointer]:
+              - generic [ref=e928]:
+                - img [ref=e929]
+                - paragraph [ref=e932]: IVE
+              - generic [ref=e933]:
+                - generic [ref=e934]:
+                  - paragraph [ref=e935]: Streams
+                  - paragraph [ref=e936]: "534"
+                - generic [ref=e937]:
+                  - paragraph [ref=e938]: Popularity
+                  - paragraph [ref=e939]: "74"
+                - generic [ref=e940]:
+                  - paragraph [ref=e941]: Liked Tracks
+                  - paragraph [ref=e942]: 18 / 20
+                - generic [ref=e943]:
+                  - paragraph [ref=e944]: Open
+                  - link [ref=e946]:
+                    - /url: https://open.spotify.com/artist/6RHTUrRF63xao58xh9FXYJ
+                    - img [ref=e947]
+            - generic [ref=e949] [cursor=pointer]:
+              - generic [ref=e951]:
+                - img [ref=e952]
+                - paragraph [ref=e955]: LeeHi
+              - generic [ref=e956]:
+                - generic [ref=e957]:
+                  - paragraph [ref=e958]: Streams
+                  - paragraph [ref=e959]: "502"
+                - generic [ref=e960]:
+                  - paragraph [ref=e961]: Popularity
+                  - paragraph [ref=e962]: "66"
+                - generic [ref=e963]:
+                  - paragraph [ref=e964]: Liked Tracks
+                  - paragraph [ref=e965]: 19 / 22
+                - generic [ref=e966]:
+                  - paragraph [ref=e967]: Open
+                  - link [ref=e969]:
+                    - /url: https://open.spotify.com/artist/7cVZApDoQZpS447nHTsNqu
+                    - img [ref=e970]
+            - generic [ref=e972] [cursor=pointer]:
+              - generic [ref=e974]:
+                - img [ref=e975]
+                - paragraph [ref=e978]: WENDY
+              - generic [ref=e979]:
+                - generic [ref=e980]:
+                  - paragraph [ref=e981]: Streams
+                  - paragraph [ref=e982]: "468"
+                - generic [ref=e983]:
+                  - paragraph [ref=e984]: Popularity
+                  - paragraph [ref=e985]: "57"
+                - generic [ref=e986]:
+                  - paragraph [ref=e987]: Liked Tracks
+                  - paragraph [ref=e988]: 17 / 23
+                - generic [ref=e989]:
+                  - paragraph [ref=e990]: Open
+                  - link [ref=e992]:
+                    - /url: https://open.spotify.com/artist/0FRUZvZNPzM3YJMABJxf2K
+                    - img [ref=e993]
+            - generic [ref=e995] [cursor=pointer]:
+              - generic [ref=e997]:
+                - img [ref=e998]
+                - paragraph [ref=e1001]: KISS OF LIFE
+              - generic [ref=e1002]:
+                - generic [ref=e1003]:
+                  - paragraph [ref=e1004]: Streams
+                  - paragraph [ref=e1005]: "460"
+                - generic [ref=e1006]:
+                  - paragraph [ref=e1007]: Popularity
+                  - paragraph [ref=e1008]: "67"
+                - generic [ref=e1009]:
+                  - paragraph [ref=e1010]: Liked Tracks
+                  - paragraph [ref=e1011]: 13 / 15
+                - generic [ref=e1012]:
+                  - paragraph [ref=e1013]: Open
+                  - link [ref=e1015]:
+                    - /url: https://open.spotify.com/artist/4TEK9tIkcoxib4GxT3O4ky
+                    - img [ref=e1016]
+            - generic [ref=e1018] [cursor=pointer]:
+              - generic [ref=e1020]:
+                - img [ref=e1021]
+                - paragraph [ref=e1024]: Sara Bareilles
+              - generic [ref=e1025]:
+                - generic [ref=e1026]:
+                  - paragraph [ref=e1027]: Streams
+                  - paragraph [ref=e1028]: "454"
+                - generic [ref=e1029]:
+                  - paragraph [ref=e1030]: Popularity
+                  - paragraph [ref=e1031]: "65"
+                - generic [ref=e1032]:
+                  - paragraph [ref=e1033]: Liked Tracks
+                  - paragraph [ref=e1034]: 46 / 64
+                - generic [ref=e1035]:
+                  - paragraph [ref=e1036]: Open
+                  - link [ref=e1038]:
+                    - /url: https://open.spotify.com/artist/2Sqr0DXoaYABbjBo9HaMkM
+                    - img [ref=e1039]
+            - generic [ref=e1041] [cursor=pointer]:
+              - generic [ref=e1043]:
+                - img [ref=e1044]
+                - paragraph [ref=e1047]: MAMAMOO
+              - generic [ref=e1048]:
+                - generic [ref=e1049]:
+                  - paragraph [ref=e1050]: Streams
+                  - paragraph [ref=e1051]: "413"
+                - generic [ref=e1052]:
+                  - paragraph [ref=e1053]: Popularity
+                  - paragraph [ref=e1054]: "60"
+                - generic [ref=e1055]:
+                  - paragraph [ref=e1056]: Liked Tracks
+                  - paragraph [ref=e1057]: 15 / 19
+                - generic [ref=e1058]:
+                  - paragraph [ref=e1059]: Open
+                  - link [ref=e1061]:
+                    - /url: https://open.spotify.com/artist/0XATRDCYuuGhk0oE7C0o5G
+                    - img [ref=e1062]
+            - generic [ref=e1064] [cursor=pointer]:
+              - generic [ref=e1066]:
+                - img [ref=e1067]
+                - paragraph [ref=e1070]: SEVENTEEN
+              - generic [ref=e1071]:
+                - generic [ref=e1072]:
+                  - paragraph [ref=e1073]: Streams
+                  - paragraph [ref=e1074]: "377"
+                - generic [ref=e1075]:
+                  - paragraph [ref=e1076]: Popularity
+                  - paragraph [ref=e1077]: "78"
+                - generic [ref=e1078]:
+                  - paragraph [ref=e1079]: Liked Tracks
+                  - paragraph [ref=e1080]: 15 / 25
+                - generic [ref=e1081]:
+                  - paragraph [ref=e1082]: Open
+                  - link [ref=e1084]:
+                    - /url: https://open.spotify.com/artist/7nqOGRxlXj7N2JYbgNEjYH
+                    - img [ref=e1085]
+          - button [ref=e1087] [cursor=pointer]:
+            - img [ref=e1090]
+        - generic [ref=e1091]:
+          - heading "Albums" [level=2] [ref=e1092]
+          - generic [ref=e1093]:
+            - tablist [ref=e1094]:
+              - tab "Months" [selected] [ref=e1095] [cursor=pointer]:
+                - generic [ref=e1096]: Months
+              - tab "Streams" [ref=e1097] [cursor=pointer]:
+                - generic [ref=e1098]: Streams
+            - tabpanel "Months" [ref=e1099]
+          - generic [ref=e1103]:
+            - radiogroup [ref=e1104]:
+              - generic [ref=e1106]:
+                - radio [checked]
+                - img [ref=e1109] [cursor=pointer]
+              - generic [ref=e1110]:
+                - radio
+                - img [ref=e1113] [cursor=pointer]
+              - generic [ref=e1123]:
+                - radio
+                - img [ref=e1126] [cursor=pointer]
+            - generic [ref=e1133]:
+              - textbox [ref=e1134] [cursor=pointer]: Most streams
+              - generic:
+                - img
+        - generic [ref=e1148]:
+          - heading "Playlists" [level=2] [ref=e1149]
+          - generic [ref=e1152]:
+            - img [ref=e1153]:
+              - generic [ref=e1155]:
+                - generic [ref=e1157]: "0"
+                - generic [ref=e1159]: "450"
+                - generic [ref=e1161]: "900"
+                - generic [ref=e1163]: "1350"
+                - generic [ref=e1165]: "1800"
+              - generic [ref=e1167]:
+                - generic [ref=e1169]: K-Pop
+                - generic [ref=e1171]: Pop
+                - generic [ref=e1173]: K-PopFavorites
+                - generic [ref=e1175]: A-PopFavorites
+                - generic [ref=e1177]: Workout
+                - generic [ref=e1179]: Summer
+                - generic [ref=e1181]: Chill
+                - generic [ref=e1183]: Singer-Songwriter
+                - generic [ref=e1185]: Alt-Pop
+                - generic [ref=e1187]: InternationalPop
+                - generic [ref=e1189]: K-Pop-Adjacent
+                - generic [ref=e1191]: Halloween
+                - generic [ref=e1193]: R&B
+                - generic [ref=e1195]: ModernRock
+                - generic [ref=e1197]: ClassicRock
+                - generic [ref=e1199]: Relax
+                - generic [ref=e1201]: Karaoke
+                - generic [ref=e1203]: SharonRPD
+                - generic [ref=e1205]: Tarps
+                - generic [ref=e1207]: Recommendationsfor Jeff
+            - generic [ref=e1291]:
+              - paragraph [ref=e1297]: Liked
+              - paragraph [ref=e1303]: Unliked
+          - radiogroup [ref=e1305]:
+            - generic [ref=e1307]:
+              - radio [checked]
+              - img [ref=e1310] [cursor=pointer]
+            - generic [ref=e1311]:
+              - radio
+              - img [ref=e1314] [cursor=pointer]
+          - generic [ref=e1324]:
+            - generic [ref=e1326] [cursor=pointer]:
+              - generic [ref=e1328]:
+                - img [ref=e1329]
+                - paragraph [ref=e1332]: K-Pop
+              - generic [ref=e1333]:
+                - generic [ref=e1334]:
+                  - paragraph [ref=e1335]: Tracks
+                  - paragraph [ref=e1336]: "1617"
+                - generic [ref=e1337]:
+                  - paragraph [ref=e1338]: Liked
+                  - paragraph [ref=e1339]: "1223"
+                - generic [ref=e1340]:
+                  - paragraph [ref=e1341]: Open
+                  - link [ref=e1343]:
+                    - /url: https://open.spotify.com/playlist/0Xp2gQ9p4VMgt5HauIfIq7
+                    - img [ref=e1344]
+            - generic [ref=e1346] [cursor=pointer]:
+              - generic [ref=e1348]:
+                - img [ref=e1349]
+                - paragraph [ref=e1352]: Pop
+              - generic [ref=e1353]:
+                - generic [ref=e1354]:
+                  - paragraph [ref=e1355]: Tracks
+                  - paragraph [ref=e1356]: "485"
+                - generic [ref=e1357]:
+                  - paragraph [ref=e1358]: Liked
+                  - paragraph [ref=e1359]: "359"
+                - generic [ref=e1360]:
+                  - paragraph [ref=e1361]: Open
+                  - link [ref=e1363]:
+                    - /url: https://open.spotify.com/playlist/1WZ2RqQv2SPX5uzmjWhgSh
+                    - img [ref=e1364]
+            - generic [ref=e1366] [cursor=pointer]:
+              - generic [ref=e1368]:
+                - img [ref=e1369]
+                - paragraph [ref=e1372]: K-Pop Favorites
+              - generic [ref=e1373]:
+                - generic [ref=e1374]:
+                  - paragraph [ref=e1375]: Tracks
+                  - paragraph [ref=e1376]: "354"
+                - generic [ref=e1377]:
+                  - paragraph [ref=e1378]: Liked
+                  - paragraph [ref=e1379]: "353"
+                - generic [ref=e1380]:
+                  - paragraph [ref=e1381]: Open
+                  - link [ref=e1383]:
+                    - /url: https://open.spotify.com/playlist/1ZbxKv1noxwZ4zFgRNEFIo
+                    - img [ref=e1384]
+            - generic [ref=e1386] [cursor=pointer]:
+              - generic [ref=e1388]:
+                - img [ref=e1389]
+                - paragraph [ref=e1392]: A-Pop Favorites
+              - generic [ref=e1393]:
+                - generic [ref=e1394]:
+                  - paragraph [ref=e1395]: Tracks
+                  - paragraph [ref=e1396]: "236"
+                - generic [ref=e1397]:
+                  - paragraph [ref=e1398]: Liked
+                  - paragraph [ref=e1399]: "236"
+                - generic [ref=e1400]:
+                  - paragraph [ref=e1401]: Open
+                  - link [ref=e1403]:
+                    - /url: https://open.spotify.com/playlist/7hmRwiUOGV2mmgqXmsjqL2
+                    - img [ref=e1404]
+            - generic [ref=e1406] [cursor=pointer]:
+              - generic [ref=e1408]:
+                - img [ref=e1409]
+                - paragraph [ref=e1412]: Workout
+              - generic [ref=e1413]:
+                - generic [ref=e1414]:
+                  - paragraph [ref=e1415]: Tracks
+                  - paragraph [ref=e1416]: "244"
+                - generic [ref=e1417]:
+                  - paragraph [ref=e1418]: Liked
+                  - paragraph [ref=e1419]: "231"
+                - generic [ref=e1420]:
+                  - paragraph [ref=e1421]: Open
+                  - link [ref=e1423]:
+                    - /url: https://open.spotify.com/playlist/3NYClOhoC6ZSipLJBTsZfO
+                    - img [ref=e1424]
+            - generic [ref=e1426] [cursor=pointer]:
+              - generic [ref=e1428]:
+                - img [ref=e1429]
+                - paragraph [ref=e1432]: Summer
+              - generic [ref=e1433]:
+                - generic [ref=e1434]:
+                  - paragraph [ref=e1435]: Tracks
+                  - paragraph [ref=e1436]: "241"
+                - generic [ref=e1437]:
+                  - paragraph [ref=e1438]: Liked
+                  - paragraph [ref=e1439]: "226"
+                - generic [ref=e1440]:
+                  - paragraph [ref=e1441]: Open
+                  - link [ref=e1443]:
+                    - /url: https://open.spotify.com/playlist/0Xy9zMj8Yow1mGIrqd8nON
+                    - img [ref=e1444]
+            - generic [ref=e1446] [cursor=pointer]:
+              - generic [ref=e1448]:
+                - img [ref=e1449]
+                - paragraph [ref=e1452]: Chill
+              - generic [ref=e1453]:
+                - generic [ref=e1454]:
+                  - paragraph [ref=e1455]: Tracks
+                  - paragraph [ref=e1456]: "260"
+                - generic [ref=e1457]:
+                  - paragraph [ref=e1458]: Liked
+                  - paragraph [ref=e1459]: "215"
+                - generic [ref=e1460]:
+                  - paragraph [ref=e1461]: Open
+                  - link [ref=e1463]:
+                    - /url: https://open.spotify.com/playlist/79HDmDfCjzdHS3oWXdgHGb
+                    - img [ref=e1464]
+            - generic [ref=e1466] [cursor=pointer]:
+              - generic [ref=e1468]:
+                - img [ref=e1469]
+                - paragraph [ref=e1472]: Singer-Songwriter
+              - generic [ref=e1473]:
+                - generic [ref=e1474]:
+                  - paragraph [ref=e1475]: Tracks
+                  - paragraph [ref=e1476]: "310"
+                - generic [ref=e1477]:
+                  - paragraph [ref=e1478]: Liked
+                  - paragraph [ref=e1479]: "210"
+                - generic [ref=e1480]:
+                  - paragraph [ref=e1481]: Open
+                  - link [ref=e1483]:
+                    - /url: https://open.spotify.com/playlist/3aNr3GFiAvm1utXDyFOpAR
+                    - img [ref=e1484]
+            - generic [ref=e1486] [cursor=pointer]:
+              - generic [ref=e1488]:
+                - img [ref=e1489]
+                - paragraph [ref=e1492]: Alt-Pop
+              - generic [ref=e1493]:
+                - generic [ref=e1494]:
+                  - paragraph [ref=e1495]: Tracks
+                  - paragraph [ref=e1496]: "232"
+                - generic [ref=e1497]:
+                  - paragraph [ref=e1498]: Liked
+                  - paragraph [ref=e1499]: "167"
+                - generic [ref=e1500]:
+                  - paragraph [ref=e1501]: Open
+                  - link [ref=e1503]:
+                    - /url: https://open.spotify.com/playlist/4DgMab6SK9pnl6P05fw2YI
+                    - img [ref=e1504]
+            - generic [ref=e1506] [cursor=pointer]:
+              - generic [ref=e1508]:
+                - img [ref=e1509]
+                - paragraph [ref=e1512]: International Pop
+              - generic [ref=e1513]:
+                - generic [ref=e1514]:
+                  - paragraph [ref=e1515]: Tracks
+                  - paragraph [ref=e1516]: "198"
+                - generic [ref=e1517]:
+                  - paragraph [ref=e1518]: Liked
+                  - paragraph [ref=e1519]: "130"
+                - generic [ref=e1520]:
+                  - paragraph [ref=e1521]: Open
+                  - link [ref=e1523]:
+                    - /url: https://open.spotify.com/playlist/36OHPiYrLGYMfVa0zcHgLf
+                    - img [ref=e1524]
+            - generic [ref=e1526] [cursor=pointer]:
+              - generic [ref=e1528]:
+                - img [ref=e1529]
+                - paragraph [ref=e1532]: K-Pop-Adjacent
+              - generic [ref=e1533]:
+                - generic [ref=e1534]:
+                  - paragraph [ref=e1535]: Tracks
+                  - paragraph [ref=e1536]: "163"
+                - generic [ref=e1537]:
+                  - paragraph [ref=e1538]: Liked
+                  - paragraph [ref=e1539]: "118"
+                - generic [ref=e1540]:
+                  - paragraph [ref=e1541]: Open
+                  - link [ref=e1543]:
+                    - /url: https://open.spotify.com/playlist/5dr8e1QSb4e5pnMwT79MGd
+                    - img [ref=e1544]
+            - generic [ref=e1546] [cursor=pointer]:
+              - generic [ref=e1548]:
+                - img [ref=e1549]
+                - paragraph [ref=e1552]: Halloween
+              - generic [ref=e1553]:
+                - generic [ref=e1554]:
+                  - paragraph [ref=e1555]: Tracks
+                  - paragraph [ref=e1556]: "128"
+                - generic [ref=e1557]:
+                  - paragraph [ref=e1558]: Liked
+                  - paragraph [ref=e1559]: "111"
+                - generic [ref=e1560]:
+                  - paragraph [ref=e1561]: Open
+                  - link [ref=e1563]:
+                    - /url: https://open.spotify.com/playlist/6Kh7qnaefCcgcBdJJryJKp
+                    - img [ref=e1564]
+            - generic [ref=e1566] [cursor=pointer]:
+              - generic [ref=e1568]:
+                - img [ref=e1569]
+                - paragraph [ref=e1572]: R&B
+              - generic [ref=e1573]:
+                - generic [ref=e1574]:
+                  - paragraph [ref=e1575]: Tracks
+                  - paragraph [ref=e1576]: "141"
+                - generic [ref=e1577]:
+                  - paragraph [ref=e1578]: Liked
+                  - paragraph [ref=e1579]: "109"
+                - generic [ref=e1580]:
+                  - paragraph [ref=e1581]: Open
+                  - link [ref=e1583]:
+                    - /url: https://open.spotify.com/playlist/1RsGeysyOdV3wZHqlto0Gb
+                    - img [ref=e1584]
+            - generic [ref=e1586] [cursor=pointer]:
+              - generic [ref=e1588]:
+                - img [ref=e1589]
+                - paragraph [ref=e1592]: Modern Rock
+              - generic [ref=e1593]:
+                - generic [ref=e1594]:
+                  - paragraph [ref=e1595]: Tracks
+                  - paragraph [ref=e1596]: "159"
+                - generic [ref=e1597]:
+                  - paragraph [ref=e1598]: Liked
+                  - paragraph [ref=e1599]: "101"
+                - generic [ref=e1600]:
+                  - paragraph [ref=e1601]: Open
+                  - link [ref=e1603]:
+                    - /url: https://open.spotify.com/playlist/1PjJceUCPGCW1uMWAs5dMe
+                    - img [ref=e1604]
+            - generic [ref=e1606] [cursor=pointer]:
+              - generic [ref=e1608]:
+                - img [ref=e1609]
+                - paragraph [ref=e1612]: Classic Rock
+              - generic [ref=e1613]:
+                - generic [ref=e1614]:
+                  - paragraph [ref=e1615]: Tracks
+                  - paragraph [ref=e1616]: "135"
+                - generic [ref=e1617]:
+                  - paragraph [ref=e1618]: Liked
+                  - paragraph [ref=e1619]: "80"
+                - generic [ref=e1620]:
+                  - paragraph [ref=e1621]: Open
+                  - link [ref=e1623]:
+                    - /url: https://open.spotify.com/playlist/5z6MnUYwnqrMcdd9b14Cc7
+                    - img [ref=e1624]
+            - generic [ref=e1626] [cursor=pointer]:
+              - generic [ref=e1628]:
+                - img [ref=e1629]
+                - paragraph [ref=e1632]: Relax
+              - generic [ref=e1633]:
+                - generic [ref=e1634]:
+                  - paragraph [ref=e1635]: Tracks
+                  - paragraph [ref=e1636]: "72"
+                - generic [ref=e1637]:
+                  - paragraph [ref=e1638]: Liked
+                  - paragraph [ref=e1639]: "67"
+                - generic [ref=e1640]:
+                  - paragraph [ref=e1641]: Open
+                  - link [ref=e1643]:
+                    - /url: https://open.spotify.com/playlist/4rnlD7JdUQNdPCBhL69dCg
+                    - img [ref=e1644]
+            - generic [ref=e1646] [cursor=pointer]:
+              - generic [ref=e1648]:
+                - img [ref=e1649]
+                - paragraph [ref=e1652]: Karaoke
+              - generic [ref=e1653]:
+                - generic [ref=e1654]:
+                  - paragraph [ref=e1655]: Tracks
+                  - paragraph [ref=e1656]: "66"
+                - generic [ref=e1657]:
+                  - paragraph [ref=e1658]: Liked
+                  - paragraph [ref=e1659]: "61"
+                - generic [ref=e1660]:
+                  - paragraph [ref=e1661]: Open
+                  - link [ref=e1663]:
+                    - /url: https://open.spotify.com/playlist/784bxrrG3W6L0naOkaCL5F
+                    - img [ref=e1664]
+            - generic [ref=e1666] [cursor=pointer]:
+              - generic [ref=e1668]:
+                - img [ref=e1669]
+                - paragraph [ref=e1672]: Sharon RPD
+              - generic [ref=e1673]:
+                - generic [ref=e1674]:
+                  - paragraph [ref=e1675]: Tracks
+                  - paragraph [ref=e1676]: "72"
+                - generic [ref=e1677]:
+                  - paragraph [ref=e1678]: Liked
+                  - paragraph [ref=e1679]: "55"
+                - generic [ref=e1680]:
+                  - paragraph [ref=e1681]: Open
+                  - link [ref=e1683]:
+                    - /url: https://open.spotify.com/playlist/2WsAAjnlcRAzyPrBDvMYyy
+                    - img [ref=e1684]
+            - generic [ref=e1686] [cursor=pointer]:
+              - generic [ref=e1688]:
+                - img [ref=e1689]
+                - paragraph [ref=e1692]: Tarps
+              - generic [ref=e1693]:
+                - generic [ref=e1694]:
+                  - paragraph [ref=e1695]: Tracks
+                  - paragraph [ref=e1696]: "69"
+                - generic [ref=e1697]:
+                  - paragraph [ref=e1698]: Liked
+                  - paragraph [ref=e1699]: "54"
+                - generic [ref=e1700]:
+                  - paragraph [ref=e1701]: Open
+                  - link [ref=e1703]:
+                    - /url: https://open.spotify.com/playlist/7i18RgdYPOv5E01eGmtRCo
+                    - img [ref=e1704]
+            - generic [ref=e1706] [cursor=pointer]:
+              - generic [ref=e1708]:
+                - img [ref=e1709]
+                - paragraph [ref=e1712]: Recommendations for Jeff
+              - generic [ref=e1713]:
+                - generic [ref=e1714]:
+                  - paragraph [ref=e1715]: Tracks
+                  - paragraph [ref=e1716]: "53"
+                - generic [ref=e1717]:
+                  - paragraph [ref=e1718]: Liked
+                  - paragraph [ref=e1719]: "53"
+                - generic [ref=e1720]:
+                  - paragraph [ref=e1721]: Open
+                  - link [ref=e1723]:
+                    - /url: https://open.spotify.com/playlist/5Liek0UOC5GmdOjxdWhcob
+                    - img [ref=e1724]
+            - generic [ref=e1726] [cursor=pointer]:
+              - generic [ref=e1728]:
+                - img [ref=e1729]
+                - paragraph [ref=e1732]: Recommendations for Chris
+              - generic [ref=e1733]:
+                - generic [ref=e1734]:
+                  - paragraph [ref=e1735]: Tracks
+                  - paragraph [ref=e1736]: "52"
+                - generic [ref=e1737]:
+                  - paragraph [ref=e1738]: Liked
+                  - paragraph [ref=e1739]: "52"
+                - generic [ref=e1740]:
+                  - paragraph [ref=e1741]: Open
+                  - link [ref=e1743]:
+                    - /url: https://open.spotify.com/playlist/6atwS5eWP6rLUWSuDkuMd8
+                    - img [ref=e1744]
+            - generic [ref=e1746] [cursor=pointer]:
+              - generic [ref=e1748]:
+                - img [ref=e1749]
+                - paragraph [ref=e1752]: 누구?
+              - generic [ref=e1753]:
+                - generic [ref=e1754]:
+                  - paragraph [ref=e1755]: Tracks
+                  - paragraph [ref=e1756]: "79"
+                - generic [ref=e1757]:
+                  - paragraph [ref=e1758]: Liked
+                  - paragraph [ref=e1759]: "48"
+                - generic [ref=e1760]:
+                  - paragraph [ref=e1761]: Open
+                  - link [ref=e1763]:
+                    - /url: https://open.spotify.com/playlist/4JrgU3rcLuATwzM1jVVgyC
+                    - img [ref=e1764]
+            - generic [ref=e1766] [cursor=pointer]:
+              - generic [ref=e1768]:
+                - img [ref=e1769]
+                - paragraph [ref=e1772]: A Cappella
+              - generic [ref=e1773]:
+                - generic [ref=e1774]:
+                  - paragraph [ref=e1775]: Tracks
+                  - paragraph [ref=e1776]: "325"
+                - generic [ref=e1777]:
+                  - paragraph [ref=e1778]: Liked
+                  - paragraph [ref=e1779]: "48"
+                - generic [ref=e1780]:
+                  - paragraph [ref=e1781]: Open
+                  - link [ref=e1783]:
+                    - /url: https://open.spotify.com/playlist/7LQjtpZ8EZ5vWXgPoovFeC
+                    - img [ref=e1784]
+            - generic [ref=e1786] [cursor=pointer]:
+              - generic [ref=e1788]:
+                - img [ref=e1789]
+                - paragraph [ref=e1792]: Classic Pop
+              - generic [ref=e1793]:
+                - generic [ref=e1794]:
+                  - paragraph [ref=e1795]: Tracks
+                  - paragraph [ref=e1796]: "84"
+                - generic [ref=e1797]:
+                  - paragraph [ref=e1798]: Liked
+                  - paragraph [ref=e1799]: "47"
+                - generic [ref=e1800]:
+                  - paragraph [ref=e1801]: Open
+                  - link [ref=e1803]:
+                    - /url: https://open.spotify.com/playlist/6oXUc88JlAQTNdKvn529pD
+                    - img [ref=e1804]
+          - button [ref=e1806] [cursor=pointer]:
+            - img [ref=e1809]
+        - heading "Record Labels" [level=2] [ref=e1811]
+        - heading "Genres" [level=2] [ref=e1829]
+        - heading "Producers" [level=2] [ref=e1847]
+        - heading "Release date" [level=2] [ref=e1865]
+        - heading "Recommendations" [level=2] [ref=e1883]
+      - contentinfo [ref=e1899]:
+        - link "jbrown1618/spotify-stats" [ref=e1900] [cursor=pointer]:
+          - /url: https://www.github.com/jbrown1618/spotify-stats
+    - generic [ref=e1901]:
+      - img [ref=e1903]
+      - button "Open Tanstack query devtools" [ref=e1951] [cursor=pointer]:
+        - img [ref=e1952]
+  - generic [ref=e2000]: K-Pop
