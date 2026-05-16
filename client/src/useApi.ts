@@ -28,7 +28,7 @@ import {
   getTracksStreamsByMonth,
   getTracks,
   Recommendations,
-  StreamsByMonth,
+  StreamsByMonthResponse,
   toFiltersQuery,
   TrackRank,
 } from "./api";
@@ -205,35 +205,35 @@ export function useAlbumsStreamingHistory() {
 export function useTracksStreamsByMonth(n: number = 5) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
-  const result = useQuery<StreamsByMonth>({
+  const result = useQuery<StreamsByMonthResponse>({
     ...defaultQueryOptions,
     queryKey: ["tracks-streams-by-month", query, n],
     queryFn: async () => getTracksStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }
 
 export function useArtistsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
-  const result = useQuery<StreamsByMonth>({
+  const result = useQuery<StreamsByMonthResponse>({
     ...defaultQueryOptions,
     queryKey: ["artists-streams-by-month", query, n],
     queryFn: async () => getArtistsStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }
 
 export function useAlbumsStreamsByMonth(n: number = 5) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
-  const result = useQuery<StreamsByMonth>({
+  const result = useQuery<StreamsByMonthResponse>({
     ...defaultQueryOptions,
     queryKey: ["albums-streams-by-month", query, n],
     queryFn: async () => getAlbumsStreamsByMonth({ ...filters, n }),
   });
-  const shouldRender = !result.data || countUniqueMonths(result.data) > 3;
+  const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
   return { ...result, shouldRender };
 }

@@ -1,16 +1,15 @@
 import { BarChart } from "@mantine/charts";
 
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { mostLikedArtists } from "../sorting";
 import { useArtists } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function ArtistsBarChart() {
-  const { items: artists } = useArtists();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
+  const { items: artists, total } = useArtists({ sort: "Most liked tracks", limit: maxCount });
 
-  if (artists && artists.length < 3) return null;
+  if (total < 3) return null;
 
   if (!artists) return <ChartSkeleton />;
 
@@ -21,8 +20,6 @@ export function ArtistsBarChart() {
       <BarChart
         h={height}
         data={artists
-          .sort(mostLikedArtists)
-          .slice(0, maxCount)
           .map((p) => ({
             Artist: p.artist_name,
             Liked: p.artist_liked_track_count,

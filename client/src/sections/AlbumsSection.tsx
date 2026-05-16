@@ -25,10 +25,8 @@ const albumSortOptions = [
 
 export function AlbumsSection() {
   const filters = useFilters();
-  const { items: albums } = useAlbums();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
-  const shouldRenderCounts = albums && albums.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -64,10 +62,7 @@ export function AlbumsSection() {
           >
             Streams
           </Tabs.Tab>
-          <Tabs.Tab
-            value="count"
-            style={{ display: shouldRenderCounts ? undefined : "none" }}
-          >
+          <Tabs.Tab value="count">
             Count
           </Tabs.Tab>
         </Tabs.List>
@@ -86,10 +81,7 @@ export function AlbumsSection() {
           <AlbumsStreamingHistoryStack />
         </Tabs.Panel>
 
-        <Tabs.Panel
-          value="count"
-          style={{ display: shouldRenderCounts ? undefined : "none" }}
-        >
+        <Tabs.Panel value="count">
           <AlbumsBarChart />
         </Tabs.Panel>
       </Tabs>

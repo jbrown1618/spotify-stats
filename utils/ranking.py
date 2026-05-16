@@ -126,7 +126,10 @@ def filtered_track_streams_by_month(filters: dict, n: int = 5):
                 "n": n,
             }
         )
-    return _streams_by_month_dict_from_df(df)
+    return _streams_by_month_dict_from_df(
+        df,
+        metadata_columns=["track_short_name", "track_name", "album_image_url"],
+    )
 
 
 def filtered_artist_ranks_over_time(filters: dict, n: int = 10):
@@ -153,7 +156,10 @@ def filtered_artist_streams_by_month(filters: dict, n: int = 5):
                 "n": n,
             }
         )
-    return _streams_by_month_dict_from_df(df)
+    return _streams_by_month_dict_from_df(
+        df,
+        metadata_columns=["artist_name", "artist_image_url"],
+    )
 
 
 def filtered_album_ranks_over_time(filters: dict, n: int = 10):
@@ -180,7 +186,10 @@ def filtered_album_streams_by_month(filters: dict, n: int = 5):
                 "n": n,
             }
         )
-    return _streams_by_month_dict_from_df(df)
+    return _streams_by_month_dict_from_df(
+        df,
+        metadata_columns=["album_short_name", "album_name", "album_image_url"],
+    )
 
 
 def _streams_by_month_dict(results, uri_index):
@@ -200,18 +209,25 @@ def _streams_by_month_dict(results, uri_index):
     return out
 
 
-def _streams_by_month_dict_from_df(df):
-    """Convert a DataFrame with columns (uri, year, month, stream_count) to nested dict."""
-    out = {}
+def _streams_by_month_dict_from_df(df, metadata_columns=None):
+    """Convert a DataFrame to nested streams dict plus optional metadata."""
+    streams = {}
+    metadata = {}
     for _, row in df.iterrows():
         uri = row.iloc[0]
         year = int(row.iloc[1])
         month = int(row.iloc[2])
         stream_count = int(row.iloc[3])
-        if uri not in out:
-            out[uri] = {}
-        if year not in out[uri]:
-            out[uri][year] = {}
-        if month not in out[uri][year]:
-            out[uri][year][month] = stream_count
-    return out
+        if uri not in streams:
+            streams[uri] = {}
+        if year not in streams[uri]:
+            streams[uri][year] = {}
+        if month not in streams[uri][year]:
+            streams[uri][year][month] = stream_count
+
+        if metadata_columns and uri not in metadata:
+            metadata[uri] = {col: row[col] for col in metadata_columns if col in row.index}
+
+    if metadata_columns:
+        return {"streams": streams, "metadata": metadata}
+    return streams

@@ -1,5 +1,5 @@
 import { ChartSkeleton } from "../design/ChartSkeleton";
-import { useArtists, useArtistsStreamingHistory } from "../useApi";
+import { useArtistsStreamingHistory } from "../useApi";
 import { StreamsLineChart } from "./StreamsLineChart";
 
 export function ArtistStreamsLineChart({
@@ -9,12 +9,11 @@ export function ArtistStreamsLineChart({
   height?: number;
   onlyArtist?: string;
 }) {
-  const { items: artists } = useArtists();
   const { data: history, shouldRender } = useArtistsStreamingHistory();
 
   if (!shouldRender) return null;
 
-  if (!history || !artists) return <ChartSkeleton />;
+  if (!history) return <ChartSkeleton />;
 
   const data = onlyArtist
     ? history.filter((h) => h.artist_uri === onlyArtist)
@@ -30,9 +29,9 @@ export function ArtistStreamsLineChart({
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.artist_uri}
         getStreams={(r) => r.artist_stream_count}
-        getLabel={(k) => artists.find((a) => a.artist_uri === k)?.artist_name ?? k}
-        getCurrentRank={(k) => (artists.find((a) => a.artist_uri === k)?.artist_stream_count ?? 0) * -1}
-        getImageURL={(k) => artists.find((a) => a.artist_uri === k)?.artist_image_url ?? ""}
+        getLabel={(k) => history.find((r) => r.artist_uri === k)?.artist_name ?? k}
+        getCurrentRank={(k) => (history.find((r) => r.artist_uri === k)?.artist_stream_count ?? 0) * -1}
+        getImageURL={(k) => history.find((r) => r.artist_uri === k)?.artist_image_url ?? ""}
       />
     </>
   );
