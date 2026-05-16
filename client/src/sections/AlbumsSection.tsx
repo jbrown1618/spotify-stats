@@ -93,7 +93,7 @@ export function AlbumsSection() {
 
 function AlbumsDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useAlbums({ sort, limit: PAGE_SIZE });
 
   return (
@@ -108,7 +108,7 @@ function AlbumsDisplayGrid() {
       renderTile={(album) => <AlbumTile album={album} />}
       renderLargeTile={(album) => <AlbumTile large album={album} />}
       renderRow={(album) => <AlbumRow album={album} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

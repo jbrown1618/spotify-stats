@@ -34,7 +34,6 @@ interface DisplayGridProps<T> {
   renderLargeTile?: (item: T) => JSX.Element;
   renderRow?: (item: T) => JSX.Element;
   renderPill?: (item: T) => JSX.Element;
-  hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
 }
@@ -57,7 +56,6 @@ export function DisplayGrid<T>({
   renderRow,
   renderPill,
   getKey,
-  hasNextPage,
   isFetchingNextPage,
   onLoadMore,
 }: DisplayGridProps<T>) {
@@ -80,7 +78,11 @@ export function DisplayGrid<T>({
 
   const handleMore = () => {
     if (isServerPaginated) {
-      onLoadMore?.();
+      setCount((c) => c + PAGE_SIZE);
+      const allLoaded = items?.length ?? 0;
+      if (count + PAGE_SIZE > allLoaded) {
+        onLoadMore?.();
+      }
     } else {
       setCount((count) => count * 2);
     }
@@ -102,13 +104,11 @@ export function DisplayGrid<T>({
       value: "large-tile",
     });
 
-  const displayItems = isServerPaginated ? items : items?.slice(0, count);
+  const displayItems = items?.slice(0, count);
 
   const totalItems = total ?? items?.length ?? 0;
-  const showMore = isServerPaginated
-    ? (hasNextPage ?? false)
-    : count < totalItems;
-  const showLess = isServerPaginated ? false : count > PAGE_SIZE;
+  const showMore = count < totalItems;
+  const showLess = count > PAGE_SIZE;
 
   if (!loading && displayItems?.length === 0)
     return (

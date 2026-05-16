@@ -89,7 +89,7 @@ export function ArtistsSection() {
 
 function ArtistsDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useArtists({ sort, limit: PAGE_SIZE });
 
   return (
@@ -104,7 +104,7 @@ function ArtistsDisplayGrid() {
       renderTile={(artist) => <ArtistTile artist={artist} />}
       renderLargeTile={(artist) => <ArtistTile large artist={artist} />}
       renderRow={(artist) => <ArtistRow artist={artist} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />
