@@ -344,17 +344,15 @@ export async function getRecommendations(
 async function sendRequest<T>(
   url: string,
   dataName: string,
-  body?: Record<string, unknown> | (ActiveFilters & Partial<PaginationParams>)
+  params?: Record<string, unknown> | (ActiveFilters & Partial<PaginationParams>)
 ): Promise<T> {
   try {
-    const headers = body
-      ? new Headers({ "Content-Type": "application/json" })
-      : undefined;
-    const res = await fetch(url, {
-      method: body ? "POST" : "GET",
-      body: body ? JSON.stringify(body) : undefined,
-      headers,
-    });
+    let fullUrl = url;
+    if (params) {
+      const query = toQueryString(params);
+      if (query) fullUrl += `?${query}`;
+    }
+    const res = await fetch(fullUrl);
     if (!res.ok)
       throw new Error(
         `Error fetching ${dataName}: ${res.status}: ${res.statusText}`
@@ -366,6 +364,23 @@ async function sendRequest<T>(
       e instanceof Error ? e.message : `Error fetching ${dataName}`;
     throw new Error(message);
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toQueryString(params: Record<string, any>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      if (value.length === 0) continue;
+      query.append(key, JSON.stringify(value));
+    } else if (typeof value === "boolean") {
+      if (value) query.append(key, "true");
+    } else {
+      query.append(key, String(value));
+    }
+  }
+  return query.toString();
 }
 
 const arrayKeys = [

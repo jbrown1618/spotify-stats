@@ -1,3 +1,4 @@
+import json
 import typing
 from contextlib import contextmanager
 
@@ -6,6 +7,34 @@ import sqlalchemy
 from data.query import query_text
 from data.raw import get_engine
 from routes.utils import to_date_range
+
+
+def parse_request_args(args) -> dict:
+    """Parse Flask request.args (query params) into the dict format payload functions expect.
+    
+    Array values are JSON-encoded strings in the query params.
+    """
+    result = {}
+    array_keys = ['tracks', 'playlists', 'artists', 'albums', 'labels', 'genres', 'producers', 'years']
+    for key in array_keys:
+        val = args.get(key, None)
+        if val is not None:
+            result[key] = json.loads(val)
+    
+    if args.get('liked'):
+        result['liked'] = True
+    if args.get('wrapped'):
+        result['wrapped'] = args.get('wrapped')
+    if args.get('n'):
+        result['n'] = int(args.get('n'))
+    if args.get('sort'):
+        result['sort'] = args.get('sort')
+    if args.get('limit'):
+        result['limit'] = int(args.get('limit'))
+    if args.get('offset'):
+        result['offset'] = int(args.get('offset'))
+    
+    return result
 
 
 def parse_filters(request_json: dict) -> dict:
