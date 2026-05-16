@@ -5,7 +5,7 @@ import { useGenres } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
 
 export function GenresBarChart() {
-  const { data: genres } = useGenres();
+  const { items: genres } = useGenres();
   const isMobile = useIsMobile();
   const maxCount = isMobile ? 15 : 20;
 

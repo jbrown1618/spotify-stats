@@ -3,10 +3,10 @@ import { usePlaylists } from "../useApi";
 import styles from "./Details.module.css";
 
 export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
-  const { data: playlists } = usePlaylists({ playlists: [playlistURI] });
+  const { items: playlists } = usePlaylists({ filters: { playlists: [playlistURI] } });
   if (!playlists) return null;
 
-  const playlist = playlists[playlistURI];
+  const playlist = playlists.find((p) => p.playlist_uri === playlistURI);
   if (!playlist) return null;
 
   return (

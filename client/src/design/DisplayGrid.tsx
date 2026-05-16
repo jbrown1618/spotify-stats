@@ -16,7 +16,6 @@ import {
 import clsx from "clsx";
 import { useRef, useState } from "react";
 
-import { SortOptions } from "../sorting";
 import styles from "./DisplayGrid.module.css";
 import { LargeTileSkeleton } from "./LargeTileDesign";
 import { PillSkeleton } from "./PillDesign";
@@ -26,12 +25,18 @@ import { TileSkeleton } from "./TileDesign";
 interface DisplayGridProps<T> {
   loading: boolean;
   items: T[] | undefined;
-  sortOptions?: SortOptions<T>;
+  total?: number;
+  sortOptions?: string[];
+  sort?: string;
+  onSortChange?: (sort: string) => void;
   getKey: (item: T) => string;
   renderTile?: (item: T) => JSX.Element;
   renderLargeTile?: (item: T) => JSX.Element;
   renderRow?: (item: T) => JSX.Element;
   renderPill?: (item: T) => JSX.Element;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
@@ -42,12 +47,18 @@ const loadingItems = Array.from(Array(defaultCount).keys());
 export function DisplayGrid<T>({
   loading,
   items,
+  total,
   sortOptions,
+  sort,
+  onSortChange,
   renderTile,
   renderLargeTile,
   renderRow,
   renderPill,
   getKey,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
 }: DisplayGridProps<T>) {
   const ref = useRef<HTMLDivElement>(null);
   const [variant, setVariant] = useState<DisplayVariant>(
@@ -62,14 +73,18 @@ export function DisplayGrid<T>({
       : "tile"
   );
 
-  const [count, setCount] = useState(defaultCount);
-  const [sort, setSort] = useState<string | null>(
-    sortOptions && Object.keys(sortOptions).length > 0
-      ? Object.keys(sortOptions)[0]
-      : null
-  );
+  const isServerPaginated = !!onLoadMore;
 
-  const onMore = () => setCount((count) => count * 2);
+  const [count, setCount] = useState(defaultCount);
+
+  const handleMore = () => {
+    if (isServerPaginated) {
+      onLoadMore?.();
+    } else {
+      setCount((count) => count * 2);
+    }
+  };
+
   const onLess = () => {
     setCount(defaultCount);
     ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -86,8 +101,13 @@ export function DisplayGrid<T>({
       value: "large-tile",
     });
 
-  const comparator = sortOptions && sort ? sortOptions[sort] : null;
-  const displayItems = comparator && items ? items.sort(comparator) : items;
+  const displayItems = isServerPaginated ? items : items?.slice(0, count);
+
+  const totalItems = total ?? items?.length ?? 0;
+  const showMore = isServerPaginated
+    ? (hasNextPage ?? false)
+    : count < totalItems;
+  const showLess = isServerPaginated ? false : count > defaultCount;
 
   if (!loading && displayItems?.length === 0)
     return (
@@ -109,15 +129,12 @@ export function DisplayGrid<T>({
           <div />
         )}
 
-        {sortOptions && Object.keys(sortOptions).length > 0 && (
+        {sortOptions && sortOptions.length > 0 && (
           <div className={styles.sortSelect}>
             <Select
-              data={Object.keys(sortOptions)}
-              value={sort}
-              onChange={(s) => {
-                setSort(s);
-                setCount(defaultCount);
-              }}
+              data={sortOptions}
+              value={sort ?? null}
+              onChange={(s) => { if (s) onSortChange?.(s); }}
               checkIconPosition="right"
               radius="xl"
             />
@@ -132,7 +149,7 @@ export function DisplayGrid<T>({
         )}
       >
         {displayItems
-          ? displayItems.slice(0, count).map((item) => (
+          ? displayItems.map((item) => (
               <div key={getKey(item)}>
                 {variant === "row" && renderRow?.(item)}
                 {variant === "large-tile" && renderLargeTile?.(item)}
@@ -148,15 +165,24 @@ export function DisplayGrid<T>({
                 {variant === "pill" && <PillSkeleton />}
               </div>
             ))}
+        {isFetchingNextPage &&
+          loadingItems.map((i) => (
+            <div key={`loading-${i}`}>
+              {variant === "row" && <RowSkeleton />}
+              {variant === "large-tile" && <LargeTileSkeleton />}
+              {variant === "tile" && <TileSkeleton />}
+              {variant === "pill" && <PillSkeleton />}
+            </div>
+          ))}
       </div>
       <div className={styles.buttons}>
-        {count > defaultCount ? (
+        {showLess ? (
           <Button variant="light" onClick={onLess} className={styles.button}>
             <IconMinus />
           </Button>
         ) : null}
-        {count < (items?.length ?? 0) ? (
-          <Button variant="light" onClick={onMore} className={styles.button}>
+        {showMore ? (
+          <Button variant="light" onClick={handleMore} className={styles.button}>
             <IconPlus />
           </Button>
         ) : null}

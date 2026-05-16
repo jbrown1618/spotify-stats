@@ -9,3 +9,4 @@ output/
 *austin*
 node_modules/
 /app/static/
+.playwright-mcp/

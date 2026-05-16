@@ -2,7 +2,7 @@ import { Pill } from "@mantine/core";
 
 import { GenresBarChart } from "../charts/GenresBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useGenres } from "../useApi";
+import { useGenres, PAGE_SIZE } from "../useApi";
 import { useFilters, useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -19,19 +19,19 @@ export function GenresSection() {
 }
 
 function GenresDisplayGrid() {
-  const { data: genres, isLoading } = useGenres();
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useGenres({ sort: "Most liked tracks", limit: PAGE_SIZE });
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={
-        genres
-          ? genres.sort(
-              (a, b) => (b.liked_track_count ?? 0) - (a.liked_track_count ?? 0)
-            )
-          : undefined
-      }
+      items={items}
+      total={total}
       getKey={(gtc) => gtc.genre}
       renderPill={(gtc) => <GenrePill genre={gtc.genre} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

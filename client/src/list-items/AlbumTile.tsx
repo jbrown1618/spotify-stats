@@ -14,7 +14,7 @@ interface AlbumTileProps {
 
 export function AlbumTile({ album, large }: AlbumTileProps) {
   const setFilters = useSetFilters();
-  const { data: artists } = useArtists({ albums: [album.album_uri] });
+  const { items: artists } = useArtists({ filters: { albums: [album.album_uri] } });
 
   const onClick = useCallback(
     () =>
@@ -37,7 +37,7 @@ export function AlbumTile({ album, large }: AlbumTileProps) {
   }
 
   const artist = artists
-    ? Object.values(artists).sort(mostStreamedArtists)[0]
+    ? artists.sort(mostStreamedArtists)[0]
     : undefined;
 
   return (

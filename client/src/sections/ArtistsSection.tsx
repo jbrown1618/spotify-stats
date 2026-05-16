@@ -7,20 +7,22 @@ import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryS
 import { DisplayGrid } from "../design/DisplayGrid";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { ArtistTile } from "../list-items/ArtistTile";
-import { artistSortOptions } from "../sorting";
 import {
   useArtists,
   useArtistsStreamingHistory,
   useArtistsStreamsByMonth,
+  PAGE_SIZE,
 } from "../useApi";
 import { useFilters } from "../useFilters";
 
+const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
+
 export function ArtistsSection() {
   const filters = useFilters();
-  const { data: artists } = useArtists();
+  const { items: artists } = useArtists();
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
-  const shouldRenderCounts = artists && Object.keys(artists).length >= 3;
+  const shouldRenderCounts = artists && artists.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -94,16 +96,25 @@ export function ArtistsSection() {
 }
 
 function ArtistsDisplayGrid() {
-  const { data: artists, isLoading } = useArtists();
+  const [sort, setSort] = useState("Most streams");
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useArtists({ sort, limit: PAGE_SIZE });
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={artists ? Object.values(artists) : undefined}
+      items={items}
+      total={total}
       sortOptions={artistSortOptions}
+      sort={sort}
+      onSortChange={setSort}
       getKey={(artist) => artist.artist_uri}
       renderTile={(artist) => <ArtistTile artist={artist} />}
       renderLargeTile={(artist) => <ArtistTile large artist={artist} />}
       renderRow={(artist) => <ArtistRow artist={artist} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

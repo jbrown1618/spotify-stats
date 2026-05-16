@@ -4,6 +4,7 @@ import typing
 import pandas as pd
 import sqlalchemy
 from routes.utils import to_date_range, to_json
+from routes.pagination import paginate_df, TRACK_SORT_COLUMNS
 from data.provider import DataProvider
 from data.query import query_text
 from data.raw import get_engine
@@ -29,7 +30,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
 
     tracks = tracks[['track_uri', 'track_name', 'track_short_name', 'album_release_date', 'album_image_url', 'track_stream_count', 'track_last_played_at']]
 
-    return to_json(tracks, 'track_uri')
+    return paginate_df(tracks, filters, TRACK_SORT_COLUMNS, "Most streams")
 
 
 def track_payload(track_uri, min_date, max_date):

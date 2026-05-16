@@ -7,20 +7,28 @@ import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistorySta
 import { DisplayGrid } from "../design/DisplayGrid";
 import { AlbumRow } from "../list-items/AlbumRow";
 import { AlbumTile } from "../list-items/AlbumTile";
-import { albumSortOptions } from "../sorting";
 import {
   useAlbums,
   useAlbumsStreamingHistory,
   useAlbumsStreamsByMonth,
+  PAGE_SIZE,
 } from "../useApi";
 import { useFilters } from "../useFilters";
 
+const albumSortOptions = [
+  "Most streams",
+  "Least streams",
+  "Newest",
+  "Oldest",
+  "Alphabetical",
+];
+
 export function AlbumsSection() {
   const filters = useFilters();
-  const { data: albums } = useAlbums();
+  const { items: albums } = useAlbums();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
-  const shouldRenderCounts = albums && Object.keys(albums).length >= 3;
+  const shouldRenderCounts = albums && albums.length >= 3;
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -92,16 +100,25 @@ export function AlbumsSection() {
 }
 
 function AlbumsDisplayGrid() {
-  const { data: albums, isLoading } = useAlbums();
+  const [sort, setSort] = useState("Most streams");
+  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useAlbums({ sort, limit: PAGE_SIZE });
+
   return (
     <DisplayGrid
       loading={isLoading}
-      items={albums ? Object.values(albums) : undefined}
+      items={items}
+      total={total}
       sortOptions={albumSortOptions}
+      sort={sort}
+      onSortChange={setSort}
       getKey={(album) => album.album_uri}
       renderTile={(album) => <AlbumTile album={album} />}
       renderLargeTile={(album) => <AlbumTile large album={album} />}
       renderRow={(album) => <AlbumRow album={album} />}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

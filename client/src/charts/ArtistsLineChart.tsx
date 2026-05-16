@@ -9,7 +9,7 @@ export function ArtistStreamsLineChart({
   height?: number;
   onlyArtist?: string;
 }) {
-  const { data: artists } = useArtists();
+  const { items: artists } = useArtists();
   const { data: history, shouldRender } = useArtistsStreamingHistory();
 
   if (!shouldRender) return null;
@@ -30,9 +30,9 @@ export function ArtistStreamsLineChart({
         getDate={(r) => r.as_of_date}
         getItem={(r) => r.artist_uri}
         getStreams={(r) => r.artist_stream_count}
-        getLabel={(k) => artists[k]?.artist_name}
-        getCurrentRank={(k) => artists[k]?.artist_stream_count * -1}
-        getImageURL={(k) => artists[k]?.artist_image_url}
+        getLabel={(k) => artists.find((a) => a.artist_uri === k)?.artist_name ?? k}
+        getCurrentRank={(k) => (artists.find((a) => a.artist_uri === k)?.artist_stream_count ?? 0) * -1}
+        getImageURL={(k) => artists.find((a) => a.artist_uri === k)?.artist_image_url ?? ""}
       />
     </>
   );

@@ -7,7 +7,7 @@ import { useIsMobile } from "../useIsMobile";
 export function ArtistRow({ artist }: { artist: Artist }) {
   const isMobile = useIsMobile();
   const setFilters = useSetFilters();
-  const { data: artistAlbums } = useAlbums({ artists: [artist.artist_uri] });
+  const { items: artistAlbums } = useAlbums({ filters: { artists: [artist.artist_uri] } });
 
   const onClick = () =>
     setFilters({
@@ -15,7 +15,7 @@ export function ArtistRow({ artist }: { artist: Artist }) {
     });
 
   const highestRankedAlbum = artistAlbums
-    ? Object.values(artistAlbums).sort(
+    ? artistAlbums.sort(
         (a, b) => b.album_stream_count - a.album_stream_count
       )[0]
     : undefined;

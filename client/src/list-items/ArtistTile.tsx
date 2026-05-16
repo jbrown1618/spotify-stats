@@ -13,7 +13,7 @@ interface ArtistTileProps {
 
 export function ArtistTile({ artist, large }: ArtistTileProps) {
   const setFilters = useSetFilters();
-  const { data: artistAlbums } = useAlbums({ artists: [artist.artist_uri] });
+  const { items: artistAlbums } = useAlbums({ filters: { artists: [artist.artist_uri] } });
 
   const onClick = () =>
     setFilters({
@@ -32,7 +32,7 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
     );
 
   const highestRankedAlbum = artistAlbums
-    ? Object.values(artistAlbums).sort(
+    ? artistAlbums.sort(
         (a, b) => b.album_stream_count - a.album_stream_count
       )[0]
     : undefined;
@@ -54,7 +54,7 @@ export function ArtistTile({ artist, large }: ArtistTileProps) {
         {
           label: "Albums",
           value: artistAlbums ? (
-            Object.keys(artistAlbums).length
+            artistAlbums.length
           ) : (
             <Skeleton height={24} width={24} />
           ),

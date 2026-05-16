@@ -9,7 +9,7 @@ import { StreamingHistoryStack } from "./StreamingHistoryStack";
 
 export function AlbumsStreamingHistoryStack() {
   const [n, setN] = useState(5);
-  const { data: albums } = useAlbums();
+  const { items: albums } = useAlbums();
   const { data: history, shouldRender } = useAlbumsStreamsByMonth(n);
 
   if (!albums || !history) return <ChartSkeleton />;
@@ -21,10 +21,10 @@ export function AlbumsStreamingHistoryStack() {
       <h3>Album streams by month</h3>
       <StreamingHistoryStack
         data={history}
-        getItem={(key) => albums[key]}
+        getItem={(key) => albums.find((a) => a.album_uri === key)!}
         sortItems={mostStreamedAlbums}
         onMore={
-          n < Object.keys(albums).length
+          n < albums.length
             ? () => setN((prev) => prev + 5)
             : undefined
         }

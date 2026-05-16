@@ -36,11 +36,11 @@ function formatMBArtistName(
 }
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
-  const { data: artists } = useArtists({ artists: [artistURI] });
-  const artist = artists?.[artistURI];
+  const { items: artists } = useArtists({ filters: { artists: [artistURI] } });
+  const artist = artists?.find((a) => a.artist_uri === artistURI);
 
-  const { data: artistAlbums } = useAlbums({
-    artists: artist ? [artist.artist_uri] : ["NO-ARTIST"],
+  const { items: artistAlbums } = useAlbums({
+    filters: { artists: artist ? [artist.artist_uri] : ["NO-ARTIST"] },
   });
 
   const { data: artistCredits } = useArtistCredits(artistURI);
@@ -63,7 +63,7 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
             {
               label: "Albums",
               value: artistAlbums ? (
-                Object.keys(artistAlbums).length
+                artistAlbums.length
               ) : (
                 <Skeleton height={24} width={24} />
               ),
