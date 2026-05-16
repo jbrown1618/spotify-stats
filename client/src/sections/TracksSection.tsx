@@ -11,7 +11,6 @@ import {
   useTracksStreamsByMonth,
   PAGE_SIZE,
 } from "../useApi";
-import { useFilters } from "../useFilters";
 
 const trackSortOptions = [
   "Most streams",
@@ -24,14 +23,12 @@ const trackSortOptions = [
 ];
 
 export function TracksSection() {
-  const filters = useFilters();
   const { shouldRender: shouldRenderMonths } = useTracksStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useTracksStreamingHistory();
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
     setActiveTab(shouldRenderMonths ? "months" : "streams");
   }, [shouldRenderMonths, shouldRenderStreams]);
-  if (filters.tracks?.length === 1) return null;
 
   return (
     <div>

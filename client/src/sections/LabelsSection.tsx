@@ -3,12 +3,10 @@ import { Pill } from "@mantine/core";
 import { LabelsBarChart } from "../charts/LabelsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useLabels, PAGE_SIZE } from "../useApi";
-import { useFilters, useSetFilters } from "../useFilters";
+import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
 export function LabelsSection() {
-  const filters = useFilters();
-  if (filters.labels?.length === 1) return null;
   return (
     <div>
       <h2>Record Labels</h2>

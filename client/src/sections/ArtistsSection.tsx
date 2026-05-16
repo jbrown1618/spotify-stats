@@ -13,12 +13,10 @@ import {
   useArtistsStreamsByMonth,
   PAGE_SIZE,
 } from "../useApi";
-import { useFilters } from "../useFilters";
 
 const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 
 export function ArtistsSection() {
-  const filters = useFilters();
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
 
@@ -28,8 +26,6 @@ export function ArtistsSection() {
       shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
     );
   }, [shouldRenderMonths, shouldRenderStreams]);
-
-  if (filters.artists?.length === 1) return null;
 
   return (
     <div>

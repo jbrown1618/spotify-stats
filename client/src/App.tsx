@@ -1,8 +1,7 @@
 import "./global.css";
 
-import { Anchor, Container } from "@mantine/core";
+import { Container } from "@mantine/core";
 
-import styles from "./App.module.css";
 import { Backdrop } from "./Backdrop";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
@@ -20,10 +19,22 @@ import { ProducersSection } from "./sections/ProducersSection";
 import { RecommendationsSection } from "./sections/RecommendationsSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
+import { SectionTabs, useSectionDefs } from "./SectionTabs";
 import { useFilters } from "./useFilters";
 
 export function App() {
   const filters = useFilters();
+  const sections = useSectionDefs({
+    tracks: <TracksSection />,
+    artists: <ArtistsSection />,
+    albums: <AlbumsSection />,
+    playlists: <PlaylistsSection />,
+    labels: <LabelsSection />,
+    genres: <GenresSection />,
+    producers: <ProducersSection />,
+    years: <ReleaseYearsSection />,
+    recommendations: <RecommendationsSection />,
+  });
 
   return (
     <>
@@ -54,34 +65,8 @@ export function App() {
           <h2>Tracks released in {filters.years[0]}</h2>
         )}
 
-        <div>
-          <TracksSection />
-          <ArtistsSection />
-          <AlbumsSection />
-          <PlaylistsSection />
-          <LabelsSection />
-          <GenresSection />
-          <ProducersSection />
-          <ReleaseYearsSection />
-          <RecommendationsSection />
-        </div>
-
-        <AppFooter />
+        <SectionTabs sections={sections} />
       </Container>
     </>
-  );
-}
-
-function AppFooter() {
-  return (
-    <footer className={styles.appFooter}>
-      <Anchor
-        href="https://www.github.com/jbrown1618/spotify-stats"
-        target="_blank"
-        underline="hover"
-      >
-        jbrown1618/spotify-stats
-      </Anchor>
-    </footer>
   );
 }

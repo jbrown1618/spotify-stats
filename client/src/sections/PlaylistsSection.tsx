@@ -3,11 +3,8 @@ import { DisplayGrid } from "../design/DisplayGrid";
 import { PlaylistRow } from "../list-items/PlaylistRow";
 import { PlaylistTile } from "../list-items/PlaylistTile";
 import { usePlaylists, PAGE_SIZE } from "../useApi";
-import { useFilters } from "../useFilters";
 
 export function PlaylistsSection() {
-  const filters = useFilters();
-  if (filters.playlists?.length === 1) return null;
   return (
     <div>
       <h2>Playlists</h2>
