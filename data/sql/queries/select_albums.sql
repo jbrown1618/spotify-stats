@@ -11,6 +11,18 @@ WHERE
     (:wrapped_end_date IS NULL OR :wrapped_end_date >= s.played_at)
 GROUP BY t.album_uri;
 
+DROP TABLE IF EXISTS tmp_album_track_counts;
+
+CREATE TEMPORARY TABLE tmp_album_track_counts AS
+SELECT
+    t.album_uri,
+    COUNT(DISTINCT t.uri) AS track_count,
+    COUNT(DISTINCT CASE WHEN lt.track_uri IS NOT NULL THEN t.uri END) AS liked_track_count
+FROM track t
+    INNER JOIN matching_track_uris m ON m.track_uri = t.uri
+    LEFT JOIN liked_track lt ON lt.track_uri = t.uri
+GROUP BY t.album_uri;
+
 SELECT 
     al.uri AS album_uri,
     al.name AS album_name,
@@ -21,25 +33,8 @@ SELECT
     al.release_date AS album_release_date,
     al.image_url AS album_image_url,
     sc.stream_count AS album_stream_count,
-    (
-        SELECT COUNT(uri) 
-        FROM (
-            SELECT DISTINCT it.uri
-            FROM track it 
-            INNER JOIN liked_track ilt ON ilt.track_uri = it.uri
-            WHERE it.album_uri = al.uri
-            AND it.uri IN (SELECT track_uri FROM matching_track_uris)
-        )
-    ) AS album_liked_track_count,
-    (
-        SELECT COUNT(uri) 
-        FROM (
-            SELECT DISTINCT it.uri
-            FROM track it 
-            WHERE it.album_uri = al.uri
-            AND it.uri IN (SELECT track_uri FROM matching_track_uris)
-        )
-    ) AS album_track_count,
+    COALESCE(tc.liked_track_count, 0) AS album_liked_track_count,
+    COALESCE(tc.track_count, 0) AS album_track_count,
     (
         CASE
         WHEN LENGTH(al.release_date) = 10
@@ -54,6 +49,7 @@ SELECT
 FROM album al
     INNER JOIN track t ON t.album_uri = al.uri
     LEFT JOIN tmp_album_stream_counts sc ON sc.album_uri = al.uri
+    LEFT JOIN tmp_album_track_counts tc ON tc.album_uri = al.uri
 WHERE t.uri IN (SELECT track_uri FROM matching_track_uris)
 GROUP BY 
     al.uri,
@@ -64,6 +60,8 @@ GROUP BY
     al.popularity,
     al.release_date,
     al.image_url,
-    sc.stream_count
+    sc.stream_count,
+    tc.liked_track_count,
+    tc.track_count
 
 ORDER BY sc.stream_count DESC NULLS LAST;

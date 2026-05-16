@@ -76,7 +76,7 @@ export function DisplayGrid<T>({
 
   const isServerPaginated = !!onLoadMore;
 
-  const [count, setCount] = useState(defaultCount);
+  const [count, setCount] = useState(PAGE_SIZE);
 
   const handleMore = () => {
     if (isServerPaginated) {
@@ -87,7 +87,7 @@ export function DisplayGrid<T>({
   };
 
   const onLess = () => {
-    setCount(defaultCount);
+    setCount(PAGE_SIZE);
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -108,7 +108,7 @@ export function DisplayGrid<T>({
   const showMore = isServerPaginated
     ? (hasNextPage ?? false)
     : count < totalItems;
-  const showLess = isServerPaginated ? false : count > defaultCount;
+  const showLess = isServerPaginated ? false : count > PAGE_SIZE;
 
   if (!loading && displayItems?.length === 0)
     return (

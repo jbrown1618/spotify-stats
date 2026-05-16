@@ -5,27 +5,21 @@ import sqlalchemy
 from routes.utils import to_date_range, to_json
 from routes.pagination import paginate_df, TRACK_SORT_COLUMNS
 from data.provider import DataProvider
+from data.filters import filtered_connection
 from data.query import query_text
 from data.raw import get_engine
 
 
 def tracks_search_payload(filters: typing.Mapping[str, str]):
-    dp = DataProvider()
-
-    min_stream_date, max_stream_date = to_date_range(filters.get("wrapped"))
-    tracks = dp.tracks(
-        uris=filters.get('tracks', None),
-        playlist_uris=filters.get('playlists', None), 
-        artist_uris=filters.get('artists', None), 
-        album_uris=filters.get('albums', None),
-        labels=filters.get('labels', None),
-        genres=filters.get('genres', None),
-        producers=filters.get('producers', None),
-        years=filters.get('years', None),
-        liked=filters.get('liked', None),
-        start_date=min_stream_date,
-        end_date=max_stream_date
-    )
+    with filtered_connection(filters) as (conn, params):
+        tracks = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_filtered_tracks')),
+            conn,
+            params={
+                "wrapped_start_date": params["wrapped_start_date"],
+                "wrapped_end_date": params["wrapped_end_date"],
+            }
+        )
 
     return paginate_df(tracks, filters, TRACK_SORT_COLUMNS, "Most streams")
 

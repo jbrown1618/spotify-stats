@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS artist_genre (
     UNIQUE(artist_uri, genre)
 );
 CREATE INDEX IF NOT EXISTS i_artist_genre_join ON artist_genre (artist_uri, genre);
+CREATE INDEX IF NOT EXISTS i_artist_genre_genre ON artist_genre (genre);
 
 CREATE TABLE IF NOT EXISTS playlist_track (
     playlist_uri TEXT NOT NULL,
