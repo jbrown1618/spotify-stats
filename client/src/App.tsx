@@ -22,9 +22,47 @@ import { TracksSection } from "./sections/TracksSection";
 import { SectionTabs, useSectionDefs } from "./SectionTabs";
 import { useFilters } from "./useFilters";
 
-export function App() {
+function DetailsContent() {
   const filters = useFilters();
+  return (
+    <>
+      {filters.wrapped && <WrappedDetails />}
+      {filters.tracks?.length === 1 && (
+        <TrackDetails trackURI={filters.tracks[0]} />
+      )}
+      {filters.artists?.length === 1 && (
+        <ArtistDetails artistURI={filters.artists[0]} />
+      )}
+      {filters.albums?.length === 1 && (
+        <AlbumDetails albumURI={filters.albums[0]} />
+      )}
+      {filters.playlists?.length === 1 && (
+        <PlaylistDetails playlistURI={filters.playlists[0]} />
+      )}
+      {filters.producers?.length === 1 && (
+        <ProducerDetails mbid={filters.producers[0]} />
+      )}
+    </>
+  );
+}
+
+function DetailsTitle() {
+  const filters = useFilters();
+
+  return (
+    <>
+      {filters.labels?.length === 1 && <h2>{filters.labels[0]}</h2>}
+      {filters.genres?.length === 1 && <h2>{filters.genres[0]}</h2>}
+      {filters.years?.length === 1 && (
+        <h2>Tracks released in {filters.years[0]}</h2>
+      )}
+    </>
+  );
+}
+
+export function App() {
   const sections = useSectionDefs({
+    details: <DetailsContent />,
     tracks: <TracksSection />,
     artists: <ArtistsSection />,
     albums: <AlbumsSection />,
@@ -41,30 +79,7 @@ export function App() {
       <Backdrop />
       <Container size="lg">
         <Header />
-
-        {filters.wrapped && <WrappedDetails />}
-        {filters.tracks?.length === 1 && (
-          <TrackDetails trackURI={filters.tracks[0]} />
-        )}
-        {filters.artists?.length === 1 && (
-          <ArtistDetails artistURI={filters.artists[0]} />
-        )}
-        {filters.albums?.length === 1 && (
-          <AlbumDetails albumURI={filters.albums[0]} />
-        )}
-        {filters.playlists?.length === 1 && (
-          <PlaylistDetails playlistURI={filters.playlists[0]} />
-        )}
-        {filters.producers?.length === 1 && (
-          <ProducerDetails mbid={filters.producers[0]} />
-        )}
-
-        {filters.labels?.length === 1 && <h2>{filters.labels[0]}</h2>}
-        {filters.genres?.length === 1 && <h2>{filters.genres[0]}</h2>}
-        {filters.years?.length === 1 && (
-          <h2>Tracks released in {filters.years[0]}</h2>
-        )}
-
+        <DetailsTitle />
         <SectionTabs sections={sections} />
       </Container>
     </>

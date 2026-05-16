@@ -1,5 +1,6 @@
 import {
   IconDisc,
+  IconInfoCircle,
   IconList,
   IconMicrophone2,
   IconMusic,
@@ -9,7 +10,7 @@ import {
   IconUsers,
   IconThumbUp,
 } from "@tabler/icons-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 import { ActiveFilters } from "./api";
 import styles from "./SectionTabs.module.css";
@@ -27,48 +28,69 @@ interface SectionTabsProps {
   sections: SectionDef[];
 }
 
+function hasDetails(f: ActiveFilters): boolean {
+  return !!(
+    f.wrapped ||
+    f.tracks?.length === 1 ||
+    f.artists?.length === 1 ||
+    f.albums?.length === 1 ||
+    f.playlists?.length === 1 ||
+    f.producers?.length === 1 ||
+    f.labels?.length === 1 ||
+    f.genres?.length === 1 ||
+    f.years?.length === 1
+  );
+}
+
 export function useSectionDefs(sectionContent: Record<string, ReactNode>): SectionDef[] {
   return [
+    {
+      id: "details",
+      label: "Details",
+      icon: <IconInfoCircle size={20} />,
+      hidden: (f) => !hasDetails(f),
+      content: sectionContent.details,
+    },
     {
       id: "tracks",
       label: "Tracks",
       icon: <IconMusic size={20} />,
-      hidden: (f) => f.tracks?.length === 1,
+      hidden: () => false,
       content: sectionContent.tracks,
     },
     {
       id: "artists",
       label: "Artists",
       icon: <IconMicrophone2 size={20} />,
-      hidden: (f) => f.artists?.length === 1,
+      hidden: () => false,
       content: sectionContent.artists,
     },
     {
       id: "albums",
       label: "Albums",
       icon: <IconDisc size={20} />,
-      hidden: (f) => f.albums?.length === 1,
+      hidden: () => false,
       content: sectionContent.albums,
     },
     {
       id: "playlists",
       label: "Playlists",
       icon: <IconList size={20} />,
-      hidden: (f) => f.playlists?.length === 1,
+      hidden: () => false,
       content: sectionContent.playlists,
     },
     {
       id: "labels",
       label: "Labels",
       icon: <IconTag size={20} />,
-      hidden: (f) => f.labels?.length === 1,
+      hidden: () => false,
       content: sectionContent.labels,
     },
     {
       id: "genres",
       label: "Genres",
       icon: <IconStar size={20} />,
-      hidden: (f) => f.genres?.length === 1,
+      hidden: () => false,
       content: sectionContent.genres,
     },
     {
@@ -99,6 +121,16 @@ export function SectionTabs({ sections }: SectionTabsProps) {
   const filters = useFilters();
   const visibleSections = sections.filter((s) => !s.hidden(filters));
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Auto-select the Details tab when it appears
+  const detailsVisible = visibleSections.some((s) => s.id === "details");
+  useEffect(() => {
+    if (detailsVisible) {
+      setActiveId("details");
+    } else if (activeId === "details") {
+      setActiveId(null);
+    }
+  }, [detailsVisible]);
 
   const resolvedActiveId =
     activeId && visibleSections.some((s) => s.id === activeId)
