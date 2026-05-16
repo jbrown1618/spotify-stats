@@ -7,7 +7,6 @@ import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistorySta
 import { ArtistPills } from "../design/ArtistPills";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
-import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
@@ -23,7 +22,6 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
   if (!track)
     return (
       <>
-        <TextSkeleton style="h2" />
         <div className={styles.centered}>
           <KPIsListSkeleton count={7} />
         </div>
@@ -33,7 +31,6 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
 
   return (
     <>
-      <h2>{track.track_name}</h2>
       <div className={styles.centered}>
         <KPIsList
           items={[

@@ -17,8 +17,6 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
 
   return (
     <>
-      {album ? <h2>{album.album_name}</h2> : <TextSkeleton style="h2" />}
-
       <div className={styles.centered}>
         <KPIsList
           items={[
