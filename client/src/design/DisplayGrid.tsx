@@ -39,10 +39,11 @@ interface DisplayGridProps<T> {
   onLoadMore?: () => void;
 }
 
+import { PAGE_SIZE } from "../useApi";
+
 type DisplayVariant = "pill" | "large-tile" | "tile" | "row";
 
-const defaultCount = 6;
-const loadingItems = Array.from(Array(defaultCount).keys());
+const loadingItems = Array.from(Array(PAGE_SIZE).keys());
 
 export function DisplayGrid<T>({
   loading,
