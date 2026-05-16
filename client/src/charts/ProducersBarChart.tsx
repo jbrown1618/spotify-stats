@@ -3,6 +3,7 @@ import { BarChart } from "@mantine/charts";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useProducers } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
+import { allBarValuesAreOne } from "./utils";
 
 export function ProducersBarChart() {
   const { items: producers } = useProducers();
@@ -12,20 +13,24 @@ export function ProducersBarChart() {
   if (!producers) return <ChartSkeleton />;
   if (producers && producers.length < 3) return null;
 
+  const data = producers
+    .sort((a, b) => b.liked_track_count - a.liked_track_count)
+    .slice(0, maxCount)
+    .map((p) => ({
+      Producer: p.producer_name,
+      Liked: p.liked_track_count,
+      Unliked: p.track_count - p.liked_track_count,
+    }));
+
+  if (allBarValuesAreOne(data)) return null;
+
   const height = 100 + 30 * Math.min(maxCount, producers.length);
   return (
     <>
       <h3>Top producers by liked tracks</h3>
       <BarChart
         h={height}
-        data={producers
-          .sort((a, b) => b.liked_track_count - a.liked_track_count)
-          .slice(0, maxCount)
-          .map((p) => ({
-            Producer: p.producer_name,
-            Liked: p.liked_track_count,
-            Unliked: p.track_count - p.liked_track_count,
-          }))}
+        data={data}
         orientation="vertical"
         series={[
           { name: "Liked", color: "green" },

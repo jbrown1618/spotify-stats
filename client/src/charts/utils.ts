@@ -9,3 +9,10 @@ export function totalStreams(
     0
   );
 }
+
+/** Returns true if every entry in the bar chart data has a total value of 1 or less. */
+export function allBarValuesAreOne(
+  data: { Liked: number; Unliked: number }[]
+): boolean {
+  return data.length > 0 && data.every((d) => d.Liked + d.Unliked <= 1);
+}

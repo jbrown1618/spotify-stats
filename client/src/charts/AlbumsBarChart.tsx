@@ -3,6 +3,7 @@ import { BarChart } from "@mantine/charts";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useAlbums } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
+import { allBarValuesAreOne } from "./utils";
 
 export function AlbumsBarChart() {
   const isMobile = useIsMobile();
@@ -13,18 +14,22 @@ export function AlbumsBarChart() {
 
   if (!albums) return <ChartSkeleton />;
 
+  const data = albums
+    .map((p) => ({
+      Artist: p.album_short_name,
+      Liked: p.album_liked_track_count,
+      Unliked: p.album_track_count - p.album_liked_track_count,
+    }));
+
+  if (allBarValuesAreOne(data)) return null;
+
   const height = 100 + 30 * Math.min(maxCount, albums.length);
   return (
     <>
       <h3>Albums by liked tracks</h3>
       <BarChart
         h={height}
-        data={albums
-          .map((p) => ({
-            Artist: p.album_short_name,
-            Liked: p.album_liked_track_count,
-            Unliked: p.album_track_count - p.album_liked_track_count,
-          }))}
+        data={data}
         orientation="vertical"
         series={[
           { name: "Liked", color: "green" },

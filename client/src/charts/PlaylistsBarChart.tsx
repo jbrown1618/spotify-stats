@@ -3,6 +3,7 @@ import { BarChart } from "@mantine/charts";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { usePlaylists } from "../useApi";
 import { useIsMobile } from "../useIsMobile";
+import { allBarValuesAreOne } from "./utils";
 
 export function PlaylistsBarChart() {
   const { items: playlists } = usePlaylists();
@@ -11,21 +12,26 @@ export function PlaylistsBarChart() {
   if (playlists && playlists.length < 3) return null;
 
   const maxCount = isMobile ? 15 : 20;
+
+  const data = playlists
+    .sort(
+      (a, b) => b.playlist_liked_track_count - a.playlist_liked_track_count
+    )
+    .slice(0, maxCount)
+    .map((p) => ({
+      Playlist: p.playlist_name,
+      Liked: p.playlist_liked_track_count,
+      Unliked: p.playlist_track_count - p.playlist_liked_track_count,
+    }));
+
+  if (allBarValuesAreOne(data)) return null;
+
   const height = 100 + 30 * Math.min(maxCount, playlists.length);
 
   return (
     <BarChart
       h={height}
-      data={playlists
-        .sort(
-          (a, b) => b.playlist_liked_track_count - a.playlist_liked_track_count
-        )
-        .slice(0, maxCount)
-        .map((p) => ({
-          Playlist: p.playlist_name,
-          Liked: p.playlist_liked_track_count,
-          Unliked: p.playlist_track_count - p.playlist_liked_track_count,
-        }))}
+      data={data}
       orientation="vertical"
       series={[
         { name: "Liked", color: "green" },

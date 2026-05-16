@@ -82,6 +82,16 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 - Array query params are serialized as JSON strings (e.g., `artists=["spotify:artist:..."]`).
 - Import sorting is enforced by `eslint-plugin-simple-import-sort`.
 
+### Pull requests with UI changes
+
+When a PR includes visual changes, capture before/after screenshots using Playwright (configured as an MCP server in `.vscode/mcp.json`). Commit screenshots to `docs/screenshots/` on the PR branch.
+
+In the PR body, reference images using **HTML `<img>` tags** with `raw.githubusercontent.com` URLs and the commit SHA — not markdown `![]()`  syntax, which GitHub strips for these URLs:
+
+```html
+<img src="https://raw.githubusercontent.com/jbrown1618/spotify-stats/COMMIT_SHA/docs/screenshots/example.png" width="400">
+```
+
 ### Deployment
 
 - Production URL: https://spotify-stats-jbrown1618-96e348fdad70.herokuapp.com/

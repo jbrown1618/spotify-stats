@@ -14,7 +14,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { ActiveFilters } from "./api";
 import styles from "./SectionTabs.module.css";
-import { useArtists } from "./useApi";
+import { useArtists, useRecommendations, useReleaseYears } from "./useApi";
 import { useFilters } from "./useFilters";
 
 interface SectionDef {
@@ -45,6 +45,9 @@ function hasDetails(f: ActiveFilters): boolean {
 
 export function useSectionDefs(sectionContent: Record<string, ReactNode>): SectionDef[] {
   const { total: artistCount } = useArtists({ sort: "Most streams", limit: 1 });
+  const { total: yearCount } = useReleaseYears({ sort: "Most liked tracks", limit: 1 });
+  const { data: recommendations, isLoading: recsLoading } = useRecommendations();
+  const hasRecommendations = recsLoading || (recommendations && Object.keys(recommendations).length > 0);
 
   return [
     {
@@ -107,14 +110,14 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       id: "years",
       label: "Years",
       icon: <IconCalendar size={20} />,
-      hidden: () => false,
+      hidden: () => yearCount <= 1,
       content: sectionContent.years,
     },
     {
       id: "recommendations",
       label: "For You",
       icon: <IconThumbUp size={20} />,
-      hidden: () => false,
+      hidden: () => !hasRecommendations,
       content: sectionContent.recommendations,
     },
   ];
