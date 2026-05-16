@@ -82,7 +82,7 @@ export function TracksSection() {
 
 function TracksDisplayGrid() {
   const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useTracks({ sort, limit: PAGE_SIZE });
 
   return (
@@ -95,7 +95,7 @@ function TracksDisplayGrid() {
       onSortChange={setSort}
       getKey={(track) => track.track_uri}
       renderRow={(track) => <TrackRow track={track} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

@@ -19,7 +19,7 @@ export function GenresSection() {
 }
 
 function GenresDisplayGrid() {
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useGenres({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
@@ -29,7 +29,7 @@ function GenresDisplayGrid() {
       total={total}
       getKey={(gtc) => gtc.genre}
       renderPill={(gtc) => <GenrePill genre={gtc.genre} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

@@ -19,7 +19,7 @@ export function PlaylistsSection() {
 }
 
 function PlaylistsDisplayGrid() {
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     usePlaylists({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
@@ -30,7 +30,7 @@ function PlaylistsDisplayGrid() {
       getKey={(playlist) => playlist.playlist_uri}
       renderTile={(playlist) => <PlaylistTile playlist={playlist} />}
       renderRow={(playlist) => <PlaylistRow playlist={playlist} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

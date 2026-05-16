@@ -18,7 +18,7 @@ export function ProducersSection() {
 }
 
 function ProducersDisplayGrid() {
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useProducers({ sort: "Most tracks", limit: PAGE_SIZE });
 
   return (
@@ -28,7 +28,7 @@ function ProducersDisplayGrid() {
       total={total}
       getKey={(producer) => producer.producer_mbid}
       renderPill={(producer) => <ProducerPill producer={producer} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

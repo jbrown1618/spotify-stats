@@ -19,7 +19,7 @@ export function LabelsSection() {
 }
 
 function LabelsDisplayGrid() {
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useLabels({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
@@ -29,7 +29,7 @@ function LabelsDisplayGrid() {
       total={total}
       getKey={(ltc) => ltc.label}
       renderPill={(ltc) => <RecordLabelPill label={ltc.label} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />

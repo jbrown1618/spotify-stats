@@ -18,7 +18,7 @@ export function ReleaseYearsSection() {
 }
 
 function YearsDisplayGrid() {
-  const { items, total, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useReleaseYears({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
@@ -28,7 +28,7 @@ function YearsDisplayGrid() {
       total={total}
       getKey={(yc) => "" + yc.release_year}
       renderPill={(yc) => <ReleaseYearPill year={yc.release_year} />}
-      hasNextPage={hasNextPage}
+      
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />
