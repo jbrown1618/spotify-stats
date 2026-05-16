@@ -2,7 +2,7 @@ import "./global.css";
 
 import { Container } from "@mantine/core";
 
-import { Backdrop } from "./Backdrop";
+import { Backdrop, HeaderBackdrop } from "./Backdrop";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
@@ -143,6 +143,7 @@ export function App() {
   return (
     <>
       <Backdrop />
+      <HeaderBackdrop />
       <Container size="lg">
         <Header />
         <DetailsTitle />
