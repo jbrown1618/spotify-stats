@@ -104,7 +104,7 @@ def list_track_streams_by_month():
     track_uris = params.get('tracks', None)
     if track_uris is not None:
         if len(track_uris) == 0:
-            return {}
+            return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
         return track_streams_by_month(track_uris, min_date, max_date)
     return filtered_track_streams_by_month(params, n)
@@ -130,7 +130,7 @@ def list_artist_streams_by_month():
     artist_uris = params.get('artists', None)
     if artist_uris is not None:
         if len(artist_uris) == 0:
-            return {}
+            return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
         return artist_streams_by_month(artist_uris, min_date, max_date)
     return filtered_artist_streams_by_month(params, n)
@@ -156,7 +156,7 @@ def list_album_streams_by_month():
     album_uris = params.get('albums', None)
     if album_uris is not None:
         if len(album_uris) == 0:
-            return {}
+            return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
         return album_streams_by_month(album_uris, min_date, max_date)
     return filtered_album_streams_by_month(params, n)
