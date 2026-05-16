@@ -27,6 +27,9 @@ export interface TrackRank {
   track_uri: string;
   track_stream_count: number;
   as_of_date: string;
+  track_short_name: string;
+  track_name: string;
+  album_image_url: string;
 }
 
 export interface Artist {
@@ -44,6 +47,8 @@ export interface ArtistRank {
   artist_uri: string;
   artist_stream_count: number;
   as_of_date: string;
+  artist_name: string;
+  artist_image_url: string;
 }
 
 export interface ArtistCredit {
@@ -100,6 +105,9 @@ export interface AlbumRank {
   album_uri: string;
   album_stream_count: number;
   as_of_date: string;
+  album_short_name: string;
+  album_name: string;
+  album_image_url: string;
 }
 
 export interface Label {
@@ -198,10 +206,10 @@ export const defaultFilterOptions: FilterOptions = {
   years: [],
 };
 
-export type StreamsByMonth = Record<
-  string,
-  Record<number, Record<number, number>>
->;
+export interface StreamsByMonthResponse {
+  streams: Record<string, Record<number, Record<number, number>>>;
+  metadata: Record<string, Record<string, string>>;
+}
 
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
@@ -300,7 +308,7 @@ export async function getAlbumsStreamingHistory(
 
 export async function getTracksStreamsByMonth(
   filters: ActiveFilters & { n?: number }
-): Promise<StreamsByMonth> {
+): Promise<StreamsByMonthResponse> {
   return sendRequest(
     `/api/streams/tracks/months`,
     "track streams by month",
@@ -310,7 +318,7 @@ export async function getTracksStreamsByMonth(
 
 export async function getArtistsStreamsByMonth(
   filters: ActiveFilters & { n?: number }
-): Promise<StreamsByMonth> {
+): Promise<StreamsByMonthResponse> {
   return sendRequest(
     `/api/streams/artists/months`,
     "artist streams by month",
@@ -320,7 +328,7 @@ export async function getArtistsStreamsByMonth(
 
 export async function getAlbumsStreamsByMonth(
   filters: ActiveFilters & { n?: number }
-): Promise<StreamsByMonth> {
+): Promise<StreamsByMonthResponse> {
   return sendRequest(
     `/api/streams/albums/months`,
     "album streams by month",

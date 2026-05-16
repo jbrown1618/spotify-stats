@@ -1,4 +1,6 @@
-import { AlbumRank, ArtistRank, StreamsByMonth, TrackRank } from "./api";
+import { AlbumRank, ArtistRank, TrackRank } from "./api";
+
+type StreamsByMonth = Record<string, Record<number, Record<number, number>>>;
 
 export function formatDate(ts: number | Date | undefined) {
   if (!ts) return "Unknown Date";

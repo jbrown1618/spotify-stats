@@ -16,12 +16,14 @@ TRACK_SORT_COLUMNS = {
 ARTIST_SORT_COLUMNS = {
     "Most streams": ("artist_stream_count", False),
     "Least streams": ("artist_stream_count", True),
+    "Most liked tracks": ("artist_liked_track_count", False),
     "Alphabetical": ("artist_name", True),
 }
 
 ALBUM_SORT_COLUMNS = {
     "Most streams": ("album_stream_count", False),
     "Least streams": ("album_stream_count", True),
+    "Most liked tracks": ("album_liked_track_count", False),
     "Newest": ("album_release_date", False),
     "Oldest": ("album_release_date", True),
     "Alphabetical": ("album_name", True),
