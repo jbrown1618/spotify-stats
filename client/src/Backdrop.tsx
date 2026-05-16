@@ -5,14 +5,9 @@ import { useTracks } from "./useApi";
 export function Backdrop() {
   return (
     <div className={styles.backdrop}>
-      <HeaderBackdrop />
       <AlbumTiles />
     </div>
   );
-}
-
-function HeaderBackdrop() {
-  return <div className={styles.headerBackground} />;
 }
 
 function AlbumTiles() {

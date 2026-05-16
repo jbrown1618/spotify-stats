@@ -1,6 +1,11 @@
 .headerNav {
     display: flex;
     justify-content: space-between;
+    background-color: var(--mantine-color-green-9);
+    margin-left: calc(-1 * var(--mantine-spacing-md));
+    margin-right: calc(-1 * var(--mantine-spacing-md));
+    padding-left: var(--mantine-spacing-md);
+    padding-right: var(--mantine-spacing-md);
 }
 
 .headerText {
