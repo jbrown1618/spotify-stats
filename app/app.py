@@ -9,7 +9,7 @@ from routes.labels import labels_payload
 from routes.playlists import playlists_payload
 from routes.recommendations import recommendations_payload
 from routes.release_years import release_years_payload
-from routes.tracks import track_payload, tracks_search_payload, track_credits_payload
+from routes.tracks import tracks_search_payload, track_credits_payload
 from routes.utils import to_date_range, to_json
 from routes.producers import producers_payload
 from data.sql.migrations.migrations import perform_all_migrations
@@ -33,15 +33,9 @@ def get_filter_options():
     return filter_options_payload()
 
 
-@app.route("/api/tracks/search", methods = ['POST'])
-def search_tracks():
+@app.route("/api/tracks", methods = ['POST'])
+def list_tracks():
     return tracks_search_payload(request.json)
-
-
-@app.route("/api/tracks/<track_uri>")
-def get_track(track_uri):
-    min_date, max_date = to_date_range(request.args.get('wrapped', None))
-    return track_payload(track_uri, min_date, max_date)
 
 
 @app.route("/api/tracks/<track_uri>/credits")

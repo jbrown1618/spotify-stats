@@ -12,12 +12,13 @@ import { TextSkeleton } from "../design/TextSkeleton";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
-import { useTrack, useTrackCredits } from "../useApi";
+import { useTracks, useTrackCredits } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
-  const { data: track } = useTrack(trackURI);
+  const { items: tracks } = useTracks({ filters: { tracks: [trackURI] } });
+  const track = tracks?.[0];
   const { data: credits } = useTrackCredits(trackURI);
 
   if (!track)
