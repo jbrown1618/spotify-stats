@@ -4,6 +4,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useArtistsStreamsByMonth } from "../useApi";
 import styles from "./StreamingHistoryItem.module.css";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
+import { totalStreams } from "./utils";
 
 export function ArtistsStreamingHistoryStack({
   onlyArtist,
@@ -35,8 +36,9 @@ export function ArtistsStreamingHistoryStack({
         getItem={(key) => ({
           name: response.metadata[key]?.artist_name ?? key,
           image_url: response.metadata[key]?.artist_image_url ?? "",
+          stream_count: totalStreams(response.streams[key]),
         })}
-        sortItems={(a, b) => a.name.localeCompare(b.name)}
+        sortItems={(a, b) => b.stream_count - a.stream_count}
         onMore={
           n < metadataCount
             ? () => setN((prev) => prev + 5)

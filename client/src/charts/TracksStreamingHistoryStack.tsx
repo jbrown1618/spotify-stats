@@ -4,6 +4,7 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
 import styles from "./StreamingHistoryItem.module.css";
 import { StreamingHistoryStack } from "./StreamingHistoryStack";
+import { totalStreams } from "./utils";
 
 export function TracksStreamingHistoryStack() {
   const [n, setN] = useState(5);
@@ -25,9 +26,9 @@ export function TracksStreamingHistoryStack() {
         getItem={(key) => ({
           name: response.metadata[key]?.track_name ?? key,
           image_url: response.metadata[key]?.album_image_url ?? "",
-          stream_count: 0,
+          stream_count: totalStreams(response.streams[key]),
         })}
-        sortItems={(a, b) => a.name.localeCompare(b.name)}
+        sortItems={(a, b) => b.stream_count - a.stream_count}
         onMore={
           n < (trackCount ?? 0) ? () => setN((prev) => prev + 5) : undefined
         }

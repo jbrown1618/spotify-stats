@@ -30,7 +30,7 @@ export function ArtistStreamsLineChart({
         getItem={(r) => r.artist_uri}
         getStreams={(r) => r.artist_stream_count}
         getLabel={(k) => history.find((r) => r.artist_uri === k)?.artist_name ?? k}
-        getCurrentRank={(k) => (history.find((r) => r.artist_uri === k)?.artist_stream_count ?? 0) * -1}
+        getCurrentRank={(k) => ([...history].reverse().find((r) => r.artist_uri === k)?.artist_stream_count ?? 0) * -1}
         getImageURL={(k) => history.find((r) => r.artist_uri === k)?.artist_image_url ?? ""}
       />
     </>
