@@ -84,6 +84,8 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 
 ### Deployment
 
-- Production: `gunicorn --chdir app app:app` (see `Procfile`)
+- Production URL: https://spotify-stats-jbrown1618-96e348fdad70.herokuapp.com/
+- Production server: `gunicorn --chdir app app:app` (see `Procfile`)
 - Client build output goes to `app/static/` (Vite's `outDir`)
 - CI runs on PRs to `main`: installs Node deps and builds the client
+- Playwright (configured as an MCP server in `.vscode/mcp.json`) can be pointed at the prod URL to verify bugs in production
