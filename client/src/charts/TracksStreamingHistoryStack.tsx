@@ -1,9 +1,8 @@
 import { useState } from "react";
 
-import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useTracksCount, useTracksStreamsByMonth } from "../useApi";
 import styles from "./StreamingHistoryItem.module.css";
-import { StreamingHistoryStack } from "./StreamingHistoryStack";
+import { StreamingHistoryStack, StreamingHistoryStackSkeleton } from "./StreamingHistoryStack";
 import { totalStreams } from "./utils";
 
 export function TracksStreamingHistoryStack() {
@@ -16,7 +15,7 @@ export function TracksStreamingHistoryStack() {
 
   if (!shouldRender) return null;
 
-  if (!response?.streams || !response?.metadata) return <ChartSkeleton />;
+  if (!response?.streams || !response?.metadata) return <StreamingHistoryStackSkeleton />;
 
   return (
     <>

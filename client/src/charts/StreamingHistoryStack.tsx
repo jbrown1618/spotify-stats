@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button, Skeleton } from "@mantine/core";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useRef } from "react";
 
@@ -11,6 +11,32 @@ const xAxisHeight = 15;
 const individualMaxHeight = 250;
 const totalMinHeight = 600;
 const individualMinHeight = 120;
+const defaultSkeletonCount = 5;
+
+export function StreamingHistoryStackSkeleton() {
+  return (
+    <div className={styles.container}>
+      {Array.from({ length: defaultSkeletonCount }).map((_, i) => (
+        <div key={i}>
+          <div className={styles.itemHeader}>
+            <Skeleton
+              w={20}
+              h={20}
+              radius="sm"
+              style={{ display: "inline-block", marginRight: 8 }}
+            />
+            <Skeleton
+              w={120}
+              h={16}
+              style={{ display: "inline-block" }}
+            />
+          </div>
+          <Skeleton w="100%" h={individualMinHeight} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function StreamingHistoryStack<TItem>({
   data,
