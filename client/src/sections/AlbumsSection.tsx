@@ -13,7 +13,6 @@ import {
   useAlbumsStreamsByMonth,
   PAGE_SIZE,
 } from "../useApi";
-import { useFilters } from "../useFilters";
 
 const albumSortOptions = [
   "Most streams",
@@ -24,7 +23,6 @@ const albumSortOptions = [
 ];
 
 export function AlbumsSection() {
-  const filters = useFilters();
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
 
@@ -34,8 +32,6 @@ export function AlbumsSection() {
       shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
     );
   }, [shouldRenderMonths, shouldRenderStreams]);
-
-  if (filters.albums?.length === 1) return null;
 
   return (
     <div>

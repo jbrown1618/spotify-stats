@@ -1,0 +1,73 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+    padding-bottom: 64px;
+}
+
+.content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.tabBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+    z-index: 100;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabBar::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-size: 10px;
+    white-space: nowrap;
+    border-radius: 8px;
+    transition: color 0.15s, background-color 0.15s;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+.tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tabActive {
+    color: var(--mantine-color-blue-4, #4dabf7);
+}
+
+.tabActive:hover {
+    color: var(--mantine-color-blue-4, #4dabf7);
+    background: rgba(77, 171, 247, 0.1);
+}
+
+.tabLabel {
+    font-weight: 500;
+    line-height: 1;
+}

@@ -1,8 +1,7 @@
 import "./global.css";
 
-import { Anchor, Container } from "@mantine/core";
+import { Container } from "@mantine/core";
 
-import styles from "./App.module.css";
 import { Backdrop } from "./Backdrop";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
@@ -20,68 +19,69 @@ import { ProducersSection } from "./sections/ProducersSection";
 import { RecommendationsSection } from "./sections/RecommendationsSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
+import { SectionTabs, useSectionDefs } from "./SectionTabs";
 import { useFilters } from "./useFilters";
 
-export function App() {
+function DetailsContent() {
   const filters = useFilters();
+  return (
+    <>
+      {filters.wrapped && <WrappedDetails />}
+      {filters.tracks?.length === 1 && (
+        <TrackDetails trackURI={filters.tracks[0]} />
+      )}
+      {filters.artists?.length === 1 && (
+        <ArtistDetails artistURI={filters.artists[0]} />
+      )}
+      {filters.albums?.length === 1 && (
+        <AlbumDetails albumURI={filters.albums[0]} />
+      )}
+      {filters.playlists?.length === 1 && (
+        <PlaylistDetails playlistURI={filters.playlists[0]} />
+      )}
+      {filters.producers?.length === 1 && (
+        <ProducerDetails mbid={filters.producers[0]} />
+      )}
+    </>
+  );
+}
+
+function DetailsTitle() {
+  const filters = useFilters();
+
+  return (
+    <>
+      {filters.labels?.length === 1 && <h2>{filters.labels[0]}</h2>}
+      {filters.genres?.length === 1 && <h2>{filters.genres[0]}</h2>}
+      {filters.years?.length === 1 && (
+        <h2>Tracks released in {filters.years[0]}</h2>
+      )}
+    </>
+  );
+}
+
+export function App() {
+  const sections = useSectionDefs({
+    details: <DetailsContent />,
+    tracks: <TracksSection />,
+    artists: <ArtistsSection />,
+    albums: <AlbumsSection />,
+    playlists: <PlaylistsSection />,
+    labels: <LabelsSection />,
+    genres: <GenresSection />,
+    producers: <ProducersSection />,
+    years: <ReleaseYearsSection />,
+    recommendations: <RecommendationsSection />,
+  });
 
   return (
     <>
       <Backdrop />
       <Container size="lg">
         <Header />
-
-        {filters.wrapped && <WrappedDetails />}
-        {filters.tracks?.length === 1 && (
-          <TrackDetails trackURI={filters.tracks[0]} />
-        )}
-        {filters.artists?.length === 1 && (
-          <ArtistDetails artistURI={filters.artists[0]} />
-        )}
-        {filters.albums?.length === 1 && (
-          <AlbumDetails albumURI={filters.albums[0]} />
-        )}
-        {filters.playlists?.length === 1 && (
-          <PlaylistDetails playlistURI={filters.playlists[0]} />
-        )}
-        {filters.producers?.length === 1 && (
-          <ProducerDetails mbid={filters.producers[0]} />
-        )}
-
-        {filters.labels?.length === 1 && <h2>{filters.labels[0]}</h2>}
-        {filters.genres?.length === 1 && <h2>{filters.genres[0]}</h2>}
-        {filters.years?.length === 1 && (
-          <h2>Tracks released in {filters.years[0]}</h2>
-        )}
-
-        <div>
-          <TracksSection />
-          <ArtistsSection />
-          <AlbumsSection />
-          <PlaylistsSection />
-          <LabelsSection />
-          <GenresSection />
-          <ProducersSection />
-          <ReleaseYearsSection />
-          <RecommendationsSection />
-        </div>
-
-        <AppFooter />
+        <DetailsTitle />
+        <SectionTabs sections={sections} />
       </Container>
     </>
-  );
-}
-
-function AppFooter() {
-  return (
-    <footer className={styles.appFooter}>
-      <Anchor
-        href="https://www.github.com/jbrown1618/spotify-stats"
-        target="_blank"
-        underline="hover"
-      >
-        jbrown1618/spotify-stats
-      </Anchor>
-    </footer>
   );
 }
