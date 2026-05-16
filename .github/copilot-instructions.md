@@ -82,6 +82,10 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 - Array query params are serialized as JSON strings (e.g., `artists=["spotify:artist:..."]`).
 - Import sorting is enforced by `eslint-plugin-simple-import-sort`.
 
+### Pull requests with UI changes
+
+When creating a PR that includes UI changes, use Playwright to capture before/after screenshots and post them as a comment on the PR. Capture the "before" state from the `main` branch or production, and the "after" state from the feature branch. To keep skeletons visible for screenshot purposes, intercept `/api/**` requests with a long delay so loading states remain on screen.
+
 ### Deployment
 
 - Production URL: https://spotify-stats-jbrown1618-96e348fdad70.herokuapp.com/
