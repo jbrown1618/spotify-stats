@@ -14,6 +14,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { ActiveFilters } from "./api";
 import styles from "./SectionTabs.module.css";
+import { useArtists } from "./useApi";
 import { useFilters } from "./useFilters";
 
 interface SectionDef {
@@ -43,6 +44,8 @@ function hasDetails(f: ActiveFilters): boolean {
 }
 
 export function useSectionDefs(sectionContent: Record<string, ReactNode>): SectionDef[] {
+  const { total: artistCount } = useArtists({ sort: "Most streams", limit: 1 });
+
   return [
     {
       id: "details",
@@ -62,7 +65,7 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       id: "artists",
       label: "Artists",
       icon: <IconMicrophone2 size={20} />,
-      hidden: () => false,
+      hidden: (f) => f.artists?.length === 1 || artistCount <= 1,
       content: sectionContent.artists,
     },
     {

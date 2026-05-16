@@ -4,7 +4,6 @@ import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { PillWithAvatar } from "../design/PillDesign";
-import { TextSkeleton } from "../design/TextSkeleton";
 import { ArtistPill } from "../list-items/ArtistPill";
 import { useAlbums, useArtistCredits, useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
@@ -48,18 +47,14 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
 
   if (!artist)
     return (
-      <>
-        <TextSkeleton style="h2" />
-        <div className={styles.artistImageContainer}>
-          <Skeleton w={200} h={200} circle style={{ margin: 16 }} />
-          <KPIsListSkeleton count={4} />
-        </div>
-      </>
+      <div className={styles.artistImageContainer}>
+        <Skeleton w={200} h={200} circle style={{ margin: 16 }} />
+        <KPIsListSkeleton count={4} />
+      </div>
     );
 
   return (
     <>
-      <h2>{artist.artist_name}</h2>
       <div className={styles.artistImageContainer}>
         <img src={artist.artist_image_url} className={styles.artistImage} />
         <KPIsList
