@@ -36,10 +36,7 @@ function hasDetails(f: ActiveFilters): boolean {
     f.artists?.length === 1 ||
     f.albums?.length === 1 ||
     f.playlists?.length === 1 ||
-    f.producers?.length === 1 ||
-    f.labels?.length === 1 ||
-    f.genres?.length === 1 ||
-    f.years?.length === 1
+    f.producers?.length === 1
   );
 }
 
