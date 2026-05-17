@@ -5,3 +5,7 @@
 body {
     background-color: var(--ss-bg-color)!important;
 }
+
+h2 {
+    margin-bottom: 0.25em;
+}
