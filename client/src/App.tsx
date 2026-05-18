@@ -8,7 +8,6 @@ import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
-import { WrappedDetails } from "./details/WrappedDetails";
 import { TextSkeleton } from "./design/TextSkeleton";
 import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
@@ -35,7 +34,6 @@ function DetailsContent() {
   const filters = useFilters();
   return (
     <>
-      {filters.wrapped && <WrappedDetails />}
       {filters.tracks?.length === 1 && (
         <TrackDetails trackURI={filters.tracks[0]} />
       )}
