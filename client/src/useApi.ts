@@ -38,7 +38,7 @@ import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
 // If a piece of a query key is an empty string, the request will not fire
 const DEFAULT_QUERY_KEY = "DEFAULT";
 
-export const PAGE_SIZE = 5;
+export const PAGE_SIZE = 10;
 
 const defaultQueryOptions = {
   staleTime: 1000 * 60 * 60,

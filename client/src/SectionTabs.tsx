@@ -43,7 +43,7 @@ function hasDetails(f: ActiveFilters): boolean {
 export function useSectionDefs(sectionContent: Record<string, ReactNode>): SectionDef[] {
   const { total: artistCount } = useArtists({ sort: "Most streams", limit: 1 });
   const { total: albumCount } = useAlbums({ sort: "Most streams", limit: 1 });
-  const { total: yearCount } = useReleaseYears({ sort: "Most liked tracks", limit: 1 });
+  const { total: yearCount } = useReleaseYears({ sort: "Newest", limit: 1 });
   const { data: recommendations, isLoading: recsLoading } = useRecommendations();
   const hasRecommendations = recsLoading || (recommendations && Object.keys(recommendations).length > 0);
 
@@ -153,7 +153,10 @@ export function SectionTabs({ sections }: SectionTabsProps) {
           <button
             key={section.id}
             className={`${styles.tab} ${section.id === resolvedActiveId ? styles.tabActive : ""}`}
-            onClick={() => setActiveId(section.id)}
+            onClick={() => {
+              window.scrollTo({ top: 0 });
+              setActiveId(section.id);
+            }}
           >
             {section.icon}
             <span className={styles.tabLabel}>{section.label}</span>

@@ -16,4 +16,4 @@ def release_years_payload(filters: dict):
     if years.empty:
         return {"items": [], "total": 0}
 
-    return paginate_df(years, filters, RELEASE_YEAR_SORT_COLUMNS, "Most liked tracks")
+    return paginate_df(years, filters, RELEASE_YEAR_SORT_COLUMNS, "Newest")

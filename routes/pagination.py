@@ -42,6 +42,8 @@ GENRE_SORT_COLUMNS = {
 }
 
 RELEASE_YEAR_SORT_COLUMNS = {
+    "Newest": ("release_year", False),
+    "Oldest": ("release_year", True),
     "Most liked tracks": ("liked_track_count", False),
 }
 
