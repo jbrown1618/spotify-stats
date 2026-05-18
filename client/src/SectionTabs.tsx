@@ -31,7 +31,6 @@ interface SectionTabsProps {
 
 function hasDetails(f: ActiveFilters): boolean {
   return !!(
-    f.wrapped ||
     f.tracks?.length === 1 ||
     f.artists?.length === 1 ||
     f.albums?.length === 1 ||
