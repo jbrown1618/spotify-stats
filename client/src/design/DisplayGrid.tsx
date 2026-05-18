@@ -1,5 +1,5 @@
 import {
-  Button,
+  Loader,
   SegmentedControl,
   SegmentedControlItem,
   Select,
@@ -9,12 +9,10 @@ import {
   IconGridDots,
   IconLayoutGridFilled,
   IconList,
-  IconMinus,
   IconPill,
-  IconPlus,
 } from "@tabler/icons-react";
 import clsx from "clsx";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "./DisplayGrid.module.css";
 import { LargeTileSkeleton } from "./LargeTileDesign";
@@ -59,7 +57,6 @@ export function DisplayGrid<T>({
   isFetchingNextPage,
   onLoadMore,
 }: DisplayGridProps<T>) {
-  const ref = useRef<HTMLDivElement>(null);
   const [variant, setVariant] = useState<DisplayVariant>(
     renderRow
       ? "row"
@@ -73,10 +70,17 @@ export function DisplayGrid<T>({
   );
 
   const isServerPaginated = !!onLoadMore;
-
   const [count, setCount] = useState(PAGE_SIZE);
 
-  const handleMore = () => {
+  const totalItems = total ?? items?.length ?? 0;
+  const hasMore = isServerPaginated
+    ? (items?.length ?? 0) < totalItems
+    : count < totalItems;
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const handleLoadMore = useCallback(() => {
+    if (isFetchingNextPage) return;
     if (isServerPaginated) {
       setCount((c) => c + PAGE_SIZE);
       const allLoaded = items?.length ?? 0;
@@ -84,14 +88,26 @@ export function DisplayGrid<T>({
         onLoadMore?.();
       }
     } else {
-      setCount((count) => count * 2);
+      setCount((c) => c + PAGE_SIZE);
     }
-  };
+  }, [isServerPaginated, isFetchingNextPage, items?.length, count, onLoadMore]);
 
-  const onLess = () => {
-    setCount(PAGE_SIZE);
-    ref.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, handleLoadMore]);
 
   const displayOptions: SegmentedControlItem[] = [];
   if (renderRow) displayOptions.push({ label: <IconList />, value: "row" });
@@ -106,10 +122,6 @@ export function DisplayGrid<T>({
 
   const displayItems = items?.slice(0, count);
 
-  const totalItems = total ?? items?.length ?? 0;
-  const showMore = count < totalItems;
-  const showLess = count > PAGE_SIZE;
-
   if (!loading && displayItems?.length === 0)
     return (
       <div className={styles.noData}>
@@ -119,7 +131,7 @@ export function DisplayGrid<T>({
 
   return (
     <>
-      <div ref={ref} className={styles.controls}>
+      <div className={styles.controls}>
         {displayOptions.length > 1 ? (
           <SegmentedControl
             onChange={(v) => setVariant(v as DisplayVariant)}
@@ -176,17 +188,9 @@ export function DisplayGrid<T>({
             </div>
           ))}
       </div>
-      <div className={styles.buttons}>
-        {showLess ? (
-          <Button variant="light" onClick={onLess} className={styles.button}>
-            <IconMinus />
-          </Button>
-        ) : null}
-        {showMore ? (
-          <Button variant="light" onClick={handleMore} className={styles.button}>
-            <IconPlus />
-          </Button>
-        ) : null}
+
+      <div ref={sentinelRef} className={styles.sentinel}>
+        {isFetchingNextPage && <Loader size="sm" />}
       </div>
     </>
   );

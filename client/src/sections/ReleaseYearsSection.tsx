@@ -1,10 +1,13 @@
 import { Pill } from "@mantine/core";
+import { useState } from "react";
 
 import { YearsBarChart } from "../charts/YearsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { useReleaseYears, PAGE_SIZE } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
+
+const yearSortOptions = ["Newest", "Oldest", "Most liked tracks"];
 
 export function ReleaseYearsSection() {
   return (
@@ -18,14 +21,18 @@ export function ReleaseYearsSection() {
 }
 
 function YearsDisplayGrid() {
+  const [sort, setSort] = useState("Newest");
   const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
-    useReleaseYears({ sort: "Most liked tracks", limit: PAGE_SIZE });
+    useReleaseYears({ sort, limit: PAGE_SIZE });
 
   return (
     <DisplayGrid
       loading={isLoading}
       items={items}
       total={total}
+      sortOptions={yearSortOptions}
+      sort={sort}
+      onSortChange={setSort}
       getKey={(yc) => "" + yc.release_year}
       renderPill={(yc) => <ReleaseYearPill year={yc.release_year} />}
       

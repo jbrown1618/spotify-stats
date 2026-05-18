@@ -32,12 +32,9 @@
   flex-wrap: wrap;
 }
 
-.buttons {
+.sentinel {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.button {
-  margin-top: 16px;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 1px;
 }
