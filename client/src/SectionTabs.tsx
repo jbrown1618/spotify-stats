@@ -125,6 +125,11 @@ export function SectionTabs({ sections }: SectionTabsProps) {
   const visibleSections = sections.filter((s) => !s.hidden(filters));
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // Navigate to the first available tab when filters change
+  useEffect(() => {
+    setActiveId(null);
+  }, [filters]);
+
   // Auto-select the Details tab when it appears
   const detailsVisible = visibleSections.some((s) => s.id === "details");
   useEffect(() => {

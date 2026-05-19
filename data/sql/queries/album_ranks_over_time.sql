@@ -19,9 +19,13 @@ cumulative_counts AS (
     GROUP BY t.album_uri, m.as_of_date
 )
 SELECT 
-    album_uri,
+    cc.album_uri,
     0 AS album_rank,
-    album_stream_count,
-    as_of_date
-FROM cumulative_counts
-ORDER BY album_uri, as_of_date;
+    cc.album_stream_count,
+    cc.as_of_date,
+    al.short_name AS album_short_name,
+    al.name AS album_name,
+    al.image_url AS album_image_url
+FROM cumulative_counts cc
+INNER JOIN album al ON al.uri = cc.album_uri
+ORDER BY cc.album_uri, cc.as_of_date;
