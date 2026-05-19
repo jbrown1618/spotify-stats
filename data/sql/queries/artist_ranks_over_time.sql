@@ -19,9 +19,12 @@ cumulative_counts AS (
     GROUP BY ta.artist_uri, m.as_of_date
 )
 SELECT 
-    artist_uri,
+    cc.artist_uri,
     0 AS artist_rank,
-    artist_stream_count,
-    as_of_date
-FROM cumulative_counts
-ORDER BY artist_uri, as_of_date;
+    cc.artist_stream_count,
+    cc.as_of_date,
+    a.name AS artist_name,
+    a.image_url AS artist_image_url
+FROM cumulative_counts cc
+INNER JOIN artist a ON a.uri = cc.artist_uri
+ORDER BY cc.artist_uri, cc.as_of_date;
