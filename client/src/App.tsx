@@ -20,6 +20,7 @@ import { RecommendationsSection } from "./sections/RecommendationsSection";
 import { ReleaseYearsSection } from "./sections/ReleaseYearsSection";
 import { TracksSection } from "./sections/TracksSection";
 import { SectionTabs, useSectionDefs } from "./SectionTabs";
+import { SpotifyAuthBanner } from "./SpotifyAuthBanner";
 import {
   useAlbums,
   useArtists,
@@ -156,6 +157,7 @@ export function App() {
       <Backdrop />
       <Container size="lg">
         <Header />
+        <SpotifyAuthBanner />
         <DetailsTitle />
         <SectionTabs sections={sections} />
       </Container>

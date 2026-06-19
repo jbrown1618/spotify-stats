@@ -30,3 +30,15 @@ script/dev-client
 ```
 
 And navigate to `http://localhost:5173`
+
+## Refresh Spotify authorization cache
+
+If Spotify authorization expires, run:
+
+```bash
+script/spotify-cache > spotify-cache.json
+```
+
+The script sends a Spotify request, runs the local authorization flow if needed,
+and writes the updated Spotipy cache JSON to stdout. Copy the file contents into
+the `SPOTIFY_CACHE` Heroku config var.

@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+
+python -m script.refresh_spotify_cache

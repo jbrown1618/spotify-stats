@@ -14,6 +14,7 @@ from routes.utils import to_date_range, to_json
 from routes.producers import producers_payload
 from data.filters import parse_request_args
 from data.sql.migrations.migrations import perform_all_migrations
+from spotify.spotify_client import spotify_auth_status
 from utils.ranking import album_ranks_over_time, album_streams_by_month, artist_ranks_over_time, artist_streams_by_month, track_ranks_over_time, track_streams_by_month
 from utils.ranking import filtered_track_ranks_over_time, filtered_track_streams_by_month, filtered_artist_ranks_over_time, filtered_artist_streams_by_month, filtered_album_ranks_over_time, filtered_album_streams_by_month
 
@@ -32,6 +33,11 @@ def index():
 @app.route("/api/filters")
 def get_filter_options():
     return filter_options_payload()
+
+
+@app.route("/api/spotify-auth/status")
+def get_spotify_auth_status():
+    return spotify_auth_status()
 
 
 @app.route("/api/tracks")
