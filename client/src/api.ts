@@ -211,8 +211,16 @@ export interface StreamsByMonthResponse {
   metadata: Record<string, Record<string, string>>;
 }
 
+export interface SpotifyAuthStatus {
+  status: "ok" | "missing_cache" | "reauth_required" | "error";
+}
+
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
+}
+
+export async function getSpotifyAuthStatus(): Promise<SpotifyAuthStatus> {
+  return sendRequest("/api/spotify-auth/status", "Spotify auth status");
 }
 
 export async function getArtistCredits(

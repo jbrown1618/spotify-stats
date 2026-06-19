@@ -7,8 +7,6 @@ import {
   ArtistRank,
   Credit,
   FilterOptions,
-  PaginatedResponse,
-  PaginationParams,
   getAlbums,
   getAlbumsStreamingHistory,
   getAlbumsStreamsByMonth,
@@ -23,11 +21,15 @@ import {
   getProducers,
   getRecommendations,
   getReleaseYears,
+  getSpotifyAuthStatus,
   getTrackCredits,
+  getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
-  getTracks,
+  PaginatedResponse,
+  PaginationParams,
   Recommendations,
+  SpotifyAuthStatus,
   StreamsByMonthResponse,
   toFiltersQuery,
   TrackRank,
@@ -135,6 +137,16 @@ export function useFilterOptions() {
     ...defaultQueryOptions,
     queryKey: ["filter-options"],
     queryFn: async () => getFilterOptions(),
+  });
+}
+
+export function useSpotifyAuthStatus() {
+  return useQuery<SpotifyAuthStatus>({
+    queryKey: ["spotify-auth-status"],
+    queryFn: async () => getSpotifyAuthStatus(),
+    retry: false,
+    staleTime: 0,
+    gcTime: 1000 * 60,
   });
 }
 
