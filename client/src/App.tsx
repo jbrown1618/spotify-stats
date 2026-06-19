@@ -3,12 +3,12 @@ import "./global.css";
 import { Container } from "@mantine/core";
 
 import { Backdrop } from "./Backdrop";
+import { TextSkeleton } from "./design/TextSkeleton";
 import { AlbumDetails } from "./details/AlbumDetails";
 import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
-import { TextSkeleton } from "./design/TextSkeleton";
 import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -40,14 +40,27 @@ function DetailsContent() {
       {filters.artists?.length === 1 && (
         <ArtistDetails artistURI={filters.artists[0]} />
       )}
+      {filters.producers?.length === 1 && (
+        <ProducerDetails mbid={filters.producers[0]} />
+      )}
+    </>
+  );
+}
+
+function TracksOverviewContent() {
+  const filters = useFilters();
+
+  if (filters.albums?.length !== 1 && filters.playlists?.length !== 1) {
+    return null;
+  }
+
+  return (
+    <>
       {filters.albums?.length === 1 && (
         <AlbumDetails albumURI={filters.albums[0]} />
       )}
       {filters.playlists?.length === 1 && (
         <PlaylistDetails playlistURI={filters.playlists[0]} />
-      )}
-      {filters.producers?.length === 1 && (
-        <ProducerDetails mbid={filters.producers[0]} />
       )}
     </>
   );
@@ -127,7 +140,7 @@ function DetailsTitle() {
 export function App() {
   const sections = useSectionDefs({
     details: <DetailsContent />,
-    tracks: <TracksSection />,
+    tracks: <TracksSection overview={<TracksOverviewContent />} />,
     artists: <ArtistsSection />,
     albums: <AlbumsSection />,
     playlists: <PlaylistsSection />,

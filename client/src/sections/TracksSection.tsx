@@ -1,15 +1,15 @@
 import { Tabs } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 import { TrackStreamsLineChart } from "../charts/TracksLineChart";
 import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistoryStack";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
 import {
+  PAGE_SIZE,
   useTracks,
   useTracksStreamingHistory,
   useTracksStreamsByMonth,
-  PAGE_SIZE,
 } from "../useApi";
 
 const trackSortOptions = [
@@ -22,7 +22,11 @@ const trackSortOptions = [
   "Alphabetical",
 ];
 
-export function TracksSection() {
+interface TracksSectionProps {
+  overview?: ReactNode;
+}
+
+export function TracksSection({ overview }: TracksSectionProps) {
   const { shouldRender: shouldRenderMonths } = useTracksStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useTracksStreamingHistory();
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -32,6 +36,7 @@ export function TracksSection() {
 
   return (
     <div>
+      {overview}
       <h2>Tracks</h2>
 
       <Tabs
