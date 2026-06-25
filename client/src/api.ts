@@ -236,6 +236,11 @@ export interface TrackDiscoveryMonth {
   retained_track_count: number;
 }
 
+export interface TotalStreamsMonth {
+  month: string;
+  stream_count: number;
+}
+
 export interface TrackVarietyMonth {
   month: string;
   total_stream_count: number;
@@ -246,6 +251,7 @@ export interface TrackVarietyMonth {
 
 export interface InsightsResponse {
   distributions: StreamDistributionBucket[];
+  total_streams: TotalStreamsMonth[];
   release_months: ReleaseMonthCount[];
   discovery: TrackDiscoveryMonth[];
   variety: TrackVarietyMonth[];

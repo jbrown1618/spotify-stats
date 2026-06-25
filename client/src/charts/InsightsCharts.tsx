@@ -4,6 +4,7 @@ import { Text } from "@mantine/core";
 import {
   ReleaseMonthCount,
   StreamDistributionBucket,
+  TotalStreamsMonth,
   TrackDiscoveryMonth,
   TrackVarietyMonth,
 } from "../api";
@@ -49,6 +50,35 @@ const monthLabels = [
 
 function monthTimestamp(month: string): number {
   return new Date(`${month}-01T00:00:00`).getTime();
+}
+
+export function TotalStreamsByMonthChart({
+  totalStreams,
+}: {
+  totalStreams: TotalStreamsMonth[];
+}) {
+  const isMobile = useIsMobile();
+  if (totalStreams.length < 2) return null;
+
+  const data = totalStreams.map((item) => ({
+    Month: monthTimestamp(item.month),
+    Streams: item.stream_count,
+  }));
+
+  return (
+    <>
+      <h3>Total streams by month</h3>
+      <LineChart
+        h={360}
+        data={data}
+        dataKey="Month"
+        series={[{ name: "Streams", color: "green" }]}
+        withDots={false}
+        withTooltip={!isMobile}
+        xAxisProps={{ tickFormatter: formatMonth }}
+      />
+    </>
+  );
 }
 
 export function StreamDistributionsChart({

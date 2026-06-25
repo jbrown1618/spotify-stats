@@ -3,6 +3,7 @@ import { Text } from "@mantine/core";
 import {
   ReleaseMonthsChart,
   StreamDistributionsChart,
+  TotalStreamsByMonthChart,
   TrackDiscoveryChart,
   TrackVarietyChart,
 } from "../charts/InsightsCharts";
@@ -20,6 +21,7 @@ export function InsightsSection() {
     <div>
       <h2>Insights</h2>
 
+      <TotalStreamsByMonthChart totalStreams={insights.total_streams} />
       <TrackDiscoveryChart discovery={insights.discovery} />
       <TrackVarietyChart variety={insights.variety} />
       <StreamDistributionsChart distributions={insights.distributions} />
@@ -27,6 +29,7 @@ export function InsightsSection() {
 
       {insights.discovery.length === 0 &&
         insights.variety.length === 0 &&
+        insights.total_streams.length === 0 &&
         insights.distributions.length === 0 &&
         insights.release_months.length === 0 && (
           <Text fs="italic">No insight data</Text>

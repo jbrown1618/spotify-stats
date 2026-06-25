@@ -17,6 +17,11 @@ def insights_payload(filters: dict):
             conn,
             params=query_params,
         )
+        total_streams = pd.read_sql_query(
+            sqlalchemy.text(query_text("filtered_total_streams_by_month")),
+            conn,
+            params=query_params,
+        )
         release_months = pd.read_sql_query(
             sqlalchemy.text(query_text("filtered_release_month_counts")),
             conn,
@@ -34,6 +39,7 @@ def insights_payload(filters: dict):
 
     return {
         "distributions": to_json(distributions),
+        "total_streams": to_json(total_streams),
         "release_months": to_json(release_months),
         "discovery": to_json(discovery),
         "variety": to_json(variety),
