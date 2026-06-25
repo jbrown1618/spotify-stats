@@ -13,6 +13,7 @@ import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
 import { GenresSection } from "./sections/GenresSection";
+import { InsightsSection } from "./sections/InsightsSection";
 import { LabelsSection } from "./sections/LabelsSection";
 import { PlaylistsSection } from "./sections/PlaylistsSection";
 import { ProducersSection } from "./sections/ProducersSection";
@@ -141,6 +142,7 @@ function DetailsTitle() {
 export function App() {
   const sections = useSectionDefs({
     details: <DetailsContent />,
+    insights: <InsightsSection />,
     tracks: <TracksSection overview={<TracksOverviewContent />} />,
     artists: <ArtistsSection />,
     albums: <AlbumsSection />,
