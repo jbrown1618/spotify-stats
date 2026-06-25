@@ -10,8 +10,42 @@ import {
 import { useIsMobile } from "../useIsMobile";
 import { formatMonth } from "../utils";
 
-const streamBuckets = ["0", "1", "2", "3-5", "6-10", "11-20", "21-50", "51-100", "101+"];
-const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+type DistributionEntity = StreamDistributionBucket["entity_type"];
+
+const streamBuckets = [
+  "0",
+  "1",
+  "2",
+  "3-5",
+  "6-10",
+  "11-20",
+  "21-50",
+  "51-100",
+  "101+",
+];
+const distributionCharts: {
+  entity: DistributionEntity;
+  label: string;
+  color: string;
+}[] = [
+  { entity: "track", label: "Tracks", color: "green" },
+  { entity: "artist", label: "Artists", color: "blue" },
+  { entity: "album", label: "Albums", color: "grape" },
+];
+const monthLabels = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function monthTimestamp(month: string): number {
   return new Date(`${month}-01T00:00:00`).getTime();
@@ -22,40 +56,55 @@ export function StreamDistributionsChart({
 }: {
   distributions: StreamDistributionBucket[];
 }) {
-  const isMobile = useIsMobile();
   if (distributions.length === 0) return null;
 
-  const countsByEntityAndBucket = new Map<string, number>();
-  for (const item of distributions) {
-    countsByEntityAndBucket.set(
-      `${item.entity_type}:${item.bucket}`,
-      item.item_count
-    );
-  }
+  return (
+    <>
+      {distributionCharts.map((chart) => (
+        <StreamDistributionChart
+          key={chart.entity}
+          distributions={distributions}
+          entity={chart.entity}
+          label={chart.label}
+          color={chart.color}
+        />
+      ))}
+    </>
+  );
+}
 
+function StreamDistributionChart({
+  distributions,
+  entity,
+  label,
+  color,
+}: {
+  distributions: StreamDistributionBucket[];
+  entity: DistributionEntity;
+  label: string;
+  color: string;
+}) {
+  const isMobile = useIsMobile();
+  const countsByBucket = new Map(
+    distributions
+      .filter((item) => item.entity_type === entity)
+      .map((item) => [item.bucket, item.item_count])
+  );
   const data = streamBuckets.map((bucket) => ({
     Streams: bucket,
-    Tracks: countsByEntityAndBucket.get(`track:${bucket}`) ?? 0,
-    Artists: countsByEntityAndBucket.get(`artist:${bucket}`) ?? 0,
-    Albums: countsByEntityAndBucket.get(`album:${bucket}`) ?? 0,
+    [label]: countsByBucket.get(bucket) ?? 0,
   }));
 
   return (
     <>
-      <h3>Streams per track, artist, and album</h3>
+      <h3>Streams per {entity}</h3>
       <BarChart
-        h={360}
+        h={320}
         data={data}
         dataKey="Streams"
-        series={[
-          { name: "Tracks", color: "green" },
-          { name: "Artists", color: "blue" },
-          { name: "Albums", color: "grape" },
-        ]}
-        withLegend
+        series={[{ name: label, color }]}
         withTooltip={!isMobile}
         withBarValueLabel={isMobile}
-        legendProps={{ verticalAlign: "bottom" }}
         gridAxis="y"
       />
     </>
@@ -165,6 +214,11 @@ export function TrackVarietyChart({
       <Text c="dimmed">
         Effective tracks estimates how many evenly played tracks would produce
         the same listening balance for each month.
+      </Text>
+      <Text c="dimmed">
+        When listening is evenly distributed, effective tracks matches unique
+        tracks. The bigger the gap, the more skewed that month was toward a few
+        tracks.
       </Text>
       <LineChart
         h={360}
