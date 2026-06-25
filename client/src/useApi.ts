@@ -16,6 +16,7 @@ import {
   getArtistsStreamsByMonth,
   getFilterOptions,
   getGenres,
+  getInsights,
   getLabels,
   getPlaylists,
   getProducers,
@@ -26,6 +27,7 @@ import {
   getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  InsightsResponse,
   PaginatedResponse,
   PaginationParams,
   Recommendations,
@@ -173,6 +175,16 @@ export function useRecommendations() {
     ...defaultQueryOptions,
     queryKey: ["recommendations", query],
     queryFn: async () => getRecommendations(filters),
+  });
+}
+
+export function useInsights() {
+  const filters = useFilters();
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  return useQuery<InsightsResponse>({
+    ...defaultQueryOptions,
+    queryKey: ["insights", query],
+    queryFn: async () => getInsights(filters),
   });
 }
 

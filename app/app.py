@@ -5,6 +5,7 @@ from routes.albums import albums_payload
 from routes.artists import artists_payload, artist_credits_payload
 from routes.filters import filter_options_payload
 from routes.genres import genres_payload
+from routes.insights import insights_payload
 from routes.labels import labels_payload
 from routes.playlists import playlists_payload
 from routes.recommendations import recommendations_payload
@@ -88,6 +89,11 @@ def list_producers():
 @app.route("/api/release-years")
 def list_release_years():
     return release_years_payload(parse_request_args(request.args))
+
+
+@app.route("/api/insights")
+def get_insights():
+    return insights_payload(parse_request_args(request.args))
 
 
 @app.route("/api/streams/tracks/history")

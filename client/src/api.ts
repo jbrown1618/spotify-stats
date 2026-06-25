@@ -215,6 +215,42 @@ export interface SpotifyAuthStatus {
   status: "ok" | "missing_cache" | "reauth_required" | "error";
 }
 
+export interface StreamDistributionBucket {
+  entity_type: "track" | "album" | "artist";
+  bucket: string;
+  bucket_min: number;
+  bucket_max: number | null;
+  bucket_sort: number;
+  item_count: number;
+}
+
+export interface ReleaseMonthCount {
+  release_month: number;
+  track_count: number;
+  liked_track_count: number;
+}
+
+export interface TrackDiscoveryMonth {
+  month: string;
+  first_stream_count: number;
+  retained_track_count: number;
+}
+
+export interface TrackVarietyMonth {
+  month: string;
+  total_stream_count: number;
+  unique_track_count: number;
+  effective_track_count: number;
+  top_10_stream_share: number;
+}
+
+export interface InsightsResponse {
+  distributions: StreamDistributionBucket[];
+  release_months: ReleaseMonthCount[];
+  discovery: TrackDiscoveryMonth[];
+  variety: TrackVarietyMonth[];
+}
+
 export async function getFilterOptions(): Promise<FilterOptions> {
   return sendRequest("/api/filters", "filter options");
 }
@@ -282,6 +318,12 @@ export async function getReleaseYears(
   filters: ActiveFilters & Partial<PaginationParams>
 ): Promise<PaginatedResponse<ReleaseYear>> {
   return sendRequest(`/api/release-years`, "release years", filters);
+}
+
+export async function getInsights(
+  filters: ActiveFilters
+): Promise<InsightsResponse> {
+  return sendRequest(`/api/insights`, "insights", filters);
 }
 
 export async function getTracksStreamingHistory(

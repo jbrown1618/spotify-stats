@@ -1,5 +1,6 @@
 import {
   IconCalendar,
+  IconChartBar,
   IconDisc,
   IconInfoCircle,
   IconList,
@@ -51,6 +52,13 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       icon: <IconInfoCircle size={20} />,
       hidden: (f) => !hasDetails(f),
       content: sectionContent.details,
+    },
+    {
+      id: "insights",
+      label: "Insights",
+      icon: <IconChartBar size={20} />,
+      hidden: () => false,
+      content: sectionContent.insights,
     },
     {
       id: "tracks",
