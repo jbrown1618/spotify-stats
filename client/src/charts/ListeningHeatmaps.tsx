@@ -60,16 +60,6 @@ function parseMonthKey(monthKey: string): Date {
   return new Date(`${monthKey}-01T00:00:00Z`);
 }
 
-function formatMonthKey(date: Date): string {
-  return date.toISOString().slice(0, 7);
-}
-
-function addMonths(date: Date, monthsToAdd: number): Date {
-  const next = new Date(date.getTime());
-  next.setUTCMonth(date.getUTCMonth() + monthsToAdd);
-  return next;
-}
-
 function heatColor(value: number, maxValue: number): string {
   if (maxValue <= 0 || value <= 0) return "rgba(0, 0, 0, 0.5)";
   const intensity = Math.sqrt(value / maxValue);
@@ -151,18 +141,17 @@ export function WeekdayByMonthHeatmap({
 }) {
   if (values.length === 0) return null;
 
-  const monthStarts = values.map((value) => parseMonthKey(value.month));
-  const minMonth = new Date(Math.min(...monthStarts.map((date) => date.getTime())));
-  const maxMonth = new Date(Math.max(...monthStarts.map((date) => date.getTime())));
-  const columns: HeatmapColumn[] = [];
-
-  for (let month = minMonth; month <= maxMonth; month = addMonths(month, 1)) {
-    const key = formatMonthKey(month);
-    columns.push({
-      key,
-      label: month.getUTCMonth() === 0 ? `${month.getUTCFullYear()}` : "",
+  const columns = [...new Set(values.map((value) => value.month))]
+    .sort()
+    .map((key, index): HeatmapColumn => {
+      const month = parseMonthKey(key);
+      const isFirstColumn = index === 0;
+      const isJanuary = month.getUTCMonth() === 0;
+      return {
+        key,
+        label: isFirstColumn || isJanuary ? `${month.getUTCFullYear()}` : "",
+      };
     });
-  }
 
   const heatmapValues = new Map(
     values.map((value) => [
@@ -174,7 +163,7 @@ export function WeekdayByMonthHeatmap({
   return (
     <Heatmap
       title="Streams by weekday and month"
-      description="Each column is one month in your listening history. Darker cells show heavier listening on that day of the week."
+      description="Each column is a month with listening data. Darker cells show heavier listening on that day of the week."
       rows={weekdays.map((day) => ({ key: `${day.value}`, label: day.label }))}
       columns={columns}
       values={heatmapValues}
@@ -190,12 +179,12 @@ export function MonthByYearHeatmap({
 }) {
   if (values.length === 0) return null;
 
-  const minYear = Math.min(...values.map((value) => value.year));
-  const maxYear = Math.max(...values.map((value) => value.year));
-  const columns: HeatmapColumn[] = [];
-  for (let year = minYear; year <= maxYear; year++) {
-    columns.push({ key: `${year}`, label: `${year}` });
-  }
+  const columns = [...new Set(values.map((value) => value.year))]
+    .sort((a, b) => a - b)
+    .map((year): HeatmapColumn => ({
+      key: `${year}`,
+      label: `${year}`,
+    }));
 
   const heatmapValues = new Map(
     values.map((value) => [
@@ -207,7 +196,7 @@ export function MonthByYearHeatmap({
   return (
     <Heatmap
       title="Streams by month and year"
-      description="Compare seasonal listening patterns across years."
+      description="Compare seasonal listening patterns across years with listening data."
       rows={months.map((month) => ({ key: `${month.value}`, label: month.label }))}
       columns={columns}
       values={heatmapValues}
