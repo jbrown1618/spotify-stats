@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import {
   HourByWeekdayHeatmapCell,
   MonthByYearHeatmapCell,
-  WeekdayByWeekHeatmapCell,
+  WeekdayByMonthHeatmapCell,
 } from "../api";
 import styles from "./ListeningHeatmaps.module.css";
 
@@ -56,22 +56,18 @@ function cellKey(rowKey: string, columnKey: string) {
   return `${rowKey}:${columnKey}`;
 }
 
-function formatDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
+function parseMonthKey(monthKey: string): Date {
+  return new Date(`${monthKey}-01T00:00:00Z`);
 }
 
-function parseDateKey(dateKey: string): Date {
-  return new Date(`${dateKey}T00:00:00Z`);
+function formatMonthKey(date: Date): string {
+  return date.toISOString().slice(0, 7);
 }
 
-function addDays(date: Date, days: number): Date {
+function addMonths(date: Date, monthsToAdd: number): Date {
   const next = new Date(date.getTime());
-  next.setUTCDate(date.getUTCDate() + days);
+  next.setUTCMonth(date.getUTCMonth() + monthsToAdd);
   return next;
-}
-
-function addWeeks(date: Date, weeks: number): Date {
-  return addDays(date, weeks * 7);
 }
 
 function heatColor(value: number, maxValue: number): string {
@@ -148,38 +144,37 @@ function Heatmap({
   );
 }
 
-export function WeekdayByWeekHeatmap({
+export function WeekdayByMonthHeatmap({
   values,
 }: {
-  values: WeekdayByWeekHeatmapCell[];
+  values: WeekdayByMonthHeatmapCell[];
 }) {
   if (values.length === 0) return null;
 
-  const weekStarts = values.map((value) => parseDateKey(value.week_start));
-  const minWeek = new Date(Math.min(...weekStarts.map((date) => date.getTime())));
-  const maxWeek = new Date(Math.max(...weekStarts.map((date) => date.getTime())));
+  const monthStarts = values.map((value) => parseMonthKey(value.month));
+  const minMonth = new Date(Math.min(...monthStarts.map((date) => date.getTime())));
+  const maxMonth = new Date(Math.max(...monthStarts.map((date) => date.getTime())));
   const columns: HeatmapColumn[] = [];
 
-  for (let week = minWeek; week <= maxWeek; week = addWeeks(week, 1)) {
-    const key = formatDate(week);
-    const isFirstWeekOfYear = week.getUTCMonth() === 0 && week.getUTCDate() <= 7;
+  for (let month = minMonth; month <= maxMonth; month = addMonths(month, 1)) {
+    const key = formatMonthKey(month);
     columns.push({
       key,
-      label: isFirstWeekOfYear ? `${week.getUTCFullYear()}` : "",
+      label: month.getUTCMonth() === 0 ? `${month.getUTCFullYear()}` : "",
     });
   }
 
   const heatmapValues = new Map(
     values.map((value) => [
-      cellKey(`${value.day_of_week}`, value.week_start),
+      cellKey(`${value.day_of_week}`, value.month),
       value.stream_count,
     ])
   );
 
   return (
     <Heatmap
-      title="Streams by weekday and week"
-      description="Each column is one week in your listening history. Darker cells show heavier listening on that day of the week."
+      title="Streams by weekday and month"
+      description="Each column is one month in your listening history. Darker cells show heavier listening on that day of the week."
       rows={weekdays.map((day) => ({ key: `${day.value}`, label: day.label }))}
       columns={columns}
       values={heatmapValues}
