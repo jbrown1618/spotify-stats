@@ -28,7 +28,7 @@ export function GenresSection() {
             <StreamShareAreaChart
               rows={shareRows ?? []}
               title="Genre stream share over time"
-              description="Monthly share for your current top 10 genres, with all other genres grouped as Other."
+              description="Monthly stream share for your current top 10 genres, with all other streams grouped as Other."
             />
           </Tabs.Panel>
         </Tabs>

@@ -86,7 +86,7 @@ export function ArtistsSection() {
           <StreamShareAreaChart
             rows={shareRows ?? []}
             title="Artist stream share over time"
-            description="Monthly share for your current top 10 artists, with all other artists grouped as Other."
+            description="Monthly stream share for your current top 10 artists, with all other streams grouped as Other."
           />
         </Tabs.Panel>
 

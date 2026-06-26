@@ -1,30 +1,29 @@
-WITH stream_genres AS (
-    SELECT DISTINCT
+WITH matching_streams AS (
+    SELECT
         s.id AS stream_id,
-        DATE_TRUNC('month', s.played_at) AS month_start,
-        ag.genre
+        DATE_TRUNC('month', s.played_at) AS month_start
     FROM matching_track_uris m
         INNER JOIN track_stream s ON s.track_uri = m.track_uri
-        INNER JOIN track_artist ta ON ta.track_uri = s.track_uri
-        INNER JOIN artist_genre ag ON ag.artist_uri = ta.artist_uri
     WHERE
         (:wrapped_start_date IS NULL OR :wrapped_start_date <= s.played_at)
         AND
         (:wrapped_end_date IS NULL OR :wrapped_end_date >= s.played_at)
 ),
-genre_monthly AS (
-    SELECT
-        month_start,
-        genre,
-        COUNT(*)::INT AS stream_count
-    FROM stream_genres
-    GROUP BY month_start, genre
+stream_genres AS (
+    SELECT DISTINCT
+        ms.stream_id,
+        ms.month_start,
+        ag.genre
+    FROM matching_streams ms
+        INNER JOIN track_stream s ON s.id = ms.stream_id
+        INNER JOIN track_artist ta ON ta.track_uri = s.track_uri
+        INNER JOIN artist_genre ag ON ag.artist_uri = ta.artist_uri
 ),
 genre_totals AS (
     SELECT
         genre,
-        SUM(stream_count) AS total_stream_count
-    FROM genre_monthly
+        COUNT(*) AS total_stream_count
+    FROM stream_genres
     GROUP BY genre
 ),
 top_genres AS (
@@ -38,19 +37,36 @@ top_genres AS (
 monthly_totals AS (
     SELECT
         month_start,
-        SUM(stream_count) AS month_stream_count
-    FROM genre_monthly
+        COUNT(*)::FLOAT AS month_stream_count
+    FROM matching_streams
     GROUP BY month_start
+),
+stream_top_genres AS (
+    SELECT
+        sg.stream_id,
+        sg.month_start,
+        tg.genre,
+        tg.sort_order,
+        COUNT(*) OVER (PARTITION BY sg.stream_id)::FLOAT AS top_genre_count
+    FROM stream_genres sg
+        INNER JOIN top_genres tg ON tg.genre = sg.genre
 ),
 top_monthly AS (
     SELECT
-        gm.month_start,
-        tg.genre AS category_key,
-        tg.genre AS category_name,
-        gm.stream_count,
-        tg.sort_order
-    FROM genre_monthly gm
-        INNER JOIN top_genres tg ON tg.genre = gm.genre
+        month_start,
+        genre AS category_key,
+        genre AS category_name,
+        SUM(1.0 / top_genre_count)::FLOAT AS stream_count,
+        sort_order
+    FROM stream_top_genres
+    GROUP BY month_start, genre, sort_order
+),
+top_stream_monthly AS (
+    SELECT
+        month_start,
+        COUNT(DISTINCT stream_id)::FLOAT AS stream_count
+    FROM stream_top_genres
+    GROUP BY month_start
 ),
 other_monthly AS (
     SELECT
@@ -59,12 +75,11 @@ other_monthly AS (
         'Other' AS category_name,
         (
             mt.month_stream_count
-            - COALESCE(SUM(tm.stream_count), 0)
-        )::INT AS stream_count,
+            - COALESCE(tsm.stream_count, 0)
+        )::FLOAT AS stream_count,
         (:n + 1)::BIGINT AS sort_order
     FROM monthly_totals mt
-        LEFT JOIN top_monthly tm ON tm.month_start = mt.month_start
-    GROUP BY mt.month_start, mt.month_stream_count
+        LEFT JOIN top_stream_monthly tsm ON tsm.month_start = mt.month_start
 ),
 share_rows AS (
     SELECT * FROM top_monthly
