@@ -186,7 +186,7 @@ export function useInsights() {
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
   return useQuery<InsightsResponse>({
     ...defaultQueryOptions,
-    queryKey: ["insights-v2", query],
+    queryKey: ["insights-v4", query],
     queryFn: async () => getInsights(filters),
   });
 }

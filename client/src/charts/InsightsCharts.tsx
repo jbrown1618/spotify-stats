@@ -13,22 +13,6 @@ import { formatMonth } from "../utils";
 
 type DistributionEntity = StreamDistributionBucket["entity_type"];
 
-const streamBuckets = [
-  "0",
-  "1",
-  "2",
-  "3-5",
-  "6-10",
-  "11-20",
-  "21-50",
-  "51-100",
-  "101-200",
-  "201-500",
-  "501-1k",
-  "1k-2k",
-  "2k-4k",
-  "4k+",
-];
 const distributionCharts: {
   entity: DistributionEntity;
   label: string;
@@ -120,15 +104,15 @@ function StreamDistributionChart({
   color: string;
 }) {
   const isMobile = useIsMobile();
-  const countsByBucket = new Map(
-    distributions
-      .filter((item) => item.entity_type === entity)
-      .map((item) => [item.bucket, item.item_count])
-  );
-  const data = streamBuckets.map((bucket) => ({
-    Streams: bucket,
-    [label]: countsByBucket.get(bucket) ?? 0,
-  }));
+  const data = distributions
+    .filter((item) => item.entity_type === entity)
+    .sort((a, b) => a.bucket_sort - b.bucket_sort)
+    .map((item) => ({
+      Streams: item.bucket,
+      [label]: item.item_count,
+    }));
+
+  if (data.length === 0) return null;
 
   return (
     <>

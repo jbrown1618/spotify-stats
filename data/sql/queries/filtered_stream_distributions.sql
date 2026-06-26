@@ -46,82 +46,92 @@ entity_stream_counts AS (
     UNION ALL
     SELECT * FROM artist_stream_counts
 ),
-bucketed AS (
+entity_maxes AS (
     SELECT
         entity_type,
-        CASE
-            WHEN stream_count = 0 THEN '0'
-            WHEN stream_count = 1 THEN '1'
-            WHEN stream_count = 2 THEN '2'
-            WHEN stream_count BETWEEN 3 AND 5 THEN '3-5'
-            WHEN stream_count BETWEEN 6 AND 10 THEN '6-10'
-            WHEN stream_count BETWEEN 11 AND 20 THEN '11-20'
-            WHEN stream_count BETWEEN 21 AND 50 THEN '21-50'
-            WHEN stream_count BETWEEN 51 AND 100 THEN '51-100'
-            WHEN stream_count BETWEEN 101 AND 200 THEN '101-200'
-            WHEN stream_count BETWEEN 201 AND 500 THEN '201-500'
-            WHEN stream_count BETWEEN 501 AND 1000 THEN '501-1k'
-            WHEN stream_count BETWEEN 1001 AND 2000 THEN '1k-2k'
-            WHEN stream_count BETWEEN 2001 AND 4000 THEN '2k-4k'
-            ELSE '4k+'
-        END AS bucket,
-        CASE
-            WHEN stream_count = 0 THEN 0
-            WHEN stream_count = 1 THEN 1
-            WHEN stream_count = 2 THEN 2
-            WHEN stream_count BETWEEN 3 AND 5 THEN 3
-            WHEN stream_count BETWEEN 6 AND 10 THEN 6
-            WHEN stream_count BETWEEN 11 AND 20 THEN 11
-            WHEN stream_count BETWEEN 21 AND 50 THEN 21
-            WHEN stream_count BETWEEN 51 AND 100 THEN 51
-            WHEN stream_count BETWEEN 101 AND 200 THEN 101
-            WHEN stream_count BETWEEN 201 AND 500 THEN 201
-            WHEN stream_count BETWEEN 501 AND 1000 THEN 501
-            WHEN stream_count BETWEEN 1001 AND 2000 THEN 1001
-            WHEN stream_count BETWEEN 2001 AND 4000 THEN 2001
-            ELSE 4001
-        END AS bucket_min,
-        CASE
-            WHEN stream_count = 0 THEN 0
-            WHEN stream_count = 1 THEN 1
-            WHEN stream_count = 2 THEN 2
-            WHEN stream_count BETWEEN 3 AND 5 THEN 5
-            WHEN stream_count BETWEEN 6 AND 10 THEN 10
-            WHEN stream_count BETWEEN 11 AND 20 THEN 20
-            WHEN stream_count BETWEEN 21 AND 50 THEN 50
-            WHEN stream_count BETWEEN 51 AND 100 THEN 100
-            WHEN stream_count BETWEEN 101 AND 200 THEN 200
-            WHEN stream_count BETWEEN 201 AND 500 THEN 500
-            WHEN stream_count BETWEEN 501 AND 1000 THEN 1000
-            WHEN stream_count BETWEEN 1001 AND 2000 THEN 2000
-            WHEN stream_count BETWEEN 2001 AND 4000 THEN 4000
-            ELSE NULL
-        END AS bucket_max,
-        CASE
-            WHEN stream_count = 0 THEN 0
-            WHEN stream_count = 1 THEN 1
-            WHEN stream_count = 2 THEN 2
-            WHEN stream_count BETWEEN 3 AND 5 THEN 3
-            WHEN stream_count BETWEEN 6 AND 10 THEN 4
-            WHEN stream_count BETWEEN 11 AND 20 THEN 5
-            WHEN stream_count BETWEEN 21 AND 50 THEN 6
-            WHEN stream_count BETWEEN 51 AND 100 THEN 7
-            WHEN stream_count BETWEEN 101 AND 200 THEN 8
-            WHEN stream_count BETWEEN 201 AND 500 THEN 9
-            WHEN stream_count BETWEEN 501 AND 1000 THEN 10
-            WHEN stream_count BETWEEN 1001 AND 2000 THEN 11
-            WHEN stream_count BETWEEN 2001 AND 4000 THEN 12
-            ELSE 13
-        END AS bucket_sort
+        MAX(stream_count)::INT AS max_stream_count,
+        LEAST(10, GREATEST(MAX(stream_count)::INT, 1)) AS bucket_count
     FROM entity_stream_counts
+    GROUP BY entity_type
+),
+bucket_numbers AS (
+    SELECT GENERATE_SERIES(1, 10)::INT AS bucket_number
+),
+raw_positive_bucket_definitions AS (
+    SELECT
+        em.entity_type,
+        bucket_number AS bucket_sort,
+        CASE
+            WHEN bucket_number = em.bucket_count THEN em.max_stream_count
+            ELSE GREATEST(
+                bucket_number,
+                FLOOR(
+                    EXP(
+                        LN(em.max_stream_count + 1)
+                        * bucket_number::FLOAT
+                        / em.bucket_count
+                    ) - 1
+                )::INT
+            )
+        END AS bucket_max
+    FROM entity_maxes em
+        CROSS JOIN bucket_numbers
+    WHERE
+        em.max_stream_count > 0
+        AND bucket_number <= em.bucket_count
+),
+positive_bucket_definitions AS (
+    SELECT
+        entity_type,
+        bucket_sort,
+        CASE
+            WHEN bucket_sort = 1 THEN 1
+            ELSE LAG(bucket_max) OVER (
+                PARTITION BY entity_type
+                ORDER BY bucket_sort
+            ) + 1
+        END AS bucket_min,
+        bucket_max
+    FROM raw_positive_bucket_definitions
+),
+bucket_definitions AS (
+    SELECT
+        entity_type,
+        0 AS bucket_sort,
+        0 AS bucket_min,
+        0 AS bucket_max
+    FROM entity_maxes
+    UNION ALL
+    SELECT
+        entity_type,
+        bucket_sort,
+        bucket_min,
+        bucket_max
+    FROM positive_bucket_definitions
+),
+bucketed_counts AS (
+    SELECT
+        esc.entity_type,
+        bd.bucket_sort,
+        COUNT(*)::INT AS item_count
+    FROM entity_stream_counts esc
+        INNER JOIN bucket_definitions bd
+            ON bd.entity_type = esc.entity_type
+            AND esc.stream_count BETWEEN bd.bucket_min AND bd.bucket_max
+    GROUP BY esc.entity_type, bucket_sort
 )
 SELECT
-    entity_type,
-    bucket,
-    bucket_min,
-    bucket_max,
-    bucket_sort,
-    COUNT(*)::INT AS item_count
-FROM bucketed
-GROUP BY entity_type, bucket, bucket_min, bucket_max, bucket_sort
-ORDER BY entity_type, bucket_sort;
+    bd.entity_type,
+    CASE
+        WHEN bd.bucket_min = bd.bucket_max THEN bd.bucket_min::TEXT
+        ELSE bd.bucket_min::TEXT || '-' || bd.bucket_max::TEXT
+    END AS bucket,
+    bd.bucket_min,
+    bd.bucket_max,
+    bd.bucket_sort,
+    COALESCE(bc.item_count, 0)::INT AS item_count
+FROM bucket_definitions bd
+    LEFT JOIN bucketed_counts bc
+        ON bc.entity_type = bd.entity_type
+        AND bc.bucket_sort = bd.bucket_sort
+ORDER BY bd.entity_type, bd.bucket_sort;
