@@ -57,26 +57,42 @@ entity_maxes AS (
 bucket_numbers AS (
     SELECT GENERATE_SERIES(1, 10)::INT AS bucket_number
 ),
-positive_bucket_definitions AS (
+raw_positive_bucket_definitions AS (
     SELECT
         em.entity_type,
         bucket_number AS bucket_sort,
-        (
-            FLOOR(
-                ((bucket_number - 1) * em.max_stream_count)::FLOAT
-                / em.bucket_count
-            )::INT
-            + 1
-        ) AS bucket_min,
-        FLOOR(
-            (bucket_number * em.max_stream_count)::FLOAT
-            / em.bucket_count
-        )::INT AS bucket_max
+        CASE
+            WHEN bucket_number = em.bucket_count THEN em.max_stream_count
+            ELSE GREATEST(
+                bucket_number,
+                FLOOR(
+                    EXP(
+                        LN(em.max_stream_count + 1)
+                        * bucket_number::FLOAT
+                        / em.bucket_count
+                    ) - 1
+                )::INT
+            )
+        END AS bucket_max
     FROM entity_maxes em
         CROSS JOIN bucket_numbers
     WHERE
         em.max_stream_count > 0
         AND bucket_number <= em.bucket_count
+),
+positive_bucket_definitions AS (
+    SELECT
+        entity_type,
+        bucket_sort,
+        CASE
+            WHEN bucket_sort = 1 THEN 1
+            ELSE LAG(bucket_max) OVER (
+                PARTITION BY entity_type
+                ORDER BY bucket_sort
+            ) + 1
+        END AS bucket_min,
+        bucket_max
+    FROM raw_positive_bucket_definitions
 ),
 bucket_definitions AS (
     SELECT
@@ -96,16 +112,12 @@ bucket_definitions AS (
 bucketed_counts AS (
     SELECT
         esc.entity_type,
-        CASE
-            WHEN esc.stream_count = 0 THEN 0
-            ELSE CEIL(
-                (esc.stream_count * em.bucket_count::FLOAT)
-                / em.max_stream_count
-            )::INT
-        END AS bucket_sort,
+        bd.bucket_sort,
         COUNT(*)::INT AS item_count
     FROM entity_stream_counts esc
-        INNER JOIN entity_maxes em ON em.entity_type = esc.entity_type
+        INNER JOIN bucket_definitions bd
+            ON bd.entity_type = esc.entity_type
+            AND esc.stream_count BETWEEN bd.bucket_min AND bd.bucket_max
     GROUP BY esc.entity_type, bucket_sort
 )
 SELECT
