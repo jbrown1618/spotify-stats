@@ -50,7 +50,6 @@ interface HeatmapProps {
   columns: HeatmapColumn[];
   values: Map<string, number>;
   cellHeight?: number;
-  cellWidth?: number;
 }
 
 function cellKey(rowKey: string, columnKey: string) {
@@ -92,12 +91,12 @@ function Heatmap({
   columns,
   values,
   cellHeight = 18,
-  cellWidth = 16,
 }: HeatmapProps) {
   if (values.size === 0) return null;
 
   const maxValue = Math.max(...values.values());
-  const gridTemplateColumns = `3rem repeat(${columns.length}, minmax(${cellWidth}px, 1fr))`;
+  const gridTemplateColumns = `3rem repeat(${columns.length}, minmax(0, 1fr))`;
+  const isDense = columns.length > 60;
 
   return (
     <section className={styles.heatmap}>
@@ -106,7 +105,10 @@ function Heatmap({
         {description}
       </Text>
       <div className={styles.scroll}>
-        <div className={styles.grid} style={{ gridTemplateColumns }}>
+        <div
+          className={styles.grid}
+          style={{ columnGap: isDense ? 0 : undefined, gridTemplateColumns }}
+        >
           <div />
           {columns.map((column) => (
             <div key={column.key} className={styles.columnLabel}>
@@ -182,7 +184,6 @@ export function WeekdayByWeekHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={13}
-      cellWidth={8}
     />
   );
 }
@@ -216,7 +217,6 @@ export function MonthByYearHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={18}
-      cellWidth={42}
     />
   );
 }
@@ -247,7 +247,6 @@ export function HourByWeekdayHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={14}
-      cellWidth={24}
     />
   );
 }
