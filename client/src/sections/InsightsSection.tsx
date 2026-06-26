@@ -10,7 +10,7 @@ import {
 import {
   HourByWeekdayHeatmap,
   MonthByYearHeatmap,
-  WeekdayByWeekHeatmap,
+  WeekdayByMonthHeatmap,
 } from "../charts/ListeningHeatmaps";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { useInsights } from "../useApi";
@@ -27,7 +27,7 @@ export function InsightsSection() {
       <h2>Insights</h2>
 
       <TotalStreamsByMonthChart totalStreams={insights.total_streams} />
-      <WeekdayByWeekHeatmap values={insights.weekday_by_week} />
+      <WeekdayByMonthHeatmap values={insights.weekday_by_month} />
       <MonthByYearHeatmap values={insights.month_by_year} />
       <HourByWeekdayHeatmap values={insights.hour_by_weekday} />
       <TrackDiscoveryChart discovery={insights.discovery} />
@@ -38,7 +38,7 @@ export function InsightsSection() {
       {insights.discovery.length === 0 &&
         insights.variety.length === 0 &&
         insights.total_streams.length === 0 &&
-        insights.weekday_by_week.length === 0 &&
+        insights.weekday_by_month.length === 0 &&
         insights.month_by_year.length === 0 &&
         insights.hour_by_weekday.length === 0 &&
         insights.distributions.length === 0 &&

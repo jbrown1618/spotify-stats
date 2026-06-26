@@ -258,8 +258,8 @@ export interface TrackVarietyMonth {
   top_10_stream_share: number;
 }
 
-export interface WeekdayByWeekHeatmapCell {
-  week_start: string;
+export interface WeekdayByMonthHeatmapCell {
+  month: string;
   day_of_week: number;
   stream_count: number;
 }
@@ -282,7 +282,7 @@ export interface InsightsResponse {
   release_months: ReleaseMonthCount[];
   discovery: TrackDiscoveryMonth[];
   variety: TrackVarietyMonth[];
-  weekday_by_week: WeekdayByWeekHeatmapCell[];
+  weekday_by_month: WeekdayByMonthHeatmapCell[];
   month_by_year: MonthByYearHeatmapCell[];
   hour_by_weekday: HourByWeekdayHeatmapCell[];
 }

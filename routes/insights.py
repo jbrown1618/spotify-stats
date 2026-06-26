@@ -36,8 +36,8 @@ def insights_payload(filters: dict):
             conn,
             params=query_params,
         )
-        weekday_by_week = pd.read_sql_query(
-            sqlalchemy.text(query_text("filtered_weekday_by_week_heatmap")),
+        weekday_by_month = pd.read_sql_query(
+            sqlalchemy.text(query_text("filtered_weekday_by_month_heatmap")),
             conn,
             params=query_params,
         )
@@ -58,7 +58,7 @@ def insights_payload(filters: dict):
         "release_months": to_json(release_months),
         "discovery": to_json(discovery),
         "variety": to_json(variety),
-        "weekday_by_week": to_json(weekday_by_week),
+        "weekday_by_month": to_json(weekday_by_month),
         "month_by_year": to_json(month_by_year),
         "hour_by_weekday": to_json(hour_by_weekday),
     }
