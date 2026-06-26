@@ -1,5 +1,7 @@
 .heatmap {
   margin-bottom: 2rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .description {
@@ -7,14 +9,19 @@
 }
 
 .scroll {
-  overflow-x: auto;
+  contain: inline-size;
+  max-width: 100%;
+  overflow: hidden;
   padding-bottom: 0.5rem;
+  width: 100%;
 }
 
 .grid {
+  column-gap: 2px;
   display: grid;
-  gap: 2px;
+  row-gap: 2px;
   min-width: 100%;
+  width: 100%;
 }
 
 .columnLabel,
@@ -28,7 +35,7 @@
   align-self: end;
   min-width: 0;
   min-height: 2.25rem;
-  overflow: visible;
+  overflow: hidden;
   writing-mode: vertical-rl;
 }
 
@@ -56,8 +63,8 @@
 .legendGradient {
   background: linear-gradient(
     to right,
-    rgba(34, 139, 34, 0.08),
-    rgba(34, 139, 34, 0.9)
+    rgba(0, 0, 0, 0.5),
+    rgb(34, 139, 34)
   );
   border-radius: 999px;
   height: 0.75rem;

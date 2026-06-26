@@ -50,7 +50,6 @@ interface HeatmapProps {
   columns: HeatmapColumn[];
   values: Map<string, number>;
   cellHeight?: number;
-  cellWidth?: number;
 }
 
 function cellKey(rowKey: string, columnKey: string) {
@@ -76,9 +75,13 @@ function addWeeks(date: Date, weeks: number): Date {
 }
 
 function heatColor(value: number, maxValue: number): string {
-  if (maxValue <= 0 || value <= 0) return "rgba(34, 139, 34, 0.08)";
-  const opacity = 0.14 + 0.76 * Math.sqrt(value / maxValue);
-  return `rgba(34, 139, 34, ${opacity})`;
+  if (maxValue <= 0 || value <= 0) return "rgba(0, 0, 0, 0.5)";
+  const intensity = Math.sqrt(value / maxValue);
+  const red = Math.round(34 * intensity);
+  const green = Math.round(139 * intensity);
+  const blue = Math.round(34 * intensity);
+  const alpha = 0.5 + 0.5 * intensity;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 function Heatmap({
@@ -88,12 +91,12 @@ function Heatmap({
   columns,
   values,
   cellHeight = 18,
-  cellWidth = 16,
 }: HeatmapProps) {
   if (values.size === 0) return null;
 
   const maxValue = Math.max(...values.values());
-  const gridTemplateColumns = `3rem repeat(${columns.length}, minmax(${cellWidth}px, 1fr))`;
+  const gridTemplateColumns = `3rem repeat(${columns.length}, minmax(0, 1fr))`;
+  const isDense = columns.length > 60;
 
   return (
     <section className={styles.heatmap}>
@@ -102,7 +105,10 @@ function Heatmap({
         {description}
       </Text>
       <div className={styles.scroll}>
-        <div className={styles.grid} style={{ gridTemplateColumns }}>
+        <div
+          className={styles.grid}
+          style={{ columnGap: isDense ? 0 : undefined, gridTemplateColumns }}
+        >
           <div />
           {columns.map((column) => (
             <div key={column.key} className={styles.columnLabel}>
@@ -178,7 +184,6 @@ export function WeekdayByWeekHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={13}
-      cellWidth={8}
     />
   );
 }
@@ -212,7 +217,6 @@ export function MonthByYearHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={18}
-      cellWidth={42}
     />
   );
 }
@@ -243,7 +247,6 @@ export function HourByWeekdayHeatmap({
       columns={columns}
       values={heatmapValues}
       cellHeight={14}
-      cellWidth={24}
     />
   );
 }
