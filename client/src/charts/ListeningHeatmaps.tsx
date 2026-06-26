@@ -76,9 +76,12 @@ function addWeeks(date: Date, weeks: number): Date {
 }
 
 function heatColor(value: number, maxValue: number): string {
-  if (maxValue <= 0 || value <= 0) return "rgba(34, 139, 34, 0.08)";
-  const opacity = 0.14 + 0.76 * Math.sqrt(value / maxValue);
-  return `rgba(34, 139, 34, ${opacity})`;
+  if (maxValue <= 0 || value <= 0) return "rgb(0, 0, 0)";
+  const intensity = Math.sqrt(value / maxValue);
+  const red = Math.round(34 * intensity);
+  const green = Math.round(139 * intensity);
+  const blue = Math.round(34 * intensity);
+  return `rgb(${red}, ${green}, ${blue})`;
 }
 
 function Heatmap({
