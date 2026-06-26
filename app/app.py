@@ -10,6 +10,7 @@ from routes.labels import labels_payload
 from routes.playlists import playlists_payload
 from routes.recommendations import recommendations_payload
 from routes.release_years import release_years_payload
+from routes.stream_shares import artist_stream_share_by_month_payload, genre_stream_share_by_month_payload
 from routes.tracks import tracks_search_payload, track_credits_payload
 from routes.utils import to_date_range, to_json
 from routes.producers import producers_payload
@@ -148,6 +149,11 @@ def list_artist_streams_by_month():
     return filtered_artist_streams_by_month(params, n)
 
 
+@app.route("/api/streams/artists/share")
+def list_artist_stream_share_by_month():
+    return artist_stream_share_by_month_payload(parse_request_args(request.args))
+
+
 @app.route("/api/streams/albums/history")
 def list_album_stream_history():
     params = parse_request_args(request.args)
@@ -172,6 +178,11 @@ def list_album_streams_by_month():
         min_date, max_date = to_date_range(params.get('wrapped', None))
         return album_streams_by_month(album_uris, min_date, max_date)
     return filtered_album_streams_by_month(params, n)
+
+
+@app.route("/api/streams/genres/share")
+def list_genre_stream_share_by_month():
+    return genre_stream_share_by_month_payload(parse_request_args(request.args))
 
 
 @app.route("/api/recommendations")

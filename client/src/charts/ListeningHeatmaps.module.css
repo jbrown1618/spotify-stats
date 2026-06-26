@@ -1,0 +1,64 @@
+.heatmap {
+  margin-bottom: 2rem;
+}
+
+.description {
+  margin-bottom: 0.75rem;
+}
+
+.scroll {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  gap: 2px;
+  width: max-content;
+}
+
+.columnLabel,
+.rowLabel {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.columnLabel {
+  align-self: end;
+  min-width: 10px;
+  min-height: 2.25rem;
+  overflow: visible;
+  writing-mode: vertical-rl;
+}
+
+.rowLabel {
+  align-self: center;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cell {
+  border-radius: 2px;
+  min-width: 10px;
+}
+
+.legend {
+  align-items: center;
+  color: var(--mantine-color-dimmed);
+  display: flex;
+  font-size: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.legendGradient {
+  background: linear-gradient(
+    to right,
+    rgba(34, 139, 34, 0.08),
+    rgba(34, 139, 34, 0.9)
+  );
+  border-radius: 999px;
+  height: 0.75rem;
+  width: 8rem;
+}
