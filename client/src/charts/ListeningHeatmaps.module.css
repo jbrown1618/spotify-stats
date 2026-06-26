@@ -60,7 +60,11 @@
 }
 
 .legendGradient {
-  background: linear-gradient(to right, rgb(0, 0, 0), rgb(34, 139, 34));
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.5),
+    rgb(34, 139, 34)
+  );
   border-radius: 999px;
   height: 0.75rem;
   width: 8rem;
