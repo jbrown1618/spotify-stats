@@ -93,7 +93,7 @@ function Heatmap({
   if (values.size === 0) return null;
 
   const maxValue = Math.max(...values.values());
-  const gridTemplateColumns = `3rem repeat(${columns.length}, ${cellWidth}px)`;
+  const gridTemplateColumns = `3rem repeat(${columns.length}, minmax(${cellWidth}px, 1fr))`;
 
   return (
     <section className={styles.heatmap}>
@@ -124,7 +124,6 @@ function Heatmap({
                     style={{
                       backgroundColor: heatColor(value, maxValue),
                       height: cellHeight,
-                      width: cellWidth,
                     }}
                     title={`${row.label}, ${column.label || column.key}: ${value} streams`}
                   />

@@ -29,9 +29,9 @@ export function ArtistsSection() {
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
     setActiveTab(
-      shouldRenderShare
-        ? "share"
-        : shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
+      shouldRenderMonths
+        ? "months"
+        : shouldRenderShare ? "share" : shouldRenderStreams ? "streams" : "count"
     );
   }, [shouldRenderMonths, shouldRenderShare, shouldRenderStreams]);
 
@@ -51,16 +51,16 @@ export function ArtistsSection() {
       >
         <Tabs.List>
           <Tabs.Tab
-            value="share"
-            style={{ display: shouldRenderShare ? undefined : "none" }}
-          >
-            Share
-          </Tabs.Tab>
-          <Tabs.Tab
             value="months"
             style={{ display: shouldRenderMonths ? undefined : "none" }}
           >
             Months
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="share"
+            style={{ display: shouldRenderShare ? undefined : "none" }}
+          >
+            Share
           </Tabs.Tab>
           <Tabs.Tab
             value="streams"
@@ -72,6 +72,13 @@ export function ArtistsSection() {
             Count
           </Tabs.Tab>
         </Tabs.List>
+        <Tabs.Panel
+          value="months"
+          style={{ display: shouldRenderMonths ? undefined : "none" }}
+        >
+          <ArtistsStreamingHistoryStack />
+        </Tabs.Panel>
+
         <Tabs.Panel
           value="share"
           style={{ display: shouldRenderShare ? undefined : "none" }}
@@ -92,13 +99,6 @@ export function ArtistsSection() {
 
         <Tabs.Panel value="count">
           <ArtistsBarChart />
-        </Tabs.Panel>
-
-        <Tabs.Panel
-          value="months"
-          style={{ display: shouldRenderMonths ? undefined : "none" }}
-        >
-          <ArtistsStreamingHistoryStack />
         </Tabs.Panel>
       </Tabs>
 

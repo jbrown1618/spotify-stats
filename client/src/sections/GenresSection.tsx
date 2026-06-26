@@ -1,4 +1,4 @@
-import { Pill } from "@mantine/core";
+import { Pill, Tabs } from "@mantine/core";
 
 import { GenresBarChart } from "../charts/GenresBarChart";
 import { StreamShareAreaChart } from "../charts/StreamShareAreaChart";
@@ -13,14 +13,28 @@ export function GenresSection() {
   return (
     <div>
       <h2>Genres</h2>
-      {shouldRender && (
-        <StreamShareAreaChart
-          rows={shareRows ?? []}
-          title="Genre stream share over time"
-          description="Monthly share for your current top 10 genres, with all other genres grouped as Other."
-        />
+      {shouldRender ? (
+        <Tabs defaultValue="count">
+          <Tabs.List>
+            <Tabs.Tab value="count">Count</Tabs.Tab>
+            <Tabs.Tab value="share">Share</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="count">
+            <GenresBarChart />
+          </Tabs.Panel>
+
+          <Tabs.Panel value="share">
+            <StreamShareAreaChart
+              rows={shareRows ?? []}
+              title="Genre stream share over time"
+              description="Monthly share for your current top 10 genres, with all other genres grouped as Other."
+            />
+          </Tabs.Panel>
+        </Tabs>
+      ) : (
+        <GenresBarChart />
       )}
-      <GenresBarChart />
       <GenresDisplayGrid />
     </div>
   );

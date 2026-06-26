@@ -14,6 +14,10 @@ function chartKey(row: StreamShareMonth): string {
   return `${row.sort_order}:${row.category_key}`;
 }
 
+function formatShare(value: number): string {
+  return `${value.toFixed(1).replace(/\.0$/, "")}%`;
+}
+
 export function StreamShareAreaChart({
   rows,
   title,
@@ -71,13 +75,14 @@ export function StreamShareAreaChart({
               ? "gray"
               : colors[index % colors.length],
         }))}
-        type="stacked"
+        type="percent"
         withDots={false}
         withLegend
         withTooltip={!isMobile}
         legendProps={{ verticalAlign: "bottom" }}
         xAxisProps={{ tickFormatter: formatMonth }}
-        yAxisProps={{ tickFormatter: (value) => `${value}%` }}
+        yAxisProps={{ domain: [0, 1] }}
+        valueFormatter={formatShare}
       />
     </>
   );
