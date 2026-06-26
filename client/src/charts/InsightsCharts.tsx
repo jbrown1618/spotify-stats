@@ -22,7 +22,12 @@ const streamBuckets = [
   "11-20",
   "21-50",
   "51-100",
-  "101+",
+  "101-200",
+  "201-500",
+  "501-1k",
+  "1k-2k",
+  "2k-4k",
+  "4k+",
 ];
 const distributionCharts: {
   entity: DistributionEntity;
@@ -69,7 +74,7 @@ export function TotalStreamsByMonthChart({
     <>
       <h3>Total streams by month</h3>
       <LineChart
-        h={360}
+        h={288}
         data={data}
         dataKey="Month"
         series={[{ name: "Streams", color: "green" }]}
@@ -129,7 +134,7 @@ function StreamDistributionChart({
     <>
       <h3>Streams per {entity}</h3>
       <BarChart
-        h={320}
+        h={256}
         data={data}
         dataKey="Streams"
         series={[{ name: label, color }]}
@@ -167,7 +172,7 @@ export function ReleaseMonthsChart({
     <>
       <h3>Tracks by release month</h3>
       <BarChart
-        h={360}
+        h={288}
         data={data}
         dataKey="Month"
         series={[
@@ -207,7 +212,7 @@ export function TrackDiscoveryChart({
         streamed again after that first listen.
       </Text>
       <LineChart
-        h={360}
+        h={288}
         data={data}
         dataKey="Month"
         series={[
@@ -251,7 +256,7 @@ export function TrackVarietyChart({
         tracks.
       </Text>
       <LineChart
-        h={360}
+        h={288}
         data={data}
         dataKey="Month"
         series={[

@@ -211,6 +211,15 @@ export interface StreamsByMonthResponse {
   metadata: Record<string, Record<string, string>>;
 }
 
+export interface StreamShareMonth {
+  month: string;
+  category_key: string;
+  category_name: string;
+  stream_count: number;
+  stream_share: number;
+  sort_order: number;
+}
+
 export interface SpotifyAuthStatus {
   status: "ok" | "missing_cache" | "reauth_required" | "error";
 }
@@ -249,12 +258,33 @@ export interface TrackVarietyMonth {
   top_10_stream_share: number;
 }
 
+export interface WeekdayByWeekHeatmapCell {
+  week_start: string;
+  day_of_week: number;
+  stream_count: number;
+}
+
+export interface MonthByYearHeatmapCell {
+  year: number;
+  month: number;
+  stream_count: number;
+}
+
+export interface HourByWeekdayHeatmapCell {
+  day_of_week: number;
+  hour: number;
+  stream_count: number;
+}
+
 export interface InsightsResponse {
   distributions: StreamDistributionBucket[];
   total_streams: TotalStreamsMonth[];
   release_months: ReleaseMonthCount[];
   discovery: TrackDiscoveryMonth[];
   variety: TrackVarietyMonth[];
+  weekday_by_week: WeekdayByWeekHeatmapCell[];
+  month_by_year: MonthByYearHeatmapCell[];
+  hour_by_weekday: HourByWeekdayHeatmapCell[];
 }
 
 export async function getFilterOptions(): Promise<FilterOptions> {
@@ -382,12 +412,32 @@ export async function getArtistsStreamsByMonth(
   );
 }
 
+export async function getArtistsStreamShareByMonth(
+  filters: ActiveFilters & { n?: number }
+): Promise<StreamShareMonth[]> {
+  return sendRequest(
+    `/api/streams/artists/share`,
+    "artist stream share by month",
+    filters
+  );
+}
+
 export async function getAlbumsStreamsByMonth(
   filters: ActiveFilters & { n?: number }
 ): Promise<StreamsByMonthResponse> {
   return sendRequest(
     `/api/streams/albums/months`,
     "album streams by month",
+    filters
+  );
+}
+
+export async function getGenresStreamShareByMonth(
+  filters: ActiveFilters & { n?: number }
+): Promise<StreamShareMonth[]> {
+  return sendRequest(
+    `/api/streams/genres/share`,
+    "genre stream share by month",
     filters
   );
 }

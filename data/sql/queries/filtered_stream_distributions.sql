@@ -58,7 +58,12 @@ bucketed AS (
             WHEN stream_count BETWEEN 11 AND 20 THEN '11-20'
             WHEN stream_count BETWEEN 21 AND 50 THEN '21-50'
             WHEN stream_count BETWEEN 51 AND 100 THEN '51-100'
-            ELSE '101+'
+            WHEN stream_count BETWEEN 101 AND 200 THEN '101-200'
+            WHEN stream_count BETWEEN 201 AND 500 THEN '201-500'
+            WHEN stream_count BETWEEN 501 AND 1000 THEN '501-1k'
+            WHEN stream_count BETWEEN 1001 AND 2000 THEN '1k-2k'
+            WHEN stream_count BETWEEN 2001 AND 4000 THEN '2k-4k'
+            ELSE '4k+'
         END AS bucket,
         CASE
             WHEN stream_count = 0 THEN 0
@@ -69,7 +74,12 @@ bucketed AS (
             WHEN stream_count BETWEEN 11 AND 20 THEN 11
             WHEN stream_count BETWEEN 21 AND 50 THEN 21
             WHEN stream_count BETWEEN 51 AND 100 THEN 51
-            ELSE 101
+            WHEN stream_count BETWEEN 101 AND 200 THEN 101
+            WHEN stream_count BETWEEN 201 AND 500 THEN 201
+            WHEN stream_count BETWEEN 501 AND 1000 THEN 501
+            WHEN stream_count BETWEEN 1001 AND 2000 THEN 1001
+            WHEN stream_count BETWEEN 2001 AND 4000 THEN 2001
+            ELSE 4001
         END AS bucket_min,
         CASE
             WHEN stream_count = 0 THEN 0
@@ -80,6 +90,11 @@ bucketed AS (
             WHEN stream_count BETWEEN 11 AND 20 THEN 20
             WHEN stream_count BETWEEN 21 AND 50 THEN 50
             WHEN stream_count BETWEEN 51 AND 100 THEN 100
+            WHEN stream_count BETWEEN 101 AND 200 THEN 200
+            WHEN stream_count BETWEEN 201 AND 500 THEN 500
+            WHEN stream_count BETWEEN 501 AND 1000 THEN 1000
+            WHEN stream_count BETWEEN 1001 AND 2000 THEN 2000
+            WHEN stream_count BETWEEN 2001 AND 4000 THEN 4000
             ELSE NULL
         END AS bucket_max,
         CASE
@@ -91,7 +106,12 @@ bucketed AS (
             WHEN stream_count BETWEEN 11 AND 20 THEN 5
             WHEN stream_count BETWEEN 21 AND 50 THEN 6
             WHEN stream_count BETWEEN 51 AND 100 THEN 7
-            ELSE 8
+            WHEN stream_count BETWEEN 101 AND 200 THEN 8
+            WHEN stream_count BETWEEN 201 AND 500 THEN 9
+            WHEN stream_count BETWEEN 501 AND 1000 THEN 10
+            WHEN stream_count BETWEEN 1001 AND 2000 THEN 11
+            WHEN stream_count BETWEEN 2001 AND 4000 THEN 12
+            ELSE 13
         END AS bucket_sort
     FROM entity_stream_counts
 )

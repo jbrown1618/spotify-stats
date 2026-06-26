@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import { ArtistsBarChart } from "../charts/ArtistsBarChart";
 import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
+import { StreamShareAreaChart } from "../charts/StreamShareAreaChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { ArtistRow } from "../list-items/ArtistRow";
 import { ArtistTile } from "../list-items/ArtistTile";
 import {
+  PAGE_SIZE,
   useArtists,
   useArtistsStreamingHistory,
   useArtistsStreamsByMonth,
-  PAGE_SIZE,
+  useArtistsStreamShareByMonth,
 } from "../useApi";
 
 const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
@@ -19,13 +21,19 @@ const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 export function ArtistsSection() {
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
+  const {
+    data: shareRows,
+    shouldRender: shouldRenderShare,
+  } = useArtistsStreamShareByMonth();
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
     setActiveTab(
-      shouldRenderMonths ? "months" : shouldRenderStreams ? "streams" : "counts"
+      shouldRenderMonths
+        ? "months"
+        : shouldRenderShare ? "share" : shouldRenderStreams ? "streams" : "count"
     );
-  }, [shouldRenderMonths, shouldRenderStreams]);
+  }, [shouldRenderMonths, shouldRenderShare, shouldRenderStreams]);
 
   return (
     <div>
@@ -36,7 +44,7 @@ export function ArtistsSection() {
         onChange={setActiveTab}
         style={{
           display:
-            shouldRenderMonths || shouldRenderStreams
+            shouldRenderShare || shouldRenderMonths || shouldRenderStreams
               ? undefined
               : "none",
         }}
@@ -49,6 +57,12 @@ export function ArtistsSection() {
             Months
           </Tabs.Tab>
           <Tabs.Tab
+            value="share"
+            style={{ display: shouldRenderShare ? undefined : "none" }}
+          >
+            Share
+          </Tabs.Tab>
+          <Tabs.Tab
             value="streams"
             style={{ display: shouldRenderStreams ? undefined : "none" }}
           >
@@ -58,6 +72,23 @@ export function ArtistsSection() {
             Count
           </Tabs.Tab>
         </Tabs.List>
+        <Tabs.Panel
+          value="months"
+          style={{ display: shouldRenderMonths ? undefined : "none" }}
+        >
+          <ArtistsStreamingHistoryStack />
+        </Tabs.Panel>
+
+        <Tabs.Panel
+          value="share"
+          style={{ display: shouldRenderShare ? undefined : "none" }}
+        >
+          <StreamShareAreaChart
+            rows={shareRows ?? []}
+            title="Artist stream share over time"
+            description="Monthly stream share for your current top 10 artists, with all other streams grouped as Other."
+          />
+        </Tabs.Panel>
 
         <Tabs.Panel
           value="streams"
@@ -68,13 +99,6 @@ export function ArtistsSection() {
 
         <Tabs.Panel value="count">
           <ArtistsBarChart />
-        </Tabs.Panel>
-
-        <Tabs.Panel
-          value="months"
-          style={{ display: shouldRenderMonths ? undefined : "none" }}
-        >
-          <ArtistsStreamingHistoryStack />
         </Tabs.Panel>
       </Tabs>
 

@@ -14,8 +14,10 @@ import {
   getArtists,
   getArtistsStreamingHistory,
   getArtistsStreamsByMonth,
+  getArtistsStreamShareByMonth,
   getFilterOptions,
   getGenres,
+  getGenresStreamShareByMonth,
   getInsights,
   getLabels,
   getPlaylists,
@@ -33,6 +35,7 @@ import {
   Recommendations,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
+  StreamShareMonth,
   toFiltersQuery,
   TrackRank,
 } from "./api";
@@ -247,6 +250,34 @@ export function useArtistsStreamsByMonth(n: number = 5) {
     queryFn: async () => getArtistsStreamsByMonth({ ...filters, n }),
   });
   const shouldRender = !result.data?.streams || countUniqueMonths(result.data.streams) > 3;
+  return { ...result, shouldRender };
+}
+
+function countShareMonths(rows: StreamShareMonth[]) {
+  return new Set(rows.map((row) => row.month)).size;
+}
+
+export function useArtistsStreamShareByMonth(n: number = 10) {
+  const filters = useFilters();
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  const result = useQuery<StreamShareMonth[]>({
+    ...defaultQueryOptions,
+    queryKey: ["artists-stream-share-by-month", query, n],
+    queryFn: async () => getArtistsStreamShareByMonth({ ...filters, n }),
+  });
+  const shouldRender = !result.data || countShareMonths(result.data) > 3;
+  return { ...result, shouldRender };
+}
+
+export function useGenresStreamShareByMonth(n: number = 10) {
+  const filters = useFilters();
+  const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
+  const result = useQuery<StreamShareMonth[]>({
+    ...defaultQueryOptions,
+    queryKey: ["genres-stream-share-by-month", query, n],
+    queryFn: async () => getGenresStreamShareByMonth({ ...filters, n }),
+  });
+  const shouldRender = !result.data || countShareMonths(result.data) > 3;
   return { ...result, shouldRender };
 }
 

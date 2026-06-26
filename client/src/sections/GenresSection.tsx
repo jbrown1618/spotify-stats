@@ -1,16 +1,40 @@
-import { Pill } from "@mantine/core";
+import { Pill, Tabs } from "@mantine/core";
 
 import { GenresBarChart } from "../charts/GenresBarChart";
+import { StreamShareAreaChart } from "../charts/StreamShareAreaChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useGenres, PAGE_SIZE } from "../useApi";
+import { PAGE_SIZE, useGenres, useGenresStreamShareByMonth } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
 export function GenresSection() {
+  const { data: shareRows, shouldRender } = useGenresStreamShareByMonth();
+
   return (
     <div>
       <h2>Genres</h2>
-      <GenresBarChart />
+      {shouldRender ? (
+        <Tabs defaultValue="count">
+          <Tabs.List>
+            <Tabs.Tab value="count">Count</Tabs.Tab>
+            <Tabs.Tab value="share">Share</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="count">
+            <GenresBarChart />
+          </Tabs.Panel>
+
+          <Tabs.Panel value="share">
+            <StreamShareAreaChart
+              rows={shareRows ?? []}
+              title="Genre stream share over time"
+              description="Monthly stream share for your current top 10 genres, with all other streams grouped as Other."
+            />
+          </Tabs.Panel>
+        </Tabs>
+      ) : (
+        <GenresBarChart />
+      )}
       <GenresDisplayGrid />
     </div>
   );
