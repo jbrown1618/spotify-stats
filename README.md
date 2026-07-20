@@ -40,5 +40,11 @@ script/spotify-cache > spotify-cache.json
 ```
 
 The script sends a Spotify request, runs the local authorization flow if needed,
-and writes the updated Spotipy cache JSON to stdout. Copy the file contents into
-the `SPOTIFY_CACHE` Heroku config var.
+and writes the updated Spotipy cache JSON to stdout. If prompted, open the
+Spotify authorization URL, approve access, then paste the redirected loopback
+URL containing `?code=...`. Copy the file contents into the `SPOTIFY_CACHE`
+Heroku config var.
+
+The Spotify app's redirect URI must exactly match `SPOTIFY_REDIRECT_URI` in
+`.env`. The default is `http://127.0.0.1:8888`, which should be added to the
+Spotify Developer Dashboard app settings.

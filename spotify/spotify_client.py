@@ -2,7 +2,12 @@ import os
 import spotipy
 from spotipy.oauth2 import CacheFileHandler, SpotifyOAuth, SpotifyOauthError
 
-from utils.settings import spotify_cache, spotify_client_id, spotify_client_secret
+from utils.settings import (
+    spotify_cache,
+    spotify_client_id,
+    spotify_client_secret,
+    spotify_redirect_uri,
+)
 
 spotify_cache_path = ".cache"
 
@@ -21,7 +26,7 @@ def get_spotify_auth_manager() -> SpotifyOAuth:
     auth_manager = SpotifyOAuth(
         client_id=spotify_client_id(),
         client_secret=spotify_client_secret(),
-        redirect_uri="http://localhost:3000/",
+        redirect_uri=spotify_redirect_uri(),
         open_browser=False,
         scope="user-library-read user-top-read user-read-recently-played playlist-read-collaborative",
         cache_handler=CacheFileHandler(cache_path=spotify_cache_path),

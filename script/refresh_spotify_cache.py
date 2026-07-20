@@ -2,13 +2,40 @@ import sys
 from pathlib import Path
 
 import spotipy
-from spotipy.oauth2 import SpotifyOauthError
+from spotipy.oauth2 import SpotifyOauthError, SpotifyStateError
 
 from spotify.spotify_client import get_spotify_auth_manager, spotify_cache_path
 
 
 def token_needs_reauthorization(error: SpotifyOauthError) -> bool:
     return error.error == "invalid_grant"
+
+
+def read_authorization_code(auth_manager) -> str:
+    print(f"Go to the following URL: {auth_manager.get_authorize_url()}", file=sys.stderr)
+    print(
+        "After approving access, copy the full loopback URL from your browser's "
+        "address bar. It should include a ?code=... query parameter.",
+        file=sys.stderr,
+    )
+    print("Enter the URL you were redirected to: ", end="", file=sys.stderr, flush=True)
+
+    response_url = sys.stdin.readline().strip()
+    if not response_url:
+        raise SystemExit("No redirected URL entered; authorization aborted.")
+
+    state, code = auth_manager.parse_auth_response_url(response_url)
+    if auth_manager.state is not None and auth_manager.state != state:
+        raise SpotifyStateError(auth_manager.state, state)
+
+    if code is None:
+        raise SystemExit(
+            "Expected the redirected loopback URL containing ?code=..., but the "
+            "entered URL did not include an authorization code. Do not paste the "
+            "Spotify authorization URL shown above."
+        )
+
+    return code
 
 
 def authorize_with_spotify():
@@ -31,7 +58,16 @@ def authorize_with_spotify():
         token_info = None
 
     if token_info is None:
-        token_info = auth_manager.get_access_token(check_cache=False)
+        auth_manager.get_access_token(
+            read_authorization_code(auth_manager),
+            as_dict=False,
+            check_cache=False,
+        )
+        token_info = auth_manager.validate_token(
+            auth_manager.cache_handler.get_cached_token()
+        )
+        if token_info is None:
+            raise RuntimeError("Spotify authorization succeeded but no token was cached.")
 
     sp = spotipy.Spotify(
         auth=token_info["access_token"],

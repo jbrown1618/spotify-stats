@@ -64,6 +64,10 @@ def spotify_cache() -> str:
     return get_setting("SPOTIFY_CACHE", None)
 
 
+def spotify_redirect_uri() -> str:
+    return get_setting("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888")
+
+
 def musicbrainz_useragent() -> str:
     return get_setting("MUSICBRAINZ_USERAGENT", "jbrown1618/spotify-stats")
 
