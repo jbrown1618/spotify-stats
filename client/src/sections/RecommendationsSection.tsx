@@ -1,15 +1,11 @@
-import { Select } from "@mantine/core";
+import { RangeSlider, Text } from "@mantine/core";
 import { useState } from "react";
 
-import { Album, Artist } from "../api";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { TextSkeleton } from "../design/TextSkeleton";
-import { AlbumRow } from "../list-items/AlbumRow";
-import { ArtistRow } from "../list-items/ArtistRow";
 import { TrackRow } from "../list-items/TrackRow";
 import {
-  useAlbums,
-  useArtists,
+  DEFAULT_RECOMMENDATION_PERCENTILE_RANGE,
   useRecommendations,
   useTracks,
 } from "../useApi";
@@ -17,24 +13,21 @@ import { formatDate } from "../utils";
 import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
-  const { data: recommendations, isLoading } = useRecommendations();
-  const [selectedList, setSelectedList] = useState<string | null>(null);
-
-  if (
-    !isLoading &&
-    (!recommendations || Object.keys(recommendations).length === 0)
-  )
-    return null;
-
-  const listNames = recommendations ? Object.keys(recommendations) : [];
-  const activeList = selectedList ?? listNames[0] ?? null;
-  const activeRecommendation =
-    activeList && recommendations ? recommendations[activeList] : null;
+  const [sliderRange, setSliderRange] = useState<[number, number]>([
+    ...DEFAULT_RECOMMENDATION_PERCENTILE_RANGE,
+  ]);
+  const [queryRange, setQueryRange] = useState<[number, number]>(sliderRange);
+  const { data: recommendations, isLoading } = useRecommendations(queryRange);
 
   if (isLoading) {
     return (
       <div>
         <h2>Recommendations</h2>
+        <RecommendationRangeSlider
+          value={sliderRange}
+          onChange={setSliderRange}
+          onChangeEnd={setQueryRange}
+        />
         <TextSkeleton style="regular" />
         <DisplayGrid
           loading={true}
@@ -50,35 +43,72 @@ export function RecommendationsSection() {
     <div>
       <h2>Recommendations</h2>
 
-      {listNames.length > 1 && (
-        <Select
-          label="Recommendation list"
-          data={listNames}
-          value={activeList}
-          onChange={setSelectedList}
-          className={styles.recommendationCard}
-        />
-      )}
+      <RecommendationRangeSlider
+        value={sliderRange}
+        onChange={setSliderRange}
+        onChangeEnd={setQueryRange}
+      />
 
-      {activeRecommendation?.type === "track" && (
-        <TrackRecommendations uris={activeRecommendation.uris} />
-      )}
-
-      {activeRecommendation?.type === "artist" && (
-        <ArtistRecommendations uris={activeRecommendation.uris} />
-      )}
-
-      {activeRecommendation?.type === "album" && (
-        <AlbumRecommendations uris={activeRecommendation.uris} />
-      )}
+      <RecommendationTracks uris={recommendations?.uris ?? []} />
     </div>
   );
 }
 
-function TrackRecommendations({ uris }: { uris: string[] }) {
-  const { items: allTracks, isLoading } = useTracks({ filters: { tracks: uris } });
+function RecommendationRangeSlider({
+  value,
+  onChange,
+  onChangeEnd,
+}: {
+  value: [number, number];
+  onChange: (value: [number, number]) => void;
+  onChangeEnd: (value: [number, number]) => void;
+}) {
+  return (
+    <div className={styles.recommendationCard}>
+      <Text size="sm" fw={500}>
+        Stream count percentile range
+      </Text>
+      <Text size="sm" c="dimmed" mb="md">
+        Showing tracks in the {value[0]}-{value[1]} percentile, least recently
+        streamed first.
+      </Text>
+      <RangeSlider
+        min={0}
+        max={100}
+        step={1}
+        value={value}
+        onChange={onChange}
+        onChangeEnd={onChangeEnd}
+        marks={[
+          { value: 0, label: "0" },
+          { value: 50, label: "50" },
+          { value: 100, label: "100" },
+        ]}
+      />
+    </div>
+  );
+}
 
-  // Filter and sort tracks to match the order from recommendations
+function RecommendationTracks({ uris }: { uris: string[] }) {
+  if (uris.length === 0) {
+    return (
+      <DisplayGrid
+        loading={false}
+        items={[]}
+        getKey={() => ""}
+        renderRow={() => <></>}
+      />
+    );
+  }
+
+  return <TrackRecommendations uris={uris} />;
+}
+
+function TrackRecommendations({ uris }: { uris: string[] }) {
+  const { items: allTracks, isLoading } = useTracks({
+    filters: { tracks: uris },
+  });
+
   const tracks = uris
     .map((uri) => allTracks?.find((t) => t.track_uri === uri))
     .filter((t): t is NonNullable<typeof t> => !!t);
@@ -101,42 +131,6 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
           ]}
         />
       )}
-    />
-  );
-}
-
-function ArtistRecommendations({ uris }: { uris: string[] }) {
-  const { items: allArtists, isLoading } = useArtists({ filters: { artists: uris } });
-
-  // Filter and sort artists to match the order from recommendations
-  const artists = uris
-    .map((uri) => allArtists?.find((a) => a.artist_uri === uri))
-    .filter((a): a is Artist => !!a);
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={artists}
-      getKey={(artist) => artist.artist_uri}
-      renderRow={(artist) => <ArtistRow artist={artist} />}
-    />
-  );
-}
-
-function AlbumRecommendations({ uris }: { uris: string[] }) {
-  const { items: allAlbums, isLoading } = useAlbums({ filters: { albums: uris } });
-
-  // Filter and sort albums to match the order from recommendations
-  const albums = uris
-    .map((uri) => allAlbums?.find((a) => a.album_uri === uri))
-    .filter((a): a is Album => !!a);
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={albums}
-      getKey={(album) => album.album_uri}
-      renderRow={(album) => <AlbumRow album={album} />}
     />
   );
 }

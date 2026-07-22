@@ -1,111 +1,46 @@
 import pandas as pd
 import sqlalchemy
 
-from data.filters import filtered_connection, parse_filters
+from data.filters import filtered_connection
 from data.query import query_text
 
 
+DEFAULT_PERCENTILE_MIN = 90
+DEFAULT_PERCENTILE_MAX = 100
+RECOMMENDATION_LIMIT = 20
+
+
 def recommendations_payload(filters: dict):
-    recommendations = {}
-    
-    params = parse_filters(filters)
-    
-    # Determine if any filters are active
-    has_filters = any([
-        params["filter_tracks"],
-        params["filter_playlists"],
-        params["filter_artists"],
-        params["filter_albums"],
-        params["filter_labels"],
-        params["filter_genres"],
-        params["filter_producers"],
-        params["filter_years"],
-        params["liked"],
-        params["wrapped_start_date"] is not None,
-    ])
+    percentile_min, percentile_max = _parse_percentile_range(filters)
 
     with filtered_connection(filters) as (conn, filter_params):
-        if has_filters:
-            # Check track count to avoid showing recommendations for very small filter sets
-            track_count = pd.read_sql_query(
-                sqlalchemy.text("SELECT COUNT(*) AS cnt FROM matching_track_uris"),
-                conn
-            ).iloc[0]['cnt']
-            if track_count < 60:
-                return recommendations
-        
-        filter_tracks = has_filters
-
-        still_interested_tracks = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_track_recommendations_still_interested')),
+        recommendation_tracks = pd.read_sql_query(
+            sqlalchemy.text(query_text('select_track_recommendations_by_percentile_range')),
             conn,
             params={
-                'percentile': 0.6,
-                'filter_tracks': filter_tracks,
+                'percentile_min': percentile_min / 100,
+                'percentile_max': percentile_max / 100,
+                'limit': RECOMMENDATION_LIMIT,
+                "wrapped_start_date": filter_params["wrapped_start_date"],
+                "wrapped_end_date": filter_params["wrapped_end_date"],
             }
         )
-        if not still_interested_tracks.empty and len(still_interested_tracks) >= 5:
-            recommendations["Still interested?"] = {
-                "type": "track",
-                "uris": still_interested_tracks['track_uri'].tolist()
-            }
 
-        track_recs = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
-            conn,
-            params={
-                'percentile': 0.6,
-                'filter_by_date': True,
-                'filter_tracks': filter_tracks,
-            }
-        )
-        if not track_recs.empty and len(track_recs) >= 5:
-            recommendations["It's been a long time"] = {
-                "type": "track",
-                "uris": track_recs['track_uri'].tolist()
-            }
+    return {
+        "type": "track",
+        "uris": recommendation_tracks['track_uri'].tolist()
+    }
 
-        top_tracks = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_track_recommendations_jump_back_in')),
-            conn,
-            params={
-                'percentile': 0.9,
-                'filter_by_date': False,
-                'filter_tracks': filter_tracks,
-            }
-        )
-        if not top_tracks.empty and len(top_tracks) >= 5:
-            recommendations["Jump back in"] = {
-                "type": "track",
-                "uris": top_tracks['track_uri'].tolist()
-            }
 
-        artist_recs = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_artist_recommendations_rediscover')),
-            conn,
-            params={
-                'percentile': 0.85,
-                'filter_tracks': filter_tracks,
-            }
-        )
-        if not artist_recs.empty and len(artist_recs) >= 5:
-            recommendations["Rediscover artists"] = {
-                "type": "artist",
-                "uris": artist_recs['artist_uri'].tolist()
-            }
+def _parse_percentile_range(filters: dict) -> tuple[int, int]:
+    percentile_min = int(filters.get('stream_percentile_min', DEFAULT_PERCENTILE_MIN))
+    percentile_max = int(filters.get('stream_percentile_max', DEFAULT_PERCENTILE_MAX))
 
-        album_recs = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_album_recommendations_rediscover')),
-            conn,
-            params={
-                'percentile': 0.8,
-                'filter_tracks': filter_tracks,
-            }
-        )
-        if not album_recs.empty and len(album_recs) >= 5:
-            recommendations["Rediscover albums"] = {
-                "type": "album",
-                "uris": album_recs['album_uri'].tolist()
-            }
+    if percentile_min < 0 or percentile_min > 100:
+        raise ValueError('stream_percentile_min must be between 0 and 100')
+    if percentile_max < 0 or percentile_max > 100:
+        raise ValueError('stream_percentile_max must be between 0 and 100')
+    if percentile_min > percentile_max:
+        raise ValueError('stream_percentile_min must be less than or equal to stream_percentile_max')
 
-    return recommendations
+    return percentile_min, percentile_max

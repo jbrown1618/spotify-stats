@@ -33,6 +33,10 @@ def parse_request_args(args) -> dict:
         result['limit'] = int(args.get('limit'))
     if args.get('offset'):
         result['offset'] = int(args.get('offset'))
+    if args.get('stream_percentile_min') is not None:
+        result['stream_percentile_min'] = int(args.get('stream_percentile_min'))
+    if args.get('stream_percentile_max') is not None:
+        result['stream_percentile_max'] = int(args.get('stream_percentile_max'))
     
     return result
 
@@ -137,4 +141,3 @@ def _to_tuple(value: typing.Optional[typing.Iterable], empty_sentinel) -> tuple:
     if value is None or len(value) == 0:
         return (empty_sentinel,)
     return tuple(value)
-

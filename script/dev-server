@@ -7,8 +7,12 @@ if [[ -z "$VIRTUAL_ENV" ]]; then
         source venv/bin/activate
         echo "Virtual environment activated."
     else
-        echo "Error: venv/bin/activate not found. Please create a virtual environment first."
-        exit 1
+        echo "venv/bin/activate not found. Creating virtual environment..."
+        python -m venv venv
+        source venv/bin/activate
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+        echo "Virtual environment created and activated."
     fi
 else
     echo "Already in virtual environment: $VIRTUAL_ENV"

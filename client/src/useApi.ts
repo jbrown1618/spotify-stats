@@ -32,6 +32,7 @@ import {
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
+  RecommendationPercentileRange,
   Recommendations,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
@@ -46,6 +47,7 @@ import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
 const DEFAULT_QUERY_KEY = "DEFAULT";
 
 export const PAGE_SIZE = 10;
+export const DEFAULT_RECOMMENDATION_PERCENTILE_RANGE = [90, 100] as const;
 
 const defaultQueryOptions = {
   staleTime: 1000 * 60 * 60,
@@ -171,13 +173,15 @@ export function useArtistCredits(artistUri: string) {
   });
 }
 
-export function useRecommendations() {
+export function useRecommendations(
+  percentileRange: RecommendationPercentileRange = DEFAULT_RECOMMENDATION_PERCENTILE_RANGE
+) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
   return useQuery<Recommendations>({
     ...defaultQueryOptions,
-    queryKey: ["recommendations", query],
-    queryFn: async () => getRecommendations(filters),
+    queryKey: ["recommendations", query, percentileRange[0], percentileRange[1]],
+    queryFn: async () => getRecommendations(filters, percentileRange),
   });
 }
 

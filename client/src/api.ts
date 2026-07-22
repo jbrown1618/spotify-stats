@@ -443,16 +443,24 @@ export async function getGenresStreamShareByMonth(
 }
 
 export interface RecommendationList {
-  type: "track" | "artist" | "album";
+  type: "track";
   uris: string[];
 }
 
-export type Recommendations = Record<string, RecommendationList>;
+export type RecommendationPercentileRange = readonly [number, number];
+
+export type Recommendations = RecommendationList;
 
 export async function getRecommendations(
-  filters: ActiveFilters
+  filters: ActiveFilters,
+  percentileRange: RecommendationPercentileRange
 ): Promise<Recommendations> {
-  return sendRequest(`/api/recommendations`, "recommendations", filters);
+  const [stream_percentile_min, stream_percentile_max] = percentileRange;
+  return sendRequest(`/api/recommendations`, "recommendations", {
+    ...filters,
+    stream_percentile_min,
+    stream_percentile_max,
+  });
 }
 
 async function sendRequest<T>(
