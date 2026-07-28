@@ -8,7 +8,7 @@ import { formatDate } from "../utils";
 import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
-  const [range, setRange] = useState<[number, number]>([50, 70]);
+  const [range, setRange] = useState<[number, number]>([90, 100]);
   const [committedRange, setCommittedRange] = useState<[number, number]>(range);
   const { data, isLoading } = useRecommendationsInRange(
     committedRange[0],
@@ -23,6 +23,7 @@ export function RecommendationsSection() {
         labelAlwaysOn
         min={0}
         max={100}
+        minRange={5}
         value={range}
         onChange={setRange}
         onChangeEnd={setCommittedRange}
