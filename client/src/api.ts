@@ -442,17 +442,20 @@ export async function getGenresStreamShareByMonth(
   );
 }
 
-export interface RecommendationList {
-  type: "track" | "artist" | "album";
+export interface PercentileRangeRecommendations {
   uris: string[];
 }
 
-export type Recommendations = Record<string, RecommendationList>;
-
-export async function getRecommendations(
-  filters: ActiveFilters
-): Promise<Recommendations> {
-  return sendRequest(`/api/recommendations`, "recommendations", filters);
+export async function getRecommendationsInRange(
+  filters: ActiveFilters,
+  low: number,
+  high: number
+): Promise<PercentileRangeRecommendations> {
+  return sendRequest(
+    `/api/recommendations/range`,
+    "percentile range recommendations",
+    { ...filters, low, high }
+  );
 }
 
 async function sendRequest<T>(

@@ -8,7 +8,7 @@ from routes.genres import genres_payload
 from routes.insights import insights_payload
 from routes.labels import labels_payload
 from routes.playlists import playlists_payload
-from routes.recommendations import recommendations_payload
+from routes.recommendations import percentile_range_recommendations_payload
 from routes.release_years import release_years_payload
 from routes.stream_shares import artist_stream_share_by_month_payload, genre_stream_share_by_month_payload
 from routes.tracks import tracks_search_payload, track_credits_payload
@@ -185,6 +185,8 @@ def list_genre_stream_share_by_month():
     return genre_stream_share_by_month_payload(parse_request_args(request.args))
 
 
-@app.route("/api/recommendations")
-def get_recommendations():
-    return recommendations_payload(parse_request_args(request.args))
+@app.route("/api/recommendations/range")
+def get_recommendations_in_range():
+    low = max(0, min(100, int(request.args.get('low', 0)))) / 100
+    high = max(0, min(100, int(request.args.get('high', 100)))) / 100
+    return percentile_range_recommendations_payload(parse_request_args(request.args), low, high)
