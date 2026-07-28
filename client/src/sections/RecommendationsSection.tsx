@@ -1,81 +1,45 @@
-import { Select } from "@mantine/core";
+import { RangeSlider } from "@mantine/core";
 import { useState } from "react";
 
-import { Album, Artist } from "../api";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { TextSkeleton } from "../design/TextSkeleton";
-import { AlbumRow } from "../list-items/AlbumRow";
-import { ArtistRow } from "../list-items/ArtistRow";
 import { TrackRow } from "../list-items/TrackRow";
-import {
-  useAlbums,
-  useArtists,
-  useRecommendations,
-  useTracks,
-} from "../useApi";
+import { useRecommendationsInRange, useTracks } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
-  const { data: recommendations, isLoading } = useRecommendations();
-  const [selectedList, setSelectedList] = useState<string | null>(null);
-
-  if (
-    !isLoading &&
-    (!recommendations || Object.keys(recommendations).length === 0)
-  )
-    return null;
-
-  const listNames = recommendations ? Object.keys(recommendations) : [];
-  const activeList = selectedList ?? listNames[0] ?? null;
-  const activeRecommendation =
-    activeList && recommendations ? recommendations[activeList] : null;
-
-  if (isLoading) {
-    return (
-      <div>
-        <h2>Recommendations</h2>
-        <TextSkeleton style="regular" />
-        <DisplayGrid
-          loading={true}
-          items={undefined}
-          getKey={() => ""}
-          renderRow={() => <></>}
-        />
-      </div>
-    );
-  }
+  const [range, setRange] = useState<[number, number]>([50, 70]);
+  const [committedRange, setCommittedRange] = useState<[number, number]>(range);
+  const { data, isLoading } = useRecommendationsInRange(
+    committedRange[0],
+    committedRange[1]
+  );
 
   return (
     <div>
       <h2>Recommendations</h2>
-
-      {listNames.length > 1 && (
-        <Select
-          label="Recommendation list"
-          data={listNames}
-          value={activeList}
-          onChange={setSelectedList}
-          className={styles.recommendationCard}
-        />
-      )}
-
-      {activeRecommendation?.type === "track" && (
-        <TrackRecommendations uris={activeRecommendation.uris} />
-      )}
-
-      {activeRecommendation?.type === "artist" && (
-        <ArtistRecommendations uris={activeRecommendation.uris} />
-      )}
-
-      {activeRecommendation?.type === "album" && (
-        <AlbumRecommendations uris={activeRecommendation.uris} />
-      )}
+      <RangeSlider
+        label={(value) => `${value}th percentile`}
+        labelAlwaysOn
+        min={0}
+        max={100}
+        value={range}
+        onChange={setRange}
+        onChangeEnd={setCommittedRange}
+        className={styles.recommendationCard}
+      />
+      <TrackRecommendations uris={data?.uris ?? []} loading={isLoading} />
     </div>
   );
 }
 
-function TrackRecommendations({ uris }: { uris: string[] }) {
+function TrackRecommendations({
+  uris,
+  loading,
+}: {
+  uris: string[];
+  loading?: boolean;
+}) {
   const { items: allTracks, isLoading } = useTracks({ filters: { tracks: uris } });
 
   // Filter and sort tracks to match the order from recommendations
@@ -85,7 +49,7 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
 
   return (
     <DisplayGrid
-      loading={isLoading}
+      loading={loading || isLoading}
       items={tracks}
       getKey={(track) => track.track_uri}
       renderRow={(track) => (
@@ -101,42 +65,6 @@ function TrackRecommendations({ uris }: { uris: string[] }) {
           ]}
         />
       )}
-    />
-  );
-}
-
-function ArtistRecommendations({ uris }: { uris: string[] }) {
-  const { items: allArtists, isLoading } = useArtists({ filters: { artists: uris } });
-
-  // Filter and sort artists to match the order from recommendations
-  const artists = uris
-    .map((uri) => allArtists?.find((a) => a.artist_uri === uri))
-    .filter((a): a is Artist => !!a);
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={artists}
-      getKey={(artist) => artist.artist_uri}
-      renderRow={(artist) => <ArtistRow artist={artist} />}
-    />
-  );
-}
-
-function AlbumRecommendations({ uris }: { uris: string[] }) {
-  const { items: allAlbums, isLoading } = useAlbums({ filters: { albums: uris } });
-
-  // Filter and sort albums to match the order from recommendations
-  const albums = uris
-    .map((uri) => allAlbums?.find((a) => a.album_uri === uri))
-    .filter((a): a is Album => !!a);
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={albums}
-      getKey={(album) => album.album_uri}
-      renderRow={(album) => <AlbumRow album={album} />}
     />
   );
 }

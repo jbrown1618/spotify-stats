@@ -22,7 +22,7 @@ import {
   getLabels,
   getPlaylists,
   getProducers,
-  getRecommendations,
+  getRecommendationsInRange,
   getReleaseYears,
   getSpotifyAuthStatus,
   getTrackCredits,
@@ -32,7 +32,7 @@ import {
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
-  Recommendations,
+  PercentileRangeRecommendations,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
@@ -171,13 +171,13 @@ export function useArtistCredits(artistUri: string) {
   });
 }
 
-export function useRecommendations() {
+export function useRecommendationsInRange(low: number, high: number) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
-  return useQuery<Recommendations>({
+  return useQuery<PercentileRangeRecommendations>({
     ...defaultQueryOptions,
-    queryKey: ["recommendations", query],
-    queryFn: async () => getRecommendations(filters),
+    queryKey: ["recommendations-range", query, low, high],
+    queryFn: async () => getRecommendationsInRange(filters, low, high),
   });
 }
 
