@@ -10,7 +10,7 @@ import styles from "./Sections.module.css";
 export function RecommendationsSection() {
   const [range, setRange] = useState<[number, number]>([90, 100]);
   const [committedRange, setCommittedRange] = useState<[number, number]>(range);
-  const { data, isLoading } = useRecommendationsInRange(
+  const { uris, total, isLoading, fetchNextPage, isFetchingNextPage } = useRecommendationsInRange(
     committedRange[0],
     committedRange[1]
   );
@@ -29,19 +29,32 @@ export function RecommendationsSection() {
         onChangeEnd={setCommittedRange}
         className={styles.recommendationCard}
       />
-      <TrackRecommendations uris={data?.uris ?? []} loading={isLoading} />
+      <TrackRecommendations
+        uris={uris}
+        total={total}
+        loading={isLoading}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+      />
     </div>
   );
 }
 
 function TrackRecommendations({
   uris,
+  total,
   loading,
+  fetchNextPage,
+  isFetchingNextPage,
 }: {
   uris: string[];
+  total: number;
   loading?: boolean;
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
 }) {
-  const { items: allTracks, isLoading } = useTracks({ filters: { tracks: uris } });
+  const requestUris = uris.length > 0 ? uris : ["NO_RECOMMENDATION_TRACKS"];
+  const { items: allTracks, isLoading } = useTracks({ filters: { tracks: requestUris } });
 
   // Filter and sort tracks to match the order from recommendations
   const tracks = uris
@@ -52,6 +65,7 @@ function TrackRecommendations({
     <DisplayGrid
       loading={loading || isLoading}
       items={tracks}
+      total={total}
       getKey={(track) => track.track_uri}
       renderRow={(track) => (
         <TrackRow
@@ -66,6 +80,8 @@ function TrackRecommendations({
           ]}
         />
       )}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
     />
   );
 }

@@ -28,9 +28,11 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
         low_percentile, high_percentile = high_percentile, low_percentile
 
     params = parse_filters(filters)
+    limit = max(1, filters.get('limit', 10))
+    offset = max(0, filters.get('offset', 0))
     has_filters = _has_active_filters(params)
 
-    with filtered_connection(filters) as (conn, filter_params):
+    with filtered_connection(filters) as (conn, _):
         if has_filters:
             # Check track count to avoid showing recommendations for very small filter sets
             track_count = pd.read_sql_query(
@@ -38,7 +40,7 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
                 conn
             ).iloc[0]['cnt']
             if track_count < 60:
-                return {"uris": []}
+                return {"items": [], "total": 0}
 
         track_recs = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_percentile_range')),
@@ -50,4 +52,5 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
             }
         )
 
-    return {"uris": track_recs['track_uri'].tolist() if not track_recs.empty else []}
+    uris = track_recs['track_uri'].tolist() if not track_recs.empty else []
+    return {"items": uris[offset:offset + limit], "total": len(uris)}
