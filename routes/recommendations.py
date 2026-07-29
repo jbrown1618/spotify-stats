@@ -23,6 +23,9 @@ def _has_active_filters(params: dict) -> bool:
 def percentile_range_recommendations_payload(filters: dict, low_percentile: float, high_percentile: float):
     """Return tracks matching the current filter whose stream totals fall within
     [low_percentile, high_percentile] (each 0.0 to 1.0), sorted least-recently-streamed first.
+
+    Always returns a dict with 'items' (a page of track URIs) and 'total'.
+    If 'limit' is present in filters, slices to the requested page; otherwise returns all items.
     """
     if low_percentile > high_percentile:
         low_percentile, high_percentile = high_percentile, low_percentile
@@ -38,7 +41,7 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
                 conn
             ).iloc[0]['cnt']
             if track_count < 60:
-                return {"uris": []}
+                return {"items": [], "total": 0}
 
         track_recs = pd.read_sql_query(
             sqlalchemy.text(query_text('select_track_recommendations_percentile_range')),
@@ -50,4 +53,12 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
             }
         )
 
-    return {"uris": track_recs['track_uri'].tolist() if not track_recs.empty else []}
+    uris = track_recs['track_uri'].tolist() if not track_recs.empty else []
+    total = len(uris)
+
+    limit = filters.get('limit')
+    if limit is not None:
+        offset = filters.get('offset', 0)
+        uris = uris[offset:offset + limit]
+
+    return {"items": uris, "total": total}

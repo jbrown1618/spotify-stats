@@ -442,19 +442,16 @@ export async function getGenresStreamShareByMonth(
   );
 }
 
-export interface PercentileRangeRecommendations {
-  uris: string[];
-}
-
 export async function getRecommendationsInRange(
   filters: ActiveFilters,
   low: number,
-  high: number
-): Promise<PercentileRangeRecommendations> {
+  high: number,
+  pagination?: Partial<PaginationParams>
+): Promise<PaginatedResponse<string>> {
   return sendRequest(
     `/api/recommendations/range`,
     "percentile range recommendations",
-    { ...filters, low, high }
+    { ...filters, low, high, ...pagination }
   );
 }
 
