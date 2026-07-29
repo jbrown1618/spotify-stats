@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import sqlalchemy
 
@@ -24,7 +26,7 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
     """Return tracks matching the current filter whose stream totals fall within
     [low_percentile, high_percentile] (each 0.0 to 1.0), sorted least-recently-streamed first.
 
-    Always returns a dict with 'items' (a page of track URIs) and 'total'.
+    Always returns a dict with 'items' (a page of full track records) and 'total'.
     If 'limit' is present in filters, slices to the requested page; otherwise returns all items.
     """
     if low_percentile > high_percentile:
@@ -53,12 +55,12 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
             }
         )
 
-    uris = track_recs['track_uri'].tolist() if not track_recs.empty else []
-    total = len(uris)
+    total = len(track_recs)
 
     limit = filters.get('limit')
     if limit is not None:
         offset = filters.get('offset', 0)
-        uris = uris[offset:offset + limit]
+        track_recs = track_recs.iloc[offset:offset + limit]
 
-    return {"items": uris, "total": total}
+    items = json.loads(track_recs.fillna(value=pd.NA).to_json(orient="records"))
+    return {"items": items, "total": total}

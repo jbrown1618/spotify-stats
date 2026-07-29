@@ -447,7 +447,7 @@ export async function getRecommendationsInRange(
   low: number,
   high: number,
   pagination?: Partial<PaginationParams>
-): Promise<PaginatedResponse<string>> {
+): Promise<PaginatedResponse<Track>> {
   return sendRequest(
     `/api/recommendations/range`,
     "percentile range recommendations",
