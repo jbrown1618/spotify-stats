@@ -36,6 +36,7 @@ import {
   StreamsByMonthResponse,
   StreamShareMonth,
   toFiltersQuery,
+  Track,
   TrackRank,
 } from "./api";
 import { useFilters } from "./useFilters";
@@ -174,7 +175,7 @@ export function useRecommendationsInRange(low: number, high: number) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
 
-  const result = useInfiniteQuery<PaginatedResponse<string>>({
+  const result = useInfiniteQuery<PaginatedResponse<Track>>({
     ...defaultQueryOptions,
     queryKey: ["recommendations-range", query, low, high],
     queryFn: async ({ pageParam = 0 }) =>
