@@ -26,5 +26,4 @@ FROM track_stats ts
 CROSS JOIN stream_percentiles sp
 WHERE ts.total_streams >= sp.low_streams
   AND ts.total_streams <= sp.high_streams
-ORDER BY ts.last_played ASC
-LIMIT 50;
+ORDER BY ts.last_played ASC;

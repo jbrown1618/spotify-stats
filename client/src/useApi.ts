@@ -32,7 +32,6 @@ import {
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
-  PercentileRangeRecommendations,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
@@ -174,11 +173,28 @@ export function useArtistCredits(artistUri: string) {
 export function useRecommendationsInRange(low: number, high: number) {
   const filters = useFilters();
   const query = toFiltersQuery(filters) || DEFAULT_QUERY_KEY;
-  return useQuery<PercentileRangeRecommendations>({
+
+  const result = useInfiniteQuery<PaginatedResponse<string>>({
     ...defaultQueryOptions,
     queryKey: ["recommendations-range", query, low, high],
-    queryFn: async () => getRecommendationsInRange(filters, low, high),
+    queryFn: async ({ pageParam = 0 }) =>
+      getRecommendationsInRange(filters, low, high, {
+        limit: PAGE_SIZE,
+        offset: pageParam as number,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (_lastPage, allPages) => {
+      const total = allPages[0]?.total ?? 0;
+      const loaded = allPages.reduce((n, p) => n + p.items.length, 0);
+      return loaded < total ? loaded : undefined;
+    },
   });
+
+  return {
+    ...result,
+    items: result.data?.pages.flatMap((p) => p.items) ?? [],
+    total: result.data?.pages[0]?.total ?? 0,
+  };
 }
 
 export function useInsights() {
