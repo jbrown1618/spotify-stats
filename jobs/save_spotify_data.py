@@ -1,6 +1,6 @@
 import spotipy
 import pandas as pd
-from data.raw import RawData
+from data.raw import RawData, get_connection
 from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
 from utils.name import short_name
@@ -8,6 +8,7 @@ from utils.track import is_blacklisted
 
 page_size = 50
 small_page_size = 20
+max_playlist_track_change_ratio = 0.05
 
 queued_artists = set()
 queued_albums = set()
@@ -34,6 +35,8 @@ def save_spotify_data():
     save_liked_tracks_data(sp)
     save_albums_data(sp)
     save_artists_data(sp)
+
+    validate_playlist_track_count(len(playlist_track))
 
     raw_data = RawData()
     raw_data["playlists"] = pd.DataFrame(playlists_data)
@@ -71,9 +74,7 @@ def save_tracks_by_uri(uris):
     raw_data["album_artist"] = pd.DataFrame(album_artist)
     raw_data["artist_genre"] = pd.DataFrame(artist_genre)
 
-
 def save_playlists_data(sp: spotipy.Spotify):
-    current_user = sp.current_user()["id"]
     offset = 0
     has_more = True
     while has_more:
@@ -84,29 +85,7 @@ def save_playlists_data(sp: spotipy.Spotify):
             if playlist is None:
                 continue # This just started happening around 2024-11-28
             process_playlist(playlist)
-            save_playlist_tracks_data(sp, playlist["uri"])
-
-        has_more = offset + page_size < playlists["total"]
-        offset += page_size
-
-    save_public_playlists_data(sp, current_user)
-
-
-def save_public_playlists_data(sp: spotipy.Spotify, user_id: str):
-    offset = 0
-    has_more = True
-    while has_more:
-        print(f'Fetching {page_size} public playlists for {user_id} at offset {offset}...')
-        playlists = sp.user_playlists(user_id, limit=page_size, offset=offset)
-        log_playlist_page("public user playlists", playlists, offset)
-        for playlist in playlists["items"]:
-            if playlist is None:
-                continue
-            if playlist["uri"] in processed_playlists:
-                continue
-            print(f'Recovered playlist from public endpoint: {playlist["name"]} ({playlist["uri"]})')
-            process_playlist(playlist)
-            save_playlist_tracks_data(sp, playlist["uri"])
+            save_playlist_tracks_data(sp, playlist["uri"], playlist["name"])
 
         has_more = offset + page_size < playlists["total"]
         offset += page_size
@@ -126,23 +105,74 @@ def log_playlist_page(source: str, playlists: dict, offset: int):
     )
 
 
-def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
+def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri: str, playlist_name: str):
     offset = 0
     has_more = True
+    page_count = 0
+    spotify_total = 0
+    saved_count = 0
+    null_count = 0
+    non_track_count = 0
+    blacklisted_count = 0
     while has_more:
-        print(f'Fetching {page_size} tracks...')
+        print(f'Fetching {page_size} tracks for {playlist_name} at offset {offset}...')
         tracks = sp.playlist_tracks(playlist_uri, limit=page_size, offset=offset)
+        page_count += 1
+        spotify_total = tracks["total"]
         for item in tracks["items"]:
-            track = item["track"]
+            track = item.get("track") if item is not None else None
             if track is None or track.get("type") != "track":
+                if track is None:
+                    null_count += 1
+                else:
+                    non_track_count += 1
                 continue  # Skip episodes and other non-track items
             if is_blacklisted(track["name"]):
+                blacklisted_count += 1
                 continue  # Skip blacklisted tracks
             playlist_track.append({ "playlist_uri": playlist_uri, "track_uri": track["uri"] })
             process_track(track)
+            saved_count += 1
 
         has_more = offset + page_size < tracks["total"]
         offset += page_size
+
+    print(
+        f'Playlist track sync summary: playlist="{playlist_name}" uri={playlist_uri} '
+        f'spotify_total={spotify_total} pages={page_count} saved={saved_count} '
+        f'null_items={null_count} non_track_items={non_track_count} '
+        f'blacklisted={blacklisted_count}'
+    )
+
+
+def validate_playlist_track_count(new_count: int):
+    existing_count = current_playlist_track_count()
+    print(
+        f'Playlist track sanity check: existing={existing_count} '
+        f'fetched={new_count} max_change={max_playlist_track_change_ratio:.0%}'
+    )
+
+    if existing_count == 0:
+        print('Skipping playlist track sanity check because the database has no existing rows.')
+        return
+
+    change_ratio = abs(new_count - existing_count) / existing_count
+    if change_ratio <= max_playlist_track_change_ratio:
+        return
+
+    raise RuntimeError(
+        f'Spotify sync fetched {new_count} playlist_track rows, but the database '
+        f'currently has {existing_count}. The {change_ratio:.1%} change exceeds '
+        f'the {max_playlist_track_change_ratio:.0%} safety threshold, so the job '
+        'is aborting before replacing playlist_track.'
+    )
+
+
+def current_playlist_track_count() -> int:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM playlist_track;')
+        return cursor.fetchone()[0]
 
 
 def process_playlist(playlist):
