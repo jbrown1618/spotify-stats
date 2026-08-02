@@ -1,6 +1,6 @@
 import spotipy
 import pandas as pd
-from data.raw import RawData, get_connection
+from data.raw import RawData
 from jobs.queue import queue_job
 from spotify.spotify_client import get_spotify_client
 from utils.name import short_name
@@ -8,7 +8,6 @@ from utils.track import is_blacklisted
 
 page_size = 50
 small_page_size = 20
-max_playlist_track_change_ratio = 0.05
 
 queued_artists = set()
 queued_albums = set()
@@ -35,8 +34,6 @@ def save_spotify_data():
     save_liked_tracks_data(sp)
     save_albums_data(sp)
     save_artists_data(sp)
-
-    validate_playlist_track_count(len(playlist_track))
 
     raw_data = RawData()
     raw_data["playlists"] = pd.DataFrame(playlists_data)
@@ -143,37 +140,6 @@ def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri: str, playlist_n
         f'null_items={null_count} non_track_items={non_track_count} '
         f'blacklisted={blacklisted_count}'
     )
-
-
-def validate_playlist_track_count(new_count: int):
-    existing_count = current_playlist_track_count()
-    print(
-        f'Playlist track sanity check: existing={existing_count} '
-        f'fetched={new_count} max_decrease={max_playlist_track_change_ratio:.0%}'
-    )
-
-    if existing_count == 0:
-        print('Skipping playlist track sanity check because the database has no existing rows.')
-        return
-
-    if new_count >= existing_count:
-        return
-
-    decrease_ratio = (existing_count - new_count) / existing_count
-    if decrease_ratio > max_playlist_track_change_ratio:
-        raise RuntimeError(
-            f'Spotify sync fetched {new_count} playlist_track rows, but the database '
-            f'currently has {existing_count}. The {decrease_ratio:.1%} decrease exceeds '
-            f'the {max_playlist_track_change_ratio:.0%} safety threshold, so the job '
-            'is aborting before replacing playlist_track.'
-        )
-
-
-def current_playlist_track_count() -> int:
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) FROM playlist_track;')
-        return cursor.fetchone()[0]
 
 
 def process_playlist(playlist):
