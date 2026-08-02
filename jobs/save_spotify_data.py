@@ -149,23 +149,24 @@ def validate_playlist_track_count(new_count: int):
     existing_count = current_playlist_track_count()
     print(
         f'Playlist track sanity check: existing={existing_count} '
-        f'fetched={new_count} max_change={max_playlist_track_change_ratio:.0%}'
+        f'fetched={new_count} max_decrease={max_playlist_track_change_ratio:.0%}'
     )
 
     if existing_count == 0:
         print('Skipping playlist track sanity check because the database has no existing rows.')
         return
 
-    change_ratio = abs(new_count - existing_count) / existing_count
-    if change_ratio <= max_playlist_track_change_ratio:
+    if new_count >= existing_count:
         return
 
-    raise RuntimeError(
-        f'Spotify sync fetched {new_count} playlist_track rows, but the database '
-        f'currently has {existing_count}. The {change_ratio:.1%} change exceeds '
-        f'the {max_playlist_track_change_ratio:.0%} safety threshold, so the job '
-        'is aborting before replacing playlist_track.'
-    )
+    decrease_ratio = (existing_count - new_count) / existing_count
+    if decrease_ratio > max_playlist_track_change_ratio:
+        raise RuntimeError(
+            f'Spotify sync fetched {new_count} playlist_track rows, but the database '
+            f'currently has {existing_count}. The {decrease_ratio:.1%} decrease exceeds '
+            f'the {max_playlist_track_change_ratio:.0%} safety threshold, so the job '
+            'is aborting before replacing playlist_track.'
+        )
 
 
 def current_playlist_track_count() -> int:
