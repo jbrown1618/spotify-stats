@@ -73,11 +73,13 @@ def save_tracks_by_uri(uris):
 
 
 def save_playlists_data(sp: spotipy.Spotify):
+    current_user = sp.current_user()["id"]
     offset = 0
     has_more = True
     while has_more:
-        print(f'Fetching {page_size} playlists...')
+        print(f'Fetching {page_size} current user playlists at offset {offset}...')
         playlists = sp.current_user_playlists(limit=page_size, offset=offset)
+        log_playlist_page("current user playlists", playlists, offset)
         for playlist in playlists["items"]:
             if playlist is None:
                 continue # This just started happening around 2024-11-28
@@ -86,6 +88,42 @@ def save_playlists_data(sp: spotipy.Spotify):
 
         has_more = offset + page_size < playlists["total"]
         offset += page_size
+
+    save_public_playlists_data(sp, current_user)
+
+
+def save_public_playlists_data(sp: spotipy.Spotify, user_id: str):
+    offset = 0
+    has_more = True
+    while has_more:
+        print(f'Fetching {page_size} public playlists for {user_id} at offset {offset}...')
+        playlists = sp.user_playlists(user_id, limit=page_size, offset=offset)
+        log_playlist_page("public user playlists", playlists, offset)
+        for playlist in playlists["items"]:
+            if playlist is None:
+                continue
+            if playlist["uri"] in processed_playlists:
+                continue
+            print(f'Recovered playlist from public endpoint: {playlist["name"]} ({playlist["uri"]})')
+            process_playlist(playlist)
+            save_playlist_tracks_data(sp, playlist["uri"])
+
+        has_more = offset + page_size < playlists["total"]
+        offset += page_size
+
+
+def log_playlist_page(source: str, playlists: dict, offset: int):
+    items = playlists["items"]
+    null_count = sum(1 for playlist in items if playlist is None)
+    names = [
+        playlist["name"]
+        for playlist in items
+        if playlist is not None
+    ]
+    print(
+        f'{source} offset={offset} total={playlists["total"]} '
+        f'items={len(items)} null_items={null_count} playlists={names}'
+    )
 
 
 def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
@@ -112,6 +150,7 @@ def process_playlist(playlist):
         return
 
     playlists_data.append(playlist_data(playlist))
+    processed_playlists.add(playlist["uri"])
 
 
 def playlist_data(playlist):
