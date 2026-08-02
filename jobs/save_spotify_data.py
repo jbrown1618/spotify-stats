@@ -84,7 +84,7 @@ def save_playlists_data(sp: spotipy.Spotify):
             if playlist is None:
                 continue # This just started happening around 2024-11-28
             process_playlist(playlist)
-            save_playlist_tracks_data(sp, playlist["uri"])
+            save_playlist_tracks_data(sp, playlist["uri"], playlist["name"])
 
         has_more = offset + page_size < playlists["total"]
         offset += page_size
@@ -106,7 +106,7 @@ def save_public_playlists_data(sp: spotipy.Spotify, user_id: str):
                 continue
             print(f'Recovered playlist from public endpoint: {playlist["name"]} ({playlist["uri"]})')
             process_playlist(playlist)
-            save_playlist_tracks_data(sp, playlist["uri"])
+            save_playlist_tracks_data(sp, playlist["uri"], playlist["name"])
 
         has_more = offset + page_size < playlists["total"]
         offset += page_size
@@ -126,20 +126,38 @@ def log_playlist_page(source: str, playlists: dict, offset: int):
     )
 
 
-def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri):
+def save_playlist_tracks_data(sp: spotipy.Spotify, playlist_uri: str, playlist_name: str = None):
     offset = 0
     has_more = True
     while has_more:
-        print(f'Fetching {page_size} tracks...')
+        playlist_label = playlist_name or playlist_uri
+        print(f'Fetching {page_size} tracks for {playlist_label} at offset {offset}...')
         tracks = sp.playlist_tracks(playlist_uri, limit=page_size, offset=offset)
+        saved_count = 0
+        null_count = 0
+        non_track_count = 0
+        blacklisted_count = 0
         for item in tracks["items"]:
-            track = item["track"]
+            track = item.get("track") if item is not None else None
             if track is None or track.get("type") != "track":
+                if track is None:
+                    null_count += 1
+                else:
+                    non_track_count += 1
                 continue  # Skip episodes and other non-track items
             if is_blacklisted(track["name"]):
+                blacklisted_count += 1
                 continue  # Skip blacklisted tracks
             playlist_track.append({ "playlist_uri": playlist_uri, "track_uri": track["uri"] })
             process_track(track)
+            saved_count += 1
+
+        print(
+            f'Playlist tracks for {playlist_label} offset={offset} '
+            f'total={tracks["total"]} items={len(tracks["items"])} '
+            f'saved={saved_count} null_items={null_count} '
+            f'non_track_items={non_track_count} blacklisted={blacklisted_count}'
+        )
 
         has_more = offset + page_size < tracks["total"]
         offset += page_size
