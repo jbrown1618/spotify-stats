@@ -102,6 +102,27 @@ interface FilterProps {
   options: NonNullable<FilterOptions>;
 }
 
+function setFilterValue<K extends keyof ActiveFilters>(
+  filters: ActiveFilters,
+  key: K,
+  value: ActiveFilters[K] | undefined
+): ActiveFilters {
+  if (
+    value === undefined ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0)
+  ) {
+    const nextFilters = { ...filters };
+    delete nextFilters[key];
+    return nextFilters;
+  }
+
+  return {
+    ...filters,
+    [key]: value,
+  };
+}
+
 function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
   const options = namedWrappedOptions();
 
@@ -110,12 +131,11 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
       label="Wrapped"
       clearable
       data={options}
-      value={filters.wrapped}
+      value={filters.wrapped ?? null}
       onChange={(range) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          wrapped: range ?? undefined,
-        }))
+        onFilterChange((filters) =>
+          setFilterValue(filters, "wrapped", range ?? undefined)
+        )
       }
     />
   );
@@ -133,13 +153,12 @@ function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.playlists}
+      value={filters.playlists ?? []}
       searchable
       onChange={(playlists) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          playlists,
-        }))
+        onFilterChange((filters) =>
+          setFilterValue(filters, "playlists", playlists)
+        )
       }
     />
   );
@@ -157,13 +176,10 @@ function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.artists}
+      value={filters.artists ?? []}
       searchable
       onChange={(artists) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          artists,
-        }))
+        onFilterChange((filters) => setFilterValue(filters, "artists", artists))
       }
     />
   );
@@ -179,13 +195,10 @@ function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
           value: album_uri,
         };
       })}
-      value={filters.albums}
+      value={filters.albums ?? []}
       searchable
       onChange={(albums) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          albums,
-        }))
+        onFilterChange((filters) => setFilterValue(filters, "albums", albums))
       }
     />
   );
@@ -201,13 +214,10 @@ function LabelsFilter({ filters, options, onFilterChange }: FilterProps) {
           value: album_standardized_label,
         };
       })}
-      value={filters.labels}
+      value={filters.labels ?? []}
       searchable
       onChange={(labels) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          labels,
-        }))
+        onFilterChange((filters) => setFilterValue(filters, "labels", labels))
       }
     />
   );
@@ -222,13 +232,10 @@ function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
           value: genre,
         };
       })}
-      value={filters.genres}
+      value={filters.genres ?? []}
       searchable
       onChange={(genres) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          genres,
-        }))
+        onFilterChange((filters) => setFilterValue(filters, "genres", genres))
       }
     />
   );
@@ -247,13 +254,16 @@ function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
             value: "" + year,
           };
         })}
-      value={filters.years?.map((y) => "" + y)}
+      value={filters.years?.map((y) => "" + y) ?? []}
       searchable
       onChange={(years) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          years: years.map((y) => parseInt(y)),
-        }))
+        onFilterChange((filters) =>
+          setFilterValue(
+            filters,
+            "years",
+            years.map((y) => parseInt(y))
+          )
+        )
       }
     />
   );
@@ -263,12 +273,11 @@ function LikedTracksFilter({ filters, onFilterChange }: FilterProps) {
   return (
     <Checkbox
       label="Liked"
-      checked={filters.liked}
+      checked={filters.liked ?? false}
       onChange={(e) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          liked: e.currentTarget.checked,
-        }))
+        onFilterChange((filters) =>
+          setFilterValue(filters, "liked", e.currentTarget.checked)
+        )
       }
     />
   );
@@ -286,13 +295,12 @@ function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.producers}
+      value={filters.producers ?? []}
       searchable
       onChange={(producers) =>
-        onFilterChange((filters) => ({
-          ...filters,
-          producers,
-        }))
+        onFilterChange((filters) =>
+          setFilterValue(filters, "producers", producers)
+        )
       }
     />
   );
