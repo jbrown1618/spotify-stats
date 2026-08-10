@@ -90,7 +90,9 @@ function FiltersDialog({
         <YearsFilter {...props} />
         <LikedTracksFilter {...props} />
 
-        <Button onClick={() => onClose(localFilters)}>Apply</Button>
+        <Button className={styles.applyButton} onClick={() => onClose(localFilters)}>
+          Apply
+        </Button>
       </div>
     </Modal>
   );
