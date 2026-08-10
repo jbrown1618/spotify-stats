@@ -7,7 +7,7 @@ export function PlaylistRow({ playlist }: { playlist: Playlist }) {
 
   const onClick = () =>
     setFilters({
-      playlists: [playlist.playlist_uri],
+      playlists: playlist.playlist_uri,
     });
 
   return (

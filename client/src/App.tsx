@@ -36,15 +36,9 @@ function DetailsContent() {
   const filters = useFilters();
   return (
     <>
-      {filters.tracks?.length === 1 && (
-        <TrackDetails trackURI={filters.tracks[0]} />
-      )}
-      {filters.artists?.length === 1 && (
-        <ArtistDetails artistURI={filters.artists[0]} />
-      )}
-      {filters.producers?.length === 1 && (
-        <ProducerDetails mbid={filters.producers[0]} />
-      )}
+      {filters.tracks && <TrackDetails trackURI={filters.tracks} />}
+      {filters.artists && <ArtistDetails artistURI={filters.artists} />}
+      {filters.producers && <ProducerDetails mbid={filters.producers} />}
     </>
   );
 }
@@ -52,18 +46,14 @@ function DetailsContent() {
 function TracksOverviewContent() {
   const filters = useFilters();
 
-  if (filters.albums?.length !== 1 && filters.playlists?.length !== 1) {
+  if (!filters.albums && !filters.playlists) {
     return null;
   }
 
   return (
     <>
-      {filters.albums?.length === 1 && (
-        <AlbumDetails albumURI={filters.albums[0]} />
-      )}
-      {filters.playlists?.length === 1 && (
-        <PlaylistDetails playlistURI={filters.playlists[0]} />
-      )}
+      {filters.albums && <AlbumDetails albumURI={filters.albums} />}
+      {filters.playlists && <PlaylistDetails playlistURI={filters.playlists} />}
     </>
   );
 }
@@ -72,43 +62,33 @@ function DetailsTitle() {
   const filters = useFilters();
 
   const { items: tracks } = useTracks(
-    filters.tracks?.length === 1
-      ? { filters: { tracks: filters.tracks } }
-      : undefined
+    filters.tracks ? { filters: { tracks: filters.tracks } } : undefined
   );
   const { items: artists } = useArtists(
-    filters.artists?.length === 1
-      ? { filters: { artists: filters.artists } }
-      : undefined
+    filters.artists ? { filters: { artists: filters.artists } } : undefined
   );
   const { items: albums } = useAlbums(
-    filters.albums?.length === 1
-      ? { filters: { albums: filters.albums } }
-      : undefined
+    filters.albums ? { filters: { albums: filters.albums } } : undefined
   );
   const { items: playlists } = usePlaylists(
-    filters.playlists?.length === 1
-      ? { filters: { playlists: filters.playlists } }
-      : undefined
+    filters.playlists ? { filters: { playlists: filters.playlists } } : undefined
   );
   const { items: producers } = useProducers(
-    filters.producers?.length === 1
-      ? { filters: { producers: filters.producers } }
-      : undefined
+    filters.producers ? { filters: { producers: filters.producers } } : undefined
   );
 
-  const trackName = filters.tracks?.length === 1 ? tracks?.[0]?.track_name : null;
-  const artistName = filters.artists?.length === 1
-    ? artists?.find((a) => a.artist_uri === filters.artists?.[0])?.artist_name
+  const trackName = filters.tracks ? tracks?.[0]?.track_name : null;
+  const artistName = filters.artists
+    ? artists?.find((a) => a.artist_uri === filters.artists)?.artist_name
     : null;
-  const albumName = filters.albums?.length === 1
-    ? albums?.find((a) => a.album_uri === filters.albums?.[0])?.album_name
+  const albumName = filters.albums
+    ? albums?.find((a) => a.album_uri === filters.albums)?.album_name
     : null;
-  const playlistName = filters.playlists?.length === 1
-    ? playlists?.find((p) => p.playlist_uri === filters.playlists?.[0])?.playlist_name
+  const playlistName = filters.playlists
+    ? playlists?.find((p) => p.playlist_uri === filters.playlists)?.playlist_name
     : null;
-  const producerName = filters.producers?.length === 1
-    ? producers?.find((p) => p.producer_mbid === filters.producers?.[0])?.producer_name
+  const producerName = filters.producers
+    ? producers?.find((p) => p.producer_mbid === filters.producers)?.producer_name
     : null;
   const wrappedLabel = filters.wrapped
     ? namedWrappedOptions().find((o) => o.value === filters.wrapped)?.label ??
@@ -118,20 +98,22 @@ function DetailsTitle() {
   const title =
     wrappedLabel ? `Wrapped: ${wrappedLabel}` :
     trackName ?? artistName ?? albumName ?? playlistName ?? producerName ??
-    (filters.labels?.length === 1 ? filters.labels[0] : null) ??
-    (filters.genres?.length === 1 ? filters.genres[0] : null) ??
-    (filters.years?.length === 1 ? `Tracks released in ${filters.years[0]}` : null);
+    filters.labels ??
+    filters.genres ??
+    (filters.years !== undefined && filters.years !== null
+      ? `Tracks released in ${filters.years}`
+      : null);
 
   const hasDetailFilter = !!(
     filters.wrapped ||
-    filters.tracks?.length === 1 ||
-    filters.artists?.length === 1 ||
-    filters.albums?.length === 1 ||
-    filters.playlists?.length === 1 ||
-    filters.producers?.length === 1 ||
-    filters.labels?.length === 1 ||
-    filters.genres?.length === 1 ||
-    filters.years?.length === 1
+    filters.tracks ||
+    filters.artists ||
+    filters.albums ||
+    filters.playlists ||
+    filters.producers ||
+    filters.labels ||
+    filters.genres ||
+    filters.years !== undefined && filters.years !== null
   );
 
   if (!hasDetailFilter) return null;

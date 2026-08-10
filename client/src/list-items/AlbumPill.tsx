@@ -6,7 +6,7 @@ export function AlbumPill({ album }: { album: Album }) {
   const setFilters = useSetFilters();
 
   const onClick = () => {
-    setFilters({ albums: [album.album_uri] });
+    setFilters({ albums: album.album_uri });
   };
   return (
     <PillWithAvatar imageHref={album.album_image_url} onClick={onClick}>

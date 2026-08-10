@@ -65,7 +65,7 @@ function GenrePill({ genre }: { genre: string }) {
       bg="gray"
       size="lg"
       className={styles.clickable}
-      onClick={() => setFilters({ genres: [genre] })}
+      onClick={() => setFilters({ genres: genre })}
     >
       {genre}
     </Pill>

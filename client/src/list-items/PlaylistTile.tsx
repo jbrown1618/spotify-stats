@@ -15,7 +15,7 @@ export function PlaylistTile({ playlist }: PlaylistTileProps) {
       itemURI={playlist.playlist_uri}
       onClick={() =>
         setFilters({
-          playlists: [playlist.playlist_uri],
+          playlists: playlist.playlist_uri,
         })
       }
       stats={[

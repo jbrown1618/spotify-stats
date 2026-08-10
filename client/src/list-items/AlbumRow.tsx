@@ -25,7 +25,7 @@ export function AlbumRow({ album }: AlbumTileProps) {
       src={album.album_image_url}
       onClick={() =>
         setFilters({
-          albums: [album.album_uri],
+          albums: album.album_uri,
         })
       }
       secondaryText={<ArtistsList albumURI={album.album_uri} />}
@@ -43,7 +43,7 @@ export function AlbumRow({ album }: AlbumTileProps) {
 }
 
 function ArtistsList({ albumURI }: { albumURI: string }) {
-  const { items: albumArtists } = useArtists({ filters: { albums: [albumURI] } });
+  const { items: albumArtists } = useArtists({ filters: { albums: albumURI } });
 
   if (!albumArtists)
     return (

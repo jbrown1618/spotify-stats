@@ -13,11 +13,11 @@ interface ArtistTileProps {
 
 export function ArtistTile({ artist, large }: ArtistTileProps) {
   const setFilters = useSetFilters();
-  const { items: artistAlbums } = useAlbums({ filters: { artists: [artist.artist_uri] } });
+  const { items: artistAlbums } = useAlbums({ filters: { artists: artist.artist_uri } });
 
   const onClick = () =>
     setFilters({
-      artists: [artist.artist_uri],
+      artists: artist.artist_uri,
     });
 
   if (!large)

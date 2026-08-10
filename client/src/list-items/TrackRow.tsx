@@ -50,7 +50,7 @@ export function TrackRow({ track, kpis }: TrackRowProps) {
       secondaryText={isMobile ? track.album_short_name : track.album_name}
       onClick={() =>
         setFilters({
-          tracks: [track.track_uri],
+          tracks: track.track_uri,
         })
       }
       tertiaryText={

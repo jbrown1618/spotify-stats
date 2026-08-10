@@ -6,7 +6,7 @@ export function ArtistPill({ artist }: { artist: Artist }) {
   const setFilters = useSetFilters();
 
   const onClick = () => {
-    setFilters({ artists: [artist.artist_uri] });
+    setFilters({ artists: artist.artist_uri });
   };
   return (
     <PillWithAvatar imageHref={artist.artist_image_url} onClick={onClick}>

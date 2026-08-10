@@ -58,13 +58,10 @@ function FiltersDialog({
   opened,
   onClose,
 }: FiltersDialogProps) {
-  const [localFilters, setLocalFilters] = useState(() =>
-    normalizeSingleSelectFilters(filters)
-  );
+  const [localFilters, setLocalFilters] = useState(filters);
 
   useEffect(
-    () =>
-      opened ? setLocalFilters(normalizeSingleSelectFilters(filters)) : undefined,
+    () => (opened ? setLocalFilters(filters) : undefined),
     [opened, filters]
   );
 
@@ -78,7 +75,7 @@ function FiltersDialog({
     <Modal
       title="Filters"
       opened={opened}
-      onClose={() => onClose(normalizeSingleSelectFilters(localFilters))}
+      onClose={() => onClose(localFilters)}
       transitionProps={{ transition: "fade", duration: 200 }}
       removeScrollProps={{ removeScrollBar: false }}
     >
@@ -95,7 +92,7 @@ function FiltersDialog({
 
         <Button
           className={styles.applyButton}
-          onClick={() => onClose(normalizeSingleSelectFilters(localFilters))}
+          onClick={() => onClose(localFilters)}
         >
           Apply
         </Button>
@@ -113,13 +110,9 @@ interface FilterProps {
 function setFilterValue<K extends keyof ActiveFilters>(
   filters: ActiveFilters,
   key: K,
-  value: ActiveFilters[K] | undefined
+  value: ActiveFilters[K] | null | undefined
 ): ActiveFilters {
-  if (
-    value === undefined ||
-    value === false ||
-    (Array.isArray(value) && value.length === 0)
-  ) {
+  if (value === undefined || value === null || value === false) {
     const nextFilters = { ...filters };
     delete nextFilters[key];
     return nextFilters;
@@ -129,46 +122,6 @@ function setFilterValue<K extends keyof ActiveFilters>(
     ...filters,
     [key]: value,
   };
-}
-
-function normalizeSingleSelectFilters(filters: ActiveFilters): ActiveFilters {
-  let nextFilters = filters;
-  nextFilters = setFilterValue(
-    nextFilters,
-    "playlists",
-    filters.playlists?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "artists",
-    filters.artists?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "albums",
-    filters.albums?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "labels",
-    filters.labels?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "genres",
-    filters.genres?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "years",
-    filters.years?.slice(0, 1)
-  );
-  nextFilters = setFilterValue(
-    nextFilters,
-    "producers",
-    filters.producers?.slice(0, 1)
-  );
-  return nextFilters;
 }
 
 function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
@@ -183,7 +136,7 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
       value={filters.wrapped ?? null}
       onChange={(range) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "wrapped", range ?? undefined)
+          setFilterValue(filters, "wrapped", range)
         )
       }
     />
@@ -204,15 +157,11 @@ function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.playlists?.[0] ?? null}
+      value={filters.playlists ?? null}
       searchable
       onChange={(playlist) =>
         onFilterChange((filters) =>
-          setFilterValue(
-            filters,
-            "playlists",
-            playlist ? [playlist] : undefined
-          )
+          setFilterValue(filters, "playlists", playlist)
         )
       }
     />
@@ -233,11 +182,11 @@ function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.artists?.[0] ?? null}
+      value={filters.artists ?? null}
       searchable
       onChange={(artist) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "artists", artist ? [artist] : undefined)
+          setFilterValue(filters, "artists", artist)
         )
       }
     />
@@ -256,11 +205,11 @@ function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
           value: album_uri,
         };
       })}
-      value={filters.albums?.[0] ?? null}
+      value={filters.albums ?? null}
       searchable
       onChange={(album) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "albums", album ? [album] : undefined)
+          setFilterValue(filters, "albums", album)
         )
       }
     />
@@ -279,11 +228,11 @@ function LabelsFilter({ filters, options, onFilterChange }: FilterProps) {
           value: album_standardized_label,
         };
       })}
-      value={filters.labels?.[0] ?? null}
+      value={filters.labels ?? null}
       searchable
       onChange={(label) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "labels", label ? [label] : undefined)
+          setFilterValue(filters, "labels", label)
         )
       }
     />
@@ -301,11 +250,11 @@ function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
           value: genre,
         };
       })}
-      value={filters.genres?.[0] ?? null}
+      value={filters.genres ?? null}
       searchable
       onChange={(genre) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "genres", genre ? [genre] : undefined)
+          setFilterValue(filters, "genres", genre)
         )
       }
     />
@@ -327,14 +276,14 @@ function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
             value: "" + year,
           };
         })}
-      value={filters.years?.[0]?.toString() ?? null}
+      value={filters.years?.toString() ?? null}
       searchable
       onChange={(year) =>
         onFilterChange((filters) =>
           setFilterValue(
             filters,
             "years",
-            year ? [parseInt(year)] : undefined
+            year === null ? null : parseInt(year)
           )
         )
       }
@@ -371,15 +320,11 @@ function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.producers?.[0] ?? null}
+      value={filters.producers ?? null}
       searchable
       onChange={(producer) =>
         onFilterChange((filters) =>
-          setFilterValue(
-            filters,
-            "producers",
-            producer ? [producer] : undefined
-          )
+          setFilterValue(filters, "producers", producer)
         )
       }
     />

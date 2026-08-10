@@ -31,11 +31,7 @@ interface SectionTabsProps {
 }
 
 function hasDetails(f: ActiveFilters): boolean {
-  return !!(
-    f.tracks?.length === 1 ||
-    f.artists?.length === 1 ||
-    f.producers?.length === 1
-  );
+  return !!(f.tracks || f.artists || f.producers);
 }
 
 export function useSectionDefs(sectionContent: Record<string, ReactNode>): SectionDef[] {
@@ -55,21 +51,21 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       id: "tracks",
       label: "Tracks",
       icon: <IconMusic size={20} />,
-      hidden: (f) => f.tracks?.length === 1,
+      hidden: (f) => !!f.tracks,
       content: sectionContent.tracks,
     },
     {
       id: "artists",
       label: "Artists",
       icon: <IconMicrophone2 size={20} />,
-      hidden: (f) => f.artists?.length === 1 || artistCount <= 1,
+      hidden: (f) => !!f.artists || artistCount <= 1,
       content: sectionContent.artists,
     },
     {
       id: "albums",
       label: "Albums",
       icon: <IconDisc size={20} />,
-      hidden: (f) => f.albums?.length === 1 || f.tracks?.length === 1 || albumCount <= 1,
+      hidden: (f) => !!f.albums || !!f.tracks || albumCount <= 1,
       content: sectionContent.albums,
     },
     {

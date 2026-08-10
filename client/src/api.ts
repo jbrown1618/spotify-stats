@@ -163,16 +163,16 @@ export interface YearCounts {
 }
 
 export interface ActiveFilters {
-  liked?: boolean;
-  tracks?: string[];
-  labels?: string[];
-  artists?: string[];
-  albums?: string[];
-  playlists?: string[];
-  genres?: string[];
-  years?: number[];
-  wrapped?: string;
-  producers?: string[];
+  liked?: boolean | null;
+  tracks?: string | null;
+  labels?: string | null;
+  artists?: string | null;
+  albums?: string | null;
+  playlists?: string | null;
+  genres?: string | null;
+  years?: number | null;
+  wrapped?: string | null;
+  producers?: string | null;
 }
 
 export interface PaginationParams {
@@ -458,7 +458,7 @@ export async function getRecommendationsInRange(
 async function sendRequest<T>(
   url: string,
   dataName: string,
-  params?: Record<string, unknown> | (ActiveFilters & Partial<PaginationParams>)
+  params?: object
 ): Promise<T> {
   try {
     let fullUrl = url;
@@ -480,10 +480,9 @@ async function sendRequest<T>(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toQueryString(params: Record<string, any>): string {
+function toQueryString(params: object): string {
   const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
+  for (const [key, value] of Object.entries(toRequestParams(params))) {
     if (value === undefined || value === null) continue;
     if (Array.isArray(value)) {
       if (value.length === 0) continue;
@@ -497,7 +496,7 @@ function toQueryString(params: Record<string, any>): string {
   return query.toString();
 }
 
-const arrayKeys = [
+const filterArrayKeys = [
   "artists",
   "albums",
   "playlists",
@@ -508,10 +507,57 @@ const arrayKeys = [
   "producers",
 ] as const;
 
+type FilterArrayKey = (typeof filterArrayKeys)[number];
+
+type ServerRequestFilters = {
+  albums?: string[];
+  artists?: string[];
+  genres?: string[];
+  labels?: string[];
+  liked?: boolean;
+  playlists?: string[];
+  producers?: string[];
+  tracks?: string[];
+  wrapped?: string;
+  years?: number[];
+};
+
+function isFilterArrayKey(key: string): key is FilterArrayKey {
+  return filterArrayKeys.includes(key as FilterArrayKey);
+}
+
+function toRequestParams(
+  params: object
+): Record<string, unknown> & ServerRequestFilters {
+  const out: Record<string, unknown> & ServerRequestFilters = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === false) continue;
+    if (isFilterArrayKey(key)) {
+      setRequestFilterValue(out, key, value);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function setRequestFilterValue(
+  out: Record<string, unknown> & ServerRequestFilters,
+  key: FilterArrayKey,
+  value: unknown
+) {
+  if (key === "years") {
+    if (typeof value === "number") out.years = [value];
+  } else if (typeof value === "string") {
+    out[key] = [value];
+  }
+}
+
 export function toFiltersQuery(filters: ActiveFilters): string {
   const query = new URLSearchParams();
-  for (const key of arrayKeys) {
-    const value = filters[key];
+  const requestFilters = toRequestParams(filters);
+  for (const key of filterArrayKeys) {
+    const value = requestFilters[key];
     if (!value || value.length === 0) continue;
     const filterString = encodeURIComponent(JSON.stringify([...value].sort()));
     query.append(key, filterString);
@@ -534,16 +580,35 @@ export function fromFiltersQuery(q: string): ActiveFilters {
   const pairs = q.split("&");
   for (const pair of pairs) {
     const [key, value] = pair.split("=");
-    if (arrayKeys.includes(key as (typeof arrayKeys)[number])) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (out as any)[key] = JSON.parse(
-        decodeURIComponent(decodeURIComponent(value))
-      );
-    } else if (key === "liked" || key === "wrapped") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (out as any)[key] = decodeURIComponent(decodeURIComponent(value));
+    if (!key || value === undefined) continue;
+
+    const decodedValue = decodeURIComponent(decodeURIComponent(value));
+    if (isFilterArrayKey(key)) {
+      setActiveFilterValue(out, key, JSON.parse(decodedValue));
+    } else if (key === "liked") {
+      out.liked = decodedValue === "true";
+    } else if (key === "wrapped") {
+      out.wrapped = decodedValue;
     }
   }
 
   return out;
+}
+
+function setActiveFilterValue(
+  out: ActiveFilters,
+  key: FilterArrayKey,
+  values: unknown
+) {
+  if (!Array.isArray(values) || values.length === 0) return;
+  const value = values[0];
+  if (key === "years") {
+    if (typeof value === "number") {
+      out.years = value;
+    } else if (typeof value === "string") {
+      out.years = parseInt(value);
+    }
+  } else if (typeof value === "string") {
+    out[key] = value;
+  }
 }

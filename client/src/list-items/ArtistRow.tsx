@@ -7,11 +7,11 @@ import { useIsMobile } from "../useIsMobile";
 export function ArtistRow({ artist }: { artist: Artist }) {
   const isMobile = useIsMobile();
   const setFilters = useSetFilters();
-  const { items: artistAlbums } = useAlbums({ filters: { artists: [artist.artist_uri] } });
+  const { items: artistAlbums } = useAlbums({ filters: { artists: artist.artist_uri } });
 
   const onClick = () =>
     setFilters({
-      artists: [artist.artist_uri],
+      artists: artist.artist_uri,
     });
 
   const highestRankedAlbum = artistAlbums

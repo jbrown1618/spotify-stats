@@ -49,7 +49,7 @@ function ReleaseYearPill({ year }: { year: number }) {
       bg="gray"
       size="lg"
       className={styles.clickable}
-      onClick={() => setFilters({ years: [year] })}
+      onClick={() => setFilters({ years: year })}
     >
       {year}
     </Pill>

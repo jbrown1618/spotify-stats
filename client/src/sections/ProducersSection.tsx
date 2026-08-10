@@ -42,7 +42,7 @@ function ProducerPill({ producer }: { producer: Producer }) {
       bg="gray"
       size="lg"
       className={styles.clickable}
-      onClick={() => setFilters({ producers: [producer.producer_mbid] })}
+      onClick={() => setFilters({ producers: producer.producer_mbid })}
     >
       {producer.producer_name}
     </Pill>
