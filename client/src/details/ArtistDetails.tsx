@@ -36,11 +36,11 @@ function formatMBArtistName(
 }
 
 export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
-  const { items: artists } = useArtists({ filters: { artists: artistURI } });
+  const { items: artists } = useArtists({ filters: { artists: [artistURI] } });
   const artist = artists?.find((a) => a.artist_uri === artistURI);
 
   const { items: artistAlbums } = useAlbums({
-    filters: { artists: artist ? artist.artist_uri : "NO-ARTIST" },
+    filters: { artists: artist ? [artist.artist_uri] : ["NO-ARTIST"] },
   });
 
   const { data: artistCredits } = useArtistCredits(artistURI);
@@ -252,7 +252,7 @@ function RelatedArtistPill({
   const setFilters = useSetFilters();
 
   const onClick = () => {
-    setFilters({ artists: artistUri });
+    setFilters({ artists: [artistUri] });
   };
 
   return (

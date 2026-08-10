@@ -41,7 +41,7 @@ function RecordLabelPill({ label }: { label: string }) {
       bg="gray"
       size="lg"
       className={styles.clickable}
-      onClick={() => setFilters({ labels: label })}
+      onClick={() => setFilters({ labels: [label] })}
     >
       {label}
     </Pill>

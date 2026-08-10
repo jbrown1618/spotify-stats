@@ -14,12 +14,12 @@ interface AlbumTileProps {
 
 export function AlbumTile({ album, large }: AlbumTileProps) {
   const setFilters = useSetFilters();
-  const { items: artists } = useArtists({ filters: { albums: album.album_uri } });
+  const { items: artists } = useArtists({ filters: { albums: [album.album_uri] } });
 
   const onClick = useCallback(
     () =>
       setFilters({
-        albums: album.album_uri,
+        albums: [album.album_uri],
       }),
     [album.album_uri, setFilters]
   );

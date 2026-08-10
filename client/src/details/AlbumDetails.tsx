@@ -11,7 +11,7 @@ interface AlbumDetailsProps {
 }
 
 export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
-  const { items: albums } = useAlbums({ filters: { albums: albumURI } });
+  const { items: albums } = useAlbums({ filters: { albums: [albumURI] } });
 
   const album = albums?.find((a) => a.album_uri === albumURI);
 
@@ -22,7 +22,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
           items={[
             {
               label: "Artist",
-              value: <ArtistPills filters={{ albums: albumURI }} />,
+              value: <ArtistPills filters={{ albums: [albumURI] }} />,
             },
             {
               label: "Streams",

@@ -15,7 +15,7 @@ import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
-  const { items: tracks } = useTracks({ filters: { tracks: trackURI } });
+  const { items: tracks } = useTracks({ filters: { tracks: [trackURI] } });
   const track = tracks?.[0];
   const { data: credits } = useTrackCredits(trackURI);
 
@@ -37,7 +37,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
             { label: "Album", value: <AlbumPill album={track} /> },
             {
               label: track.artist_names.length > 1 ? "Artists" : "Artist",
-              value: <ArtistPills filters={{ tracks: trackURI }} />,
+              value: <ArtistPills filters={{ tracks: [trackURI] }} />,
             },
             {
               label: "Release date",

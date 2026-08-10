@@ -3,7 +3,7 @@ import { usePlaylists } from "../useApi";
 import styles from "./Details.module.css";
 
 export function PlaylistDetails({ playlistURI }: { playlistURI: string }) {
-  const { items: playlists } = usePlaylists({ filters: { playlists: playlistURI } });
+  const { items: playlists } = usePlaylists({ filters: { playlists: [playlistURI] } });
   if (!playlists)
     return (
       <div className={styles.centered}>

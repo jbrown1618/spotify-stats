@@ -1,4 +1,4 @@
-import { Button, Checkbox, Modal, Select } from "@mantine/core";
+import { Button, Checkbox, Modal, MultiSelect, Select } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
@@ -90,10 +90,7 @@ function FiltersDialog({
         <YearsFilter {...props} />
         <LikedTracksFilter {...props} />
 
-        <Button
-          className={styles.applyButton}
-          onClick={() => onClose(localFilters)}
-        >
+        <Button className={styles.applyButton} onClick={() => onClose(localFilters)}>
           Apply
         </Button>
       </div>
@@ -110,9 +107,13 @@ interface FilterProps {
 function setFilterValue<K extends keyof ActiveFilters>(
   filters: ActiveFilters,
   key: K,
-  value: ActiveFilters[K] | null | undefined
+  value: ActiveFilters[K] | undefined
 ): ActiveFilters {
-  if (value === undefined || value === null || value === false) {
+  if (
+    value === undefined ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0)
+  ) {
     const nextFilters = { ...filters };
     delete nextFilters[key];
     return nextFilters;
@@ -129,14 +130,13 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
 
   return (
     <Select
-      className={styles.dialogField}
       label="Wrapped"
       clearable
       data={options}
       value={filters.wrapped ?? null}
       onChange={(range) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "wrapped", range)
+          setFilterValue(filters, "wrapped", range ?? undefined)
         )
       }
     />
@@ -145,10 +145,8 @@ function ListeningPeriodFilter({ filters, onFilterChange }: FilterProps) {
 
 function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Playlists"
-      clearable
       data={Object.values(options.playlists).map(
         ({ playlist_name, playlist_uri }) => {
           return {
@@ -157,11 +155,11 @@ function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.playlists ?? null}
+      value={filters.playlists ?? []}
       searchable
-      onChange={(playlist) =>
+      onChange={(playlists) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "playlists", playlist)
+          setFilterValue(filters, "playlists", playlists)
         )
       }
     />
@@ -170,10 +168,8 @@ function PlaylistsFilter({ filters, options, onFilterChange }: FilterProps) {
 
 function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Artists"
-      clearable
       data={Object.values(options.artists).map(
         ({ artist_uri, artist_name }) => {
           return {
@@ -182,12 +178,10 @@ function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.artists ?? null}
+      value={filters.artists ?? []}
       searchable
-      onChange={(artist) =>
-        onFilterChange((filters) =>
-          setFilterValue(filters, "artists", artist)
-        )
+      onChange={(artists) =>
+        onFilterChange((filters) => setFilterValue(filters, "artists", artists))
       }
     />
   );
@@ -195,22 +189,18 @@ function ArtistsFilter({ filters, options, onFilterChange }: FilterProps) {
 
 function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Albums"
-      clearable
       data={Object.values(options.albums).map(({ album_uri, album_name }) => {
         return {
           label: album_name,
           value: album_uri,
         };
       })}
-      value={filters.albums ?? null}
+      value={filters.albums ?? []}
       searchable
-      onChange={(album) =>
-        onFilterChange((filters) =>
-          setFilterValue(filters, "albums", album)
-        )
+      onChange={(albums) =>
+        onFilterChange((filters) => setFilterValue(filters, "albums", albums))
       }
     />
   );
@@ -218,44 +208,36 @@ function AlbumsFilter({ filters, options, onFilterChange }: FilterProps) {
 
 function LabelsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Labels"
-      clearable
       data={Object.values(options.labels).map((album_standardized_label) => {
         return {
           label: album_standardized_label,
           value: album_standardized_label,
         };
       })}
-      value={filters.labels ?? null}
+      value={filters.labels ?? []}
       searchable
-      onChange={(label) =>
-        onFilterChange((filters) =>
-          setFilterValue(filters, "labels", label)
-        )
+      onChange={(labels) =>
+        onFilterChange((filters) => setFilterValue(filters, "labels", labels))
       }
     />
   );
 }
 function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Genres"
-      clearable
       data={Object.values(options.genres).map((genre) => {
         return {
           label: genre,
           value: genre,
         };
       })}
-      value={filters.genres ?? null}
+      value={filters.genres ?? []}
       searchable
-      onChange={(genre) =>
-        onFilterChange((filters) =>
-          setFilterValue(filters, "genres", genre)
-        )
+      onChange={(genres) =>
+        onFilterChange((filters) => setFilterValue(filters, "genres", genres))
       }
     />
   );
@@ -263,10 +245,8 @@ function GenresFilter({ filters, options, onFilterChange }: FilterProps) {
 
 function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Release years"
-      clearable
       data={Object.values(options.years)
         .sort()
         .reverse()
@@ -276,14 +256,14 @@ function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
             value: "" + year,
           };
         })}
-      value={filters.years?.toString() ?? null}
+      value={filters.years?.map((y) => "" + y) ?? []}
       searchable
-      onChange={(year) =>
+      onChange={(years) =>
         onFilterChange((filters) =>
           setFilterValue(
             filters,
             "years",
-            year === null ? null : parseInt(year)
+            years.map((y) => parseInt(y))
           )
         )
       }
@@ -294,7 +274,6 @@ function YearsFilter({ filters, options, onFilterChange }: FilterProps) {
 function LikedTracksFilter({ filters, onFilterChange }: FilterProps) {
   return (
     <Checkbox
-      className={styles.dialogField}
       label="Liked"
       checked={filters.liked ?? false}
       onChange={(e) =>
@@ -308,10 +287,8 @@ function LikedTracksFilter({ filters, onFilterChange }: FilterProps) {
 
 function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
   return (
-    <Select
-      className={styles.dialogField}
+    <MultiSelect
       label="Producers"
-      clearable
       data={Object.values(options.producers).map(
         ({ producer_mbid, producer_name }) => {
           return {
@@ -320,11 +297,11 @@ function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
           };
         }
       )}
-      value={filters.producers ?? null}
+      value={filters.producers ?? []}
       searchable
-      onChange={(producer) =>
+      onChange={(producers) =>
         onFilterChange((filters) =>
-          setFilterValue(filters, "producers", producer)
+          setFilterValue(filters, "producers", producers)
         )
       }
     />
