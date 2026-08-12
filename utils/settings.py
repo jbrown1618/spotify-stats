@@ -23,6 +23,9 @@ def get_setting(setting_key, default):
     if isinstance(default, int) and value is not None:
         value = int(value)
 
+    if isinstance(default, float) and value is not None:
+        value = float(value)
+
     settings[setting_key] = value if value is not None else default
 
     return settings[setting_key]
@@ -90,6 +93,34 @@ def musicbrainz_save_batch_size() -> int:
 
 def musicbrainz_retry_days() -> int:
     return get_setting("MUSICBRAINZ_RETRY_DAYS", 60)
+
+
+def discogs_useragent() -> str:
+    return get_setting("DISCOGS_USERAGENT", "jbrown1618/spotify-stats")
+
+
+def discogs_user_token() -> str:
+    return get_setting("DISCOGS_USER_TOKEN", None)
+
+
+def discogs_max_tracks_per_run() -> int:
+    return get_setting("DISCOGS_MAX_TRACKS_PER_RUN", 25)
+
+
+def discogs_artist_release_pages() -> int:
+    return get_setting("DISCOGS_ARTIST_RELEASE_PAGES", 2)
+
+
+def discogs_candidate_masters() -> int:
+    return get_setting("DISCOGS_CANDIDATE_MASTERS", 8)
+
+
+def discogs_authenticated_delay_seconds() -> float:
+    return get_setting("DISCOGS_AUTHENTICATED_DELAY_SECONDS", 1.1)
+
+
+def discogs_unauthenticated_delay_seconds() -> float:
+    return get_setting("DISCOGS_UNAUTHENTICATED_DELAY_SECONDS", 3.0)
 
 
 def should_save_spotify_data() -> bool:
