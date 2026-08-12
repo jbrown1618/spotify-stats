@@ -100,18 +100,6 @@ def discogs_user_token() -> str:
     return get_setting("DISCOGS_USER_TOKEN", None)
 
 
-def discogs_max_tracks_per_run() -> int:
-    return get_setting("DISCOGS_MAX_TRACKS_PER_RUN", 25)
-
-
-def discogs_artist_release_pages() -> int:
-    return get_setting("DISCOGS_ARTIST_RELEASE_PAGES", 2)
-
-
-def discogs_candidate_masters() -> int:
-    return get_setting("DISCOGS_CANDIDATE_MASTERS", 8)
-
-
 def should_save_spotify_data() -> bool:
     return get_setting("SAVE_SPOTIFY_DATA", True)
 

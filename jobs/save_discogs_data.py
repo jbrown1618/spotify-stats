@@ -22,12 +22,11 @@ from discogs.store import (
     save_track_mapping,
 )
 from utils.name import short_name
-from utils.settings import (
-    discogs_artist_release_pages,
-    discogs_candidate_masters,
-    discogs_max_tracks_per_run,
-)
 
+
+MAX_TRACKS_PER_RUN = 100
+ARTIST_RELEASE_PAGES = 2
+CANDIDATE_MASTERS = 8
 
 artist_disambiguation = re.compile(r"\s+\(\d+\)$")
 
@@ -41,12 +40,11 @@ class DiscogsTrackMatch:
 
 def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = None):
     client = DiscogsClient()
-    configured_batch_size = discogs_max_tracks_per_run()
     requested_batch_size = batch_size if batch_size is not None else max_tracks
     limit = (
-        configured_batch_size
+        MAX_TRACKS_PER_RUN
         if requested_batch_size is None
-        else min(requested_batch_size, configured_batch_size)
+        else min(requested_batch_size, MAX_TRACKS_PER_RUN)
     )
 
     if limit <= 0:
@@ -170,7 +168,7 @@ def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: S
 
     for release in client.artist_releases(
         discogs_artist_id,
-        max_pages=discogs_artist_release_pages(),
+        max_pages=ARTIST_RELEASE_PAGES,
     ):
         if release.get("type") != "master":
             continue
@@ -189,7 +187,7 @@ def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: S
         for result in results:
             add_candidate(result.get("master_id") or result.get("id"))
 
-    return candidate_ids[:discogs_candidate_masters()]
+    return candidate_ids[:CANDIDATE_MASTERS]
 
 
 def candidate_release_matches(track: SpotifyTrack, release: dict[str, Any]) -> bool:
