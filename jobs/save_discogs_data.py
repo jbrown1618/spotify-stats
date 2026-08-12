@@ -38,6 +38,7 @@ class SpotifyTrack:
     album_uri: str
     album_name: str
     album_release_date: str | None
+    stream_count: int
     artist_uris: list[str]
     artist_names: list[str]
 
@@ -49,14 +50,24 @@ class DiscogsTrackMatch:
     score: int
 
 
-def save_discogs_data(max_tracks: int | None = None):
+def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = None):
     client = DiscogsClient()
-    limit = max_tracks or discogs_max_tracks_per_run()
+    configured_batch_size = discogs_max_tracks_per_run()
+    requested_batch_size = batch_size if batch_size is not None else max_tracks
+    limit = (
+        configured_batch_size
+        if requested_batch_size is None
+        else min(requested_batch_size, configured_batch_size)
+    )
+
+    if limit <= 0:
+        print(f"Skipping Discogs data fetch because batch size is {limit}")
+        return
 
     with get_connection() as conn:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         tracks = unfetched_tracks(cursor, limit)
-        print(f"Fetching Discogs data for {len(tracks)} tracks")
+        print(f"Fetching Discogs data for {len(tracks)} tracks, capped at {limit}")
 
         for track in tracks:
             process_track(cursor, client, track)
@@ -73,6 +84,7 @@ def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
             t.album_uri,
             al.name AS album_name,
             al.release_date AS album_release_date,
+            COALESCE(stream_counts.stream_count, 0) AS stream_count,
             ARRAY_AGG(a.uri ORDER BY ta.artist_index) AS artist_uris,
             ARRAY_AGG(a.name ORDER BY ta.artist_index) AS artist_names
         FROM track t
@@ -80,6 +92,11 @@ def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
             INNER JOIN track_artist ta ON t.uri = ta.track_uri
             INNER JOIN artist a ON ta.artist_uri = a.uri
             LEFT JOIN liked_track lt ON t.uri = lt.track_uri
+            LEFT JOIN (
+                SELECT track_uri, COUNT(*) AS stream_count
+                FROM track_stream
+                GROUP BY track_uri
+            ) stream_counts ON t.uri = stream_counts.track_uri
         WHERE NOT EXISTS (
             SELECT 1
             FROM sp_track_discogs_track stdt
@@ -97,8 +114,10 @@ def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
             t.album_uri,
             al.name,
             al.release_date,
+            stream_counts.stream_count,
             lt.track_uri
         ORDER BY
+            COALESCE(stream_counts.stream_count, 0) DESC,
             (lt.track_uri IS NOT NULL) DESC,
             al.release_date DESC NULLS LAST,
             t.name
@@ -114,6 +133,7 @@ def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
             album_uri=row["album_uri"],
             album_name=row["album_name"],
             album_release_date=row["album_release_date"],
+            stream_count=row["stream_count"],
             artist_uris=row["artist_uris"],
             artist_names=row["artist_names"],
         )
@@ -122,7 +142,10 @@ def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
 
 
 def process_track(cursor, client: DiscogsClient, track: SpotifyTrack):
-    print(f"Fetching Discogs candidates for {track.artist_names[0]} - {track.track_name}")
+    print(
+        f"Fetching Discogs candidates for {track.artist_names[0]} - {track.track_name} "
+        f"({track.stream_count} streams)"
+    )
     discogs_artist_id = match_primary_artist(cursor, client, track)
     if discogs_artist_id is None:
         mark_unmatchable_track(cursor, track.track_uri, track.track_name, "No Discogs artist match")
