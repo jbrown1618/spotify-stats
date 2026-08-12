@@ -160,7 +160,7 @@ def match_primary_artist(cursor, client: DiscogsClient, track: SpotifyTrack) -> 
     if cursor.fetchone() is not None:
         return None
 
-    results = client.search(q=artist_name, type="artist", per_page=10).get("results", [])
+    results = list(client.search(q=artist_name, type="artist", limit=10))
     target = normalize_name(artist_name)
     matches = [
         result
@@ -235,23 +235,24 @@ def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: S
         seen.add(candidate_id)
         candidate_ids.append(candidate_id)
 
-    for page in range(1, discogs_artist_release_pages() + 1):
-        releases = client.artist_releases(discogs_artist_id, page=page).get("releases", [])
-        for release in releases:
-            if release.get("type") != "master":
-                continue
-            if release.get("role") not in {None, "Main"}:
-                continue
-            if candidate_release_matches(track, release):
-                add_candidate(release.get("id"))
+    for release in client.artist_releases(
+        discogs_artist_id,
+        max_pages=discogs_artist_release_pages(),
+    ):
+        if release.get("type") != "master":
+            continue
+        if release.get("role") not in {None, "Main"}:
+            continue
+        if candidate_release_matches(track, release):
+            add_candidate(release.get("id"))
 
     for query in [track.album_name, track.track_name]:
         results = client.search(
             q=query,
             artist=track.artist_names[0],
             type="master",
-            per_page=10,
-        ).get("results", [])
+            limit=10,
+        )
         for result in results:
             add_candidate(result.get("master_id") or result.get("id"))
 

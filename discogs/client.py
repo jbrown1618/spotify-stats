@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Iterator
 from typing import Any
 
 import requests
@@ -15,6 +16,55 @@ from utils.settings import (
 
 class DiscogsApiError(RuntimeError):
     pass
+
+
+class DiscogsPaginatedList:
+    def __init__(
+        self,
+        client: "DiscogsClient",
+        path: str,
+        items_key: str,
+        params: dict[str, Any] | None = None,
+        limit: int | None = None,
+        max_pages: int | None = None,
+        per_page: int = 100,
+    ):
+        self.client = client
+        self.path = path
+        self.items_key = items_key
+        self.params = params or {}
+        self.limit = limit
+        self.max_pages = max_pages
+        self.per_page = min(per_page, limit) if limit is not None else per_page
+
+    def __iter__(self) -> Iterator[dict[str, Any]]:
+        page = 1
+        yielded = 0
+
+        while True:
+            response = self.client.get(
+                self.path,
+                params={
+                    **self.params,
+                    "page": page,
+                    "per_page": self.per_page,
+                },
+            )
+
+            for item in response.get(self.items_key, []):
+                yield item
+                yielded += 1
+                if self.limit is not None and yielded >= self.limit:
+                    return
+
+            pagination = response.get("pagination", {})
+            total_pages = int(pagination.get("pages", page))
+            if page >= total_pages:
+                return
+            if self.max_pages is not None and page >= self.max_pages:
+                return
+
+            page += 1
 
 
 class DiscogsClient:
@@ -47,30 +97,57 @@ class DiscogsClient:
             )
         )
 
-    def search(self, **params):
-        return self.get("/database/search", params=params)
+    def search(
+        self,
+        limit: int | None = None,
+        max_pages: int | None = None,
+        **params,
+    ):
+        return DiscogsPaginatedList(
+            self,
+            "/database/search",
+            "results",
+            params=params,
+            limit=limit,
+            max_pages=max_pages,
+        )
 
     def artist(self, discogs_artist_id: int):
         return self.get(f"/artists/{discogs_artist_id}")
 
-    def artist_releases(self, discogs_artist_id: int, page: int = 1, per_page: int = 100):
-        return self.get(
+    def artist_releases(
+        self,
+        discogs_artist_id: int,
+        limit: int | None = None,
+        max_pages: int | None = None,
+    ):
+        return DiscogsPaginatedList(
+            self,
             f"/artists/{discogs_artist_id}/releases",
+            "releases",
             params={
-                "page": page,
-                "per_page": per_page,
                 "sort": "year",
                 "sort_order": "desc",
             },
+            limit=limit,
+            max_pages=max_pages,
         )
 
     def master(self, discogs_master_id: int):
         return self.get(f"/masters/{discogs_master_id}")
 
-    def master_versions(self, discogs_master_id: int, page: int = 1, per_page: int = 100):
-        return self.get(
+    def master_versions(
+        self,
+        discogs_master_id: int,
+        limit: int | None = None,
+        max_pages: int | None = None,
+    ):
+        return DiscogsPaginatedList(
+            self,
             f"/masters/{discogs_master_id}/versions",
-            params={"page": page, "per_page": per_page},
+            "versions",
+            limit=limit,
+            max_pages=max_pages,
         )
 
     def release(self, discogs_release_id: int):
