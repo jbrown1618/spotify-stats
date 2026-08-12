@@ -22,6 +22,7 @@ from discogs.store import (
     save_master,
     save_release,
     save_track_mapping,
+    unique_spotify_artist_uri_for_discogs_name,
 )
 from utils.name import short_name
 
@@ -298,6 +299,19 @@ def save_artist_with_member_profiles(cursor, client: DiscogsClient, artist: dict
 
         save_artist(cursor, member_artist)
         save_artist_membership(cursor, group_artist_id, member_artist_id, member.get("active"))
+        spotify_artist_uri = unique_spotify_artist_uri_for_discogs_name(
+            cursor,
+            member_artist["name"],
+            member_artist_id,
+        )
+        if spotify_artist_uri is not None:
+            save_artist_mapping(
+                cursor,
+                spotify_artist_uri,
+                member_artist_id,
+                90,
+                "group-member-exact-name",
+            )
 
 
 def normalize_name(value: Any) -> str:

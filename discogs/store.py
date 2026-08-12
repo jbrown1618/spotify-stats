@@ -120,6 +120,35 @@ def is_unmatchable_artist(cursor, spotify_artist_uri: str) -> bool:
     return cursor.fetchone() is not None
 
 
+def unique_spotify_artist_uri_for_discogs_name(
+    cursor,
+    artist_name: str,
+    discogs_artist_id: int,
+) -> str | None:
+    cursor.execute(
+        """
+        SELECT a.uri
+        FROM artist a
+        WHERE lower(a.name) = lower(%(artist_name)s)
+            AND NOT EXISTS (
+                SELECT 1
+                FROM sp_artist_discogs_artist sada
+                WHERE sada.spotify_artist_uri = a.uri
+                    AND sada.discogs_artist_id != %(discogs_artist_id)s
+            )
+        LIMIT 2;
+        """,
+        {
+            "artist_name": artist_name,
+            "discogs_artist_id": discogs_artist_id,
+        },
+    )
+    matches = cursor.fetchall()
+    if len(matches) != 1:
+        return None
+    return matches[0][0]
+
+
 def save_artist(cursor, artist: dict[str, Any]):
     artist_id = int(artist["id"])
     cursor.execute(
