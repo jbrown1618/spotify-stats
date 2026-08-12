@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import time
 from collections.abc import Iterator
 from typing import Any
@@ -82,6 +83,10 @@ class DiscogsClient:
         self.session = requests.Session()
         self.last_request_at = 0.0
         self.last_rate_limit_headers: dict[str, str | None] = {}
+        self.response_cache: dict[
+            tuple[str, tuple[tuple[str, Any], ...]],
+            dict[str, Any],
+        ] = {}
 
         if not self.user_agent:
             raise DiscogsApiError("Discogs requests require a User-Agent")
@@ -153,6 +158,10 @@ class DiscogsClient:
         return self.get(f"/releases/{discogs_release_id}")
 
     def get(self, path: str, params: dict[str, Any] | None = None):
+        cache_key = self._cache_key(path, params or {})
+        if cache_key in self.response_cache:
+            return copy.deepcopy(self.response_cache[cache_key])
+
         url = self.base_url + path
         request_params = dict(params or {})
         if self.user_token:
@@ -183,7 +192,9 @@ class DiscogsClient:
                 f"Discogs request failed with {response.status_code}: {response.text}"
             )
 
-        return response.json()
+        response_data = response.json()
+        self.response_cache[cache_key] = copy.deepcopy(response_data)
+        return response_data
 
     def _throttle(self):
         elapsed = time.monotonic() - self.last_request_at
@@ -198,6 +209,31 @@ class DiscogsClient:
             "used": response.headers.get("X-Discogs-Ratelimit-Used"),
             "remaining": response.headers.get("X-Discogs-Ratelimit-Remaining"),
         }
+
+    def _cache_key(self, path: str, params: dict[str, Any]):
+        return (
+            path,
+            tuple(
+                sorted(
+                    (key, self._cache_value(value))
+                    for key, value in params.items()
+                )
+            ),
+        )
+
+    def _cache_value(self, value: Any):
+        if isinstance(value, dict):
+            return tuple(
+                sorted(
+                    (key, self._cache_value(item))
+                    for key, item in value.items()
+                )
+            )
+        if isinstance(value, (list, tuple)):
+            return tuple(self._cache_value(item) for item in value)
+        if isinstance(value, set):
+            return tuple(sorted((self._cache_value(item) for item in value), key=repr))
+        return value
 
     def _rate_limit_delay(self, response: requests.Response, attempt: int):
         retry_after = response.headers.get("Retry-After")
