@@ -24,6 +24,105 @@ class SpotifyTrack:
     artist_names: list[str]
 
 
+class DiscogsStore:
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def fetch_unfetched_tracks(self, limit: int) -> list[SpotifyTrack]:
+        return fetch_unfetched_tracks(self.cursor, limit)
+
+    def matched_discogs_artist_id(self, spotify_artist_uri: str) -> int | None:
+        return matched_discogs_artist_id(self.cursor, spotify_artist_uri)
+
+    def is_unmatchable_artist(self, spotify_artist_uri: str) -> bool:
+        return is_unmatchable_artist(self.cursor, spotify_artist_uri)
+
+    def unique_spotify_artist_uri_for_discogs_name(
+        self,
+        artist_name: str,
+        discogs_artist_id: int,
+    ) -> str | None:
+        return unique_spotify_artist_uri_for_discogs_name(
+            self.cursor,
+            artist_name,
+            discogs_artist_id,
+        )
+
+    def save_artist(self, artist: dict[str, Any]):
+        save_artist(self.cursor, artist)
+
+    def save_artist_mapping(
+        self,
+        spotify_artist_uri: str,
+        discogs_artist_id: int,
+        confidence: int,
+        match_method: str,
+    ):
+        save_artist_mapping(
+            self.cursor,
+            spotify_artist_uri,
+            discogs_artist_id,
+            confidence,
+            match_method,
+        )
+
+    def save_master(self, master: dict[str, Any]):
+        save_master(self.cursor, master)
+
+    def save_release(self, release: dict[str, Any], master_id: int):
+        save_release(self.cursor, release, master_id)
+
+    def save_track_mapping(
+        self,
+        spotify_track_uri: str,
+        discogs_master_id: int,
+        discogs_track_position: str,
+        discogs_track_title: str,
+        confidence: int,
+        match_method: str,
+    ):
+        save_track_mapping(
+            self.cursor,
+            spotify_track_uri,
+            discogs_master_id,
+            discogs_track_position,
+            discogs_track_title,
+            confidence,
+            match_method,
+        )
+
+    def save_album_mapping(
+        self,
+        spotify_album_uri: str,
+        discogs_master_id: int,
+        confidence: int,
+        match_method: str,
+    ):
+        save_album_mapping(
+            self.cursor,
+            spotify_album_uri,
+            discogs_master_id,
+            confidence,
+            match_method,
+        )
+
+    def mark_unmatchable_artist(self, spotify_artist_uri: str, artist_name: str, reason: str):
+        mark_unmatchable_artist(self.cursor, spotify_artist_uri, artist_name, reason)
+
+    def mark_unmatchable_track(self, spotify_track_uri: str, track_name: str, reason: str):
+        mark_unmatchable_track(self.cursor, spotify_track_uri, track_name, reason)
+
+    def delete_artist_memberships(self, group_artist_id: int):
+        delete_artist_memberships(self.cursor, group_artist_id)
+
+    def save_artist_membership(self, group_artist_id: int, member_artist_id: int, active: bool | None):
+        save_artist_membership(self.cursor, group_artist_id, member_artist_id, active)
+
+    @staticmethod
+    def strip_artist_disambiguation(value: Any) -> str:
+        return strip_discogs_artist_disambiguation(value)
+
+
 def fetch_unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
     cursor.execute(
         """
