@@ -23,9 +23,6 @@ def get_setting(setting_key, default):
     if isinstance(default, int) and value is not None:
         value = int(value)
 
-    if isinstance(default, float) and value is not None:
-        value = float(value)
-
     settings[setting_key] = value if value is not None else default
 
     return settings[setting_key]
@@ -113,14 +110,6 @@ def discogs_artist_release_pages() -> int:
 
 def discogs_candidate_masters() -> int:
     return get_setting("DISCOGS_CANDIDATE_MASTERS", 8)
-
-
-def discogs_authenticated_delay_seconds() -> float:
-    return get_setting("DISCOGS_AUTHENTICATED_DELAY_SECONDS", 1.1)
-
-
-def discogs_unauthenticated_delay_seconds() -> float:
-    return get_setting("DISCOGS_UNAUTHENTICATED_DELAY_SECONDS", 3.0)
 
 
 def should_save_spotify_data() -> bool:

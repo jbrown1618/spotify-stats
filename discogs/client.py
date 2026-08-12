@@ -6,12 +6,11 @@ from typing import Any
 
 import requests
 
-from utils.settings import (
-    discogs_authenticated_delay_seconds,
-    discogs_unauthenticated_delay_seconds,
-    discogs_user_token,
-    discogs_useragent,
-)
+from utils.settings import discogs_user_token, discogs_useragent
+
+
+AUTHENTICATED_REQUEST_INTERVAL_SECONDS = 1.1
+UNAUTHENTICATED_REQUEST_INTERVAL_SECONDS = 3.0
 
 
 class DiscogsApiError(RuntimeError):
@@ -91,9 +90,9 @@ class DiscogsClient:
             request_interval_seconds
             if request_interval_seconds is not None
             else (
-                discogs_authenticated_delay_seconds()
+                AUTHENTICATED_REQUEST_INTERVAL_SECONDS
                 if self.user_token
-                else discogs_unauthenticated_delay_seconds()
+                else UNAUTHENTICATED_REQUEST_INTERVAL_SECONDS
             )
         )
 
