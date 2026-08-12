@@ -5,13 +5,15 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
-from psycopg2.extras import RealDictCursor
-
 from data.raw import get_connection
 from discogs.client import DiscogsApiError, DiscogsClient
 from discogs.store import (
+    SpotifyTrack,
+    fetch_unfetched_tracks,
+    is_unmatchable_artist,
     mark_unmatchable_artist,
     mark_unmatchable_track,
+    matched_discogs_artist_id,
     save_album_mapping,
     save_artist,
     save_artist_mapping,
@@ -28,19 +30,6 @@ from utils.settings import (
 
 
 artist_disambiguation = re.compile(r"\s+\(\d+\)$")
-
-
-@dataclass
-class SpotifyTrack:
-    track_uri: str
-    track_name: str
-    duration_ms: int | None
-    album_uri: str
-    album_name: str
-    album_release_date: str | None
-    stream_count: int
-    artist_uris: list[str]
-    artist_names: list[str]
 
 
 @dataclass
@@ -65,81 +54,13 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
         return
 
     with get_connection() as conn:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        tracks = unfetched_tracks(cursor, limit)
+        cursor = conn.cursor()
+        tracks = fetch_unfetched_tracks(cursor, limit)
         print(f"Fetching Discogs data for {len(tracks)} tracks, capped at {limit}")
 
         for track in tracks:
             process_track(cursor, client, track)
             conn.commit()
-
-
-def unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
-    cursor.execute(
-        """
-        SELECT
-            t.uri AS track_uri,
-            t.name AS track_name,
-            t.duration_ms,
-            t.album_uri,
-            al.name AS album_name,
-            al.release_date AS album_release_date,
-            COALESCE(stream_counts.stream_count, 0) AS stream_count,
-            ARRAY_AGG(a.uri ORDER BY ta.artist_index) AS artist_uris,
-            ARRAY_AGG(a.name ORDER BY ta.artist_index) AS artist_names
-        FROM track t
-            INNER JOIN album al ON t.album_uri = al.uri
-            INNER JOIN track_artist ta ON t.uri = ta.track_uri
-            INNER JOIN artist a ON ta.artist_uri = a.uri
-            LEFT JOIN liked_track lt ON t.uri = lt.track_uri
-            LEFT JOIN (
-                SELECT track_uri, COUNT(*) AS stream_count
-                FROM track_stream
-                GROUP BY track_uri
-            ) stream_counts ON t.uri = stream_counts.track_uri
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM sp_track_discogs_track stdt
-            WHERE stdt.spotify_track_uri = t.uri
-        )
-        AND NOT EXISTS (
-            SELECT 1
-            FROM discogs_unmatchable_track dut
-            WHERE dut.spotify_track_uri = t.uri
-        )
-        GROUP BY
-            t.uri,
-            t.name,
-            t.duration_ms,
-            t.album_uri,
-            al.name,
-            al.release_date,
-            stream_counts.stream_count,
-            lt.track_uri
-        ORDER BY
-            COALESCE(stream_counts.stream_count, 0) DESC,
-            (lt.track_uri IS NOT NULL) DESC,
-            al.release_date DESC NULLS LAST,
-            t.name
-        LIMIT %(limit)s;
-        """,
-        {"limit": limit},
-    )
-    return [
-        SpotifyTrack(
-            track_uri=row["track_uri"],
-            track_name=row["track_name"],
-            duration_ms=row["duration_ms"],
-            album_uri=row["album_uri"],
-            album_name=row["album_name"],
-            album_release_date=row["album_release_date"],
-            stream_count=row["stream_count"],
-            artist_uris=row["artist_uris"],
-            artist_names=row["artist_names"],
-        )
-        for row in cursor.fetchall()
-    ]
-
 
 def process_track(cursor, client: DiscogsClient, track: SpotifyTrack):
     print(
@@ -182,29 +103,11 @@ def match_primary_artist(cursor, client: DiscogsClient, track: SpotifyTrack) -> 
     spotify_artist_uri = track.artist_uris[0]
     artist_name = track.artist_names[0]
 
-    cursor.execute(
-        """
-        SELECT discogs_artist_id
-        FROM sp_artist_discogs_artist
-        WHERE spotify_artist_uri = %(spotify_artist_uri)s
-        ORDER BY confidence DESC NULLS LAST
-        LIMIT 1;
-        """,
-        {"spotify_artist_uri": spotify_artist_uri},
-    )
-    existing = cursor.fetchone()
-    if existing is not None:
-        return existing["discogs_artist_id"]
+    existing_artist_id = matched_discogs_artist_id(cursor, spotify_artist_uri)
+    if existing_artist_id is not None:
+        return existing_artist_id
 
-    cursor.execute(
-        """
-        SELECT 1
-        FROM discogs_unmatchable_artist
-        WHERE spotify_artist_uri = %(spotify_artist_uri)s;
-        """,
-        {"spotify_artist_uri": spotify_artist_uri},
-    )
-    if cursor.fetchone() is not None:
+    if is_unmatchable_artist(cursor, spotify_artist_uri):
         return None
 
     results = list(client.search(q=artist_name, type="artist", limit=10))
