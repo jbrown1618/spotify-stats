@@ -7,6 +7,7 @@ from typing import Any
 from psycopg2.extras import Json
 
 
+discogs_artist_disambiguation = re.compile(r"\s+\(\d+\)$")
 role_details = re.compile(r"\[(.+)\]")
 
 
@@ -125,11 +126,12 @@ def unique_spotify_artist_uri_for_discogs_name(
     artist_name: str,
     discogs_artist_id: int,
 ) -> str | None:
+    comparable_artist_name = strip_discogs_artist_disambiguation(artist_name)
     cursor.execute(
         """
         SELECT a.uri
         FROM artist a
-        WHERE lower(a.name) = lower(%(artist_name)s)
+        WHERE lower(regexp_replace(a.name, '[[:space:]]+[(][0-9]+[)]$', '')) = lower(%(artist_name)s)
             AND NOT EXISTS (
                 SELECT 1
                 FROM sp_artist_discogs_artist sada
@@ -139,7 +141,7 @@ def unique_spotify_artist_uri_for_discogs_name(
         LIMIT 2;
         """,
         {
-            "artist_name": artist_name,
+            "artist_name": comparable_artist_name,
             "discogs_artist_id": discogs_artist_id,
         },
     )
@@ -184,7 +186,7 @@ def save_artist(cursor, artist: dict[str, Any]):
         """,
         {
             "discogs_artist_id": artist_id,
-            "name": artist["name"],
+            "name": strip_discogs_artist_disambiguation(artist["name"]),
             "realname": artist.get("realname"),
             "profile": artist.get("profile"),
             "primary_image_url": primary_image_url(artist.get("images", [])),
@@ -491,7 +493,7 @@ def save_artist_membership(cursor, group_artist_id: int, member_artist_id: int, 
 
 def save_minimal_artist(cursor, artist: dict[str, Any]):
     artist_id = parse_int(artist.get("id"))
-    name = artist.get("name")
+    name = strip_discogs_artist_disambiguation(artist.get("name"))
     if artist_id is None or artist_id <= 0 or not name:
         return
 
@@ -580,7 +582,7 @@ def save_credits(
     extraartists: list[dict[str, Any]],
 ):
     for artist in extraartists or []:
-        artist_name = artist.get("name")
+        artist_name = strip_discogs_artist_disambiguation(artist.get("name"))
         if not artist_name:
             continue
 
@@ -747,6 +749,12 @@ def parse_int(value: Any) -> int | None:
 
 def json_param(value):
     return Json(value) if value is not None else None
+
+
+def strip_discogs_artist_disambiguation(value: Any) -> str:
+    if value is None:
+        return ""
+    return discogs_artist_disambiguation.sub("", str(value)).strip()
 
 
 def json_param_without_urls(value):

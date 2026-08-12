@@ -22,6 +22,7 @@ from discogs.store import (
     save_master,
     save_release,
     save_track_mapping,
+    strip_discogs_artist_disambiguation,
     unique_spotify_artist_uri_for_discogs_name,
 )
 from utils.name import short_name
@@ -30,9 +31,6 @@ from utils.name import short_name
 MAX_TRACKS_PER_RUN = 100
 ARTIST_RELEASE_PAGES = 2
 CANDIDATE_MASTERS = 8
-
-artist_disambiguation = re.compile(r"\s+\(\d+\)$")
-
 
 @dataclass
 class DiscogsTrackMatch:
@@ -318,8 +316,7 @@ def normalize_name(value: Any) -> str:
     if value is None:
         return ""
 
-    text = str(value)
-    text = artist_disambiguation.sub("", text)
+    text = strip_discogs_artist_disambiguation(value)
     text = unicodedata.normalize("NFKD", text)
     text = text.replace("&", " and ")
     text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
