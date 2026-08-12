@@ -9,6 +9,7 @@ from data.raw import get_connection
 from discogs.client import DiscogsApiError, DiscogsClient
 from discogs.store import (
     SpotifyTrack,
+    delete_artist_memberships,
     fetch_unfetched_tracks,
     is_unmatchable_artist,
     mark_unmatchable_artist,
@@ -16,6 +17,7 @@ from discogs.store import (
     matched_discogs_artist_id,
     save_album_mapping,
     save_artist,
+    save_artist_membership,
     save_artist_mapping,
     save_master,
     save_release,
@@ -126,7 +128,7 @@ def match_primary_artist(cursor, client: DiscogsClient, track: SpotifyTrack) -> 
 
     discogs_artist_id = int(matches[0]["id"])
     artist = client.artist(discogs_artist_id)
-    save_artist(cursor, artist)
+    save_artist_with_member_profiles(cursor, client, artist)
     save_artist_mapping(cursor, spotify_artist_uri, discogs_artist_id, 100, "artist-search-exact-name")
     return discogs_artist_id
 
@@ -276,6 +278,26 @@ def save_main_release(cursor, client: DiscogsClient, master: dict[str, Any]):
         return
 
     save_release(cursor, release, master_id)
+
+
+def save_artist_with_member_profiles(cursor, client: DiscogsClient, artist: dict[str, Any]):
+    save_artist(cursor, artist)
+    group_artist_id = int(artist["id"])
+    delete_artist_memberships(cursor, group_artist_id)
+
+    for member in artist.get("members", []) or []:
+        member_artist_id = parse_int(member.get("id"))
+        if member_artist_id is None or member_artist_id <= 0:
+            continue
+
+        try:
+            member_artist = client.artist(member_artist_id)
+        except DiscogsApiError as error:
+            print(f"Skipping Discogs member artist {member_artist_id}: {error}")
+            continue
+
+        save_artist(cursor, member_artist)
+        save_artist_membership(cursor, group_artist_id, member_artist_id, member.get("active"))
 
 
 def normalize_name(value: Any) -> str:

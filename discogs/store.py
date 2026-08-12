@@ -7,7 +7,6 @@ from typing import Any
 from psycopg2.extras import Json
 
 
-DISCOGS_BASE_URL = "https://api.discogs.com"
 role_details = re.compile(r"\[(.+)\]")
 
 
@@ -131,12 +130,8 @@ def save_artist(cursor, artist: dict[str, Any]):
                 name,
                 realname,
                 profile,
-                data_quality,
-                resource_url,
                 primary_image_url,
-                urls,
                 namevariations,
-                members,
                 updated_at
             )
         VALUES
@@ -145,12 +140,8 @@ def save_artist(cursor, artist: dict[str, Any]):
                 %(name)s,
                 %(realname)s,
                 %(profile)s,
-                %(data_quality)s,
-                %(resource_url)s,
                 %(primary_image_url)s,
-                %(urls)s,
                 %(namevariations)s,
-                %(members)s,
                 CURRENT_TIMESTAMP
             )
         ON CONFLICT (discogs_artist_id) DO UPDATE
@@ -158,12 +149,8 @@ def save_artist(cursor, artist: dict[str, Any]):
             name = EXCLUDED.name,
             realname = EXCLUDED.realname,
             profile = EXCLUDED.profile,
-            data_quality = EXCLUDED.data_quality,
-            resource_url = EXCLUDED.resource_url,
             primary_image_url = EXCLUDED.primary_image_url,
-            urls = EXCLUDED.urls,
             namevariations = EXCLUDED.namevariations,
-            members = EXCLUDED.members,
             updated_at = CURRENT_TIMESTAMP;
         """,
         {
@@ -171,15 +158,10 @@ def save_artist(cursor, artist: dict[str, Any]):
             "name": artist["name"],
             "realname": artist.get("realname"),
             "profile": artist.get("profile"),
-            "data_quality": artist.get("data_quality"),
-            "resource_url": artist.get("resource_url") or f"{DISCOGS_BASE_URL}/artists/{artist_id}",
             "primary_image_url": primary_image_url(artist.get("images", [])),
-            "urls": json_param(artist.get("urls")),
             "namevariations": json_param(artist.get("namevariations")),
-            "members": json_param(artist.get("members")),
         },
     )
-    save_artist_memberships(cursor, artist_id, artist.get("members", []))
 
 
 def save_artist_mapping(
@@ -211,49 +193,65 @@ def save_artist_mapping(
 
 def save_master(cursor, master: dict[str, Any]):
     master_id = int(master["id"] if "id" in master else master["discogs_master_id"])
-    main_release_id = parse_int(master.get("main_release") or master.get("main_release_id"))
     cursor.execute(
         """
         INSERT INTO discogs_master
-            (discogs_master_id, title, year, main_release_id, data_quality, resource_url, genres, styles, updated_at)
+            (discogs_master_id, title, year, updated_at)
         VALUES
             (
                 %(discogs_master_id)s,
                 %(title)s,
                 %(year)s,
-                %(main_release_id)s,
-                %(data_quality)s,
-                %(resource_url)s,
-                %(genres)s,
-                %(styles)s,
                 CURRENT_TIMESTAMP
             )
         ON CONFLICT (discogs_master_id) DO UPDATE
         SET
             title = EXCLUDED.title,
             year = EXCLUDED.year,
-            main_release_id = EXCLUDED.main_release_id,
-            data_quality = EXCLUDED.data_quality,
-            resource_url = EXCLUDED.resource_url,
-            genres = EXCLUDED.genres,
-            styles = EXCLUDED.styles,
             updated_at = CURRENT_TIMESTAMP;
         """,
         {
             "discogs_master_id": master_id,
             "title": master["title"],
             "year": parse_int(master.get("year")),
-            "main_release_id": main_release_id,
-            "data_quality": master.get("data_quality"),
-            "resource_url": master.get("resource_url") or f"{DISCOGS_BASE_URL}/masters/{master_id}",
-            "genres": json_param(master.get("genres")),
-            "styles": json_param(master.get("styles")),
         },
     )
 
+    save_master_genres(cursor, master_id, master.get("genres", []), "genre")
+    save_master_genres(cursor, master_id, master.get("styles", []), "style")
     save_tracks_and_credits(cursor, "master", master_id, master_id, master.get("tracklist", []))
     save_entity_credits(cursor, "master", master_id, master_id, master.get("extraartists", []))
     save_videos(cursor, master_id, master.get("videos", []))
+
+
+def save_master_genres(cursor, master_id: int, genres: list[str], genre_source: str):
+    cursor.execute(
+        """
+        DELETE FROM discogs_master_genre
+        WHERE discogs_master_id = %(discogs_master_id)s
+            AND genre_source = %(genre_source)s;
+        """,
+        {
+            "discogs_master_id": master_id,
+            "genre_source": genre_source,
+        },
+    )
+
+    for genre in genres or []:
+        cursor.execute(
+            """
+            INSERT INTO discogs_master_genre
+                (discogs_master_id, genre, genre_source)
+            VALUES
+                (%(discogs_master_id)s, %(genre)s, %(genre_source)s)
+            ON CONFLICT DO NOTHING;
+            """,
+            {
+                "discogs_master_id": master_id,
+                "genre": genre,
+                "genre_source": genre_source,
+            },
+        )
 
 
 def save_release(cursor, release: dict[str, Any], master_id: int):
@@ -268,8 +266,6 @@ def save_release(cursor, release: dict[str, Any], master_id: int):
                 year,
                 country,
                 released,
-                data_quality,
-                resource_url,
                 labels,
                 companies,
                 formats,
@@ -284,8 +280,6 @@ def save_release(cursor, release: dict[str, Any], master_id: int):
                 %(year)s,
                 %(country)s,
                 %(released)s,
-                %(data_quality)s,
-                %(resource_url)s,
                 %(labels)s,
                 %(companies)s,
                 %(formats)s,
@@ -299,8 +293,6 @@ def save_release(cursor, release: dict[str, Any], master_id: int):
             year = EXCLUDED.year,
             country = EXCLUDED.country,
             released = EXCLUDED.released,
-            data_quality = EXCLUDED.data_quality,
-            resource_url = EXCLUDED.resource_url,
             labels = EXCLUDED.labels,
             companies = EXCLUDED.companies,
             formats = EXCLUDED.formats,
@@ -314,12 +306,10 @@ def save_release(cursor, release: dict[str, Any], master_id: int):
             "year": parse_int(release.get("year")),
             "country": release.get("country"),
             "released": release.get("released"),
-            "data_quality": release.get("data_quality"),
-            "resource_url": release.get("resource_url") or f"{DISCOGS_BASE_URL}/releases/{release_id}",
-            "labels": json_param(release.get("labels")),
-            "companies": json_param(release.get("companies")),
-            "formats": json_param(release.get("formats")),
-            "identifiers": json_param(release.get("identifiers")),
+            "labels": json_param_without_urls(release.get("labels")),
+            "companies": json_param_without_urls(release.get("companies")),
+            "formats": json_param_without_urls(release.get("formats")),
+            "identifiers": json_param_without_urls(release.get("identifiers")),
         },
     )
 
@@ -441,40 +431,33 @@ def mark_unmatchable_track(cursor, spotify_track_uri: str, track_name: str, reas
     )
 
 
-def save_artist_memberships(cursor, group_artist_id: int, members: list[dict[str, Any]]):
-    for member in members or []:
-        member_id = parse_int(member.get("id"))
-        member_name = member.get("name")
-        if member_id is None or member_id <= 0 or not member_name:
-            continue
+def delete_artist_memberships(cursor, group_artist_id: int):
+    cursor.execute(
+        """
+        DELETE FROM discogs_artist_membership
+        WHERE group_discogs_artist_id = %(group_discogs_artist_id)s;
+        """,
+        {"group_discogs_artist_id": group_artist_id},
+    )
 
-        save_minimal_artist(cursor, member)
-        cursor.execute(
-            """
-            INSERT INTO discogs_artist_membership
-                (group_discogs_artist_id, member_discogs_artist_id, member_name, active, resource_url)
-            VALUES
-                (
-                    %(group_discogs_artist_id)s,
-                    %(member_discogs_artist_id)s,
-                    %(member_name)s,
-                    %(active)s,
-                    %(resource_url)s
-                )
-            ON CONFLICT (group_discogs_artist_id, member_discogs_artist_id) DO UPDATE
-            SET
-                member_name = EXCLUDED.member_name,
-                active = EXCLUDED.active,
-                resource_url = EXCLUDED.resource_url;
-            """,
-            {
-                "group_discogs_artist_id": group_artist_id,
-                "member_discogs_artist_id": member_id,
-                "member_name": member_name,
-                "active": member.get("active"),
-                "resource_url": member.get("resource_url"),
-            },
-        )
+
+def save_artist_membership(cursor, group_artist_id: int, member_artist_id: int, active: bool | None):
+    cursor.execute(
+        """
+        INSERT INTO discogs_artist_membership
+            (group_discogs_artist_id, member_discogs_artist_id, active)
+        VALUES
+            (%(group_discogs_artist_id)s, %(member_discogs_artist_id)s, %(active)s)
+        ON CONFLICT (group_discogs_artist_id, member_discogs_artist_id) DO UPDATE
+        SET
+            active = EXCLUDED.active;
+        """,
+        {
+            "group_discogs_artist_id": group_artist_id,
+            "member_discogs_artist_id": member_artist_id,
+            "active": active,
+        },
+    )
 
 
 def save_minimal_artist(cursor, artist: dict[str, Any]):
@@ -486,19 +469,17 @@ def save_minimal_artist(cursor, artist: dict[str, Any]):
     cursor.execute(
         """
         INSERT INTO discogs_artist
-            (discogs_artist_id, name, resource_url, updated_at)
+            (discogs_artist_id, name, updated_at)
         VALUES
-            (%(discogs_artist_id)s, %(name)s, %(resource_url)s, CURRENT_TIMESTAMP)
+            (%(discogs_artist_id)s, %(name)s, CURRENT_TIMESTAMP)
         ON CONFLICT (discogs_artist_id) DO UPDATE
         SET
             name = COALESCE(discogs_artist.name, EXCLUDED.name),
-            resource_url = COALESCE(discogs_artist.resource_url, EXCLUDED.resource_url),
             updated_at = CURRENT_TIMESTAMP;
         """,
         {
             "discogs_artist_id": artist_id,
             "name": name,
-            "resource_url": artist.get("resource_url"),
         },
     )
 
@@ -523,22 +504,17 @@ def save_tracks_and_credits(
             cursor.execute(
                 """
                 INSERT INTO discogs_track
-                    (discogs_master_id, position, title, duration, duration_seconds, track_type)
+                    (discogs_master_id, position, title)
                 VALUES
-                    (%(discogs_master_id)s, %(position)s, %(title)s, %(duration)s, %(duration_seconds)s, %(track_type)s)
+                    (%(discogs_master_id)s, %(position)s, %(title)s)
                 ON CONFLICT (discogs_master_id, position, title) DO UPDATE
                 SET
-                    duration = EXCLUDED.duration,
-                    duration_seconds = EXCLUDED.duration_seconds,
-                    track_type = EXCLUDED.track_type;
+                    title = EXCLUDED.title;
                 """,
                 {
                     "discogs_master_id": master_id,
                     "position": position,
                     "title": title,
-                    "duration": track.get("duration"),
-                    "duration_seconds": duration_seconds(track.get("duration")),
-                    "track_type": track.get("type_"),
                 },
             )
 
@@ -742,3 +718,19 @@ def parse_int(value: Any) -> int | None:
 
 def json_param(value):
     return Json(value) if value is not None else None
+
+
+def json_param_without_urls(value):
+    return json_param(without_urls(value))
+
+
+def without_urls(value):
+    if isinstance(value, dict):
+        return {
+            key: without_urls(item)
+            for key, item in value.items()
+            if "url" not in key.lower()
+        }
+    if isinstance(value, list):
+        return [without_urls(item) for item in value]
+    return value

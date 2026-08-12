@@ -7,12 +7,8 @@ CREATE TABLE IF NOT EXISTS discogs_artist (
     name TEXT NOT NULL,
     realname TEXT,
     profile TEXT,
-    data_quality TEXT,
-    resource_url TEXT,
     primary_image_url TEXT,
-    urls JSONB,
     namevariations JSONB,
-    members JSONB,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -32,9 +28,7 @@ CREATE INDEX IF NOT EXISTS i_sp_artist_discogs_artist_discogs_artist_id
 CREATE TABLE IF NOT EXISTS discogs_artist_membership (
     group_discogs_artist_id BIGINT NOT NULL,
     member_discogs_artist_id BIGINT NOT NULL,
-    member_name TEXT NOT NULL,
     active BOOLEAN,
-    resource_url TEXT,
     UNIQUE(group_discogs_artist_id, member_discogs_artist_id)
 );
 CREATE INDEX IF NOT EXISTS i_discogs_artist_membership_group_discogs_artist_id
@@ -46,13 +40,19 @@ CREATE TABLE IF NOT EXISTS discogs_master (
     discogs_master_id BIGINT PRIMARY KEY,
     title TEXT NOT NULL,
     year INT,
-    main_release_id BIGINT,
-    data_quality TEXT,
-    resource_url TEXT,
-    genres JSONB,
-    styles JSONB,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS discogs_master_genre (
+    discogs_master_id BIGINT NOT NULL,
+    genre TEXT NOT NULL,
+    genre_source TEXT NOT NULL,
+    UNIQUE(discogs_master_id, genre, genre_source)
+);
+CREATE INDEX IF NOT EXISTS i_discogs_master_genre_discogs_master_id
+    ON discogs_master_genre (discogs_master_id);
+CREATE INDEX IF NOT EXISTS i_discogs_master_genre_genre
+    ON discogs_master_genre (genre);
 
 CREATE TABLE IF NOT EXISTS discogs_release (
     discogs_release_id BIGINT PRIMARY KEY,
@@ -61,8 +61,6 @@ CREATE TABLE IF NOT EXISTS discogs_release (
     year INT,
     country TEXT,
     released TEXT,
-    data_quality TEXT,
-    resource_url TEXT,
     labels JSONB,
     companies JSONB,
     formats JSONB,
@@ -89,9 +87,6 @@ CREATE TABLE IF NOT EXISTS discogs_track (
     discogs_master_id BIGINT NOT NULL,
     position TEXT NOT NULL,
     title TEXT NOT NULL,
-    duration TEXT,
-    duration_seconds INT,
-    track_type TEXT,
     UNIQUE(discogs_master_id, position, title)
 );
 CREATE INDEX IF NOT EXISTS i_discogs_track_discogs_master_id
@@ -172,6 +167,7 @@ DROP TABLE IF EXISTS sp_track_discogs_track;
 DROP TABLE IF EXISTS discogs_track;
 DROP TABLE IF EXISTS sp_album_discogs_master;
 DROP TABLE IF EXISTS discogs_release;
+DROP TABLE IF EXISTS discogs_master_genre;
 DROP TABLE IF EXISTS discogs_master;
 DROP TABLE IF EXISTS discogs_artist_membership;
 DROP TABLE IF EXISTS sp_artist_discogs_artist;
