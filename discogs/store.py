@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from typing import Any
 
 from psycopg2.extras import Json
@@ -11,45 +10,175 @@ discogs_artist_disambiguation = re.compile(r"\s+\(\d+\)$")
 role_details = re.compile(r"\[(.+)\]")
 
 
-@dataclass
-class SpotifyTrack:
-    track_uri: str
-    track_name: str
-    duration_ms: int | None
-    album_uri: str
-    album_name: str
-    album_release_date: str | None
-    stream_count: int
-    artist_uris: list[str]
-    artist_names: list[str]
-
-
 class DiscogsStore:
     def __init__(self, cursor):
         self.cursor = cursor
 
-    def fetch_unfetched_tracks(self, limit: int) -> list[SpotifyTrack]:
-        return fetch_unfetched_tracks(self.cursor, limit)
+    def fetch_unfetched_tracks(self, limit: int) -> list[dict[str, Any]]:
+        self.cursor.execute(
+            """
+            SELECT
+                t.uri AS track_uri,
+                t.name AS track_name,
+                t.duration_ms,
+                t.album_uri,
+                al.name AS album_name,
+                al.release_date AS album_release_date,
+                COALESCE(stream_counts.stream_count, 0) AS stream_count,
+                ARRAY_AGG(a.uri ORDER BY ta.artist_index) AS artist_uris,
+                ARRAY_AGG(a.name ORDER BY ta.artist_index) AS artist_names
+            FROM track t
+                INNER JOIN album al ON t.album_uri = al.uri
+                INNER JOIN track_artist ta ON t.uri = ta.track_uri
+                INNER JOIN artist a ON ta.artist_uri = a.uri
+                LEFT JOIN liked_track lt ON t.uri = lt.track_uri
+                LEFT JOIN (
+                    SELECT track_uri, COUNT(*) AS stream_count
+                    FROM track_stream
+                    GROUP BY track_uri
+                ) stream_counts ON t.uri = stream_counts.track_uri
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM sp_track_discogs_track stdt
+                WHERE stdt.spotify_track_uri = t.uri
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM discogs_unmatchable_track dut
+                WHERE dut.spotify_track_uri = t.uri
+            )
+            GROUP BY
+                t.uri,
+                t.name,
+                t.duration_ms,
+                t.album_uri,
+                al.name,
+                al.release_date,
+                stream_counts.stream_count,
+                lt.track_uri
+            ORDER BY
+                COALESCE(stream_counts.stream_count, 0) DESC,
+                (lt.track_uri IS NOT NULL) DESC,
+                al.release_date DESC NULLS LAST,
+                t.name
+            LIMIT %(limit)s;
+            """,
+            {"limit": limit},
+        )
+        return [
+            {
+                "track_uri": row[0],
+                "track_name": row[1],
+                "duration_ms": row[2],
+                "album_uri": row[3],
+                "album_name": row[4],
+                "album_release_date": row[5],
+                "stream_count": row[6],
+                "artist_uris": row[7],
+                "artist_names": row[8],
+            }
+            for row in self.cursor.fetchall()
+        ]
 
     def matched_discogs_artist_id(self, spotify_artist_uri: str) -> int | None:
-        return matched_discogs_artist_id(self.cursor, spotify_artist_uri)
+        self.cursor.execute(
+            """
+            SELECT discogs_artist_id
+            FROM sp_artist_discogs_artist
+            WHERE spotify_artist_uri = %(spotify_artist_uri)s
+            ORDER BY confidence DESC NULLS LAST
+            LIMIT 1;
+            """,
+            {"spotify_artist_uri": spotify_artist_uri},
+        )
+        existing = self.cursor.fetchone()
+        if existing is None:
+            return None
+
+        return existing[0]
 
     def is_unmatchable_artist(self, spotify_artist_uri: str) -> bool:
-        return is_unmatchable_artist(self.cursor, spotify_artist_uri)
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_unmatchable_artist
+            WHERE spotify_artist_uri = %(spotify_artist_uri)s;
+            """,
+            {"spotify_artist_uri": spotify_artist_uri},
+        )
+        return self.cursor.fetchone() is not None
 
     def unique_spotify_artist_uri_for_discogs_name(
         self,
         artist_name: str,
         discogs_artist_id: int,
     ) -> str | None:
-        return unique_spotify_artist_uri_for_discogs_name(
-            self.cursor,
-            artist_name,
-            discogs_artist_id,
+        comparable_artist_name = self.strip_artist_disambiguation(artist_name)
+        self.cursor.execute(
+            """
+            SELECT a.uri
+            FROM artist a
+            WHERE lower(regexp_replace(a.name, '[[:space:]]+[(][0-9]+[)]$', '')) = lower(%(artist_name)s)
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM sp_artist_discogs_artist sada
+                    WHERE sada.spotify_artist_uri = a.uri
+                        AND sada.discogs_artist_id != %(discogs_artist_id)s
+                )
+            LIMIT 2;
+            """,
+            {
+                "artist_name": comparable_artist_name,
+                "discogs_artist_id": discogs_artist_id,
+            },
         )
+        matches = self.cursor.fetchall()
+        if len(matches) != 1:
+            return None
+        return matches[0][0]
 
     def save_artist(self, artist: dict[str, Any]):
-        save_artist(self.cursor, artist)
+        artist_id = int(artist["id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist
+                (
+                    discogs_artist_id,
+                    name,
+                    realname,
+                    profile,
+                    primary_image_url,
+                    namevariations,
+                    updated_at
+                )
+            VALUES
+                (
+                    %(discogs_artist_id)s,
+                    %(name)s,
+                    %(realname)s,
+                    %(profile)s,
+                    %(primary_image_url)s,
+                    %(namevariations)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_artist_id) DO UPDATE
+            SET
+                name = EXCLUDED.name,
+                realname = EXCLUDED.realname,
+                profile = EXCLUDED.profile,
+                primary_image_url = EXCLUDED.primary_image_url,
+                namevariations = EXCLUDED.namevariations,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_artist_id": artist_id,
+                "name": self.strip_artist_disambiguation(artist["name"]),
+                "realname": artist.get("realname"),
+                "profile": artist.get("profile"),
+                "primary_image_url": primary_image_url(artist.get("images", [])),
+                "namevariations": json_param(artist.get("namevariations")),
+            },
+        )
 
     def save_artist_mapping(
         self,
@@ -58,19 +187,147 @@ class DiscogsStore:
         confidence: int,
         match_method: str,
     ):
-        save_artist_mapping(
-            self.cursor,
-            spotify_artist_uri,
-            discogs_artist_id,
-            confidence,
-            match_method,
+        self.cursor.execute(
+            """
+            INSERT INTO sp_artist_discogs_artist
+                (spotify_artist_uri, discogs_artist_id, confidence, match_method)
+            VALUES
+                (%(spotify_artist_uri)s, %(discogs_artist_id)s, %(confidence)s, %(match_method)s)
+            ON CONFLICT (spotify_artist_uri, discogs_artist_id) DO UPDATE
+            SET
+                confidence = EXCLUDED.confidence,
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_artist_uri": spotify_artist_uri,
+                "discogs_artist_id": discogs_artist_id,
+                "confidence": confidence,
+                "match_method": match_method,
+            },
         )
 
     def save_master(self, master: dict[str, Any]):
-        save_master(self.cursor, master)
+        master_id = int(master["id"] if "id" in master else master["discogs_master_id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_master
+                (discogs_master_id, title, year, updated_at)
+            VALUES
+                (
+                    %(discogs_master_id)s,
+                    %(title)s,
+                    %(year)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_master_id) DO UPDATE
+            SET
+                title = EXCLUDED.title,
+                year = EXCLUDED.year,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_master_id": master_id,
+                "title": master["title"],
+                "year": parse_int(master.get("year")),
+            },
+        )
+
+        self.save_master_genres(master_id, master.get("genres", []), "genre")
+        self.save_master_genres(master_id, master.get("styles", []), "style")
+        self.save_tracks_and_credits("master", master_id, master_id, master.get("tracklist", []))
+        self.save_entity_credits("master", master_id, master_id, master.get("extraartists", []))
+        self.save_videos(master_id, master.get("videos", []))
+
+    def save_master_genres(self, master_id: int, genres: list[str], genre_source: str):
+        self.cursor.execute(
+            """
+            DELETE FROM discogs_master_genre
+            WHERE discogs_master_id = %(discogs_master_id)s
+                AND genre_source = %(genre_source)s;
+            """,
+            {
+                "discogs_master_id": master_id,
+                "genre_source": genre_source,
+            },
+        )
+
+        for genre in genres or []:
+            self.cursor.execute(
+                """
+                INSERT INTO discogs_master_genre
+                    (discogs_master_id, genre, genre_source)
+                VALUES
+                    (%(discogs_master_id)s, %(genre)s, %(genre_source)s)
+                ON CONFLICT DO NOTHING;
+                """,
+                {
+                    "discogs_master_id": master_id,
+                    "genre": genre,
+                    "genre_source": genre_source,
+                },
+            )
 
     def save_release(self, release: dict[str, Any], master_id: int):
-        save_release(self.cursor, release, master_id)
+        release_id = int(release["id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_release
+                (
+                    discogs_release_id,
+                    discogs_master_id,
+                    title,
+                    year,
+                    country,
+                    released,
+                    labels,
+                    companies,
+                    formats,
+                    identifiers,
+                    updated_at
+                )
+            VALUES
+                (
+                    %(discogs_release_id)s,
+                    %(discogs_master_id)s,
+                    %(title)s,
+                    %(year)s,
+                    %(country)s,
+                    %(released)s,
+                    %(labels)s,
+                    %(companies)s,
+                    %(formats)s,
+                    %(identifiers)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_release_id) DO UPDATE
+            SET
+                discogs_master_id = EXCLUDED.discogs_master_id,
+                title = EXCLUDED.title,
+                year = EXCLUDED.year,
+                country = EXCLUDED.country,
+                released = EXCLUDED.released,
+                labels = EXCLUDED.labels,
+                companies = EXCLUDED.companies,
+                formats = EXCLUDED.formats,
+                identifiers = EXCLUDED.identifiers,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_release_id": release_id,
+                "discogs_master_id": parse_int(release.get("master_id")) or master_id,
+                "title": release["title"],
+                "year": parse_int(release.get("year")),
+                "country": release.get("country"),
+                "released": release.get("released"),
+                "labels": json_param_without_urls(release.get("labels")),
+                "companies": json_param_without_urls(release.get("companies")),
+                "formats": json_param_without_urls(release.get("formats")),
+                "identifiers": json_param_without_urls(release.get("identifiers")),
+            },
+        )
+
+        self.save_tracks_and_credits("release", release_id, master_id, release.get("tracklist", []))
+        self.save_entity_credits("release", release_id, master_id, release.get("extraartists", []))
 
     def save_track_mapping(
         self,
@@ -81,14 +338,39 @@ class DiscogsStore:
         confidence: int,
         match_method: str,
     ):
-        save_track_mapping(
-            self.cursor,
-            spotify_track_uri,
-            discogs_master_id,
-            discogs_track_position,
-            discogs_track_title,
-            confidence,
-            match_method,
+        self.cursor.execute(
+            """
+            INSERT INTO sp_track_discogs_track
+                (
+                    spotify_track_uri,
+                    discogs_master_id,
+                    discogs_track_position,
+                    discogs_track_title,
+                    confidence,
+                    match_method
+                )
+            VALUES
+                (
+                    %(spotify_track_uri)s,
+                    %(discogs_master_id)s,
+                    %(discogs_track_position)s,
+                    %(discogs_track_title)s,
+                    %(confidence)s,
+                    %(match_method)s
+                )
+            ON CONFLICT (spotify_track_uri, discogs_master_id, discogs_track_position, discogs_track_title) DO UPDATE
+            SET
+                confidence = EXCLUDED.confidence,
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_track_uri": spotify_track_uri,
+                "discogs_master_id": discogs_master_id,
+                "discogs_track_position": discogs_track_position,
+                "discogs_track_title": discogs_track_title,
+                "confidence": confidence,
+                "match_method": match_method,
+            },
         )
 
     def save_album_mapping(
@@ -98,681 +380,276 @@ class DiscogsStore:
         confidence: int,
         match_method: str,
     ):
-        save_album_mapping(
-            self.cursor,
-            spotify_album_uri,
-            discogs_master_id,
-            confidence,
-            match_method,
+        self.cursor.execute(
+            """
+            INSERT INTO sp_album_discogs_master
+                (spotify_album_uri, discogs_master_id, confidence, match_method)
+            VALUES
+                (%(spotify_album_uri)s, %(discogs_master_id)s, %(confidence)s, %(match_method)s)
+            ON CONFLICT (spotify_album_uri, discogs_master_id) DO UPDATE
+            SET
+                confidence = EXCLUDED.confidence,
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_album_uri": spotify_album_uri,
+                "discogs_master_id": discogs_master_id,
+                "confidence": confidence,
+                "match_method": match_method,
+            },
         )
 
     def mark_unmatchable_artist(self, spotify_artist_uri: str, artist_name: str, reason: str):
-        mark_unmatchable_artist(self.cursor, spotify_artist_uri, artist_name, reason)
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_unmatchable_artist
+                (spotify_artist_uri, artist_name, reason, updated_at)
+            VALUES
+                (%(spotify_artist_uri)s, %(artist_name)s, %(reason)s, CURRENT_TIMESTAMP)
+            ON CONFLICT (spotify_artist_uri) DO UPDATE
+            SET
+                artist_name = EXCLUDED.artist_name,
+                reason = EXCLUDED.reason,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "spotify_artist_uri": spotify_artist_uri,
+                "artist_name": artist_name,
+                "reason": reason,
+            },
+        )
 
     def mark_unmatchable_track(self, spotify_track_uri: str, track_name: str, reason: str):
-        mark_unmatchable_track(self.cursor, spotify_track_uri, track_name, reason)
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_unmatchable_track
+                (spotify_track_uri, track_name, reason, updated_at)
+            VALUES
+                (%(spotify_track_uri)s, %(track_name)s, %(reason)s, CURRENT_TIMESTAMP)
+            ON CONFLICT (spotify_track_uri) DO UPDATE
+            SET
+                track_name = EXCLUDED.track_name,
+                reason = EXCLUDED.reason,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "spotify_track_uri": spotify_track_uri,
+                "track_name": track_name,
+                "reason": reason,
+            },
+        )
 
     def delete_artist_memberships(self, group_artist_id: int):
-        delete_artist_memberships(self.cursor, group_artist_id)
+        self.cursor.execute(
+            """
+            DELETE FROM discogs_artist_membership
+            WHERE group_discogs_artist_id = %(group_discogs_artist_id)s;
+            """,
+            {"group_discogs_artist_id": group_artist_id},
+        )
 
     def save_artist_membership(self, group_artist_id: int, member_artist_id: int, active: bool | None):
-        save_artist_membership(self.cursor, group_artist_id, member_artist_id, active)
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist_membership
+                (group_discogs_artist_id, member_discogs_artist_id, active)
+            VALUES
+                (%(group_discogs_artist_id)s, %(member_discogs_artist_id)s, %(active)s)
+            ON CONFLICT (group_discogs_artist_id, member_discogs_artist_id) DO UPDATE
+            SET
+                active = EXCLUDED.active;
+            """,
+            {
+                "group_discogs_artist_id": group_artist_id,
+                "member_discogs_artist_id": member_artist_id,
+                "active": active,
+            },
+        )
+
+    def save_minimal_artist(self, artist: dict[str, Any]):
+        artist_id = parse_int(artist.get("id"))
+        name = self.strip_artist_disambiguation(artist.get("name"))
+        if artist_id is None or artist_id <= 0 or not name:
+            return
+
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist
+                (discogs_artist_id, name, updated_at)
+            VALUES
+                (%(discogs_artist_id)s, %(name)s, CURRENT_TIMESTAMP)
+            ON CONFLICT (discogs_artist_id) DO UPDATE
+            SET
+                name = COALESCE(discogs_artist.name, EXCLUDED.name),
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_artist_id": artist_id,
+                "name": name,
+            },
+        )
+
+    def save_tracks_and_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        tracklist: list[dict[str, Any]],
+    ):
+        for track in tracklist or []:
+            if track.get("type_") != "track":
+                continue
+
+            position = track.get("position") or ""
+            title = track.get("title")
+            if not title:
+                continue
+
+            if source_type == "master":
+                self.cursor.execute(
+                    """
+                    INSERT INTO discogs_track
+                        (discogs_master_id, position, title)
+                    VALUES
+                        (%(discogs_master_id)s, %(position)s, %(title)s)
+                    ON CONFLICT (discogs_master_id, position, title) DO UPDATE
+                    SET
+                        title = EXCLUDED.title;
+                    """,
+                    {
+                        "discogs_master_id": master_id,
+                        "position": position,
+                        "title": title,
+                    },
+                )
+
+            self.save_credits(
+                source_type,
+                source_id,
+                master_id,
+                "track",
+                position,
+                title,
+                track.get("extraartists", []),
+            )
+
+    def save_entity_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        extraartists: list[dict[str, Any]],
+    ):
+        self.save_credits(source_type, source_id, master_id, "entity", None, None, extraartists)
+
+    def save_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        scope: str,
+        track_position: str | None,
+        track_title: str | None,
+        extraartists: list[dict[str, Any]],
+    ):
+        for artist in extraartists or []:
+            artist_name = self.strip_artist_disambiguation(artist.get("name"))
+            if not artist_name:
+                continue
+
+            self.save_minimal_artist(artist)
+            artist_id = parse_int(artist.get("id"))
+
+            for raw_role in split_roles(artist.get("role")):
+                credit_type, credit_details = standardize_credit_role(raw_role)
+                self.cursor.execute(
+                    """
+                    INSERT INTO discogs_credit
+                        (
+                            source_type,
+                            source_id,
+                            discogs_master_id,
+                            track_position,
+                            track_title,
+                            discogs_artist_id,
+                            artist_name,
+                            artist_anv,
+                            raw_role,
+                            credit_type,
+                            credit_details
+                        )
+                    VALUES
+                        (
+                            %(source_type)s,
+                            %(source_id)s,
+                            %(discogs_master_id)s,
+                            %(track_position)s,
+                            %(track_title)s,
+                            %(discogs_artist_id)s,
+                            %(artist_name)s,
+                            %(artist_anv)s,
+                            %(raw_role)s,
+                            %(credit_type)s,
+                            %(credit_details)s
+                        )
+                    ON CONFLICT (source_type, source_id, track_position, artist_name, raw_role) DO UPDATE
+                    SET
+                        discogs_master_id = EXCLUDED.discogs_master_id,
+                        track_title = EXCLUDED.track_title,
+                        discogs_artist_id = EXCLUDED.discogs_artist_id,
+                        artist_anv = EXCLUDED.artist_anv,
+                        credit_type = EXCLUDED.credit_type,
+                        credit_details = EXCLUDED.credit_details;
+                    """,
+                    {
+                        "source_type": source_type,
+                        "source_id": source_id,
+                        "discogs_master_id": master_id,
+                        "track_position": track_position or scope,
+                        "track_title": track_title,
+                        "discogs_artist_id": artist_id,
+                        "artist_name": artist_name,
+                        "artist_anv": artist.get("anv"),
+                        "raw_role": raw_role,
+                        "credit_type": credit_type,
+                        "credit_details": credit_details,
+                    },
+                )
+
+    def save_videos(self, master_id: int, videos: list[dict[str, Any]]):
+        for video in videos or []:
+            uri = video.get("uri")
+            if not uri:
+                continue
+
+            self.cursor.execute(
+                """
+                INSERT INTO discogs_video
+                    (discogs_master_id, uri, title, description, duration_seconds, embed)
+                VALUES
+                    (%(discogs_master_id)s, %(uri)s, %(title)s, %(description)s, %(duration_seconds)s, %(embed)s)
+                ON CONFLICT (discogs_master_id, uri) DO UPDATE
+                SET
+                    title = EXCLUDED.title,
+                    description = EXCLUDED.description,
+                    duration_seconds = EXCLUDED.duration_seconds,
+                    embed = EXCLUDED.embed;
+                """,
+                {
+                    "discogs_master_id": master_id,
+                    "uri": uri,
+                    "title": video.get("title"),
+                    "description": video.get("description"),
+                    "duration_seconds": parse_int(video.get("duration")),
+                    "embed": video.get("embed"),
+                },
+            )
 
     @staticmethod
     def strip_artist_disambiguation(value: Any) -> str:
-        return strip_discogs_artist_disambiguation(value)
-
-
-def fetch_unfetched_tracks(cursor, limit: int) -> list[SpotifyTrack]:
-    cursor.execute(
-        """
-        SELECT
-            t.uri AS track_uri,
-            t.name AS track_name,
-            t.duration_ms,
-            t.album_uri,
-            al.name AS album_name,
-            al.release_date AS album_release_date,
-            COALESCE(stream_counts.stream_count, 0) AS stream_count,
-            ARRAY_AGG(a.uri ORDER BY ta.artist_index) AS artist_uris,
-            ARRAY_AGG(a.name ORDER BY ta.artist_index) AS artist_names
-        FROM track t
-            INNER JOIN album al ON t.album_uri = al.uri
-            INNER JOIN track_artist ta ON t.uri = ta.track_uri
-            INNER JOIN artist a ON ta.artist_uri = a.uri
-            LEFT JOIN liked_track lt ON t.uri = lt.track_uri
-            LEFT JOIN (
-                SELECT track_uri, COUNT(*) AS stream_count
-                FROM track_stream
-                GROUP BY track_uri
-            ) stream_counts ON t.uri = stream_counts.track_uri
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM sp_track_discogs_track stdt
-            WHERE stdt.spotify_track_uri = t.uri
-        )
-        AND NOT EXISTS (
-            SELECT 1
-            FROM discogs_unmatchable_track dut
-            WHERE dut.spotify_track_uri = t.uri
-        )
-        GROUP BY
-            t.uri,
-            t.name,
-            t.duration_ms,
-            t.album_uri,
-            al.name,
-            al.release_date,
-            stream_counts.stream_count,
-            lt.track_uri
-        ORDER BY
-            COALESCE(stream_counts.stream_count, 0) DESC,
-            (lt.track_uri IS NOT NULL) DESC,
-            al.release_date DESC NULLS LAST,
-            t.name
-        LIMIT %(limit)s;
-        """,
-        {"limit": limit},
-    )
-    return [
-        SpotifyTrack(
-            track_uri=row[0],
-            track_name=row[1],
-            duration_ms=row[2],
-            album_uri=row[3],
-            album_name=row[4],
-            album_release_date=row[5],
-            stream_count=row[6],
-            artist_uris=row[7],
-            artist_names=row[8],
-        )
-        for row in cursor.fetchall()
-    ]
-
-
-def matched_discogs_artist_id(cursor, spotify_artist_uri: str) -> int | None:
-    cursor.execute(
-        """
-        SELECT discogs_artist_id
-        FROM sp_artist_discogs_artist
-        WHERE spotify_artist_uri = %(spotify_artist_uri)s
-        ORDER BY confidence DESC NULLS LAST
-        LIMIT 1;
-        """,
-        {"spotify_artist_uri": spotify_artist_uri},
-    )
-    existing = cursor.fetchone()
-    if existing is None:
-        return None
-
-    return existing[0]
-
-
-def is_unmatchable_artist(cursor, spotify_artist_uri: str) -> bool:
-    cursor.execute(
-        """
-        SELECT 1
-        FROM discogs_unmatchable_artist
-        WHERE spotify_artist_uri = %(spotify_artist_uri)s;
-        """,
-        {"spotify_artist_uri": spotify_artist_uri},
-    )
-    return cursor.fetchone() is not None
-
-
-def unique_spotify_artist_uri_for_discogs_name(
-    cursor,
-    artist_name: str,
-    discogs_artist_id: int,
-) -> str | None:
-    comparable_artist_name = strip_discogs_artist_disambiguation(artist_name)
-    cursor.execute(
-        """
-        SELECT a.uri
-        FROM artist a
-        WHERE lower(regexp_replace(a.name, '[[:space:]]+[(][0-9]+[)]$', '')) = lower(%(artist_name)s)
-            AND NOT EXISTS (
-                SELECT 1
-                FROM sp_artist_discogs_artist sada
-                WHERE sada.spotify_artist_uri = a.uri
-                    AND sada.discogs_artist_id != %(discogs_artist_id)s
-            )
-        LIMIT 2;
-        """,
-        {
-            "artist_name": comparable_artist_name,
-            "discogs_artist_id": discogs_artist_id,
-        },
-    )
-    matches = cursor.fetchall()
-    if len(matches) != 1:
-        return None
-    return matches[0][0]
-
-
-def save_artist(cursor, artist: dict[str, Any]):
-    artist_id = int(artist["id"])
-    cursor.execute(
-        """
-        INSERT INTO discogs_artist
-            (
-                discogs_artist_id,
-                name,
-                realname,
-                profile,
-                primary_image_url,
-                namevariations,
-                updated_at
-            )
-        VALUES
-            (
-                %(discogs_artist_id)s,
-                %(name)s,
-                %(realname)s,
-                %(profile)s,
-                %(primary_image_url)s,
-                %(namevariations)s,
-                CURRENT_TIMESTAMP
-            )
-        ON CONFLICT (discogs_artist_id) DO UPDATE
-        SET
-            name = EXCLUDED.name,
-            realname = EXCLUDED.realname,
-            profile = EXCLUDED.profile,
-            primary_image_url = EXCLUDED.primary_image_url,
-            namevariations = EXCLUDED.namevariations,
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "discogs_artist_id": artist_id,
-            "name": strip_discogs_artist_disambiguation(artist["name"]),
-            "realname": artist.get("realname"),
-            "profile": artist.get("profile"),
-            "primary_image_url": primary_image_url(artist.get("images", [])),
-            "namevariations": json_param(artist.get("namevariations")),
-        },
-    )
-
-
-def save_artist_mapping(
-    cursor,
-    spotify_artist_uri: str,
-    discogs_artist_id: int,
-    confidence: int,
-    match_method: str,
-):
-    cursor.execute(
-        """
-        INSERT INTO sp_artist_discogs_artist
-            (spotify_artist_uri, discogs_artist_id, confidence, match_method)
-        VALUES
-            (%(spotify_artist_uri)s, %(discogs_artist_id)s, %(confidence)s, %(match_method)s)
-        ON CONFLICT (spotify_artist_uri, discogs_artist_id) DO UPDATE
-        SET
-            confidence = EXCLUDED.confidence,
-            match_method = EXCLUDED.match_method;
-        """,
-        {
-            "spotify_artist_uri": spotify_artist_uri,
-            "discogs_artist_id": discogs_artist_id,
-            "confidence": confidence,
-            "match_method": match_method,
-        },
-    )
-
-
-def save_master(cursor, master: dict[str, Any]):
-    master_id = int(master["id"] if "id" in master else master["discogs_master_id"])
-    cursor.execute(
-        """
-        INSERT INTO discogs_master
-            (discogs_master_id, title, year, updated_at)
-        VALUES
-            (
-                %(discogs_master_id)s,
-                %(title)s,
-                %(year)s,
-                CURRENT_TIMESTAMP
-            )
-        ON CONFLICT (discogs_master_id) DO UPDATE
-        SET
-            title = EXCLUDED.title,
-            year = EXCLUDED.year,
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "discogs_master_id": master_id,
-            "title": master["title"],
-            "year": parse_int(master.get("year")),
-        },
-    )
-
-    save_master_genres(cursor, master_id, master.get("genres", []), "genre")
-    save_master_genres(cursor, master_id, master.get("styles", []), "style")
-    save_tracks_and_credits(cursor, "master", master_id, master_id, master.get("tracklist", []))
-    save_entity_credits(cursor, "master", master_id, master_id, master.get("extraartists", []))
-    save_videos(cursor, master_id, master.get("videos", []))
-
-
-def save_master_genres(cursor, master_id: int, genres: list[str], genre_source: str):
-    cursor.execute(
-        """
-        DELETE FROM discogs_master_genre
-        WHERE discogs_master_id = %(discogs_master_id)s
-            AND genre_source = %(genre_source)s;
-        """,
-        {
-            "discogs_master_id": master_id,
-            "genre_source": genre_source,
-        },
-    )
-
-    for genre in genres or []:
-        cursor.execute(
-            """
-            INSERT INTO discogs_master_genre
-                (discogs_master_id, genre, genre_source)
-            VALUES
-                (%(discogs_master_id)s, %(genre)s, %(genre_source)s)
-            ON CONFLICT DO NOTHING;
-            """,
-            {
-                "discogs_master_id": master_id,
-                "genre": genre,
-                "genre_source": genre_source,
-            },
-        )
-
-
-def save_release(cursor, release: dict[str, Any], master_id: int):
-    release_id = int(release["id"])
-    cursor.execute(
-        """
-        INSERT INTO discogs_release
-            (
-                discogs_release_id,
-                discogs_master_id,
-                title,
-                year,
-                country,
-                released,
-                labels,
-                companies,
-                formats,
-                identifiers,
-                updated_at
-            )
-        VALUES
-            (
-                %(discogs_release_id)s,
-                %(discogs_master_id)s,
-                %(title)s,
-                %(year)s,
-                %(country)s,
-                %(released)s,
-                %(labels)s,
-                %(companies)s,
-                %(formats)s,
-                %(identifiers)s,
-                CURRENT_TIMESTAMP
-            )
-        ON CONFLICT (discogs_release_id) DO UPDATE
-        SET
-            discogs_master_id = EXCLUDED.discogs_master_id,
-            title = EXCLUDED.title,
-            year = EXCLUDED.year,
-            country = EXCLUDED.country,
-            released = EXCLUDED.released,
-            labels = EXCLUDED.labels,
-            companies = EXCLUDED.companies,
-            formats = EXCLUDED.formats,
-            identifiers = EXCLUDED.identifiers,
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "discogs_release_id": release_id,
-            "discogs_master_id": parse_int(release.get("master_id")) or master_id,
-            "title": release["title"],
-            "year": parse_int(release.get("year")),
-            "country": release.get("country"),
-            "released": release.get("released"),
-            "labels": json_param_without_urls(release.get("labels")),
-            "companies": json_param_without_urls(release.get("companies")),
-            "formats": json_param_without_urls(release.get("formats")),
-            "identifiers": json_param_without_urls(release.get("identifiers")),
-        },
-    )
-
-    save_tracks_and_credits(cursor, "release", release_id, master_id, release.get("tracklist", []))
-    save_entity_credits(cursor, "release", release_id, master_id, release.get("extraartists", []))
-
-
-def save_track_mapping(
-    cursor,
-    spotify_track_uri: str,
-    discogs_master_id: int,
-    discogs_track_position: str,
-    discogs_track_title: str,
-    confidence: int,
-    match_method: str,
-):
-    cursor.execute(
-        """
-        INSERT INTO sp_track_discogs_track
-            (
-                spotify_track_uri,
-                discogs_master_id,
-                discogs_track_position,
-                discogs_track_title,
-                confidence,
-                match_method
-            )
-        VALUES
-            (
-                %(spotify_track_uri)s,
-                %(discogs_master_id)s,
-                %(discogs_track_position)s,
-                %(discogs_track_title)s,
-                %(confidence)s,
-                %(match_method)s
-            )
-        ON CONFLICT (spotify_track_uri, discogs_master_id, discogs_track_position, discogs_track_title) DO UPDATE
-        SET
-            confidence = EXCLUDED.confidence,
-            match_method = EXCLUDED.match_method;
-        """,
-        {
-            "spotify_track_uri": spotify_track_uri,
-            "discogs_master_id": discogs_master_id,
-            "discogs_track_position": discogs_track_position,
-            "discogs_track_title": discogs_track_title,
-            "confidence": confidence,
-            "match_method": match_method,
-        },
-    )
-
-
-def save_album_mapping(
-    cursor,
-    spotify_album_uri: str,
-    discogs_master_id: int,
-    confidence: int,
-    match_method: str,
-):
-    cursor.execute(
-        """
-        INSERT INTO sp_album_discogs_master
-            (spotify_album_uri, discogs_master_id, confidence, match_method)
-        VALUES
-            (%(spotify_album_uri)s, %(discogs_master_id)s, %(confidence)s, %(match_method)s)
-        ON CONFLICT (spotify_album_uri, discogs_master_id) DO UPDATE
-        SET
-            confidence = EXCLUDED.confidence,
-            match_method = EXCLUDED.match_method;
-        """,
-        {
-            "spotify_album_uri": spotify_album_uri,
-            "discogs_master_id": discogs_master_id,
-            "confidence": confidence,
-            "match_method": match_method,
-        },
-    )
-
-
-def mark_unmatchable_artist(cursor, spotify_artist_uri: str, artist_name: str, reason: str):
-    cursor.execute(
-        """
-        INSERT INTO discogs_unmatchable_artist
-            (spotify_artist_uri, artist_name, reason, updated_at)
-        VALUES
-            (%(spotify_artist_uri)s, %(artist_name)s, %(reason)s, CURRENT_TIMESTAMP)
-        ON CONFLICT (spotify_artist_uri) DO UPDATE
-        SET
-            artist_name = EXCLUDED.artist_name,
-            reason = EXCLUDED.reason,
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "spotify_artist_uri": spotify_artist_uri,
-            "artist_name": artist_name,
-            "reason": reason,
-        },
-    )
-
-
-def mark_unmatchable_track(cursor, spotify_track_uri: str, track_name: str, reason: str):
-    cursor.execute(
-        """
-        INSERT INTO discogs_unmatchable_track
-            (spotify_track_uri, track_name, reason, updated_at)
-        VALUES
-            (%(spotify_track_uri)s, %(track_name)s, %(reason)s, CURRENT_TIMESTAMP)
-        ON CONFLICT (spotify_track_uri) DO UPDATE
-        SET
-            track_name = EXCLUDED.track_name,
-            reason = EXCLUDED.reason,
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "spotify_track_uri": spotify_track_uri,
-            "track_name": track_name,
-            "reason": reason,
-        },
-    )
-
-
-def delete_artist_memberships(cursor, group_artist_id: int):
-    cursor.execute(
-        """
-        DELETE FROM discogs_artist_membership
-        WHERE group_discogs_artist_id = %(group_discogs_artist_id)s;
-        """,
-        {"group_discogs_artist_id": group_artist_id},
-    )
-
-
-def save_artist_membership(cursor, group_artist_id: int, member_artist_id: int, active: bool | None):
-    cursor.execute(
-        """
-        INSERT INTO discogs_artist_membership
-            (group_discogs_artist_id, member_discogs_artist_id, active)
-        VALUES
-            (%(group_discogs_artist_id)s, %(member_discogs_artist_id)s, %(active)s)
-        ON CONFLICT (group_discogs_artist_id, member_discogs_artist_id) DO UPDATE
-        SET
-            active = EXCLUDED.active;
-        """,
-        {
-            "group_discogs_artist_id": group_artist_id,
-            "member_discogs_artist_id": member_artist_id,
-            "active": active,
-        },
-    )
-
-
-def save_minimal_artist(cursor, artist: dict[str, Any]):
-    artist_id = parse_int(artist.get("id"))
-    name = strip_discogs_artist_disambiguation(artist.get("name"))
-    if artist_id is None or artist_id <= 0 or not name:
-        return
-
-    cursor.execute(
-        """
-        INSERT INTO discogs_artist
-            (discogs_artist_id, name, updated_at)
-        VALUES
-            (%(discogs_artist_id)s, %(name)s, CURRENT_TIMESTAMP)
-        ON CONFLICT (discogs_artist_id) DO UPDATE
-        SET
-            name = COALESCE(discogs_artist.name, EXCLUDED.name),
-            updated_at = CURRENT_TIMESTAMP;
-        """,
-        {
-            "discogs_artist_id": artist_id,
-            "name": name,
-        },
-    )
-
-
-def save_tracks_and_credits(
-    cursor,
-    source_type: str,
-    source_id: int,
-    master_id: int,
-    tracklist: list[dict[str, Any]],
-):
-    for track in tracklist or []:
-        if track.get("type_") != "track":
-            continue
-
-        position = track.get("position") or ""
-        title = track.get("title")
-        if not title:
-            continue
-
-        if source_type == "master":
-            cursor.execute(
-                """
-                INSERT INTO discogs_track
-                    (discogs_master_id, position, title)
-                VALUES
-                    (%(discogs_master_id)s, %(position)s, %(title)s)
-                ON CONFLICT (discogs_master_id, position, title) DO UPDATE
-                SET
-                    title = EXCLUDED.title;
-                """,
-                {
-                    "discogs_master_id": master_id,
-                    "position": position,
-                    "title": title,
-                },
-            )
-
-        save_credits(
-            cursor,
-            source_type,
-            source_id,
-            master_id,
-            "track",
-            position,
-            title,
-            track.get("extraartists", []),
-        )
-
-
-def save_entity_credits(
-    cursor,
-    source_type: str,
-    source_id: int,
-    master_id: int,
-    extraartists: list[dict[str, Any]],
-):
-    save_credits(cursor, source_type, source_id, master_id, "entity", None, None, extraartists)
-
-
-def save_credits(
-    cursor,
-    source_type: str,
-    source_id: int,
-    master_id: int,
-    scope: str,
-    track_position: str | None,
-    track_title: str | None,
-    extraartists: list[dict[str, Any]],
-):
-    for artist in extraartists or []:
-        artist_name = strip_discogs_artist_disambiguation(artist.get("name"))
-        if not artist_name:
-            continue
-
-        save_minimal_artist(cursor, artist)
-        artist_id = parse_int(artist.get("id"))
-
-        for raw_role in split_roles(artist.get("role")):
-            credit_type, credit_details = standardize_credit_role(raw_role)
-            cursor.execute(
-                """
-                INSERT INTO discogs_credit
-                    (
-                        source_type,
-                        source_id,
-                        discogs_master_id,
-                        track_position,
-                        track_title,
-                        discogs_artist_id,
-                        artist_name,
-                        artist_anv,
-                        raw_role,
-                        credit_type,
-                        credit_details
-                    )
-                VALUES
-                    (
-                        %(source_type)s,
-                        %(source_id)s,
-                        %(discogs_master_id)s,
-                        %(track_position)s,
-                        %(track_title)s,
-                        %(discogs_artist_id)s,
-                        %(artist_name)s,
-                        %(artist_anv)s,
-                        %(raw_role)s,
-                        %(credit_type)s,
-                        %(credit_details)s
-                    )
-                ON CONFLICT (source_type, source_id, track_position, artist_name, raw_role) DO UPDATE
-                SET
-                    discogs_master_id = EXCLUDED.discogs_master_id,
-                    track_title = EXCLUDED.track_title,
-                    discogs_artist_id = EXCLUDED.discogs_artist_id,
-                    artist_anv = EXCLUDED.artist_anv,
-                    credit_type = EXCLUDED.credit_type,
-                    credit_details = EXCLUDED.credit_details;
-                """,
-                {
-                    "source_type": source_type,
-                    "source_id": source_id,
-                    "discogs_master_id": master_id,
-                    "track_position": track_position or scope,
-                    "track_title": track_title,
-                    "discogs_artist_id": artist_id,
-                    "artist_name": artist_name,
-                    "artist_anv": artist.get("anv"),
-                    "raw_role": raw_role,
-                    "credit_type": credit_type,
-                    "credit_details": credit_details,
-                },
-            )
-
-
-def save_videos(cursor, master_id: int, videos: list[dict[str, Any]]):
-    for video in videos or []:
-        uri = video.get("uri")
-        if not uri:
-            continue
-
-        cursor.execute(
-            """
-            INSERT INTO discogs_video
-                (discogs_master_id, uri, title, description, duration_seconds, embed)
-            VALUES
-                (%(discogs_master_id)s, %(uri)s, %(title)s, %(description)s, %(duration_seconds)s, %(embed)s)
-            ON CONFLICT (discogs_master_id, uri) DO UPDATE
-            SET
-                title = EXCLUDED.title,
-                description = EXCLUDED.description,
-                duration_seconds = EXCLUDED.duration_seconds,
-                embed = EXCLUDED.embed;
-            """,
-            {
-                "discogs_master_id": master_id,
-                "uri": uri,
-                "title": video.get("title"),
-                "description": video.get("description"),
-                "duration_seconds": parse_int(video.get("duration")),
-                "embed": video.get("embed"),
-            },
-        )
+        if value is None:
+            return ""
+        return discogs_artist_disambiguation.sub("", str(value)).strip()
 
 
 def split_roles(role: str | None) -> list[str]:
