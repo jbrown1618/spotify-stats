@@ -300,6 +300,14 @@ CREATE INDEX IF NOT EXISTS i_discogs_credit_discogs_artist_id
     ON discogs_credit (discogs_artist_id);
 CREATE INDEX IF NOT EXISTS i_discogs_credit_credit_type
     ON discogs_credit (credit_type);
+CREATE UNIQUE INDEX IF NOT EXISTS i_discogs_credit_canonical_identity
+    ON discogs_credit (
+        discogs_master_id,
+        track_position,
+        COALESCE(discogs_artist_id, 0),
+        artist_name,
+        raw_role
+    );
 
 CREATE TABLE IF NOT EXISTS discogs_video (
     id BIGSERIAL PRIMARY KEY,
@@ -309,6 +317,8 @@ CREATE TABLE IF NOT EXISTS discogs_video (
     description TEXT,
     duration_seconds INT,
     embed BOOLEAN,
+    track_position TEXT,
+    track_title TEXT,
     UNIQUE(discogs_master_id, uri)
 );
 CREATE INDEX IF NOT EXISTS i_discogs_video_discogs_master_id

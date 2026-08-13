@@ -167,6 +167,11 @@ class DiscogsClient:
 
         for attempt in range(self.max_retries + 1):
             self._throttle()
+            print(
+                f"Requesting Discogs API: GET {path} "
+                f"params={params or {}} attempt={attempt + 1}/{self.max_retries + 1}",
+                flush=True,
+            )
             response = self.session.get(
                 url,
                 params=request_params,

@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from typing import Any
 
 from psycopg2.extras import Json
@@ -6,11 +7,23 @@ from psycopg2.extras import Json
 
 discogs_artist_disambiguation = re.compile(r"\s+\(\d+\)$")
 role_details = re.compile(r"\[(.+)\]")
+bracketed_video_decoration = re.compile(
+    r"[\[(]\s*(?:(?:official|music|lyric)\s+)*(?:video|audio|visuali[sz]er|mv)\s*[\])]",
+    re.IGNORECASE,
+)
+trailing_video_decoration = re.compile(
+    r"(?:\s*[-|:]\s*(?:(?:official|music|lyric)\s+)*(?:video|audio|visuali[sz]er|mv)"
+    r"|\s+(?:(?:official|music|lyric)\s+)+(?:video|audio|visuali[sz]er|mv))\s*$",
+    re.IGNORECASE,
+)
 
 
 class DiscogsStore:
     def __init__(self, cursor):
         self.cursor = cursor
+
+    def log_saved(self, record_type: str, identifier: str):
+        print(f"Saved Discogs {record_type}: {identifier}", flush=True)
 
     def fetch_unfetched_tracks(self, limit: int) -> list[dict[str, Any]]:
         self.cursor.execute(
@@ -95,6 +108,28 @@ class DiscogsStore:
 
         return existing[0]
 
+    def has_master(self, discogs_master_id: int) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_master
+            WHERE discogs_master_id = %(discogs_master_id)s;
+            """,
+            {"discogs_master_id": discogs_master_id},
+        )
+        return self.cursor.fetchone() is not None
+
+    def has_release(self, discogs_release_id: int) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_release
+            WHERE discogs_release_id = %(discogs_release_id)s;
+            """,
+            {"discogs_release_id": discogs_release_id},
+        )
+        return self.cursor.fetchone() is not None
+
     def is_unmatchable_artist(self, spotify_artist_uri: str) -> bool:
         self.cursor.execute(
             """
@@ -177,6 +212,7 @@ class DiscogsStore:
                 "namevariations": json_param(artist.get("namevariations")),
             },
         )
+        self.log_saved("artist", f"{artist_id} ({artist['name']})")
 
     def save_artist_mapping(
         self,
@@ -202,6 +238,10 @@ class DiscogsStore:
                 "confidence": confidence,
                 "match_method": match_method,
             },
+        )
+        self.log_saved(
+            "artist mapping",
+            f"{spotify_artist_uri} -> {discogs_artist_id} ({match_method}, confidence {confidence})",
         )
 
     def save_master(self, master: dict[str, Any]):
@@ -229,12 +269,13 @@ class DiscogsStore:
                 "year": parse_int(master.get("year")),
             },
         )
+        self.log_saved("master", f"{master_id} ({master['title']})")
 
         self.save_master_genres(master_id, master.get("genres", []), "genre")
         self.save_master_genres(master_id, master.get("styles", []), "style")
         self.save_tracks_and_credits("master", master_id, master_id, master.get("tracklist", []))
         self.save_entity_credits("master", master_id, master_id, master.get("extraartists", []))
-        self.save_videos(master_id, master.get("videos", []))
+        self.save_videos(master_id, master.get("videos", []), master.get("tracklist", []))
 
     def save_master_genres(self, master_id: int, genres: list[str], genre_source: str):
         self.cursor.execute(
@@ -264,6 +305,7 @@ class DiscogsStore:
                     "genre_source": genre_source,
                 },
             )
+            self.log_saved("master genre", f"{master_id} -> {genre} ({genre_source})")
 
     def save_release(self, release: dict[str, Any], master_id: int):
         release_id = int(release["id"])
@@ -323,6 +365,7 @@ class DiscogsStore:
                 "identifiers": json_param_without_urls(release.get("identifiers")),
             },
         )
+        self.log_saved("release", f"{release_id} ({release['title']})")
 
         self.save_tracks_and_credits("release", release_id, master_id, release.get("tracklist", []))
         self.save_entity_credits("release", release_id, master_id, release.get("extraartists", []))
@@ -370,6 +413,11 @@ class DiscogsStore:
                 "match_method": match_method,
             },
         )
+        self.log_saved(
+            "track mapping",
+            f"{spotify_track_uri} -> {discogs_master_id}:{discogs_track_position} "
+            f"({match_method}, confidence {confidence})",
+        )
 
     def save_album_mapping(
         self,
@@ -396,6 +444,10 @@ class DiscogsStore:
                 "match_method": match_method,
             },
         )
+        self.log_saved(
+            "album mapping",
+            f"{spotify_album_uri} -> {discogs_master_id} ({match_method}, confidence {confidence})",
+        )
 
     def mark_unmatchable_artist(self, spotify_artist_uri: str, artist_name: str, reason: str):
         self.cursor.execute(
@@ -416,6 +468,7 @@ class DiscogsStore:
                 "reason": reason,
             },
         )
+        self.log_saved("unmatchable artist", f"{spotify_artist_uri} ({artist_name}): {reason}")
 
     def mark_unmatchable_track(self, spotify_track_uri: str, track_name: str, reason: str):
         self.cursor.execute(
@@ -436,6 +489,7 @@ class DiscogsStore:
                 "reason": reason,
             },
         )
+        self.log_saved("unmatchable track", f"{spotify_track_uri} ({track_name}): {reason}")
 
     def delete_artist_memberships(self, group_artist_id: int):
         self.cursor.execute(
@@ -463,6 +517,7 @@ class DiscogsStore:
                 "active": active,
             },
         )
+        self.log_saved("artist membership", f"{group_artist_id} -> {member_artist_id} (active={active})")
 
     def save_minimal_artist(self, artist: dict[str, Any]):
         artist_id = parse_int(artist.get("id"))
@@ -486,6 +541,7 @@ class DiscogsStore:
                 "name": name,
             },
         )
+        self.log_saved("minimal artist", f"{artist_id} ({name})")
 
     def save_tracks_and_credits(
         self,
@@ -520,6 +576,7 @@ class DiscogsStore:
                         "title": title,
                     },
                 )
+                self.log_saved("track", f"{master_id}:{position} ({title})")
 
             self.save_credits(
                 source_type,
@@ -590,8 +647,26 @@ class DiscogsStore:
                             %(credit_type)s,
                             %(credit_details)s
                         )
-                    ON CONFLICT (source_type, source_id, track_position, artist_name, raw_role) DO UPDATE
+                    ON CONFLICT (
+                        discogs_master_id,
+                        track_position,
+                        (COALESCE(discogs_artist_id, 0)),
+                        artist_name,
+                        raw_role
+                    ) DO UPDATE
                     SET
+                        source_type = CASE
+                            WHEN discogs_credit.source_type = 'release'
+                                AND EXCLUDED.source_type = 'master'
+                            THEN discogs_credit.source_type
+                            ELSE EXCLUDED.source_type
+                        END,
+                        source_id = CASE
+                            WHEN discogs_credit.source_type = 'release'
+                                AND EXCLUDED.source_type = 'master'
+                            THEN discogs_credit.source_id
+                            ELSE EXCLUDED.source_id
+                        END,
                         discogs_master_id = EXCLUDED.discogs_master_id,
                         track_title = EXCLUDED.track_title,
                         discogs_artist_id = EXCLUDED.discogs_artist_id,
@@ -613,25 +688,56 @@ class DiscogsStore:
                         "credit_details": credit_details,
                     },
                 )
+                self.log_saved(
+                    "credit",
+                    f"{source_type} {source_id}, {track_position or scope}, "
+                    f"{artist_name} as {raw_role}",
+                )
 
-    def save_videos(self, master_id: int, videos: list[dict[str, Any]]):
-        for video in videos or []:
-            uri = video.get("uri")
-            if not uri:
-                continue
+    def save_videos(
+        self,
+        master_id: int,
+        videos: list[dict[str, Any]],
+        tracklist: list[dict[str, Any]] | None = None,
+    ):
+        videos_by_uri = {video["uri"]: video for video in videos or [] if video.get("uri")}
+        for uri, video in videos_by_uri.items():
+            track_match = match_video_track(video.get("title"), tracklist)
+            track_position = track_match.get("position") if track_match is not None else None
+            track_title = track_match.get("title") if track_match is not None else None
 
             self.cursor.execute(
                 """
                 INSERT INTO discogs_video
-                    (discogs_master_id, uri, title, description, duration_seconds, embed)
+                    (
+                        discogs_master_id,
+                        uri,
+                        title,
+                        description,
+                        duration_seconds,
+                        embed,
+                        track_position,
+                        track_title
+                    )
                 VALUES
-                    (%(discogs_master_id)s, %(uri)s, %(title)s, %(description)s, %(duration_seconds)s, %(embed)s)
+                    (
+                        %(discogs_master_id)s,
+                        %(uri)s,
+                        %(title)s,
+                        %(description)s,
+                        %(duration_seconds)s,
+                        %(embed)s,
+                        %(track_position)s,
+                        %(track_title)s
+                    )
                 ON CONFLICT (discogs_master_id, uri) DO UPDATE
                 SET
                     title = EXCLUDED.title,
                     description = EXCLUDED.description,
                     duration_seconds = EXCLUDED.duration_seconds,
-                    embed = EXCLUDED.embed;
+                    embed = EXCLUDED.embed,
+                    track_position = EXCLUDED.track_position,
+                    track_title = EXCLUDED.track_title;
                 """,
                 {
                     "discogs_master_id": master_id,
@@ -640,8 +746,16 @@ class DiscogsStore:
                     "description": video.get("description"),
                     "duration_seconds": parse_int(video.get("duration")),
                     "embed": video.get("embed"),
+                    "track_position": track_position,
+                    "track_title": track_title,
                 },
             )
+            association = (
+                f"track {track_position} ({track_title})"
+                if track_match is not None
+                else "master-level; no unique title match"
+            )
+            self.log_saved("video", f"master {master_id} -> {uri} ({association})")
 
     @staticmethod
     def strip_artist_disambiguation(value: Any) -> str:
@@ -684,6 +798,46 @@ def standardize_credit_role(raw_role: str) -> tuple[str, str | None]:
 def normalize_role_key(value: Any) -> str:
     text = re.sub(r"[^a-zA-Z0-9]+", " ", str(value))
     return re.sub(r"\s+", " ", text).strip().lower().replace(" ", "_")
+
+
+def match_video_track(
+    video_title: Any,
+    tracklist: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    comparable_video_title = normalize_video_title(video_title)
+    if not comparable_video_title:
+        return None
+
+    matches = []
+    for track in tracklist or []:
+        if track.get("type_") != "track" or not track.get("title"):
+            continue
+
+        comparable_track_title = normalize_title(track["title"])
+        if len(comparable_track_title) < 4:
+            continue
+        if (
+            comparable_video_title == comparable_track_title
+            or comparable_video_title.endswith(f" {comparable_track_title}")
+        ):
+            matches.append(track)
+
+    return matches[0] if len(matches) == 1 else None
+
+
+def normalize_video_title(value: Any) -> str:
+    if value is None:
+        return ""
+
+    title = bracketed_video_decoration.sub(" ", str(value))
+    title = trailing_video_decoration.sub("", title)
+    return normalize_title(title)
+
+
+def normalize_title(value: Any) -> str:
+    text = unicodedata.normalize("NFKD", str(value)).replace("&", " and ")
+    text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def duration_seconds(duration: str | None) -> int | None:
