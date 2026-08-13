@@ -1,0 +1,1069 @@
+import re
+import unicodedata
+from typing import Any
+
+from psycopg2.extras import Json
+
+
+discogs_artist_disambiguation = re.compile(r"\s+\(\d+\)$")
+role_details = re.compile(r"\[(.+)\]")
+bracketed_video_decoration = re.compile(
+    r"[\[(]\s*(?:(?:official|music|lyric)\s+)*(?:video|audio|visuali[sz]er|mv)\s*[\])]",
+    re.IGNORECASE,
+)
+trailing_video_decoration = re.compile(
+    r"(?:\s*[-|:]\s*(?:(?:official|music|lyric)\s+)*(?:video|audio|visuali[sz]er|mv)"
+    r"|\s+(?:(?:official|music|lyric)\s+)+(?:video|audio|visuali[sz]er|mv))\s*$",
+    re.IGNORECASE,
+)
+MUSIC_CREDIT_TYPES = {
+    "arranger",
+    "featuring",
+    "lyricist",
+    "producer",
+    "songwriter",
+}
+
+
+class DiscogsStore:
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def log_saved(self, record_type: str, identifier: str):
+        print(f"Saved Discogs {record_type}: {identifier}", flush=True)
+
+    def fetch_unfetched_tracks(self, limit: int) -> list[dict[str, Any]]:
+        self.cursor.execute(
+            """
+            SELECT
+                t.uri AS track_uri,
+                t.name AS track_name,
+                t.duration_ms,
+                t.album_uri,
+                al.name AS album_name,
+                al.release_date AS album_release_date,
+                COALESCE(stream_counts.stream_count, 0) AS stream_count,
+                ARRAY_AGG(a.uri ORDER BY ta.artist_index) AS artist_uris,
+                ARRAY_AGG(a.name ORDER BY ta.artist_index) AS artist_names
+            FROM track t
+                INNER JOIN album al ON t.album_uri = al.uri
+                INNER JOIN track_artist ta ON t.uri = ta.track_uri
+                INNER JOIN artist a ON ta.artist_uri = a.uri
+                LEFT JOIN liked_track lt ON t.uri = lt.track_uri
+                LEFT JOIN (
+                    SELECT track_uri, COUNT(*) AS stream_count
+                    FROM track_stream
+                    GROUP BY track_uri
+                ) stream_counts ON t.uri = stream_counts.track_uri
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM sp_track_discogs_track stdt
+                WHERE stdt.spotify_track_uri = t.uri
+            )
+            AND EXISTS (
+                SELECT 1
+                FROM playlist_track pt
+                WHERE pt.track_uri = t.uri
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM discogs_unmatchable_track dut
+                WHERE dut.spotify_track_uri = t.uri
+                    AND (dut.retry_after IS NULL OR dut.retry_after > CURRENT_TIMESTAMP)
+            )
+            GROUP BY
+                t.uri,
+                t.name,
+                t.duration_ms,
+                t.album_uri,
+                al.name,
+                al.release_date,
+                stream_counts.stream_count,
+                lt.track_uri
+            ORDER BY
+                COALESCE(stream_counts.stream_count, 0) DESC,
+                (lt.track_uri IS NOT NULL) DESC,
+                al.release_date DESC NULLS LAST,
+                t.name
+            LIMIT %(limit)s;
+            """,
+            {"limit": limit},
+        )
+        return [
+            {
+                "track_uri": row[0],
+                "track_name": row[1],
+                "duration_ms": row[2],
+                "album_uri": row[3],
+                "album_name": row[4],
+                "album_release_date": row[5],
+                "stream_count": row[6],
+                "artist_uris": row[7],
+                "artist_names": row[8],
+            }
+            for row in self.cursor.fetchall()
+        ]
+
+    def matched_discogs_artist_id(self, spotify_artist_uri: str) -> int | None:
+        self.cursor.execute(
+            """
+            SELECT discogs_artist_id
+            FROM sp_artist_discogs_artist
+            WHERE spotify_artist_uri = %(spotify_artist_uri)s
+            ORDER BY created_at DESC
+            LIMIT 1;
+            """,
+            {"spotify_artist_uri": spotify_artist_uri},
+        )
+        existing = self.cursor.fetchone()
+        if existing is None:
+            return None
+
+        return existing[0]
+
+    def has_master(self, discogs_master_id: int) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_master
+            WHERE discogs_master_id = %(discogs_master_id)s;
+            """,
+            {"discogs_master_id": discogs_master_id},
+        )
+        return self.cursor.fetchone() is not None
+
+    def has_release(self, discogs_release_id: int) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_release
+            WHERE discogs_release_id = %(discogs_release_id)s;
+            """,
+            {"discogs_release_id": discogs_release_id},
+        )
+        return self.cursor.fetchone() is not None
+
+    def has_release_track_credits(
+        self,
+        discogs_master_id: int,
+        track_position: str,
+    ) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_credit
+            WHERE source_type = 'release'
+                AND discogs_master_id = %(discogs_master_id)s
+                AND track_position = %(track_position)s
+            LIMIT 1;
+            """,
+            {
+                "discogs_master_id": discogs_master_id,
+                "track_position": track_position,
+            },
+        )
+        return self.cursor.fetchone() is not None
+
+    def is_unmatchable_artist(self, spotify_artist_uri: str) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM discogs_unmatchable_artist
+            WHERE spotify_artist_uri = %(spotify_artist_uri)s
+                AND (retry_after IS NULL OR retry_after > CURRENT_TIMESTAMP);
+            """,
+            {"spotify_artist_uri": spotify_artist_uri},
+        )
+        return self.cursor.fetchone() is not None
+
+    def unique_spotify_artist_uri_for_discogs_name(
+        self,
+        artist_name: str,
+        discogs_artist_id: int,
+    ) -> str | None:
+        comparable_artist_name = self.strip_artist_disambiguation(artist_name)
+        self.cursor.execute(
+            """
+            SELECT a.uri
+            FROM artist a
+            WHERE lower(regexp_replace(a.name, '[[:space:]]+[(][0-9]+[)]$', '')) = lower(%(artist_name)s)
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM sp_artist_discogs_artist sada
+                    WHERE sada.spotify_artist_uri = a.uri
+                        AND sada.discogs_artist_id != %(discogs_artist_id)s
+                )
+            LIMIT 2;
+            """,
+            {
+                "artist_name": comparable_artist_name,
+                "discogs_artist_id": discogs_artist_id,
+            },
+        )
+        matches = self.cursor.fetchall()
+        if len(matches) != 1:
+            return None
+        return matches[0][0]
+
+    def save_artist(self, artist: dict[str, Any]):
+        artist_id = int(artist["id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist
+                (
+                    discogs_artist_id,
+                    name,
+                    realname,
+                    profile,
+                    primary_image_url,
+                    namevariations,
+                    updated_at
+                )
+            VALUES
+                (
+                    %(discogs_artist_id)s,
+                    %(name)s,
+                    %(realname)s,
+                    %(profile)s,
+                    %(primary_image_url)s,
+                    %(namevariations)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_artist_id) DO UPDATE
+            SET
+                name = EXCLUDED.name,
+                realname = EXCLUDED.realname,
+                profile = EXCLUDED.profile,
+                primary_image_url = EXCLUDED.primary_image_url,
+                namevariations = EXCLUDED.namevariations,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_artist_id": artist_id,
+                "name": self.strip_artist_disambiguation(artist["name"]),
+                "realname": artist.get("realname"),
+                "profile": artist.get("profile"),
+                "primary_image_url": primary_image_url(artist.get("images", [])),
+                "namevariations": json_param(artist.get("namevariations")),
+            },
+        )
+        self.log_saved("artist", f"{artist_id} ({artist['name']})")
+
+    def save_artist_mapping(
+        self,
+        spotify_artist_uri: str,
+        discogs_artist_id: int,
+        match_method: str,
+    ):
+        self.cursor.execute(
+            """
+            INSERT INTO sp_artist_discogs_artist
+                (spotify_artist_uri, discogs_artist_id, match_method)
+            VALUES
+                (%(spotify_artist_uri)s, %(discogs_artist_id)s, %(match_method)s)
+            ON CONFLICT (spotify_artist_uri, discogs_artist_id) DO UPDATE
+            SET
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_artist_uri": spotify_artist_uri,
+                "discogs_artist_id": discogs_artist_id,
+                "match_method": match_method,
+            },
+        )
+        self.cursor.execute(
+            "DELETE FROM discogs_unmatchable_artist WHERE spotify_artist_uri = %(spotify_artist_uri)s;",
+            {"spotify_artist_uri": spotify_artist_uri},
+        )
+        self.log_saved(
+            "artist mapping",
+            f"{spotify_artist_uri} -> {discogs_artist_id} ({match_method})",
+        )
+
+    def save_master(self, master: dict[str, Any], matched_track: dict[str, Any]):
+        master_id = int(master["id"] if "id" in master else master["discogs_master_id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_master
+                (discogs_master_id, title, year, updated_at)
+            VALUES
+                (
+                    %(discogs_master_id)s,
+                    %(title)s,
+                    %(year)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_master_id) DO UPDATE
+            SET
+                title = EXCLUDED.title,
+                year = EXCLUDED.year,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_master_id": master_id,
+                "title": master["title"],
+                "year": parse_int(master.get("year")),
+            },
+        )
+        self.log_saved("master", f"{master_id} ({master['title']})")
+
+        self.save_master_genres(master_id, master.get("genres", []), "genre")
+        self.save_master_genres(master_id, master.get("styles", []), "style")
+        self.save_tracks_and_credits(
+            "master",
+            master_id,
+            master_id,
+            master.get("tracklist", []),
+            matched_track,
+        )
+        self.save_videos(master_id, master.get("videos", []), master.get("tracklist", []))
+
+    def save_master_track_credits(
+        self,
+        master: dict[str, Any],
+        matched_track: dict[str, Any],
+    ):
+        self.save_matched_track_credits(
+            "master",
+            int(master["id"]),
+            int(master["id"]),
+            master.get("tracklist", []),
+            matched_track,
+        )
+
+    def save_master_genres(self, master_id: int, genres: list[str], genre_source: str):
+        self.cursor.execute(
+            """
+            DELETE FROM discogs_master_genre
+            WHERE discogs_master_id = %(discogs_master_id)s
+                AND genre_source = %(genre_source)s;
+            """,
+            {
+                "discogs_master_id": master_id,
+                "genre_source": genre_source,
+            },
+        )
+
+        for genre in genres or []:
+            self.cursor.execute(
+                """
+                INSERT INTO discogs_master_genre
+                    (discogs_master_id, genre, genre_source)
+                VALUES
+                    (%(discogs_master_id)s, %(genre)s, %(genre_source)s)
+                ON CONFLICT DO NOTHING;
+                """,
+                {
+                    "discogs_master_id": master_id,
+                    "genre": genre,
+                    "genre_source": genre_source,
+                },
+            )
+            self.log_saved("master genre", f"{master_id} -> {genre} ({genre_source})")
+
+    def save_release(
+        self,
+        release: dict[str, Any],
+        master_id: int,
+        matched_track: dict[str, Any],
+    ):
+        release_id = int(release["id"])
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_release
+                (
+                    discogs_release_id,
+                    discogs_master_id,
+                    title,
+                    year,
+                    country,
+                    released,
+                    labels,
+                    companies,
+                    formats,
+                    identifiers,
+                    updated_at
+                )
+            VALUES
+                (
+                    %(discogs_release_id)s,
+                    %(discogs_master_id)s,
+                    %(title)s,
+                    %(year)s,
+                    %(country)s,
+                    %(released)s,
+                    %(labels)s,
+                    %(companies)s,
+                    %(formats)s,
+                    %(identifiers)s,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (discogs_release_id) DO UPDATE
+            SET
+                discogs_master_id = EXCLUDED.discogs_master_id,
+                title = EXCLUDED.title,
+                year = EXCLUDED.year,
+                country = EXCLUDED.country,
+                released = EXCLUDED.released,
+                labels = EXCLUDED.labels,
+                companies = EXCLUDED.companies,
+                formats = EXCLUDED.formats,
+                identifiers = EXCLUDED.identifiers,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_release_id": release_id,
+                "discogs_master_id": parse_int(release.get("master_id")) or master_id,
+                "title": release["title"],
+                "year": parse_int(release.get("year")),
+                "country": release.get("country"),
+                "released": release.get("released"),
+                "labels": json_param_without_urls(release.get("labels")),
+                "companies": json_param_without_urls(release.get("companies")),
+                "formats": json_param_without_urls(release.get("formats")),
+                "identifiers": json_param_without_urls(release.get("identifiers")),
+            },
+        )
+        self.log_saved("release", f"{release_id} ({release['title']})")
+
+        self.save_tracks_and_credits(
+            "release",
+            release_id,
+            master_id,
+            release.get("tracklist", []),
+            matched_track,
+        )
+
+    def save_track_mapping(
+        self,
+        spotify_track_uri: str,
+        discogs_master_id: int,
+        discogs_track_position: str,
+        discogs_track_title: str,
+        match_method: str,
+    ):
+        self.cursor.execute(
+            """
+            INSERT INTO sp_track_discogs_track
+                (
+                    spotify_track_uri,
+                    discogs_master_id,
+                    discogs_track_position,
+                    discogs_track_title,
+                    match_method
+                )
+            VALUES
+                (
+                    %(spotify_track_uri)s,
+                    %(discogs_master_id)s,
+                    %(discogs_track_position)s,
+                    %(discogs_track_title)s,
+                    %(match_method)s
+                )
+            ON CONFLICT (spotify_track_uri, discogs_master_id, discogs_track_position, discogs_track_title) DO UPDATE
+            SET
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_track_uri": spotify_track_uri,
+                "discogs_master_id": discogs_master_id,
+                "discogs_track_position": discogs_track_position,
+                "discogs_track_title": discogs_track_title,
+                "match_method": match_method,
+            },
+        )
+        self.cursor.execute(
+            "DELETE FROM discogs_unmatchable_track WHERE spotify_track_uri = %(spotify_track_uri)s;",
+            {"spotify_track_uri": spotify_track_uri},
+        )
+        self.log_saved(
+            "track mapping",
+            f"{spotify_track_uri} -> {discogs_master_id}:{discogs_track_position} "
+            f"({match_method})",
+        )
+
+    def save_album_mapping(
+        self,
+        spotify_album_uri: str,
+        discogs_master_id: int,
+        match_method: str,
+    ):
+        self.cursor.execute(
+            """
+            INSERT INTO sp_album_discogs_master
+                (spotify_album_uri, discogs_master_id, match_method)
+            VALUES
+                (%(spotify_album_uri)s, %(discogs_master_id)s, %(match_method)s)
+            ON CONFLICT (spotify_album_uri, discogs_master_id) DO UPDATE
+            SET
+                match_method = EXCLUDED.match_method;
+            """,
+            {
+                "spotify_album_uri": spotify_album_uri,
+                "discogs_master_id": discogs_master_id,
+                "match_method": match_method,
+            },
+        )
+        self.log_saved(
+            "album mapping",
+            f"{spotify_album_uri} -> {discogs_master_id} ({match_method})",
+        )
+
+    def mark_unmatchable_artist(
+        self,
+        spotify_artist_uri: str,
+        artist_name: str,
+        reason: str,
+        retryable: bool = False,
+    ):
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_unmatchable_artist
+                (spotify_artist_uri, artist_name, reason, retry_after, updated_at)
+            VALUES
+                (
+                    %(spotify_artist_uri)s,
+                    %(artist_name)s,
+                    %(reason)s,
+                    CASE WHEN %(retryable)s THEN CURRENT_TIMESTAMP + INTERVAL '1 month' END,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (spotify_artist_uri) DO UPDATE
+            SET
+                artist_name = EXCLUDED.artist_name,
+                reason = EXCLUDED.reason,
+                retry_after = EXCLUDED.retry_after,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "spotify_artist_uri": spotify_artist_uri,
+                "artist_name": artist_name,
+                "reason": reason,
+                "retryable": retryable,
+            },
+        )
+        self.log_saved("unmatchable artist", f"{spotify_artist_uri} ({artist_name}): {reason}")
+
+    def mark_unmatchable_track(
+        self,
+        spotify_track_uri: str,
+        track_name: str,
+        reason: str,
+        retryable: bool = False,
+    ):
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_unmatchable_track
+                (spotify_track_uri, track_name, reason, retry_after, updated_at)
+            VALUES
+                (
+                    %(spotify_track_uri)s,
+                    %(track_name)s,
+                    %(reason)s,
+                    CASE WHEN %(retryable)s THEN CURRENT_TIMESTAMP + INTERVAL '1 month' END,
+                    CURRENT_TIMESTAMP
+                )
+            ON CONFLICT (spotify_track_uri) DO UPDATE
+            SET
+                track_name = EXCLUDED.track_name,
+                reason = EXCLUDED.reason,
+                retry_after = EXCLUDED.retry_after,
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "spotify_track_uri": spotify_track_uri,
+                "track_name": track_name,
+                "reason": reason,
+                "retryable": retryable,
+            },
+        )
+        self.log_saved("unmatchable track", f"{spotify_track_uri} ({track_name}): {reason}")
+
+    def delete_artist_memberships(self, group_artist_id: int):
+        self.cursor.execute(
+            """
+            DELETE FROM discogs_artist_membership
+            WHERE group_discogs_artist_id = %(group_discogs_artist_id)s;
+            """,
+            {"group_discogs_artist_id": group_artist_id},
+        )
+
+    def save_artist_membership(self, group_artist_id: int, member_artist_id: int, active: bool | None):
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist_membership
+                (group_discogs_artist_id, member_discogs_artist_id, active)
+            VALUES
+                (%(group_discogs_artist_id)s, %(member_discogs_artist_id)s, %(active)s)
+            ON CONFLICT (group_discogs_artist_id, member_discogs_artist_id) DO UPDATE
+            SET
+                active = EXCLUDED.active;
+            """,
+            {
+                "group_discogs_artist_id": group_artist_id,
+                "member_discogs_artist_id": member_artist_id,
+                "active": active,
+            },
+        )
+        self.log_saved("artist membership", f"{group_artist_id} -> {member_artist_id} (active={active})")
+
+    def save_minimal_artist(self, artist: dict[str, Any]):
+        artist_id = parse_int(artist.get("id"))
+        name = self.strip_artist_disambiguation(artist.get("name"))
+        if artist_id is None or artist_id <= 0 or not name:
+            return
+
+        self.cursor.execute(
+            """
+            INSERT INTO discogs_artist
+                (discogs_artist_id, name, updated_at)
+            VALUES
+                (%(discogs_artist_id)s, %(name)s, CURRENT_TIMESTAMP)
+            ON CONFLICT (discogs_artist_id) DO UPDATE
+            SET
+                name = COALESCE(discogs_artist.name, EXCLUDED.name),
+                updated_at = CURRENT_TIMESTAMP;
+            """,
+            {
+                "discogs_artist_id": artist_id,
+                "name": name,
+            },
+        )
+        self.log_saved("minimal artist", f"{artist_id} ({name})")
+
+    def save_tracks_and_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        tracklist: list[dict[str, Any]],
+        matched_track: dict[str, Any],
+    ):
+        for track in tracklist or []:
+            if track.get("type_") != "track":
+                continue
+
+            position = track.get("position") or ""
+            title = track.get("title")
+            if not title:
+                continue
+
+            if source_type == "master":
+                self.cursor.execute(
+                    """
+                    INSERT INTO discogs_track
+                        (discogs_master_id, position, title)
+                    VALUES
+                        (%(discogs_master_id)s, %(position)s, %(title)s)
+                    ON CONFLICT (discogs_master_id, position, title) DO UPDATE
+                    SET
+                        title = EXCLUDED.title;
+                    """,
+                    {
+                        "discogs_master_id": master_id,
+                        "position": position,
+                        "title": title,
+                    },
+                )
+                self.log_saved("track", f"{master_id}:{position} ({title})")
+
+        self.save_matched_track_credits(
+            source_type,
+            source_id,
+            master_id,
+            tracklist,
+            matched_track,
+        )
+
+    def save_matched_track_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        tracklist: list[dict[str, Any]],
+        matched_track: dict[str, Any],
+    ):
+        credit_track = matching_credit_track(tracklist, matched_track)
+        if credit_track is None:
+            return
+
+        self.save_credits(
+            source_type,
+            source_id,
+            master_id,
+            "track",
+            matched_track.get("position") or "",
+            matched_track.get("title"),
+            credit_track.get("extraartists", []),
+        )
+
+    def save_credits(
+        self,
+        source_type: str,
+        source_id: int,
+        master_id: int,
+        scope: str,
+        track_position: str | None,
+        track_title: str | None,
+        extraartists: list[dict[str, Any]],
+    ):
+        for artist in extraartists or []:
+            artist_name = self.strip_artist_disambiguation(artist.get("name"))
+            if not artist_name:
+                continue
+
+            credits = [
+                (raw_role, *standardize_credit_role(raw_role))
+                for raw_role in split_roles(artist.get("role"))
+            ]
+            credits = [
+                credit
+                for credit in credits
+                if credit[1] in MUSIC_CREDIT_TYPES
+            ]
+            if not credits:
+                continue
+
+            self.save_minimal_artist(artist)
+            artist_id = parse_int(artist.get("id"))
+
+            for raw_role, credit_type, credit_details in credits:
+                self.cursor.execute(
+                    """
+                    INSERT INTO discogs_credit
+                        (
+                            source_type,
+                            source_id,
+                            discogs_master_id,
+                            track_position,
+                            track_title,
+                            discogs_artist_id,
+                            artist_name,
+                            artist_anv,
+                            raw_role,
+                            credit_type,
+                            credit_details
+                        )
+                    VALUES
+                        (
+                            %(source_type)s,
+                            %(source_id)s,
+                            %(discogs_master_id)s,
+                            %(track_position)s,
+                            %(track_title)s,
+                            %(discogs_artist_id)s,
+                            %(artist_name)s,
+                            %(artist_anv)s,
+                            %(raw_role)s,
+                            %(credit_type)s,
+                            %(credit_details)s
+                        )
+                    ON CONFLICT (
+                        discogs_master_id,
+                        track_position,
+                        (COALESCE(discogs_artist_id, 0)),
+                        artist_name,
+                        raw_role
+                    ) DO UPDATE
+                    SET
+                        source_type = CASE
+                            WHEN discogs_credit.source_type = 'release'
+                                AND EXCLUDED.source_type = 'master'
+                            THEN discogs_credit.source_type
+                            ELSE EXCLUDED.source_type
+                        END,
+                        source_id = CASE
+                            WHEN discogs_credit.source_type = 'release'
+                                AND EXCLUDED.source_type = 'master'
+                            THEN discogs_credit.source_id
+                            ELSE EXCLUDED.source_id
+                        END,
+                        discogs_master_id = EXCLUDED.discogs_master_id,
+                        track_title = EXCLUDED.track_title,
+                        discogs_artist_id = EXCLUDED.discogs_artist_id,
+                        artist_anv = EXCLUDED.artist_anv,
+                        credit_type = EXCLUDED.credit_type,
+                        credit_details = EXCLUDED.credit_details;
+                    """,
+                    {
+                        "source_type": source_type,
+                        "source_id": source_id,
+                        "discogs_master_id": master_id,
+                        "track_position": track_position or scope,
+                        "track_title": track_title,
+                        "discogs_artist_id": artist_id,
+                        "artist_name": artist_name,
+                        "artist_anv": artist.get("anv"),
+                        "raw_role": raw_role,
+                        "credit_type": credit_type,
+                        "credit_details": credit_details,
+                    },
+                )
+                self.log_saved(
+                    "credit",
+                    f"{source_type} {source_id}, {track_position or scope}, "
+                    f"{artist_name} as {raw_role}",
+                )
+
+    def save_videos(
+        self,
+        master_id: int,
+        videos: list[dict[str, Any]],
+        tracklist: list[dict[str, Any]] | None = None,
+    ):
+        videos_by_uri = {video["uri"]: video for video in videos or [] if video.get("uri")}
+        for uri, video in videos_by_uri.items():
+            track_match = match_video_track(video.get("title"), tracklist)
+            track_position = track_match.get("position") if track_match is not None else None
+            track_title = track_match.get("title") if track_match is not None else None
+
+            self.cursor.execute(
+                """
+                INSERT INTO discogs_video
+                    (
+                        discogs_master_id,
+                        uri,
+                        title,
+                        description,
+                        duration_seconds,
+                        embed,
+                        track_position,
+                        track_title
+                    )
+                VALUES
+                    (
+                        %(discogs_master_id)s,
+                        %(uri)s,
+                        %(title)s,
+                        %(description)s,
+                        %(duration_seconds)s,
+                        %(embed)s,
+                        %(track_position)s,
+                        %(track_title)s
+                    )
+                ON CONFLICT (discogs_master_id, uri) DO UPDATE
+                SET
+                    title = EXCLUDED.title,
+                    description = EXCLUDED.description,
+                    duration_seconds = EXCLUDED.duration_seconds,
+                    embed = EXCLUDED.embed,
+                    track_position = EXCLUDED.track_position,
+                    track_title = EXCLUDED.track_title;
+                """,
+                {
+                    "discogs_master_id": master_id,
+                    "uri": uri,
+                    "title": video.get("title"),
+                    "description": video.get("description"),
+                    "duration_seconds": parse_int(video.get("duration")),
+                    "embed": video.get("embed"),
+                    "track_position": track_position,
+                    "track_title": track_title,
+                },
+            )
+            association = (
+                f"track {track_position} ({track_title})"
+                if track_match is not None
+                else "master-level; no unique title match"
+            )
+            self.log_saved("video", f"master {master_id} -> {uri} ({association})")
+
+    @staticmethod
+    def strip_artist_disambiguation(value: Any) -> str:
+        if value is None:
+            return ""
+        return discogs_artist_disambiguation.sub("", str(value)).strip()
+
+
+def split_roles(role: str | None) -> list[str]:
+    if not role:
+        return []
+
+    parts = []
+    start = 0
+    bracket_depth = 0
+    for index, character in enumerate(role):
+        if character == "[":
+            bracket_depth += 1
+        elif character == "]" and bracket_depth > 0:
+            bracket_depth -= 1
+        elif character == "," and bracket_depth == 0:
+            part = role[start:index].strip()
+            if part:
+                parts.append(part)
+            start = index + 1
+
+    final_part = role[start:].strip()
+    if final_part:
+        parts.append(final_part)
+    return parts
+
+
+def matching_credit_track(
+    tracklist: list[dict[str, Any]],
+    matched_track: dict[str, Any],
+) -> dict[str, Any] | None:
+    matched_position = matched_track.get("position") or ""
+    matched_title = normalize_title(matched_track.get("title"))
+    tracks = [track for track in tracklist or [] if track.get("type_") == "track"]
+
+    for track in tracks:
+        if (
+            (track.get("position") or "") == matched_position
+            and normalize_title(track.get("title")) == matched_title
+        ):
+            return track
+
+    title_matches = [
+        track
+        for track in tracks
+        if normalize_title(track.get("title")) == matched_title
+    ]
+    if len(title_matches) == 1:
+        return title_matches[0]
+
+    position_matches = [
+        track
+        for track in tracks
+        if (track.get("position") or "") == matched_position
+    ]
+    return position_matches[0] if len(position_matches) == 1 else None
+
+
+def standardize_credit_role(raw_role: str) -> tuple[str, str | None]:
+    details_match = role_details.search(raw_role)
+    details = details_match.group(1).strip() if details_match is not None else None
+    role = role_details.sub("", raw_role).strip().lower()
+
+    if re.search(
+        r"\b(?:a&r|artwork|authoring|camera|choreograph|design|film|hair|legal|"
+        r"management|marketing|make[- ]?up|photograph|promotion|public relations|"
+        r"stylist|translated|video|visual)\b",
+        role,
+    ):
+        return "non_music", details
+
+    if "producer" in role or "production" in role or "program" in role:
+        return "producer", details
+    if "arranged" in role or "arranger" in role:
+        return "arranger", details
+    if "written" in role or "composer" in role or "composed" in role or "songwriter" in role or role == "music by":
+        return "songwriter", details
+    if "lyric" in role:
+        return "lyricist", details
+    if "master" in role:
+        return "mastering", details
+    if "mix" in role:
+        return "mixing", details
+    if "engineer" in role or "recorded" in role:
+        return "engineer", details
+    if "vocal" in role:
+        return "vocals", details
+
+    return normalize_role_key(role) or "unknown", details
+
+
+def normalize_role_key(value: Any) -> str:
+    text = re.sub(r"[^a-zA-Z0-9]+", " ", str(value))
+    return re.sub(r"\s+", " ", text).strip().lower().replace(" ", "_")
+
+
+def match_video_track(
+    video_title: Any,
+    tracklist: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    comparable_video_title = normalize_video_title(video_title)
+    if not comparable_video_title:
+        return None
+
+    matches = []
+    for track in tracklist or []:
+        if track.get("type_") != "track" or not track.get("title"):
+            continue
+
+        comparable_track_title = normalize_title(track["title"])
+        if len(comparable_track_title) < 4:
+            continue
+        if (
+            comparable_video_title == comparable_track_title
+            or comparable_video_title.endswith(f" {comparable_track_title}")
+        ):
+            matches.append(track)
+
+    return matches[0] if len(matches) == 1 else None
+
+
+def normalize_video_title(value: Any) -> str:
+    if value is None:
+        return ""
+
+    title = bracketed_video_decoration.sub(" ", str(value))
+    title = trailing_video_decoration.sub("", title)
+    return normalize_title(title)
+
+
+def normalize_title(value: Any) -> str:
+    text = unicodedata.normalize("NFKD", str(value)).replace("&", " and ")
+    text = re.sub(r"[^a-zA-Z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def duration_seconds(duration: str | None) -> int | None:
+    if not duration:
+        return None
+
+    parts = duration.split(":")
+    if not all(part.isdigit() for part in parts):
+        return None
+
+    total = 0
+    for part in parts:
+        total = total * 60 + int(part)
+    return total
+
+
+def primary_image_url(images: list[dict[str, Any]]) -> str | None:
+    if not images:
+        return None
+
+    for image in images:
+        if image.get("type") == "primary":
+            return image.get("uri") or image.get("resource_url")
+
+    return images[0].get("uri") or images[0].get("resource_url")
+
+
+def parse_int(value: Any) -> int | None:
+    if value is None or value == "":
+        return None
+
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def json_param(value):
+    return Json(value) if value is not None else None
+
+
+def strip_discogs_artist_disambiguation(value: Any) -> str:
+    if value is None:
+        return ""
+    return discogs_artist_disambiguation.sub("", str(value)).strip()
+
+
+def json_param_without_urls(value):
+    return json_param(without_urls(value))
+
+
+def without_urls(value):
+    if isinstance(value, dict):
+        return {
+            key: without_urls(item)
+            for key, item in value.items()
+            if "url" not in key.lower()
+        }
+    if isinstance(value, list):
+        return [without_urls(item) for item in value]
+    return value

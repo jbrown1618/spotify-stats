@@ -92,6 +92,14 @@ def musicbrainz_retry_days() -> int:
     return get_setting("MUSICBRAINZ_RETRY_DAYS", 60)
 
 
+def discogs_useragent() -> str:
+    return get_setting("DISCOGS_USERAGENT", "jbrown1618/spotify-stats")
+
+
+def discogs_user_token() -> str:
+    return get_setting("DISCOGS_USER_TOKEN", None)
+
+
 def should_save_spotify_data() -> bool:
     return get_setting("SAVE_SPOTIFY_DATA", True)
 
