@@ -121,6 +121,23 @@ class DiscogsStore:
 
         return existing[0]
 
+    def uniquely_mapped_master_id(self, spotify_album_uri: str) -> int | None:
+        self.cursor.execute(
+            """
+            SELECT discogs_master_id
+            FROM sp_album_discogs_master
+            WHERE spotify_album_uri = %(spotify_album_uri)s
+            ORDER BY created_at DESC
+            LIMIT 2;
+            """,
+            {"spotify_album_uri": spotify_album_uri},
+        )
+        mappings = self.cursor.fetchall()
+        if len(mappings) != 1:
+            return None
+
+        return mappings[0][0]
+
     def has_master(self, discogs_master_id: int) -> bool:
         self.cursor.execute(
             """

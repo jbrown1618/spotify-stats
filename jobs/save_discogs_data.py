@@ -77,38 +77,42 @@ def process_track_safely(
 
 def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, Any]):
     print(
-        f"Matching primary artist for {track['artist_names'][0]} - {track['track_name']} "
+        f"Matching Discogs data for {track['artist_names'][0]} - {track['track_name']} "
         f"({track['stream_count']} streams)",
         flush=True,
     )
-    try:
-        discogs_artist_id = match_primary_artist(store, client, track)
-    except DeferredArtistMatch as error:
-        print(f"Deferring Discogs track {track['track_uri']}: {error}", flush=True)
-        store.mark_unmatchable_track(
-            track["track_uri"],
-            track["track_name"],
-            str(error),
-            retryable=True,
-        )
-        return
-    if discogs_artist_id is None:
-        print(f"No artist match; marking track unmatchable: {track['track_uri']}", flush=True)
-        store.mark_unmatchable_track(
-            track["track_uri"],
-            track["track_name"],
-            "No Discogs artist match",
-            retryable=True,
-        )
-        return
+    match = find_album_mapped_track_match(store, client, track)
+    if match is None:
+        try:
+            discogs_artist_id = match_primary_artist(store, client, track)
+        except DeferredArtistMatch as error:
+            print(f"Deferring Discogs track {track['track_uri']}: {error}", flush=True)
+            store.mark_unmatchable_track(
+                track["track_uri"],
+                track["track_name"],
+                str(error),
+                retryable=True,
+            )
+            return
+        if discogs_artist_id is None:
+            print(f"No artist match; marking track unmatchable: {track['track_uri']}", flush=True)
+            store.mark_unmatchable_track(
+                track["track_uri"],
+                track["track_name"],
+                "No Discogs artist match",
+                retryable=True,
+            )
+            return
 
-    print(
-        f"Finding Discogs master candidates for artist {discogs_artist_id} and track "
-        f"{track['track_name']}",
-        flush=True,
-    )
-    matches = find_track_matches(client, discogs_artist_id, track)
-    if len(matches) == 0:
+        print(
+            f"Finding Discogs master candidates for artist {discogs_artist_id} and track "
+            f"{track['track_name']}",
+            flush=True,
+        )
+        matches = find_track_matches(client, discogs_artist_id, track)
+        match = matches[0] if matches else None
+
+    if match is None:
         print(f"No master match; marking track unmatchable: {track['track_uri']}", flush=True)
         store.mark_unmatchable_track(
             track["track_uri"],
@@ -118,7 +122,6 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
         )
         return
 
-    match = matches[0]
     master_id = int(match["master"]["id"])
     if store.has_master(master_id):
         print(
@@ -143,7 +146,7 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
         master_id,
         match["track"].get("position") or "",
         match["track"]["title"],
-        "artist-candidates-track-score",
+        match.get("match_method", "artist-candidates-track-score"),
     )
     if album_match_score(track, match["master"]) >= 35:
         print(
@@ -155,6 +158,47 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
             master_id,
             "album-title-match",
         )
+
+
+def find_album_mapped_track_match(
+    store: DiscogsStore,
+    client: DiscogsClient,
+    track: dict[str, Any],
+) -> dict[str, Any] | None:
+    master_id = store.uniquely_mapped_master_id(track["album_uri"])
+    if master_id is None:
+        return None
+
+    print(
+        f"Trying mapped Discogs master {master_id} for Spotify album {track['album_uri']}",
+        flush=True,
+    )
+    try:
+        master = client.master(master_id)
+    except DiscogsApiError as error:
+        print(
+            f"Could not reuse mapped Discogs master {master_id}: {error}; "
+            "falling back to candidate search",
+            flush=True,
+        )
+        return None
+    match = best_track_match(track, master)
+    if match is None or match["score"] < 75:
+        print(
+            f"Mapped Discogs master {master_id} has no confident match for "
+            f"{track['track_name']}; falling back to candidate search",
+            flush=True,
+        )
+        return None
+
+    print(
+        f"Matched track {match['track'].get('position') or '?'} "
+        f"({match['track'].get('title')}) from mapped Discogs master {master_id} "
+        f"(score {match['score']})",
+        flush=True,
+    )
+    match["match_method"] = "album-mapped-track-score"
+    return match
 
 
 def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict[str, Any]) -> int | None:
