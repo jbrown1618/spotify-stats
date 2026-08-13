@@ -814,8 +814,20 @@ class DiscogsStore:
         videos_by_uri = {video["uri"]: video for video in videos or [] if video.get("uri")}
         for uri, video in videos_by_uri.items():
             track_match = match_video_track(video.get("title"), tracklist)
-            track_position = track_match.get("position") if track_match is not None else None
-            track_title = track_match.get("title") if track_match is not None else None
+            if (
+                track_match is None
+                or not track_match.get("position")
+                or not track_match.get("title")
+            ):
+                print(
+                    f"Skipping Discogs video for master {master_id}: {uri} "
+                    "(no unique track match)",
+                    flush=True,
+                )
+                continue
+
+            track_position = track_match["position"]
+            track_title = track_match["title"]
 
             self.cursor.execute(
                 """
@@ -861,12 +873,10 @@ class DiscogsStore:
                     "track_title": track_title,
                 },
             )
-            association = (
-                f"track {track_position} ({track_title})"
-                if track_match is not None
-                else "master-level; no unique title match"
+            self.log_saved(
+                "video",
+                f"master {master_id} -> {uri} (track {track_position} ({track_title}))",
             )
-            self.log_saved("video", f"master {master_id} -> {uri} ({association})")
 
     @staticmethod
     def strip_artist_disambiguation(value: Any) -> str:

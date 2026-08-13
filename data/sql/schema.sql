@@ -314,8 +314,8 @@ CREATE TABLE IF NOT EXISTS discogs_video (
     description TEXT,
     duration_seconds INT,
     embed BOOLEAN,
-    track_position TEXT,
-    track_title TEXT,
+    track_position TEXT NOT NULL,
+    track_title TEXT NOT NULL,
     UNIQUE(discogs_master_id, uri)
 );
 CREATE INDEX IF NOT EXISTS i_discogs_video_discogs_master_id
