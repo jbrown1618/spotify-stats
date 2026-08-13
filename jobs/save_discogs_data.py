@@ -214,23 +214,22 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
 
     results = list(client.search(q=artist_name, type="artist", limit=10))
     target = normalize_name(artist_name)
-    matches = [
-        result
-        for result in results
-        if result.get("type") == "artist" and normalize_name(result.get("title")) == target
-    ]
+    matches = exact_artist_matches(results, target)
+    match_method = "artist-search-exact-name"
+    if len(matches) == 0:
+        matches = exact_artist_variation_matches(client, results, target)
+        match_method = "artist-search-exact-variation"
 
     if len(matches) == 0:
         store.mark_unmatchable_artist(
             spotify_artist_uri,
             artist_name,
-            "No exact Discogs artist match",
+            "No exact Discogs artist name or variation match",
             retryable=True,
         )
         return None
 
     unique_matches = {int(match["id"]): match for match in matches}
-    match_method = "artist-search-exact-name"
     if len(unique_matches) > 1:
         evidence = {
             artist_id: artist_release_evidence(client, artist_id, track)
@@ -263,10 +262,44 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
         f"using {match_method}",
         flush=True,
     )
-    artist = client.artist(discogs_artist_id)
+    artist = selected_result.get("artist_profile") or client.artist(discogs_artist_id)
     save_artist_with_member_profiles(store, client, artist)
     store.save_artist_mapping(spotify_artist_uri, discogs_artist_id, match_method)
     return discogs_artist_id
+
+
+def exact_artist_matches(
+    results: list[dict[str, Any]],
+    target: str,
+) -> list[dict[str, Any]]:
+    return [
+        result
+        for result in results
+        if result.get("type") == "artist" and normalize_name(result.get("title")) == target
+    ]
+
+
+def exact_artist_variation_matches(
+    client: DiscogsClient,
+    results: list[dict[str, Any]],
+    target: str,
+) -> list[dict[str, Any]]:
+    matches = []
+    for result in results:
+        if result.get("type") != "artist":
+            continue
+        normalized_title = normalize_name(result.get("title"))
+        if f" {target} " not in f" {normalized_title} ":
+            continue
+
+        artist = client.artist(int(result["id"]))
+        names = [artist.get("name"), *(artist.get("namevariations") or [])]
+        if target not in {normalize_name(name) for name in names}:
+            continue
+
+        matches.append({**result, "artist_profile": artist})
+
+    return matches
 
 
 def artist_release_evidence(
