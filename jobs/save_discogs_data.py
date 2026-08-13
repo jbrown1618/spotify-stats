@@ -571,4 +571,4 @@ def parse_int(value: Any) -> int | None:
 
 
 if __name__ == '__main__':
-    save_discogs_data(5, 5)
+    save_discogs_data(MAX_TRACKS_PER_RUN, MAX_TRACKS_PER_RUN)
