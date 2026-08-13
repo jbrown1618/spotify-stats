@@ -16,6 +16,7 @@ from data.sql.migrations.v015_remove_rank_tables import RemoveRankTables
 from data.sql.migrations.v016_add_discogs_tables import AddDiscogsTables
 from data.sql.migrations.v017_remove_uncorrelated_discogs_videos import RemoveUncorrelatedDiscogsVideos
 from data.sql.migrations.v018_remove_unmapped_discogs_tracks import RemoveUnmappedDiscogsTracks
+from data.sql.migrations.v019_retry_discogs_artist_variation_matches import RetryDiscogsArtistVariationMatches
 
 migrations = [
     AddTrackRanks(),
@@ -35,6 +36,7 @@ migrations = [
     AddDiscogsTables(),
     RemoveUncorrelatedDiscogsVideos(),
     RemoveUnmappedDiscogsTracks(),
+    RetryDiscogsArtistVariationMatches(),
 ]
 
 def perform_all_migrations():
