@@ -14,8 +14,6 @@ from data.sql.migrations.v013_remove_audio_features import RemoveAudioFeatures
 from data.sql.migrations.v014_remove_listening_tables import RemoveListeningTables
 from data.sql.migrations.v015_remove_rank_tables import RemoveRankTables
 from data.sql.migrations.v016_add_discogs_tables import AddDiscogsTables
-from data.sql.migrations.v017_add_discogs_video_track import AddDiscogsVideoTrack
-from data.sql.migrations.v018_deduplicate_discogs_credits import DeduplicateDiscogsCredits
 
 migrations = [
     AddTrackRanks(),
@@ -33,8 +31,6 @@ migrations = [
     RemoveListeningTables(),
     RemoveRankTables(),
     AddDiscogsTables(),
-    AddDiscogsVideoTrack(),
-    DeduplicateDiscogsCredits(),
 ]
 
 def perform_all_migrations():

@@ -10,7 +10,7 @@ from utils.name import short_name
 
 MAX_TRACKS_PER_RUN = 100
 ARTIST_RELEASE_PAGES = 2
-CANDIDATE_MASTERS = 8
+CANDIDATE_MASTERS = 3
 EDITION_MARKERS = {
     "acoustic": re.compile(r"\bacoustic\b"),
     "instrumental": re.compile(r"\binstrumental\b"),
@@ -85,10 +85,21 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
         discogs_artist_id = match_primary_artist(store, client, track)
     except DeferredArtistMatch as error:
         print(f"Deferring Discogs track {track['track_uri']}: {error}", flush=True)
+        store.mark_unmatchable_track(
+            track["track_uri"],
+            track["track_name"],
+            str(error),
+            retryable=True,
+        )
         return
     if discogs_artist_id is None:
         print(f"No artist match; marking track unmatchable: {track['track_uri']}", flush=True)
-        store.mark_unmatchable_track(track["track_uri"], track["track_name"], "No Discogs artist match")
+        store.mark_unmatchable_track(
+            track["track_uri"],
+            track["track_name"],
+            "No Discogs artist match",
+            retryable=True,
+        )
         return
 
     print(
@@ -99,7 +110,12 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
     matches = find_track_matches(client, discogs_artist_id, track)
     if len(matches) == 0:
         print(f"No master match; marking track unmatchable: {track['track_uri']}", flush=True)
-        store.mark_unmatchable_track(track["track_uri"], track["track_name"], "No matching Discogs master track")
+        store.mark_unmatchable_track(
+            track["track_uri"],
+            track["track_name"],
+            "No matching Discogs master track",
+            retryable=True,
+        )
         return
 
     match = matches[0]
@@ -109,14 +125,15 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
             f"Reusing saved Discogs master {master_id} for {track['track_uri']}",
             flush=True,
         )
+        store.save_master_track_credits(match["master"], match["track"])
     else:
         print(
             f"Saving matched Discogs master {master_id} and credits for "
             f"{track['track_uri']} (score {match['score']})",
             flush=True,
         )
-        store.save_master(match["master"])
-    save_main_release(store, client, match["master"])
+        store.save_master(match["master"], match["track"])
+    save_main_release(store, client, match["master"], match["track"])
     print(
         f"Saving Spotify track mapping to Discogs master {master_id}",
         flush=True,
@@ -126,7 +143,6 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
         master_id,
         match["track"].get("position") or "",
         match["track"]["title"],
-        match["score"],
         "artist-candidates-track-score",
     )
     if album_match_score(track, match["master"]) >= 35:
@@ -137,7 +153,6 @@ def process_track(store: DiscogsStore, client: DiscogsClient, track: dict[str, A
         store.save_album_mapping(
             track["album_uri"],
             master_id,
-            album_match_score(track, match["master"]),
             "album-title-match",
         )
 
@@ -162,12 +177,16 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
     ]
 
     if len(matches) == 0:
-        store.mark_unmatchable_artist(spotify_artist_uri, artist_name, "No exact Discogs artist match")
+        store.mark_unmatchable_artist(
+            spotify_artist_uri,
+            artist_name,
+            "No exact Discogs artist match",
+            retryable=True,
+        )
         return None
 
     unique_matches = {int(match["id"]): match for match in matches}
     match_method = "artist-search-exact-name"
-    confidence = 100
     if len(unique_matches) > 1:
         evidence = {
             artist_id: artist_release_evidence(client, artist_id, track)
@@ -180,12 +199,16 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
             if score == best_score and score > 0
         ]
         if len(evidence_matches) != 1:
-            raise DeferredArtistMatch(
-                f"multiple exact artist results for {artist_name} without unique release evidence"
+            reason = f"Multiple exact artist results for {artist_name} without unique release evidence"
+            store.mark_unmatchable_artist(
+                spotify_artist_uri,
+                artist_name,
+                reason,
+                retryable=True,
             )
+            raise DeferredArtistMatch(reason)
         discogs_artist_id = evidence_matches[0]
         match_method = "artist-search-release-evidence"
-        confidence = 90
     else:
         discogs_artist_id = next(iter(unique_matches))
 
@@ -198,7 +221,7 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
     )
     artist = client.artist(discogs_artist_id)
     save_artist_with_member_profiles(store, client, artist)
-    store.save_artist_mapping(spotify_artist_uri, discogs_artist_id, confidence, match_method)
+    store.save_artist_mapping(spotify_artist_uri, discogs_artist_id, match_method)
     return discogs_artist_id
 
 
@@ -252,15 +275,16 @@ def find_track_matches(
 
 
 def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: dict[str, Any]) -> list[int]:
-    candidate_ids: list[int] = []
-    seen: set[int] = set()
+    candidate_scores: dict[int, int] = {}
+    candidate_order: dict[int, int] = {}
 
-    def add_candidate(value):
+    def add_candidate(value, release: dict[str, Any], minimum_score: int = 0):
         candidate_id = parse_int(value)
-        if candidate_id is None or candidate_id <= 0 or candidate_id in seen:
+        if candidate_id is None or candidate_id <= 0:
             return
-        seen.add(candidate_id)
-        candidate_ids.append(candidate_id)
+        score = max(candidate_release_match_score(track, release), minimum_score)
+        candidate_scores[candidate_id] = max(candidate_scores.get(candidate_id, 0), score)
+        candidate_order.setdefault(candidate_id, len(candidate_order))
 
     for release in client.artist_releases(
         discogs_artist_id,
@@ -271,7 +295,7 @@ def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: d
         if release.get("role") not in {None, "Main"}:
             continue
         if candidate_release_matches(track, release):
-            add_candidate(release.get("id"))
+            add_candidate(release.get("id"), release)
 
     for query in [track["album_name"], track["track_name"]]:
         results = client.search(
@@ -281,9 +305,16 @@ def candidate_master_ids(client: DiscogsClient, discogs_artist_id: int, track: d
             limit=10,
         )
         for result in results:
-            add_candidate(result.get("master_id") or result.get("id"))
+            add_candidate(result.get("master_id") or result.get("id"), result, minimum_score=1)
 
-    return candidate_ids[:CANDIDATE_MASTERS]
+    ranked_candidates = sorted(
+        candidate_scores,
+        key=lambda candidate_id: (
+            -candidate_scores[candidate_id],
+            candidate_order[candidate_id],
+        ),
+    )
+    return ranked_candidates[:CANDIDATE_MASTERS]
 
 
 def candidate_release_matches(track: dict[str, Any], release: dict[str, Any]) -> bool:
@@ -396,21 +427,31 @@ def album_match_score(track: dict[str, Any], master: dict[str, Any]) -> int:
     return 0
 
 
-def save_main_release(store: DiscogsStore, client: DiscogsClient, master: dict[str, Any]):
+def save_main_release(
+    store: DiscogsStore,
+    client: DiscogsClient,
+    master: dict[str, Any],
+    matched_track: dict[str, Any],
+):
     master_id = int(master["id"])
     main_release_id = parse_int(master.get("main_release") or master.get("main_release_id"))
     if main_release_id is None:
         return
-    if store.has_release(main_release_id):
+    matched_position = matched_track.get("position") or ""
+    if store.has_release(main_release_id) and store.has_release_track_credits(
+        master_id,
+        matched_position,
+    ):
         print(
-            f"Reusing saved Discogs release {main_release_id} for master {master_id}",
+            f"Reusing saved Discogs release credits {main_release_id}:{matched_position} "
+            f"for master {master_id}",
             flush=True,
         )
         return
 
     print(f"Fetching and saving main release for master {master_id}", flush=True)
     release = client.release(main_release_id)
-    store.save_release(release, master_id)
+    store.save_release(release, master_id, matched_track)
 
 
 def save_artist_with_member_profiles(store: DiscogsStore, client: DiscogsClient, artist: dict[str, Any]):
@@ -423,6 +464,15 @@ def save_artist_with_member_profiles(store: DiscogsStore, client: DiscogsClient,
         if member_artist_id is None or member_artist_id <= 0:
             continue
 
+        store.save_minimal_artist(member)
+        store.save_artist_membership(group_artist_id, member_artist_id, member.get("active"))
+        spotify_artist_uri = store.unique_spotify_artist_uri_for_discogs_name(
+            member.get("name", ""),
+            member_artist_id,
+        )
+        if spotify_artist_uri is None:
+            continue
+
         try:
             member_artist = client.artist(member_artist_id)
         except DiscogsApiError as error:
@@ -430,18 +480,11 @@ def save_artist_with_member_profiles(store: DiscogsStore, client: DiscogsClient,
             continue
 
         store.save_artist(member_artist)
-        store.save_artist_membership(group_artist_id, member_artist_id, member.get("active"))
-        spotify_artist_uri = store.unique_spotify_artist_uri_for_discogs_name(
-            member_artist["name"],
+        store.save_artist_mapping(
+            spotify_artist_uri,
             member_artist_id,
+            "group-member-exact-name",
         )
-        if spotify_artist_uri is not None:
-            store.save_artist_mapping(
-                spotify_artist_uri,
-                member_artist_id,
-                90,
-                "group-member-exact-name",
-            )
 
 
 def normalize_name(value: Any) -> str:

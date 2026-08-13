@@ -187,7 +187,6 @@ CREATE TABLE IF NOT EXISTS discogs_artist (
 CREATE TABLE IF NOT EXISTS sp_artist_discogs_artist (
     spotify_artist_uri TEXT NOT NULL,
     discogs_artist_id BIGINT NOT NULL,
-    confidence NUMERIC,
     match_method TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(spotify_artist_uri, discogs_artist_id)
@@ -245,7 +244,6 @@ CREATE INDEX IF NOT EXISTS i_discogs_release_discogs_master_id
 CREATE TABLE IF NOT EXISTS sp_album_discogs_master (
     spotify_album_uri TEXT NOT NULL,
     discogs_master_id BIGINT NOT NULL,
-    confidence NUMERIC,
     match_method TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(spotify_album_uri, discogs_master_id)
@@ -269,7 +267,6 @@ CREATE TABLE IF NOT EXISTS sp_track_discogs_track (
     discogs_master_id BIGINT NOT NULL,
     discogs_track_position TEXT NOT NULL,
     discogs_track_title TEXT NOT NULL,
-    confidence NUMERIC,
     match_method TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(spotify_track_uri, discogs_master_id, discogs_track_position, discogs_track_title)
@@ -328,6 +325,7 @@ CREATE TABLE IF NOT EXISTS discogs_unmatchable_artist (
     spotify_artist_uri TEXT NOT NULL UNIQUE,
     artist_name TEXT,
     reason TEXT NOT NULL,
+    retry_after TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -335,5 +333,6 @@ CREATE TABLE IF NOT EXISTS discogs_unmatchable_track (
     spotify_track_uri TEXT NOT NULL UNIQUE,
     track_name TEXT,
     reason TEXT NOT NULL,
+    retry_after TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
