@@ -323,7 +323,7 @@ class DiscogsStore:
         master: dict[str, Any],
         matched_track: dict[str, Any],
     ):
-        self.save_matched_track_credits(
+        self.save_tracks_and_credits(
             "master",
             int(master["id"]),
             int(master["id"]),
@@ -639,16 +639,11 @@ class DiscogsStore:
         tracklist: list[dict[str, Any]],
         matched_track: dict[str, Any],
     ):
-        for track in tracklist or []:
-            if track.get("type_") != "track":
-                continue
-
+        track = matching_credit_track(tracklist, matched_track)
+        if source_type == "master" and track is not None:
             position = track.get("position") or ""
             title = track.get("title")
-            if not title:
-                continue
-
-            if source_type == "master":
+            if title:
                 self.cursor.execute(
                     """
                     INSERT INTO discogs_track
