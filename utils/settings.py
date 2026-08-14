@@ -28,10 +28,6 @@ def get_setting(setting_key, default):
     return settings[setting_key]
 
 
-def output_dir() -> str:
-    return get_setting("OUTPUT_DIR", "./output")
-
-
 def postgres_url() -> str:
     return get_setting("DATABASE_URL", None)
 
@@ -103,35 +99,3 @@ def discogs_useragent() -> str:
 def discogs_user_token() -> str:
     return get_setting("DISCOGS_USER_TOKEN", None)
 
-
-def should_save_spotify_data() -> bool:
-    return get_setting("SAVE_SPOTIFY_DATA", True)
-
-
-def should_save_musicbrainz_data() -> bool:
-    return get_setting("SAVE_MUSICBRAINZ_DATA", True)
-
-
-def should_generate_output() -> bool:
-    return get_setting("GENERATE_OUTPUT", True)
-
-
-def skip_figures() -> bool:
-    return get_setting("SKIP_FIGURES", False)
-
-
-def figure_dpi() -> int:
-    return get_setting("FIGURE_DPI", 50)
-
-
-def should_clear_markdown() -> bool:
-    return get_setting("GENERATE_ONLY_PAGE", None) == None
-
-
-def should_generate_page(page_type: str) -> bool:
-    page = get_setting("GENERATE_ONLY_PAGE", None)
-    return page == None \
-        or page == '' \
-        or page.lower() == page_type.lower() \
-        or (page.lower() + 's') == page_type.lower()\
-        or page.lower() == (page_type.lower() + 's')
