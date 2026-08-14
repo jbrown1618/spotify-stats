@@ -200,7 +200,7 @@ DataSource('spotify', 'track_artist',   index=["track_uri", "artist_uri"])
 
 DataSource('musicbrainz', 'mb_recordings', index=['recording_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_artists', index=['artist_mbid'], merge_on_set=True)
-DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "credit_type"], merge_on_set=True)
+DataSource('musicbrainz', 'mb_recording_credits', index=["recording_mbid", "artist_mbid", "raw_role", "credit_details"], merge_on_set=True)
 DataSource('musicbrainz', 'mb_artist_relationships', index=["artist_mbid", "other_mbid", "relationship_type"], merge_on_set=True)
 DataSource('musicbrainz', 'mb_tags', index=['mb_tag', 'artist_mbid'], merge_on_set=True)
 DataSource('musicbrainz', 'mb_unfetchable_isrcs', index=["isrc"], merge_on_set=True)

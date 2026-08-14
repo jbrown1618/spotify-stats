@@ -84,6 +84,10 @@ def musicbrainz_max_tracks_per_run() -> int:
     return get_setting("MUSICBRAINZ_MAX_TRACKS_PER_RUN", 100)
 
 
+def musicbrainz_max_artists_per_run() -> int:
+    return get_setting("MUSICBRAINZ_MAX_ARTISTS_PER_RUN", 50)
+
+
 def musicbrainz_save_batch_size() -> int:
     return get_setting("MUSICBRAINZ_SAVE_BATCH_SIZE", 100)
 
@@ -104,8 +108,8 @@ def should_save_spotify_data() -> bool:
     return get_setting("SAVE_SPOTIFY_DATA", True)
 
 
-def should_save_supplemental_data() -> bool:
-    return get_setting("SAVE_SUPPLEMENTAL_DATA", True)
+def should_save_musicbrainz_data() -> bool:
+    return get_setting("SAVE_MUSICBRAINZ_DATA", True)
 
 
 def should_generate_output() -> bool:

@@ -121,7 +121,8 @@ CREATE TABLE IF NOT EXISTS mb_artist_relationship (
     id SERIAL PRIMARY KEY,
     artist_mbid TEXT NOT NULL,
     other_mbid TEXT NOT NULL,
-    relationship_type TEXT NOT NULL
+    relationship_type TEXT NOT NULL,
+    UNIQUE(artist_mbid, other_mbid, relationship_type)
 );
 
 CREATE TABLE IF NOT EXISTS mb_artist (
@@ -138,13 +139,26 @@ CREATE TABLE IF NOT EXISTS mb_artist (
     artist_gender TEXT
 );
 
+CREATE TABLE IF NOT EXISTS mb_artist_alias (
+    artist_mbid TEXT NOT NULL,
+    alias_name TEXT NOT NULL,
+    sort_name TEXT NOT NULL DEFAULT '',
+    locale TEXT NOT NULL DEFAULT '',
+    alias_type TEXT NOT NULL DEFAULT '',
+    primary_for_locale BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (artist_mbid, alias_name, sort_name, locale, alias_type)
+);
+CREATE INDEX IF NOT EXISTS i_mb_artist_alias_artist_mbid ON mb_artist_alias (artist_mbid);
+CREATE INDEX IF NOT EXISTS i_mb_artist_alias_alias_name ON mb_artist_alias (LOWER(alias_name));
+
 CREATE TABLE IF NOT EXISTS mb_recording_credit (
     id SERIAL PRIMARY KEY,
     recording_mbid TEXT NOT NULL,
     artist_mbid TEXT NOT NULL,
+    raw_role TEXT NOT NULL,
     credit_type TEXT,
-    credit_details TEXT,
-    UNIQUE(recording_mbid, artist_mbid, credit_type)
+    credit_details TEXT NOT NULL DEFAULT '',
+    UNIQUE(recording_mbid, artist_mbid, raw_role, credit_details)
 );
 
 CREATE TABLE IF NOT EXISTS mb_recording (
@@ -155,11 +169,18 @@ CREATE TABLE IF NOT EXISTS mb_recording (
 );
 
 CREATE TABLE IF NOT EXISTS mb_unfetchable_isrc (
-    isrc TEXT NOT NULL UNIQUE
+    isrc TEXT NOT NULL UNIQUE,
+    reason TEXT,
+    retry_after TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS mb_unmatchable_artist (
-    artist_uri TEXT NOT NULL UNIQUE
+    artist_uri TEXT NOT NULL UNIQUE,
+    artist_name TEXT,
+    reason TEXT,
+    retry_after TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS sp_artist_mb_artist (
