@@ -2,12 +2,12 @@ import typing
 
 import pandas as pd
 import sqlalchemy
-from routes.utils import to_date_range, to_json
-from routes.pagination import paginate_df, TRACK_SORT_COLUMNS
-from data.provider import DataProvider
+
+from data.database import get_engine
 from data.filters import filtered_connection
 from data.query import query_text
-from data.database import get_engine
+from routes.pagination import TRACK_SORT_COLUMNS, paginate_df
+from routes.utils import to_json
 
 
 def tracks_search_payload(filters: typing.Mapping[str, str]):
