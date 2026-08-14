@@ -1,17 +1,15 @@
 import json
-from data.database import get_connection
+
+from data.repository import DataRepository
 from jobs.job_status import JobStatus
 
 
-def queue_job(job_type: str, params: dict = {}):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO job (type, arguments, status)
-            VALUES (%(job_type)s, %(args)s, %(status)s)
-        """, {
-            "job_type": job_type,
-            "args": json.dumps(params),
-            "status": JobStatus.QUEUED.value
-        })
-        conn.commit()
+repository = DataRepository()
+
+
+def queue_job(job_type: str, params: dict | None = None):
+    repository.queue_job(
+        job_type,
+        json.dumps(params or {}),
+        JobStatus.QUEUED.value,
+    )

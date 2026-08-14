@@ -1,17 +1,12 @@
-import pandas as pd
-import sqlalchemy
+from data.repository import DataRepository
+from routes.pagination import RELEASE_YEAR_SORT_COLUMNS, paginate_df
 
-from data.filters import filtered_connection
-from data.query import query_text
-from routes.pagination import paginate_df, RELEASE_YEAR_SORT_COLUMNS
+
+repository = DataRepository()
 
 
 def release_years_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        years = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_release_year_track_counts')),
-            conn
-        )
+    years = repository.release_year_track_counts_for_filters(filters)
 
     if years.empty:
         return {"items": [], "total": 0}

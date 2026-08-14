@@ -1,0 +1,1 @@
+TRUNCATE record_label;

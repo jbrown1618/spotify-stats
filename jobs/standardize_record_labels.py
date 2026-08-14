@@ -1,9 +1,10 @@
 import re
-import pandas as pd
-import sqlalchemy
-from data.database import get_connection, get_engine
+
+from data.repository import DataRepository
+
 
 label_delimeter = re.compile(r'[,\/;]')
+repository = DataRepository()
 
 suffixes = [
     "RECORDS",
@@ -40,8 +41,7 @@ def standardize_record_labels():
     standardized_by_label = {}
     count_by_label = {}
 
-    with get_engine().begin() as conn:
-        albums = pd.read_sql_query(sqlalchemy.text("SELECT label as album_label, uri as album_uri FROM album"), conn)
+    albums = repository.album_labels()
 
     for record_labels_str in albums["album_label"]:
         if record_labels_str.startswith('Republic Records - '):
@@ -99,16 +99,7 @@ def standardize_record_labels():
                 "album_standardized_label": label
             })
         
-    with get_connection() as conn:
-        cursor = conn.cursor()
-
-        cursor.execute('TRUNCATE record_label')
-        for entry in standardized_labels_data:
-            cursor.execute("""
-            INSERT INTO record_label
-            (album_uri, standardized_label)
-            VALUES (%(album_uri)s, %(album_standardized_label)s)
-            """, entry)
+    repository.replace_standardized_labels(standardized_labels_data)
 
 
 def split(record_labels_str: str):

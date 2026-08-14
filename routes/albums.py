@@ -1,21 +1,12 @@
-import pandas as pd
-import sqlalchemy
+from data.repository import DataRepository
+from routes.pagination import ALBUM_SORT_COLUMNS, paginate_df
 
-from routes.pagination import paginate_df, ALBUM_SORT_COLUMNS
-from data.filters import filtered_connection
-from data.query import query_text
+
+repository = DataRepository()
 
 
 def albums_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        albums = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_albums')),
-            conn,
-            params={
-                "wrapped_start_date": params["wrapped_start_date"],
-                "wrapped_end_date": params["wrapped_end_date"],
-            }
-        )
+    albums = repository.albums_for_filters(filters)
     if albums.empty:
         return {"items": [], "total": 0}
 

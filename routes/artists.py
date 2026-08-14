@@ -1,27 +1,15 @@
 import pandas as pd
-import sqlalchemy
 
-from data.database import get_engine
-from data.filters import filtered_connection
-from data.query import query_text
+from data.repository import DataRepository
 from routes.pagination import ARTIST_SORT_COLUMNS, paginate_df
 from routes.utils import to_json
 
 
+repository = DataRepository()
+
+
 def artists_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        artists = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_artists')),
-            conn,
-            params={
-                "filter_artists": False,
-                "artist_uris": ('EMPTY',),
-                "filter_mbids": False,
-                "mbids": ('EMPTY',),
-                "wrapped_start_date": params["wrapped_start_date"],
-                "wrapped_end_date": params["wrapped_end_date"],
-            }
-        )
+    artists = repository.artists_for_filters(filters)
     if artists.empty:
         return {"items": [], "total": 0}
 
@@ -41,17 +29,9 @@ RELATIONSHIP_COLUMNS = [
 
 
 def artist_credits_payload(artist_uri: str):
-    with get_engine().begin() as conn:
-        credits = pd.read_sql_query(
-            sqlalchemy.text(query_text("select_artist_credits")),
-            conn,
-            params={"artist_uri": artist_uri},
-        )
-        relationships = pd.read_sql_query(
-            sqlalchemy.text(query_text("select_artist_relationships")),
-            conn,
-            params={"artist_uri": artist_uri},
-        )
+    artist_credits = repository.artist_credits(artist_uri)
+    credits = artist_credits.credits
+    relationships = artist_credits.relationships
 
     result = {}
     if not credits.empty:

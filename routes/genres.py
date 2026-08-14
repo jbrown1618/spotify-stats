@@ -1,17 +1,12 @@
-import pandas as pd
-import sqlalchemy
+from data.repository import DataRepository
+from routes.pagination import GENRE_SORT_COLUMNS, paginate_df
 
-from data.filters import filtered_connection
-from data.query import query_text
-from routes.pagination import paginate_df, GENRE_SORT_COLUMNS
+
+repository = DataRepository()
 
 
 def genres_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        genres = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_genre_track_counts')),
-            conn
-        )
+    genres = repository.genre_track_counts_for_filters(filters)
 
     if genres.empty:
         return {"items": [], "total": 0}
