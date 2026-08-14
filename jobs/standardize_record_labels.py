@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import sqlalchemy
-from data.raw import get_connection, get_engine
+from data.database import get_connection, get_engine
 
 label_delimeter = re.compile(r'[,\/;]')
 

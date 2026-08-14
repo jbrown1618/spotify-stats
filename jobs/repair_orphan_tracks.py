@@ -1,5 +1,5 @@
 from data.query import query_text
-from data.raw import get_connection
+from data.database import get_connection
 
 def repair_orphan_tracks():
     print('Identifying orphan tracks...')
