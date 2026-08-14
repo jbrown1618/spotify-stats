@@ -26,7 +26,10 @@ raw['track_artist'] = pd.read_csv(data_path("spotify", "track_artist"))
 
 raw['mb_artist_relationships'] = pd.read_csv(data_path("musicbrainz", "mb_artist_relationships"))
 raw['mb_artists'] = pd.read_csv(data_path("musicbrainz", "mb_artists"))
-raw['mb_recording_credits'] = pd.read_csv(data_path("musicbrainz", "mb_recording_credits"))
+mb_recording_credits = pd.read_csv(data_path("musicbrainz", "mb_recording_credits"))
+mb_recording_credits['raw_role'] = mb_recording_credits['credit_type']
+mb_recording_credits['credit_details'] = mb_recording_credits['credit_details'].fillna('')
+raw['mb_recording_credits'] = mb_recording_credits
 raw['mb_recordings'] = pd.read_csv(data_path("musicbrainz", "mb_recordings"))
 raw['mb_unfetchable_isrcs'] = pd.read_csv(data_path("musicbrainz", "mb_unfetchable_isrcs"))
 raw['mb_unmatchable_artists'] = pd.read_csv(data_path("musicbrainz", "mb_unmatchable_artists"))

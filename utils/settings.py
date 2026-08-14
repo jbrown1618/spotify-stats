@@ -104,8 +104,8 @@ def should_save_spotify_data() -> bool:
     return get_setting("SAVE_SPOTIFY_DATA", True)
 
 
-def should_save_supplemental_data() -> bool:
-    return get_setting("SAVE_SUPPLEMENTAL_DATA", True)
+def should_save_musicbrainz_data() -> bool:
+    return get_setting("SAVE_MUSICBRAINZ_DATA", True)
 
 
 def should_generate_output() -> bool:
