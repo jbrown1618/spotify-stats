@@ -6,6 +6,7 @@ from data.raw import get_connection
 from musicbrainz.store import MusicBrainzStore
 from utils.settings import (
     musicbrainz_contact,
+    musicbrainz_max_artists_per_run,
     musicbrainz_max_tracks_per_run,
     musicbrainz_retry_days,
     musicbrainz_useragent,
@@ -47,6 +48,7 @@ PUNCTUATION_REPLACEMENTS = {
 def save_musicbrainz_data(
     batch_size: int | None = None,
     max_tracks: int | None = None,
+    max_artists: int | None = None,
 ):
     requested_batch_size = batch_size if batch_size is not None else max_tracks
     configured_limit = musicbrainz_max_tracks_per_run()
@@ -54,6 +56,12 @@ def save_musicbrainz_data(
         configured_limit
         if requested_batch_size is None
         else min(requested_batch_size, configured_limit)
+    )
+    configured_artist_limit = musicbrainz_max_artists_per_run()
+    artist_limit = (
+        configured_artist_limit
+        if max_artists is None
+        else min(max_artists, configured_artist_limit)
     )
     if limit <= 0:
         print(f"Skipping MusicBrainz data fetch because batch size is {limit}")
@@ -75,7 +83,8 @@ def save_musicbrainz_data(
         for track_number, track in enumerate(tracks, start=1):
             print(
                 f"Processing MusicBrainz track {track_number}/{len(tracks)}: "
-                f"{track['artist_names'][0]} - {track['track_name']}",
+                f"{track['artist_names'][0]} - {track['track_name']} "
+                f"({track['stream_count']} streams, ISRC {track['isrc']})",
                 flush=True,
             )
             processed_artist_mbids: set[str] = set()
@@ -102,7 +111,12 @@ def save_musicbrainz_data(
                 flush=True,
             )
 
-        match_additional_liked_artists(store, conn, committed_artist_mbids)
+        match_additional_liked_artists(
+            store,
+            conn,
+            committed_artist_mbids,
+            max_artists=artist_limit,
+        )
 
 
 def process_track(
@@ -120,6 +134,10 @@ def process_track(
     print(f"Looking up MusicBrainz recording by ISRC {isrc}", flush=True)
     isrc_result = mb.get_recordings_by_isrc(isrc)
     candidates = isrc_result.get("isrc", {}).get("recording-list", [])
+    print(
+        f"MusicBrainz returned {len(candidates)} recording candidate(s) for ISRC {isrc}",
+        flush=True,
+    )
     recording_match = select_recording_candidate(track["track_name"], candidates)
     if recording_match is None:
         store.mark_unfetchable_isrc(isrc, "No MusicBrainz recording for ISRC")
@@ -146,8 +164,26 @@ def process_track(
     ).get("artist-relation-list", [])
     credits = recording_credits(artist_relations)
     store.replace_recording_credits(recording["id"], credits)
+    credit_counts: dict[str, int] = {}
+    for credit in credits:
+        credit_type = credit["credit_type"]
+        credit_counts[credit_type] = credit_counts.get(credit_type, 0) + 1
+    credit_summary = ", ".join(
+        f"{credit_type}={count}"
+        for credit_type, count in sorted(credit_counts.items())
+    )
+    print(
+        f"Saved {len(credits)} MusicBrainz credit(s) for recording "
+        f"{recording['id']} ({credit_summary or 'none'})",
+        flush=True,
+    )
     if not credits:
         store.mark_unfetchable_isrc(isrc, "MusicBrainz recording has no credits")
+        print(
+            f"Recording {recording['id']} has no credits; retrying ISRC {isrc} "
+            f"after {musicbrainz_retry_days()} days",
+            flush=True,
+        )
     save_artist_graph(
         store,
         {credit["artist_mbid"] for credit in credits},
@@ -239,6 +275,12 @@ def save_artist_graph(
 
         relationships, related_mbids = artist_relationships(store, artist)
         store.save_artist_relationships(relationships)
+        print(
+            f"Saved MusicBrainz artist {artist_mbid}: "
+            f"aliases={len(artist.get('alias-list', []))}, "
+            f"relationships={len(relationships)}, queued_related={len(related_mbids)}",
+            flush=True,
+        )
         artist_queue.update(
             related_mbids - committed_artist_mbids - processed_artist_mbids
         )
@@ -268,6 +310,11 @@ def save_artist(store: MusicBrainzStore, artist: dict[str, Any]):
     matching_artist_uris = store.matching_spotify_artists(names)
     if len(matching_artist_uris) == 1:
         store.save_artist_mapping(matching_artist_uris[0], artist_mbid)
+        print(
+            f"Mapped Spotify artist {matching_artist_uris[0]} to MusicBrainz "
+            f"artist {artist_mbid} using canonical name or alias",
+            flush=True,
+        )
     elif len(matching_artist_uris) > 1:
         print(
             f"Multiple Spotify artists match MusicBrainz artist {artist['name']}; "
@@ -350,8 +397,23 @@ def match_additional_liked_artists(
     store: MusicBrainzStore,
     conn,
     committed_artist_mbids: set[str],
+    max_artists: int | None = None,
 ):
-    for spotify_artist in store.fetch_unmatched_liked_artists():
+    spotify_artists = store.fetch_unmatched_liked_artists()
+    total_artists = len(spotify_artists)
+    if max_artists is not None:
+        spotify_artists = spotify_artists[:max(0, max_artists)]
+    print(
+        f"Matching {len(spotify_artists)} of {total_artists} additional liked "
+        "Spotify artist(s) to MusicBrainz",
+        flush=True,
+    )
+    for artist_number, spotify_artist in enumerate(spotify_artists, start=1):
+        print(
+            f"Processing MusicBrainz artist {artist_number}/{len(spotify_artists)}: "
+            f"{spotify_artist['artist_name']}",
+            flush=True,
+        )
         try:
             results = mb.search_artists(spotify_artist["artist_name"], limit=2).get(
                 "artist-list", []
@@ -372,6 +434,10 @@ def match_additional_liked_artists(
                     spotify_artist["artist_name"],
                     reason,
                 )
+                print(
+                    f"Deferring Spotify artist {spotify_artist['artist_uri']}: {reason}",
+                    flush=True,
+                )
                 conn.commit()
                 continue
 
@@ -386,6 +452,11 @@ def match_additional_liked_artists(
             store.save_artist_mapping(spotify_artist["artist_uri"], artist_mbid)
             conn.commit()
             committed_artist_mbids.update(processed_artist_mbids)
+            print(
+                f"Committed Spotify artist {spotify_artist['artist_uri']} mapping "
+                f"to MusicBrainz artist {artist_mbid}",
+                flush=True,
+            )
         except MUSICBRAINZ_ERRORS as error:
             print(
                 f"Skipping MusicBrainz artist {spotify_artist['artist_name']} after "

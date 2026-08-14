@@ -84,6 +84,10 @@ def musicbrainz_max_tracks_per_run() -> int:
     return get_setting("MUSICBRAINZ_MAX_TRACKS_PER_RUN", 100)
 
 
+def musicbrainz_max_artists_per_run() -> int:
+    return get_setting("MUSICBRAINZ_MAX_ARTISTS_PER_RUN", 50)
+
+
 def musicbrainz_save_batch_size() -> int:
     return get_setting("MUSICBRAINZ_SAVE_BATCH_SIZE", 100)
 
