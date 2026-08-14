@@ -2,7 +2,7 @@ from typing import Any
 
 import musicbrainzngs as mb
 
-from data.raw import get_connection
+from data.database import get_connection
 from musicbrainz.store import MusicBrainzStore
 from utils.settings import (
     musicbrainz_contact,

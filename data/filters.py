@@ -5,7 +5,7 @@ from contextlib import contextmanager
 import sqlalchemy
 
 from data.query import query_text
-from data.raw import get_engine
+from data.database import get_engine
 from routes.utils import to_date_range
 
 
@@ -137,4 +137,3 @@ def _to_tuple(value: typing.Optional[typing.Iterable], empty_sentinel) -> tuple:
     if value is None or len(value) == 0:
         return (empty_sentinel,)
     return tuple(value)
-

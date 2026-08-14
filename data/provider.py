@@ -2,9 +2,10 @@ import typing
 import pandas as pd
 import sqlalchemy
 
+from data.database import get_engine
 from data.filters import create_matching_tracks_table
 from data.query import query_text
-from data.raw import RawData, get_engine
+from data.raw import RawData
 from utils.util import first
 from utils.artist_relationship import producer_credit_types
 

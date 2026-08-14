@@ -17,7 +17,7 @@ Usage:
 """
 import sys
 
-from data.raw import get_connection
+from data.database import get_connection
 from spotify.spotify_client import get_spotify_client
 
 

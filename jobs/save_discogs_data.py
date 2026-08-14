@@ -2,7 +2,7 @@ import re
 import unicodedata
 from typing import Any
 
-from data.raw import get_connection
+from data.database import get_connection
 from discogs.client import DiscogsApiError, DiscogsClient
 from discogs.store import DiscogsStore
 from utils.name import short_name

@@ -17,7 +17,7 @@ import re
 from datetime import datetime
 
 from data.query import query_text
-from data.raw import get_connection
+from data.database import get_connection
 from utils.track import is_blacklisted
 
 

@@ -1,6 +1,6 @@
 import json
 
-from data.raw import get_connection
+from data.database import get_connection
 from jobs.job_types import job_types
 from jobs.job_status import JobStatus
 
