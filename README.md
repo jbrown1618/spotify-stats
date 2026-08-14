@@ -1,25 +1,29 @@
 # Spotify Stats
 
+A React and Flask web app for exploring personal Spotify listening data stored in
+PostgreSQL.
+
 ## Setup
 
+Install Python 3, PostgreSQL, Node.js 20, and npm 10, then run:
+
 ```bash
-# Clone the repo
 git clone git@github.com:jbrown1618/spotify-stats.git
 cd spotify-stats
-
 script/setup
-
-# Edit .env to include your Spotify credentials and desired output path
-
-python ./main.py
-
-# Exit the virtual environment
-deactivate
+source venv/bin/activate
+createdb spotifystats
+python -m script.init_postgres
+cd client && npm install && cd ..
 ```
 
-## Start the server with live client reloading
+Update `.env` with the local PostgreSQL credentials and Spotify API credentials.
+For an existing database, run `script/db-migrate`; the Flask app also applies
+outstanding migrations when it starts.
 
-Run in separate shells:
+## Development
+
+Run the backend and frontend in separate shells:
 
 ```bash
 script/dev-server
@@ -29,38 +33,49 @@ script/dev-server
 script/dev-client
 ```
 
-And navigate to `http://localhost:5173`
+Open `http://localhost:5173`. Vite proxies API requests to Flask on port 5000.
 
-## Mirror the production database locally
+## Jobs
 
-Pass the production Postgres connection string to:
+Run the database-backed worker in one shell:
 
 ```bash
-script/mirror-production-database "$PRODUCTION_DATABASE_URL"
+script/job-agent
 ```
 
-The script renames the current local `spotifystats` database with a UTC timestamp,
-creates a new `spotifystats` database, and imports production into it. It uses
-`POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, and `POSTGRES_PASS` for the
-local connection. Set `POSTGRES_DB` to override the local database name. The
-PostgreSQL CLI commands `psql`, `pg_dump`, and `pg_restore` must be available on
-`PATH`. The Heroku CLI is only needed if you use it to retrieve the connection
-string before invoking this script.
+Queue a job from another shell, optionally passing a JSON object as its second
+argument:
 
-## Refresh Spotify authorization cache
+```bash
+python -m script.queue save_spotify_data
+python -m script.queue save_listening_data
+```
 
-If Spotify authorization expires, run:
+Spotify imports automatically queue record-label standardization and orphan-track
+repair jobs.
+
+## Spotify authorization cache
+
+Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URI` in
+`.env`, then generate or refresh the Spotipy cache:
 
 ```bash
 script/spotify-cache > spotify-cache.json
 ```
 
-The script sends a Spotify request, runs the local authorization flow if needed,
-and writes the updated Spotipy cache JSON to stdout. If prompted, open the
-Spotify authorization URL, approve access, then paste the redirected loopback
-URL containing `?code=...`. Copy the file contents into the `SPOTIFY_CACHE`
-Heroku config var.
+If prompted, approve the Spotify authorization URL and paste the complete
+redirected loopback URL containing `?code=...`. The redirect URI must exactly
+match the URI configured in the Spotify Developer Dashboard. For deployment,
+copy the generated JSON into the `SPOTIFY_CACHE` environment variable; the app
+uses it to initialize the local `.cache` file.
 
-The Spotify app's redirect URI must exactly match `SPOTIFY_REDIRECT_URI` in
-`.env`. The default is `http://127.0.0.1:8888`, which should be added to the
-Spotify Developer Dashboard app settings.
+## Mirror the production database
+
+Pass a production PostgreSQL connection string to:
+
+```bash
+script/mirror-production-database "$PRODUCTION_DATABASE_URL"
+```
+
+The script archives the current local `spotifystats` database, recreates it, and
+imports the production backup. It requires `psql`, `pg_dump`, and `pg_restore`.

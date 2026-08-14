@@ -2,8 +2,6 @@ import re
 import pandas as pd
 import sqlalchemy
 from data.raw import get_connection, get_engine
-from utils.util import md_link
-from utils.path import label_path
 
 label_delimeter = re.compile(r'[,\/;]')
 
@@ -33,12 +31,11 @@ prefix_regexes = [
 
 all_standardized_by_all_labels = {}
 most_common_by_standardized = {}
-labels_with_page = set()
+
 
 def standardize_record_labels():
     global all_standardized_by_all_labels
     global most_common_by_standardized
-    global labels_with_page
     labels_by_standardized = {}
     standardized_by_label = {}
     count_by_label = {}
@@ -149,37 +146,6 @@ def strip_suffixes(record_label: str):
             return strip_suffixes(record_label[0:len(record_label) - len(suffix)].strip())
     return record_label
 
-
-def get_display_labels(labels: str, relative_to: str):
-    if labels.startswith('Republic Records - '):
-        # Special case - this label seems to create special sublabels for various artists
-        labels = "Republic Records"
-
-    standardized_labels = all_standardized_by_all_labels[labels]
-    all_labels = []
-    with_page = []
-    for std in standardized_labels:
-        label = most_common_by_standardized[std]
-        all_labels.append(label)
-        if label in labels_with_page:
-            with_page.append(label)
-
-    if len(with_page) == 0:
-        return labels
-    
-    if len(with_page) == 1:
-        return md_link(labels, label_path(with_page[0], relative_to))
-
-    segments = []
-    for label in all_labels:
-        if label in labels_with_page:
-            segments.append(md_link(label, label_path(label, relative_to)))
-        else:
-            segments.append(label)
-
-    segments.sort()
-
-    return ", ".join(segments)
 
 if __name__ == '__main__':
     standardize_record_labels()
