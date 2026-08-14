@@ -1,25 +1,11 @@
 import json
 
 import pandas as pd
-import sqlalchemy
 
-from data.filters import filtered_connection, parse_filters
-from data.query import query_text
+from data.repository import DataRepository
 
 
-def _has_active_filters(params: dict) -> bool:
-    return any([
-        params["filter_tracks"],
-        params["filter_playlists"],
-        params["filter_artists"],
-        params["filter_albums"],
-        params["filter_labels"],
-        params["filter_genres"],
-        params["filter_producers"],
-        params["filter_years"],
-        params["liked"],
-        params["wrapped_start_date"] is not None,
-    ])
+repository = DataRepository()
 
 
 def percentile_range_recommendations_payload(filters: dict, low_percentile: float, high_percentile: float):
@@ -32,28 +18,16 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
     if low_percentile > high_percentile:
         low_percentile, high_percentile = high_percentile, low_percentile
 
-    params = parse_filters(filters)
-    has_filters = _has_active_filters(params)
+    recommendations = repository.track_recommendations(
+        filters,
+        low_percentile,
+        high_percentile,
+        minimum_track_count=60,
+    )
+    if recommendations.tracks is None:
+        return {"items": [], "total": 0}
 
-    with filtered_connection(filters) as (conn, filter_params):
-        if has_filters:
-            # Check track count to avoid showing recommendations for very small filter sets
-            track_count = pd.read_sql_query(
-                sqlalchemy.text("SELECT COUNT(*) AS cnt FROM matching_track_uris"),
-                conn
-            ).iloc[0]['cnt']
-            if track_count < 60:
-                return {"items": [], "total": 0}
-
-        track_recs = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_track_recommendations_percentile_range')),
-            conn,
-            params={
-                'low_percentile': low_percentile,
-                'high_percentile': high_percentile,
-                'filter_tracks': has_filters,
-            }
-        )
+    track_recs = recommendations.tracks
 
     total = len(track_recs)
 

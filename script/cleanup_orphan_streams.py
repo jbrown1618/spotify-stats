@@ -17,8 +17,11 @@ Usage:
 """
 import sys
 
-from data.database import get_connection
+from data.repository import DataRepository
 from spotify.spotify_client import get_spotify_client
+
+
+repository = DataRepository()
 
 
 def get_orphan_stream_uris():
@@ -26,25 +29,12 @@ def get_orphan_stream_uris():
     Get track URIs that exist in track_stream but not in playlist_track.
     These are potential orphans that may have been superseded.
     """
-    query = """
-    SELECT DISTINCT ts.track_uri
-    FROM track_stream ts
-    LEFT JOIN playlist_track pt ON pt.track_uri = ts.track_uri
-    WHERE pt.track_uri IS NULL
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query)
-        return [row[0] for row in cursor.fetchall()]
+    return repository.orphan_stream_uris()
 
 
 def get_stream_count(track_uri: str) -> int:
     """Get the number of streams for a track."""
-    query = "SELECT COUNT(*) FROM track_stream WHERE track_uri = %s"
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_uri,))
-        return cursor.fetchone()[0]
+    return repository.track_stream_count(track_uri)
 
 
 def find_matching_track(track_name: str, artist_name: str):
@@ -52,31 +42,12 @@ def find_matching_track(track_name: str, artist_name: str):
     Find a track in our database that matches by name and primary artist.
     Returns (uri, name) or None if no match found.
     """
-    query = """
-    SELECT t.uri, t.name
-    FROM track t
-    INNER JOIN track_artist ta ON ta.track_uri = t.uri AND ta.artist_index = 0
-    INNER JOIN artist a ON a.uri = ta.artist_uri
-    INNER JOIN playlist_track pt ON pt.track_uri = t.uri
-    WHERE t.name = %s AND a.name = %s
-    LIMIT 1
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_name, artist_name))
-        return cursor.fetchone()
+    return repository.matching_track_by_name_artist(track_name, artist_name)
 
 
 def delete_streams_for_track(track_uri: str, commit: bool = False):
     """Delete all streams for a given track URI."""
-    query = "DELETE FROM track_stream WHERE track_uri = %s"
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (track_uri,))
-        if commit:
-            conn.commit()
-        else:
-            conn.rollback()
+    repository.delete_streams_for_track(track_uri, commit)
 
 
 def lookup_tracks_batch(sp, uris: list[str]) -> dict:

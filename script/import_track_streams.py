@@ -16,8 +16,7 @@ import json
 import re
 from datetime import datetime
 
-from data.query import query_text
-from data.database import get_connection
+from data.repository import DataRepository, StreamWriter
 from utils.track import is_blacklisted
 
 
@@ -29,6 +28,7 @@ CUTOFF_TIMESTAMP = datetime(2026, 1, 3, 19, 47, 11, 356000)
 
 # Date format in the Spotify export files
 PLAYED_AT_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+repository = DataRepository()
 
 
 def find_streaming_history_files(directory: str) -> list[str]:
@@ -45,7 +45,9 @@ def parse_timestamp(ts_str: str) -> datetime:
     return datetime.strptime(ts_str, PLAYED_AT_DATE_FORMAT)
 
 
-def import_streams_from_file(filepath: str, conn) -> tuple[int, int]:
+def import_streams_from_file(
+    filepath: str, writer: StreamWriter
+) -> tuple[int, int]:
     """
     Import streams from a single JSON file.
     
@@ -56,7 +58,6 @@ def import_streams_from_file(filepath: str, conn) -> tuple[int, int]:
     with open(filepath) as f:
         records = json.load(f)
     
-    cursor = conn.cursor()
     imported = 0
     skipped = 0
     
@@ -85,13 +86,7 @@ def import_streams_from_file(filepath: str, conn) -> tuple[int, int]:
             continue
         
         # Insert the stream
-        cursor.execute(
-            query_text('insert_stream'),
-            {
-                "track_uri": track_uri,
-                "played_at": played_at.timestamp()
-            }
-        )
+        writer.add(track_uri, played_at.timestamp())
         imported += 1
     
     return imported, skipped
@@ -116,16 +111,15 @@ def import_track_streams(directory: str):
     total_imported = 0
     total_skipped = 0
     
-    with get_connection() as conn:
+    with repository.stream_writer() as writer:
         for filepath in files:
-            imported, skipped = import_streams_from_file(filepath, conn)
+            imported, skipped = import_streams_from_file(filepath, writer)
             total_imported += imported
             total_skipped += skipped
             print(f"  Imported: {imported}, Skipped: {skipped}")
         
         print()
         print(f"Committing {total_imported} streams to database...")
-        conn.commit()
     
     print()
     print(f"Import complete!")

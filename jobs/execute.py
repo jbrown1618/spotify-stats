@@ -1,76 +1,50 @@
 import json
 
-from data.database import get_connection
-from jobs.job_types import job_types
+from data.repository import DataRepository
 from jobs.job_status import JobStatus
+from jobs.job_types import job_types
+
+
+repository = DataRepository()
 
 
 def execute_next_job() -> bool:
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, type, arguments
-            FROM job
-            WHERE status = %(status)s
-            ORDER BY queue_time ASC
-            LIMIT 1;
-        """, {
-            "status": JobStatus.QUEUED.value
-        })
-        next_job = cursor.fetchone()
-        if next_job is None:
-            return False
-        
-        id, job_type, args = next_job
-        print(f"Executing job {id}: {job_type} with {args}")
+    next_job = repository.next_queued_job(JobStatus.QUEUED.value)
+    if next_job is None:
+        return False
 
-        execute = job_types.get(job_type, None)
-        if execute is None:
-            message = f"No registered job type for {job_type}"
-            print("Job failed", message)
-            cursor.execute("""
-                UPDATE job
-                SET (status, error, end_time) = (SELECT %(status)s, %(err)s, CURRENT_TIMESTAMP)
-                WHERE id = %(id)s;
-            """, {
-                "id": id,
-                "status": JobStatus.FAILURE.value,
-                "err": message
-            })
-            conn.commit()
-            return True
-        
-        try:
-            cursor.execute("""
-                UPDATE job
-                SET (status, start_time) = (SELECT %(status)s, CURRENT_TIMESTAMP)
-                WHERE id = %(id)s;
-            """, {
-                "id": id,
-                "status": JobStatus.IN_PROGRESS.value
-            })
-            conn.commit()
-            execute(**json.loads(args))
-            cursor.execute("""
-                UPDATE job
-                SET (status, end_time) = (SELECT %(status)s, CURRENT_TIMESTAMP)
-                WHERE id = %(id)s;
-            """, {
-                "id": id,
-                "status": JobStatus.SUCCESS.value
-            })
-            conn.commit()
-        except Exception as e:
-            print("Job failed", str(e))
-            cursor.execute("""
-                UPDATE job
-                SET (status, error, end_time) = (SELECT %(status)s, %(err)s, CURRENT_TIMESTAMP)
-                WHERE id = %(id)s;
-            """, {
-                "id": id,
-                "status": JobStatus.FAILURE.value,
-                "err": str(e)
-            })
-            conn.commit()
+    print(
+        f"Executing job {next_job.id}: {next_job.type} "
+        f"with {next_job.arguments}"
+    )
+
+    execute = job_types.get(next_job.type, None)
+    if execute is None:
+        message = f"No registered job type for {next_job.type}"
+        print("Job failed", message)
+        repository.mark_job_failed(
+            next_job.id,
+            JobStatus.FAILURE.value,
+            message,
+        )
+        return True
+
+    try:
+        repository.mark_job_started(
+            next_job.id,
+            JobStatus.IN_PROGRESS.value,
+        )
+        execute(**json.loads(next_job.arguments))
+        repository.mark_job_succeeded(
+            next_job.id,
+            JobStatus.SUCCESS.value,
+        )
+    except Exception as error:
+        print("Job failed", str(error))
+        repository.mark_job_failed(
+            next_job.id,
+            JobStatus.FAILURE.value,
+            str(error),
+        )
 
     return True

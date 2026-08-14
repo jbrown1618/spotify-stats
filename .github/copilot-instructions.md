@@ -38,14 +38,14 @@ This is a single-page app for visualizing personal Spotify listening data. The b
 1. **Frontend filter state** lives in React context (`FiltersProvider`) and is synced to the URL query string via `history.pushState`. Navigating to a detail page (e.g. clicking an artist) sets a filter like `?artists=["spotify:artist:..."]`.
 2. **API client** (`client/src/api.ts`) serializes filters to query params. Arrays are JSON-encoded strings. A thin `sendRequest` wrapper around `fetch` handles all requests.
 3. **React Query hooks** (`client/src/useApi.ts`) wrap API calls. Entity list hooks use `useInfiniteQuery`; streaming/chart hooks use `useQuery`. Query keys include serialized filters so data refetches when filters change. Stale/GC time is 1 hour. Responses are persisted to localStorage.
-4. **Flask routes** (`app/app.py`) parse query params via `parse_request_args()`. Many endpoints branch: if specific entity URIs are present, they run direct SQL; otherwise they use the filtered path.
-5. **Filtered queries** use a temp table pattern: `filtered_connection()` creates a `matching_track_uris` temp table scoped to the active transaction, then downstream queries join against it.
+4. **Flask routes** (`app/app.py`) parse query params via `parse_request_args()`. Many endpoints branch between URI-specific and filtered repository methods.
+5. **Query repository** (`data/repository.py`) gives routes, ranking utilities, jobs, and maintenance scripts a method-based persistence boundary. It owns SQL file selection, parameter binding, connections, result fetching, and filtered temp-table transactions.
 6. **Route payload functions** live in `routes/*.py` (e.g., `routes/artists.py`). They handle pagination, sorting, and data shaping. These are imported and called directly from `app/app.py` — no blueprints.
 7. **Ranking/streaming** transformations live in `utils/ranking.py`. They return nested dicts shaped as `{"streams": {...}, "metadata": {...}}` for chart endpoints.
 
 ### Database
 
-PostgreSQL accessed via two patterns:
+The query repository uses PostgreSQL through two lower-level patterns:
 - **psycopg2** directly (`data/database.py`'s `get_connection()`) for cursor-based queries
 - **SQLAlchemy** (`get_engine()`) for pandas `read_sql_query` and the filtered connection pattern
 
@@ -62,13 +62,16 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 
 ### SQL queries
 
-- Stored as `.sql` files in `data/sql/queries/`, loaded by name via `query_text("filename_without_extension")`.
+- Stored as `.sql` files in `data/sql/queries/`. Only persistence code should load them by name with `query_text("filename_without_extension")`.
+- Application reads and maintenance operations must add and call a domain/operation-named `DataRepository` method instead of importing `query_text`, opening raw connections, wrapping SQLAlchemy text, or calling `pd.read_sql_query` directly. Jobs may still scope a transaction around a persistence store that owns its writes.
+- `DataRepository` is stateless. Do not add whole-table caches or revive the old mutable `DataProvider` singleton semantics.
 - Two param styles depending on caller:
   - `:named` params for SQLAlchemy (`filtered_*` queries)
   - `%(named)s` params for psycopg2 (`select_*` queries)
 - Do not use colon-prefixed words in SQL comments — SQLAlchemy parses `:word` as a bind parameter even inside comments.
 - Naming: `select_*` for direct lookups, `filtered_*` for queries that join against the `matching_track_uris` temp table.
 - Intermediate results often use temp tables (e.g., `tmp_stream_counts`).
+- Filtered repository methods must create and query `matching_track_uris` on the same connection/transaction.
 
 ### API response shapes
 

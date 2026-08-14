@@ -1,14 +1,17 @@
 from datetime import datetime
+
 import pandas as pd
-from data.query import query_text
-from data.database import get_connection
+
+from data.repository import DataRepository
 from jobs.queue import queue_job
 from jobs.save_spotify_data import save_tracks_by_uri
 from spotify.spotify_client import get_spotify_client
 from utils.track import is_blacklisted
 
+
 played_at_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 alternate_date_format = "%Y-%m-%dT%H:%M:%SZ"
+repository = DataRepository()
 
 
 def save_listening_data():
@@ -51,24 +54,17 @@ def to_timestamp(date_str: str) -> float:
 def save_streams(plays: pd.DataFrame):
     """Save individual streams to the track_stream table."""
     print(f'Saving {len(plays)} streams to track_stream table...')
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        for _, row in plays.iterrows():
-            cursor.execute(
-                query_text('insert_stream'),
-                {
-                    "track_uri": row["track_uri"],
-                    "played_at": row["time"]
-                }
-            )
-        conn.commit()
+    repository.save_streams(
+        {
+            "track_uri": row["track_uri"],
+            "played_at": row["time"],
+        }
+        for _, row in plays.iterrows()
+    )
 
 
 def get_unsaved_track_uris():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query_text('select_streams_without_tracks'))
-        return [row[0] for row in cursor.fetchall()]
+    return repository.track_uris_without_metadata()
 
 
 if __name__ == '__main__':

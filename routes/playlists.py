@@ -1,17 +1,12 @@
-import pandas as pd
-import sqlalchemy
+from data.repository import DataRepository
+from routes.pagination import PLAYLIST_SORT_COLUMNS, paginate_df
 
-from routes.pagination import paginate_df, PLAYLIST_SORT_COLUMNS
-from data.filters import filtered_connection
-from data.query import query_text
+
+repository = DataRepository()
 
 
 def playlists_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        playlists = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_playlists')),
-            conn
-        )
+    playlists = repository.playlists_for_filters(filters)
     if playlists.empty:
         return {"items": [], "total": 0}
 

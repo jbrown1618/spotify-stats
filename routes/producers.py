@@ -1,17 +1,12 @@
-import pandas as pd
-import sqlalchemy
+from data.repository import DataRepository
+from routes.pagination import PRODUCER_SORT_COLUMNS, paginate_df
 
-from routes.pagination import paginate_df, PRODUCER_SORT_COLUMNS
-from data.filters import filtered_connection
-from data.query import query_text
+
+repository = DataRepository()
 
 
 def producers_payload(filters: dict):
-    with filtered_connection(filters) as (conn, params):
-        producers = pd.read_sql_query(
-            sqlalchemy.text(query_text('select_producers')),
-            conn
-        )
+    producers = repository.producers_for_filters(filters)
     if producers.empty:
         return {"items": [], "total": 0}
     producers.drop_duplicates(subset=['producer_mbid'], keep='first', inplace=True)
