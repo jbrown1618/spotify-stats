@@ -3,10 +3,8 @@ spotify-client-id
 spotify-client-secret
 venv/
 __pycache__/
-output/
 .env
 .cache
-*austin*
 node_modules/
 /app/static/
 .playwright-mcp/

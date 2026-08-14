@@ -46,7 +46,7 @@ This is a single-page app for visualizing personal Spotify listening data. The b
 ### Database
 
 PostgreSQL accessed via two patterns:
-- **psycopg2** directly (`data/provider.py`'s `get_connection()`) for cursor-based queries
+- **psycopg2** directly (`data/database.py`'s `get_connection()`) for cursor-based queries
 - **SQLAlchemy** (`get_engine()`) for pandas `read_sql_query` and the filtered connection pattern
 
 Migrations run automatically at app startup via `perform_all_migrations()`.
