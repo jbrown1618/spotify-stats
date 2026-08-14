@@ -1,6 +1,9 @@
 import pandas as pd
 from flask import Flask, request, send_file
 
+from data.filters import parse_request_args
+from data.repository import DataRepository
+from data.sql.migrations.migrations import perform_all_migrations
 from routes.albums import albums_payload
 from routes.artists import artists_payload, artist_credits_payload
 from routes.filters import filter_options_payload
@@ -14,14 +17,11 @@ from routes.stream_shares import artist_stream_share_by_month_payload, genre_str
 from routes.tracks import tracks_search_payload, track_credits_payload
 from routes.utils import to_date_range, to_json
 from routes.producers import producers_payload
-from data.filters import parse_request_args
-from data.sql.migrations.migrations import perform_all_migrations
 from spotify.spotify_client import spotify_auth_status
-from utils.ranking import album_ranks_over_time, album_streams_by_month, artist_ranks_over_time, artist_streams_by_month, track_ranks_over_time, track_streams_by_month
-from utils.ranking import filtered_track_ranks_over_time, filtered_track_streams_by_month, filtered_artist_ranks_over_time, filtered_artist_streams_by_month, filtered_album_ranks_over_time, filtered_album_streams_by_month
 
 pd.options.mode.chained_assignment = None  # default='warn'
 app = Flask(__name__)
+repository = DataRepository()
 
 with app.app_context():
     perform_all_migrations()
@@ -106,8 +106,10 @@ def list_track_stream_history():
         if len(track_uris) == 0:
             return []
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return to_json(track_ranks_over_time(track_uris, min_date, max_date))
-    return to_json(filtered_track_ranks_over_time(params, n))
+        return to_json(
+            repository.track_ranks_over_time(track_uris, min_date, max_date)
+        )
+    return to_json(repository.filtered_track_ranks_over_time(params, n))
 
 
 @app.route("/api/streams/tracks/months")
@@ -119,8 +121,12 @@ def list_track_streams_by_month():
         if len(track_uris) == 0:
             return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return track_streams_by_month(track_uris, min_date, max_date)
-    return filtered_track_streams_by_month(params, n)
+        return repository.track_streams_by_month(
+            track_uris,
+            min_date,
+            max_date,
+        )
+    return repository.filtered_track_streams_by_month(params, n)
 
 
 @app.route("/api/streams/artists/history")
@@ -132,8 +138,10 @@ def list_artist_stream_history():
         if len(artist_uris) == 0:
             return []
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return to_json(artist_ranks_over_time(artist_uris, min_date, max_date))
-    return to_json(filtered_artist_ranks_over_time(params, n))
+        return to_json(
+            repository.artist_ranks_over_time(artist_uris, min_date, max_date)
+        )
+    return to_json(repository.filtered_artist_ranks_over_time(params, n))
 
 
 @app.route("/api/streams/artists/months")
@@ -145,8 +153,12 @@ def list_artist_streams_by_month():
         if len(artist_uris) == 0:
             return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return artist_streams_by_month(artist_uris, min_date, max_date)
-    return filtered_artist_streams_by_month(params, n)
+        return repository.artist_streams_by_month(
+            artist_uris,
+            min_date,
+            max_date,
+        )
+    return repository.filtered_artist_streams_by_month(params, n)
 
 
 @app.route("/api/streams/artists/share")
@@ -163,8 +175,10 @@ def list_album_stream_history():
         if len(album_uris) == 0:
             return []
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return to_json(album_ranks_over_time(album_uris, min_date, max_date))
-    return to_json(filtered_album_ranks_over_time(params, n))
+        return to_json(
+            repository.album_ranks_over_time(album_uris, min_date, max_date)
+        )
+    return to_json(repository.filtered_album_ranks_over_time(params, n))
 
 
 @app.route("/api/streams/albums/months")
@@ -176,8 +190,12 @@ def list_album_streams_by_month():
         if len(album_uris) == 0:
             return {"streams": {}, "metadata": {}}
         min_date, max_date = to_date_range(params.get('wrapped', None))
-        return album_streams_by_month(album_uris, min_date, max_date)
-    return filtered_album_streams_by_month(params, n)
+        return repository.album_streams_by_month(
+            album_uris,
+            min_date,
+            max_date,
+        )
+    return repository.filtered_album_streams_by_month(params, n)
 
 
 @app.route("/api/streams/genres/share")

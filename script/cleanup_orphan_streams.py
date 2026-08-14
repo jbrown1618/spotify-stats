@@ -24,32 +24,6 @@ from spotify.spotify_client import get_spotify_client
 repository = DataRepository()
 
 
-def get_orphan_stream_uris():
-    """
-    Get track URIs that exist in track_stream but not in playlist_track.
-    These are potential orphans that may have been superseded.
-    """
-    return repository.orphan_stream_uris()
-
-
-def get_stream_count(track_uri: str) -> int:
-    """Get the number of streams for a track."""
-    return repository.track_stream_count(track_uri)
-
-
-def find_matching_track(track_name: str, artist_name: str):
-    """
-    Find a track in our database that matches by name and primary artist.
-    Returns (uri, name) or None if no match found.
-    """
-    return repository.matching_track_by_name_artist(track_name, artist_name)
-
-
-def delete_streams_for_track(track_uri: str, commit: bool = False):
-    """Delete all streams for a given track URI."""
-    repository.delete_streams_for_track(track_uri, commit)
-
-
 def lookup_tracks_batch(sp, uris: list[str]) -> dict:
     """
     Look up track info from Spotify API in batches.
@@ -84,7 +58,7 @@ def lookup_tracks_batch(sp, uris: list[str]) -> dict:
 def cleanup_orphan_streams(commit: bool = False):
     """Main function to clean up orphan streams."""
     print("Finding orphan track URIs in track_stream...")
-    orphan_uris = get_orphan_stream_uris()
+    orphan_uris = repository.orphan_stream_uris()
     print(f"Found {len(orphan_uris)} track URIs in track_stream not in any playlist")
     
     if not orphan_uris:
@@ -112,7 +86,10 @@ def cleanup_orphan_streams(commit: bool = False):
             continue
         
         # Look for a matching track in our database
-        match = find_matching_track(track_name, artist_name)
+        match = repository.matching_track_by_name_artist(
+            track_name,
+            artist_name,
+        )
         
         if match is None:
             # No matching track in our database
@@ -121,21 +98,21 @@ def cleanup_orphan_streams(commit: bool = False):
         matching_uri, matching_name = match
         
         # Check if the matching track has streams
-        matching_streams = get_stream_count(matching_uri)
+        matching_streams = repository.track_stream_count(matching_uri)
         
         if matching_streams == 0:
             # Matching track has no streams, so we can't delete the orphan's
             continue
         
         # We have a match with streams - delete the orphan's streams
-        orphan_streams = get_stream_count(orphan_uri)
+        orphan_streams = repository.track_stream_count(orphan_uri)
         
         action = "Deleting" if commit else "Would delete"
         print(f"{action} {orphan_streams} streams for orphan track '{track_name}' ({orphan_uri})")
         print(f"  -> Canonical track: {matching_uri} has {matching_streams} streams")
         
         if commit:
-            delete_streams_for_track(orphan_uri, commit=True)
+            repository.delete_streams_for_track(orphan_uri, commit=True)
         
         total_deleted += orphan_streams
         tracks_deleted += 1

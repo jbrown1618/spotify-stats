@@ -178,13 +178,6 @@ class DataRepository:
             {"track_uri": track_uri},
         )
 
-    def top_track_uris(self, from_date, to_date) -> pd.Series:
-        tracks = self._read_dataframe(
-            "select_top_tracks_for_date_range",
-            {"min_stream_date": from_date, "max_stream_date": to_date},
-        )
-        return tracks["track_uri"]
-
     def insight_frames(
         self, filters: Mapping[str, Any]
     ) -> dict[str, pd.DataFrame]:
