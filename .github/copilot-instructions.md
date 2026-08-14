@@ -41,7 +41,7 @@ This is a single-page app for visualizing personal Spotify listening data. The b
 4. **Flask routes** (`app/app.py`) parse query params via `parse_request_args()`. Many endpoints branch between URI-specific and filtered repository methods.
 5. **Query repository** (`data/repository.py`) gives routes, ranking utilities, jobs, and maintenance scripts a method-based persistence boundary. It owns SQL file selection, parameter binding, connections, result fetching, and filtered temp-table transactions.
 6. **Route payload functions** live in `routes/*.py` (e.g., `routes/artists.py`). They handle pagination, sorting, and data shaping. These are imported and called directly from `app/app.py` — no blueprints.
-7. **Ranking/streaming** transformations live in `utils/ranking.py`. They return nested dicts shaped as `{"streams": {...}, "metadata": {...}}` for chart endpoints.
+7. **Ranking/streaming queries** are called directly through `DataRepository`. Monthly stream methods return nested dicts shaped as `{"streams": {...}, "metadata": {...}}` for chart endpoints.
 
 ### Database
 

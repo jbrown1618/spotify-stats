@@ -38,7 +38,7 @@ def save_listening_data():
 
     save_streams(plays)
 
-    unsaved_uris = get_unsaved_track_uris()
+    unsaved_uris = repository.track_uris_without_metadata()
     if len(unsaved_uris) > 0:
         save_tracks_by_uri(unsaved_uris)
         queue_job("repair_orphan_tracks")
@@ -61,11 +61,5 @@ def save_streams(plays: pd.DataFrame):
         }
         for _, row in plays.iterrows()
     )
-
-
-def get_unsaved_track_uris():
-    return repository.track_uris_without_metadata()
-
-
 if __name__ == '__main__':
     save_listening_data()
