@@ -18,6 +18,7 @@ from data.sql.migrations.v017_remove_uncorrelated_discogs_videos import RemoveUn
 from data.sql.migrations.v018_remove_unmapped_discogs_tracks import RemoveUnmappedDiscogsTracks
 from data.sql.migrations.v019_retry_discogs_artist_variation_matches import RetryDiscogsArtistVariationMatches
 from data.sql.migrations.v020_refactor_musicbrainz_ingestion import RefactorMusicBrainzIngestion
+from data.sql.migrations.v021_add_unified_track_credits import AddUnifiedTrackCredits
 
 migrations = [
     AddTrackRanks(),
@@ -39,6 +40,7 @@ migrations = [
     RemoveUnmappedDiscogsTracks(),
     RetryDiscogsArtistVariationMatches(),
     RefactorMusicBrainzIngestion(),
+    AddUnifiedTrackCredits(),
 ]
 
 def perform_all_migrations():

@@ -3,7 +3,7 @@ import { Pill } from "@mantine/core";
 import { Producer } from "../api";
 import { ProducersBarChart } from "../charts/ProducersBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useProducers, PAGE_SIZE } from "../useApi";
+import { PAGE_SIZE, useProducers } from "../useApi";
 import { useSetFilters } from "../useFilters";
 import styles from "./Sections.module.css";
 
@@ -26,7 +26,7 @@ function ProducersDisplayGrid() {
       loading={isLoading}
       items={items}
       total={total}
-      getKey={(producer) => producer.producer_mbid}
+      getKey={(producer) => producer.producer_key}
       renderPill={(producer) => <ProducerPill producer={producer} />}
       
       isFetchingNextPage={isFetchingNextPage}
@@ -42,7 +42,7 @@ function ProducerPill({ producer }: { producer: Producer }) {
       bg="gray"
       size="lg"
       className={styles.clickable}
-      onClick={() => setFilters({ producers: [producer.producer_mbid] })}
+      onClick={() => setFilters({ producers: [producer.producer_key] })}
     >
       {producer.producer_name}
     </Pill>

@@ -1,19 +1,20 @@
 SELECT
-    mb.artist_mb_name AS producer_name,
-    mb.artist_mbid AS producer_mbid,
-    a.uri as artist_uri,
-    a.image_url as artist_image_url,
-    ARRAY_AGG(DISTINCT rc.credit_type) as credit_types,
-    COUNT(DISTINCT rc.recording_mbid) AS track_count,
-    COUNT(DISTINCT CASE WHEN lt.track_uri IS NOT NULL THEN rc.recording_mbid END) AS liked_track_count
-FROM mb_recording_credit rc
-    INNER JOIN mb_artist mb ON rc.artist_mbid = mb.artist_mbid
-    INNER JOIN sp_track_mb_recording stmr ON rc.recording_mbid = stmr.recording_mbid
-    LEFT JOIN liked_track lt ON stmr.spotify_track_uri = lt.track_uri
-    LEFT JOIN sp_artist_mb_artist sama ON sama.artist_mbid = mb.artist_mbid
-    LEFT JOIN artist a ON sama.spotify_artist_uri = a.uri
-WHERE stmr.spotify_track_uri IN (SELECT track_uri FROM matching_track_uris)
-    AND rc.credit_type IN (
+    utc.producer_key,
+    (ARRAY_AGG(
+        utc.producer_name
+        ORDER BY utc.producer_name IS NULL, utc.artist_uri IS NULL, utc.producer_name
+    ))[1] AS producer_name,
+    (ARRAY_REMOVE(ARRAY_AGG(DISTINCT utc.artist_uri), NULL))[1] AS artist_uri,
+    (ARRAY_REMOVE(ARRAY_AGG(DISTINCT utc.artist_image_url), NULL))[1]
+        AS artist_image_url,
+    ARRAY_AGG(DISTINCT utc.credit_type) AS credit_types,
+    COUNT(DISTINCT utc.track_uri) AS track_count,
+    COUNT(DISTINCT CASE WHEN lt.track_uri IS NOT NULL THEN utc.track_uri END)
+        AS liked_track_count
+FROM unified_track_credit utc
+    LEFT JOIN liked_track lt ON utc.track_uri = lt.track_uri
+WHERE utc.track_uri IN (SELECT track_uri FROM matching_track_uris)
+    AND utc.credit_type IN (
         'songwriter',
         'lyricist',
         'producer',
@@ -23,10 +24,6 @@ WHERE stmr.spotify_track_uri IN (SELECT track_uri FROM matching_track_uris)
         'audio director',
         'video director',
         'publishing'
-    ) 
-GROUP BY
-    mb.artist_mb_name,
-    mb.artist_mbid,
-    a.uri,
-    a.image_url
-ORDER BY track_count DESC, a.image_url NULLS LAST;
+    )
+GROUP BY utc.producer_key
+ORDER BY track_count DESC, artist_image_url NULLS LAST;

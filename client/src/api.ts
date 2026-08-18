@@ -52,13 +52,13 @@ export interface ArtistRank {
 }
 
 export interface ArtistCredit {
-  recording_mbid: string;
+  producer_key: string;
   credit_type: string;
   credit_details: string | null;
-  recording_title: string;
-  spotify_track_uri: string | null;
+  raw_roles: string;
+  sources: string[];
   track_name: string | null;
-  track_uri: string | null;
+  track_uri: string;
 }
 
 export interface ArtistRelationship {
@@ -128,7 +128,7 @@ export interface Genre {
 
 export interface Producer {
   producer_name: string;
-  producer_mbid: string;
+  producer_key: string;
   artist_uri: string | undefined;
   artist_image_url: string | undefined;
   liked_track_count: number;
@@ -137,15 +137,16 @@ export interface Producer {
 }
 
 export interface Credit {
+  producer_key: string;
+  producer_name: string;
   credit_type: string;
   credit_details: string | null;
-  artist_mbid: string;
-  artist_mb_name: string;
-  artist_sort_name: string | null;
-  artist_type: string | null;
+  raw_roles: string;
   artist_uri: string | null;
-  artist_name: string | null;
   artist_image_url: string | null;
+  musicbrainz_artist_ids: string[];
+  discogs_artist_ids: number[];
+  sources: string[];
 }
 
 export interface ReleaseYear {
@@ -190,7 +191,7 @@ export interface FilterOptions {
   artists: Record<string, Pick<Artist, "artist_uri" | "artist_name">>;
   albums: Record<string, Pick<Album, "album_uri" | "album_name">>;
   playlists: Record<string, Pick<Playlist, "playlist_uri" | "playlist_name">>;
-  producers: Record<string, Pick<Producer, "producer_name" | "producer_mbid">>;
+  producers: Record<string, Pick<Producer, "producer_name" | "producer_key">>;
   labels: string[];
   genres: string[];
   years: number[];

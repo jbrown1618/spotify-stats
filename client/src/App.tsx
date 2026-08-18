@@ -43,7 +43,7 @@ function DetailsContent() {
         <ArtistDetails artistURI={filters.artists[0]} />
       )}
       {filters.producers?.length === 1 && (
-        <ProducerDetails mbid={filters.producers[0]} />
+        <ProducerDetails producerKey={filters.producers[0]} />
       )}
     </>
   );
@@ -108,7 +108,7 @@ function DetailsTitle() {
     ? playlists?.find((p) => p.playlist_uri === filters.playlists?.[0])?.playlist_name
     : null;
   const producerName = filters.producers?.length === 1
-    ? producers?.find((p) => p.producer_mbid === filters.producers?.[0])?.producer_name
+    ? producers?.find((p) => p.producer_key === filters.producers?.[0])?.producer_name
     : null;
   const wrappedLabel = filters.wrapped
     ? namedWrappedOptions().find((o) => o.value === filters.wrapped)?.label ??
