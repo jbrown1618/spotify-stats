@@ -3,6 +3,8 @@
 A React and Flask web app for exploring personal Spotify listening data stored in
 PostgreSQL.
 
+Explore listening trends across artists, albums, tracks, and time periods.
+
 ## Setup
 
 Install Python 3, PostgreSQL, Node.js 20, and npm 10, then run:
