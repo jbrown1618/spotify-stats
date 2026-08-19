@@ -10,7 +10,7 @@ import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
-import { useTracks, useTrackCredits } from "../useApi";
+import { useTrackCredits, useTracks } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
@@ -82,17 +82,15 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
 }
 
 function Credits({ credits }: { credits: Credit[] }) {
-  // Group credits by artist (using artist_mbid as the key)
   const creditsByArtist = credits.reduce(
     (acc, credit) => {
-      const artistKey = credit.artist_mbid;
+      const artistKey = credit.producer_key;
       if (!acc[artistKey]) {
         acc[artistKey] = {
           artist: credit,
           creditTypes: new Set<string>(),
         };
       }
-      // Add credit type to the set (automatically handles duplicates)
       acc[artistKey].creditTypes.add(credit.credit_type);
       return acc;
     },
@@ -101,8 +99,8 @@ function Credits({ credits }: { credits: Credit[] }) {
 
   // Sort artists by name
   const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
-    const nameA = a.artist.artist_name || a.artist.artist_mb_name || "";
-    const nameB = b.artist.artist_name || b.artist.artist_mb_name || "";
+    const nameA = a.artist.producer_name;
+    const nameB = b.artist.producer_name;
     return nameA.localeCompare(nameB);
   });
 
@@ -147,7 +145,7 @@ function Credits({ credits }: { credits: Credit[] }) {
         <tbody>
           {sortedArtists.map(({ artist, creditTypes }) => (
             <tr
-              key={artist.artist_mbid}
+              key={artist.producer_key}
               style={{
                 borderBottom: "1px solid var(--mantine-color-default-border)",
               }}
@@ -182,11 +180,10 @@ function Credits({ credits }: { credits: Credit[] }) {
 }
 
 function CreditArtist({ credit }: { credit: Credit }) {
-  // If we have a Spotify artist URI, show it as an ArtistPill
-  if (credit.artist_uri && credit.artist_name) {
+  if (credit.artist_uri) {
     const artist = {
       artist_uri: credit.artist_uri,
-      artist_name: credit.artist_name,
+      artist_name: credit.producer_name,
       artist_image_url: credit.artist_image_url || "",
       artist_followers: 0,
       artist_liked_track_count: 0,
@@ -197,7 +194,6 @@ function CreditArtist({ credit }: { credit: Credit }) {
     return <ArtistPill artist={artist} />;
   }
 
-  // Otherwise, show as plain text
   return (
     <div
       style={{
@@ -207,7 +203,7 @@ function CreditArtist({ credit }: { credit: Credit }) {
         fontSize: "0.875rem",
       }}
     >
-      {credit.artist_name || credit.artist_mb_name || "Unknown Artist"}
+      {credit.producer_name || "Unknown Artist"}
     </div>
   );
 }

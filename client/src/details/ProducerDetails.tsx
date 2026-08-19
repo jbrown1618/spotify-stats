@@ -2,9 +2,11 @@ import { ArtistTile } from "../list-items/ArtistTile";
 import { useArtists, useProducers } from "../useApi";
 import styles from "./Details.module.css";
 
-export function ProducerDetails({ mbid }: { mbid: string }) {
-  const { items: producers } = useProducers({ filters: { producers: [mbid] } });
-  const producer = producers?.find((p) => p.producer_mbid === mbid);
+export function ProducerDetails({ producerKey }: { producerKey: string }) {
+  const { items: producers } = useProducers({
+    filters: { producers: [producerKey] },
+  });
+  const producer = producers?.find((p) => p.producer_key === producerKey);
   const { items: artists } = useArtists({
     filters: { artists: producer?.artist_uri ? [producer.artist_uri] : [] },
   });

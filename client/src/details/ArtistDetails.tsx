@@ -214,13 +214,13 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
                 </tr>
               </thead>
               <tbody>
-                {artistCredits.credits.map((credit, idx) => (
+                {artistCredits.credits.map((credit) => (
                   <tr
-                    key={`${credit.recording_mbid}-${idx}`}
+                    key={`${credit.track_uri}-${credit.producer_key}-${credit.credit_type}`}
                     style={{ borderBottom: "1px solid #eee" }}
                   >
                     <td style={{ padding: 8 }}>
-                      {credit.track_name || credit.recording_title}
+                      {credit.track_name || "Unknown track"}
                     </td>
                     <td style={{ padding: 8 }}>{credit.credit_type}</td>
                     <td style={{ padding: 8 }}>
