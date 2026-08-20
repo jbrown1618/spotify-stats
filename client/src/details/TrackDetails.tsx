@@ -13,8 +13,8 @@ import { ArtistPills } from "../design/ArtistPills";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { AlbumPill } from "../list-items/AlbumPill";
-import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
+import { ProducerPill } from "../list-items/ProducerPill";
 import { useTrackCredits, useTracks, useTrackVideos } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
@@ -234,30 +234,5 @@ function Credits({ credits }: { credits: Credit[] }) {
 }
 
 function CreditArtist({ credit }: { credit: Credit }) {
-  if (credit.artist_uri) {
-    const artist = {
-      artist_uri: credit.artist_uri,
-      artist_name: credit.producer_name,
-      artist_image_url: credit.artist_image_url || "",
-      artist_followers: 0,
-      artist_liked_track_count: 0,
-      artist_popularity: 0,
-      artist_track_count: 0,
-      artist_stream_count: 0,
-    };
-    return <ArtistPill artist={artist} />;
-  }
-
-  return (
-    <div
-      style={{
-        padding: "4px 12px",
-        borderRadius: "16px",
-        backgroundColor: "var(--mantine-color-default-hover)",
-        fontSize: "0.875rem",
-      }}
-    >
-      {credit.producer_name || "Unknown Artist"}
-    </div>
-  );
+  return <ProducerPill producer={credit} />;
 }
