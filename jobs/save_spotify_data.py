@@ -240,6 +240,10 @@ def save_spotify_data():
 
     queue_job("standardize_record_labels")
     queue_job("repair_orphan_tracks")
+    return {
+        **collection_summary(collection),
+        "follow_up_jobs_queued": 2,
+    }
 
 
 def save_tracks_by_uri(uris):
@@ -249,6 +253,7 @@ def save_tracks_by_uri(uris):
     collection.collect_albums(sp)
     collection.collect_artists(sp)
     save_collection(collection, replace_library=False)
+    return collection_summary(collection)
 
 
 def save_collection(collection: SpotifyCollection, replace_library: bool):
@@ -266,6 +271,20 @@ def save_collection(collection: SpotifyCollection, replace_library: bool):
             store.replace_liked_tracks(collection.liked_tracks)
             store.replace_playlist_tracks(collection.playlist_tracks)
         conn.commit()
+
+
+def collection_summary(collection: SpotifyCollection) -> dict[str, int]:
+    return {
+        "playlists": len(collection.playlists),
+        "tracks": len(collection.tracks),
+        "albums": len(collection.albums),
+        "artists": len(collection.artists),
+        "liked_tracks": len(collection.liked_tracks),
+        "playlist_tracks": len(collection.playlist_tracks),
+        "track_artists": len(collection.track_artists),
+        "album_artists": len(collection.album_artists),
+        "artist_genres": len(collection.artist_genres),
+    }
 
 
 def log_playlist_page(source: str, playlists: dict, offset: int):

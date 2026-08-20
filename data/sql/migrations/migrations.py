@@ -20,6 +20,7 @@ from data.sql.migrations.v019_retry_discogs_artist_variation_matches import Retr
 from data.sql.migrations.v020_refactor_musicbrainz_ingestion import RefactorMusicBrainzIngestion
 from data.sql.migrations.v021_add_unified_track_credits import AddUnifiedTrackCredits
 from data.sql.migrations.v022_resolve_unified_credit_aliases import ResolveUnifiedCreditAliases
+from data.sql.migrations.v023_add_job_summary import AddJobSummary
 
 migrations = [
     AddTrackRanks(),
@@ -43,6 +44,7 @@ migrations = [
     RefactorMusicBrainzIngestion(),
     AddUnifiedTrackCredits(),
     ResolveUnifiedCreditAliases(),
+    AddJobSummary(),
 ]
 
 def perform_all_migrations():

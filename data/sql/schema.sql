@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS job (
     arguments TEXT NOT NULL,
     status TEXT DEFAULT 'QUEUED',
     error TEXT,
+    summary JSONB NOT NULL DEFAULT '{}'::JSONB,
     queue_time timestamp DEFAULT current_timestamp,
     start_time timestamp,
     end_time timestamp,
