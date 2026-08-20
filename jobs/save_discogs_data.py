@@ -34,8 +34,14 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
 
     if limit <= 0:
         print(f"Skipping Discogs data fetch because batch size is {limit}")
-        return
+        return {
+            "tracks_selected": 0,
+            "tracks_completed": 0,
+            "api_failures": 0,
+        }
 
+    tracks_completed = 0
+    api_failures = 0
     with get_connection() as conn:
         cursor = conn.cursor()
         store = DiscogsStore(cursor)
@@ -49,6 +55,7 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
                 flush=True,
             )
             if not process_track_safely(store, client, track):
+                api_failures += 1
                 conn.rollback()
                 continue
             print(
@@ -57,6 +64,13 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
                 flush=True,
             )
             conn.commit()
+            tracks_completed += 1
+
+    return {
+        "tracks_selected": len(tracks),
+        "tracks_completed": tracks_completed,
+        "api_failures": api_failures,
+    }
 
 
 def process_track_safely(

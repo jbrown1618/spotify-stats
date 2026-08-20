@@ -65,7 +65,12 @@ def save_musicbrainz_data(
     )
     if limit <= 0:
         print(f"Skipping MusicBrainz data fetch because batch size is {limit}")
-        return
+        return {
+            "tracks_selected": 0,
+            "tracks_completed": 0,
+            "artists_saved": 0,
+            "api_failures": 0,
+        }
 
     mb.set_useragent(
         musicbrainz_useragent(),
@@ -73,6 +78,8 @@ def save_musicbrainz_data(
         musicbrainz_contact(),
     )
     committed_artist_mbids: set[str] = set()
+    tracks_completed = 0
+    api_failures = 0
 
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -102,9 +109,11 @@ def save_musicbrainz_data(
                     flush=True,
                 )
                 conn.rollback()
+                api_failures += 1
                 continue
 
             conn.commit()
+            tracks_completed += 1
             committed_artist_mbids.update(processed_artist_mbids)
             print(
                 f"Committed MusicBrainz records for {track['track_uri']}",
@@ -117,6 +126,13 @@ def save_musicbrainz_data(
             committed_artist_mbids,
             max_artists=artist_limit,
         )
+
+    return {
+        "tracks_selected": len(tracks),
+        "tracks_completed": tracks_completed,
+        "artists_saved": len(committed_artist_mbids),
+        "api_failures": api_failures,
+    }
 
 
 def process_track(

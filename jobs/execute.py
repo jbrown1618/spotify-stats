@@ -34,11 +34,18 @@ def execute_next_job() -> bool:
             next_job.id,
             JobStatus.IN_PROGRESS.value,
         )
-        execute(**json.loads(next_job.arguments))
+        summary = execute(**json.loads(next_job.arguments))
+        if not isinstance(summary, dict):
+            raise TypeError(
+                f"Job {next_job.type} returned a non-object summary"
+            )
+        serialized_summary = json.dumps(summary, sort_keys=True)
         repository.mark_job_succeeded(
             next_job.id,
             JobStatus.SUCCESS.value,
+            serialized_summary,
         )
+        print(f"Job {next_job.id} summary: {serialized_summary}", flush=True)
     except Exception as error:
         print("Job failed", str(error))
         repository.mark_job_failed(
