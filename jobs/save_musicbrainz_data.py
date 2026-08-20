@@ -38,6 +38,8 @@ ARRANGER_ROLES = {
     "orchestrator",
     "vocal arranger",
 }
+ARTIST_SEARCH_LIMIT = 10
+ARTIST_EVIDENCE_TRACKS = 3
 PUNCTUATION_REPLACEMENTS = {
     "-": {"\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2015"},
     "'": {"\u2018", "\u2019"},
@@ -323,23 +325,6 @@ def save_artist(store: MusicBrainzStore, artist: dict[str, Any]):
     aliases = [normalize_alias(alias) for alias in artist.get("alias-list", [])]
     store.replace_artist_aliases(artist_mbid, aliases)
 
-    names = [artist["name"], artist["sort-name"]]
-    names.extend(alias["alias_name"] for alias in aliases)
-    matching_artist_uris = store.matching_spotify_artists(names)
-    if len(matching_artist_uris) == 1:
-        store.save_artist_mapping(matching_artist_uris[0], artist_mbid)
-        print(
-            f"Mapped Spotify artist {matching_artist_uris[0]} to MusicBrainz "
-            f"artist {artist_mbid} using canonical name or alias",
-            flush=True,
-        )
-    elif len(matching_artist_uris) > 1:
-        print(
-            f"Multiple Spotify artists match MusicBrainz artist {artist['name']}; "
-            "not saving an automatic mapping",
-            flush=True,
-        )
-
 
 def normalize_alias(alias: dict[str, Any] | str) -> dict[str, Any]:
     if isinstance(alias, str):
@@ -433,20 +418,26 @@ def match_additional_liked_artists(
             flush=True,
         )
         try:
-            results = mb.search_artists(spotify_artist["artist_name"], limit=2).get(
+            results = mb.search_artists(
+                spotify_artist["artist_name"],
+                limit=ARTIST_SEARCH_LIMIT,
+            ).get(
                 "artist-list", []
             )
-            perfect_matches = [
-                result
-                for result in results
-                if float(result.get("ext:score", 0)) == 100
-            ]
-            if len(perfect_matches) != 1:
-                reason = (
-                    "No exact MusicBrainz artist match"
-                    if not perfect_matches
-                    else "Multiple exact MusicBrainz artist matches"
-                )
+            candidates = exact_artist_candidates(
+                results,
+                spotify_artist["artist_name"],
+            )
+            track_evidence = store.fetch_artist_track_evidence(
+                spotify_artist["artist_uri"],
+                ARTIST_EVIDENCE_TRACKS,
+            )
+            artist_mbid, reason = select_artist_candidate(
+                candidates,
+                track_evidence,
+            )
+            if artist_mbid is None:
+                assert reason is not None
                 store.mark_unmatchable_artist(
                     spotify_artist["artist_uri"],
                     spotify_artist["artist_name"],
@@ -459,7 +450,6 @@ def match_additional_liked_artists(
                 conn.commit()
                 continue
 
-            artist_mbid = perfect_matches[0]["id"]
             processed_artist_mbids: set[str] = set()
             save_artist_graph(
                 store,
@@ -482,6 +472,84 @@ def match_additional_liked_artists(
                 flush=True,
             )
             conn.rollback()
+
+
+def exact_artist_candidates(
+    results: list[dict[str, Any]],
+    artist_name: str,
+) -> list[dict[str, Any]]:
+    target = normalize_artist_name(artist_name)
+    return [
+        result
+        for result in results
+        if target in artist_candidate_names(result)
+    ]
+
+
+def artist_candidate_names(candidate: dict[str, Any]) -> set[str]:
+    names = {
+        normalize_artist_name(candidate.get("name", "")),
+        normalize_artist_name(candidate.get("sort-name", "")),
+    }
+    names.update(
+        normalize_artist_name(alias.get("alias", ""))
+        for alias in candidate.get("alias-list", [])
+        if isinstance(alias, dict)
+    )
+    return names - {""}
+
+
+def select_artist_candidate(
+    candidates: list[dict[str, Any]],
+    track_evidence: list[dict[str, str]],
+) -> tuple[str | None, str | None]:
+    if not candidates:
+        return None, "No exact MusicBrainz artist name or alias match"
+    if not track_evidence:
+        return None, "No Spotify track ISRC evidence for MusicBrainz artist match"
+
+    evidence = musicbrainz_artist_credit_evidence(track_evidence)
+    candidate_scores = {
+        candidate["id"]: evidence.get(candidate["id"], 0)
+        for candidate in candidates
+    }
+    best_score = max(candidate_scores.values())
+    evidence_matches = [
+        artist_mbid
+        for artist_mbid, score in candidate_scores.items()
+        if score == best_score and score > 0
+    ]
+    if not evidence_matches:
+        return None, "No MusicBrainz artist candidate matched Spotify track ISRCs"
+    if len(evidence_matches) > 1:
+        return None, "Multiple MusicBrainz artists matched Spotify track ISRCs"
+    return evidence_matches[0], None
+
+
+def musicbrainz_artist_credit_evidence(
+    track_evidence: list[dict[str, str]],
+) -> dict[str, int]:
+    evidence: dict[str, int] = {}
+    processed_isrcs: set[str] = set()
+    for track in track_evidence:
+        isrc = track["isrc"].upper()
+        if isrc in processed_isrcs:
+            continue
+        processed_isrcs.add(isrc)
+        recordings = mb.get_recordings_by_isrc(
+            isrc,
+            includes=["artists"],
+        ).get("isrc", {}).get("recording-list", [])
+        credited_artist_ids = {
+            artist_id
+            for recording in recordings
+            for credit in recording.get("artist-credit", [])
+            if isinstance(credit, dict)
+            if (artist_id := credit.get("artist", {}).get("id"))
+        }
+        for artist_id in credited_artist_ids:
+            evidence[artist_id] = evidence.get(artist_id, 0) + 1
+    return evidence
 
 
 def normalize_punctuation(name: str) -> str:
