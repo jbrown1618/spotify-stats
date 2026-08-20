@@ -46,16 +46,13 @@ PUNCTUATION_REPLACEMENTS = {
 
 
 def save_musicbrainz_data(
-    batch_size: int | None = None,
     max_tracks: int | None = None,
     max_artists: int | None = None,
 ):
-    requested_batch_size = batch_size if batch_size is not None else max_tracks
-    configured_limit = musicbrainz_max_tracks_per_run()
     limit = (
-        configured_limit
-        if requested_batch_size is None
-        else min(requested_batch_size, configured_limit)
+        musicbrainz_max_tracks_per_run()
+        if max_tracks is None
+        else max_tracks
     )
     configured_artist_limit = musicbrainz_max_artists_per_run()
     artist_limit = (
@@ -64,7 +61,7 @@ def save_musicbrainz_data(
         else min(max_artists, configured_artist_limit)
     )
     if limit <= 0:
-        print(f"Skipping MusicBrainz data fetch because batch size is {limit}")
+        print(f"Skipping MusicBrainz data fetch because track limit is {limit}")
         return {
             "tracks_selected": 0,
             "tracks_completed": 0,
