@@ -14,7 +14,7 @@ DROP COLUMN IF EXISTS summary;
 
 class AddJobSummary(Migration):
     def __init__(self):
-        super().__init__("v22")
+        super().__init__("v23")
 
     def migrate(self, cursor):
         cursor.execute(add_job_summary)
