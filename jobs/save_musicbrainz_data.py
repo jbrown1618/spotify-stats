@@ -278,6 +278,11 @@ def save_artist_graph(
     artist_queue = set(initial_mbids) - committed_artist_mbids - processed_artist_mbids
     while artist_queue:
         artist_mbid = artist_queue.pop()
+        if store.has_artist(artist_mbid):
+            print(f"Reusing saved MusicBrainz artist {artist_mbid}", flush=True)
+            processed_artist_mbids.add(artist_mbid)
+            continue
+
         artist = mb.get_artist_by_id(
             artist_mbid,
             includes=["artist-rels", "aliases"],

@@ -162,6 +162,17 @@ class MusicBrainzStore:
             },
         )
 
+    def has_artist(self, artist_mbid: str) -> bool:
+        self.cursor.execute(
+            """
+            SELECT 1
+            FROM mb_artist
+            WHERE artist_mbid = %(artist_mbid)s;
+            """,
+            {"artist_mbid": artist_mbid},
+        )
+        return self.cursor.fetchone() is not None
+
     def save_artist(self, artist: dict[str, Any]):
         self.cursor.execute(
             """
