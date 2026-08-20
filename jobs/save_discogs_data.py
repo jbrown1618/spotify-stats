@@ -8,7 +8,7 @@ from discogs.store import DiscogsStore
 from utils.name import short_name
 
 
-MAX_TRACKS_PER_RUN = 100
+DEFAULT_MAX_TRACKS_PER_RUN = 100
 ARTIST_RELEASE_PAGES = 2
 CANDIDATE_MASTERS = 3
 EDITION_MARKERS = {
@@ -23,17 +23,17 @@ EDITION_MARKERS = {
 class DeferredArtistMatch(Exception):
     pass
 
-def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = None):
+
+def save_discogs_data(max_tracks: int | None = None):
     client = DiscogsClient()
-    requested_batch_size = batch_size if batch_size is not None else max_tracks
     limit = (
-        MAX_TRACKS_PER_RUN
-        if requested_batch_size is None
-        else min(requested_batch_size, MAX_TRACKS_PER_RUN)
+        DEFAULT_MAX_TRACKS_PER_RUN
+        if max_tracks is None
+        else max_tracks
     )
 
     if limit <= 0:
-        print(f"Skipping Discogs data fetch because batch size is {limit}")
+        print(f"Skipping Discogs data fetch because track limit is {limit}")
         return {
             "tracks_selected": 0,
             "tracks_completed": 0,
@@ -662,4 +662,4 @@ def parse_int(value: Any) -> int | None:
 
 
 if __name__ == '__main__':
-    save_discogs_data(MAX_TRACKS_PER_RUN, MAX_TRACKS_PER_RUN)
+    save_discogs_data()
