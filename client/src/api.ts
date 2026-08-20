@@ -123,19 +123,8 @@ export interface DiscogsMasterMetadata {
   formats: string[];
 }
 
-export interface AlbumTrackMetadata {
-  track_uri: string;
-  track_name: string;
-  source: "musicbrainz" | "discogs";
-  source_id: string;
-  source_title: string;
-  language: string | null;
-  position: string | null;
-}
-
 export interface AlbumMetadata {
   discogs_masters: DiscogsMasterMetadata[];
-  tracks: AlbumTrackMetadata[];
 }
 
 export interface Label {

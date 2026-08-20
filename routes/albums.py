@@ -16,7 +16,4 @@ def albums_payload(filters: dict):
 
 def album_metadata_payload(album_uri: str):
     metadata = repository.album_metadata(album_uri)
-    return {
-        "discogs_masters": to_json(metadata.discogs_masters),
-        "tracks": to_json(metadata.tracks),
-    }
+    return {"discogs_masters": to_json(metadata.discogs_masters)}

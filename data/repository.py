@@ -22,7 +22,6 @@ class ArtistCredits:
 @dataclass(frozen=True)
 class AlbumMetadata:
     discogs_masters: pd.DataFrame
-    tracks: pd.DataFrame
 
 
 @dataclass(frozen=True)
@@ -215,18 +214,12 @@ class DataRepository:
         )
 
     def album_metadata(self, album_uri: str) -> AlbumMetadata:
-        with get_engine().begin() as connection:
-            discogs_masters = self._read_dataframe_on(
-                connection,
+        return AlbumMetadata(
+            discogs_masters=self._read_dataframe(
                 "select_album_discogs_metadata",
                 {"album_uri": album_uri},
             )
-            tracks = self._read_dataframe_on(
-                connection,
-                "select_album_track_metadata",
-                {"album_uri": album_uri},
-            )
-        return AlbumMetadata(discogs_masters=discogs_masters, tracks=tracks)
+        )
 
     def insight_frames(
         self, filters: Mapping[str, Any]

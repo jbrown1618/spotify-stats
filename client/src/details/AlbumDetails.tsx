@@ -1,9 +1,6 @@
-import { Anchor, Badge, Group, Paper, Stack, Table, Text } from "@mantine/core";
+import { Anchor, Badge, Group, Paper, Stack, Text } from "@mantine/core";
 
-import {
-  AlbumTrackMetadata,
-  DiscogsMasterMetadata,
-} from "../api";
+import { DiscogsMasterMetadata } from "../api";
 import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { ArtistPills } from "../design/ArtistPills";
@@ -59,10 +56,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
         />
       </div>
       {metadata && (
-        <AlbumSourceMetadata
-          masters={metadata.discogs_masters}
-          tracks={metadata.tracks}
-        />
+        <AlbumSourceMetadata masters={metadata.discogs_masters} />
       )}
       <AlbumsStreamingHistoryStack />
       <AlbumStreamsLineChart height={300} />
@@ -72,19 +66,10 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
 
 function AlbumSourceMetadata({
   masters,
-  tracks,
 }: {
   masters: DiscogsMasterMetadata[];
-  tracks: AlbumTrackMetadata[];
 }) {
-  if (masters.length === 0 && tracks.length === 0) return null;
-
-  const tracksByUri = Object.values(
-    tracks.reduce<Record<string, AlbumTrackMetadata[]>>((grouped, track) => {
-      grouped[track.track_uri] = [...(grouped[track.track_uri] ?? []), track];
-      return grouped;
-    }, {}),
-  );
+  if (masters.length === 0) return null;
 
   return (
     <Stack gap="lg" mt="xl">
@@ -123,52 +108,6 @@ function AlbumSourceMetadata({
         </Paper>
       ))}
 
-      {tracksByUri.length > 0 && (
-        <Table.ScrollContainer minWidth={600}>
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Track</Table.Th>
-                <Table.Th>Source</Table.Th>
-                <Table.Th>Source title</Table.Th>
-                <Table.Th>Details</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {tracksByUri.flatMap((sourceTracks) =>
-                sourceTracks.map((track) => (
-                  <Table.Tr
-                    key={`${track.track_uri}-${track.source}-${track.source_id}`}
-                  >
-                    <Table.Td>{track.track_name}</Table.Td>
-                    <Table.Td>
-                      <Anchor
-                        href={
-                          track.source === "musicbrainz"
-                            ? `https://musicbrainz.org/recording/${track.source_id}`
-                            : `https://www.discogs.com/master/${track.source_id}`
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {track.source === "musicbrainz"
-                          ? "MusicBrainz"
-                          : "Discogs"}
-                      </Anchor>
-                    </Table.Td>
-                    <Table.Td>{track.source_title}</Table.Td>
-                    <Table.Td>
-                      {track.position
-                        ? `Position ${track.position}`
-                        : track.language?.toUpperCase() || "-"}
-                    </Table.Td>
-                  </Table.Tr>
-                )),
-              )}
-            </Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
-      )}
     </Stack>
   );
 }
