@@ -126,27 +126,35 @@ function formatDuration(durationSeconds: number) {
 }
 
 function Credits({ credits }: { credits: Credit[] }) {
-  const creditsByArtist = credits.reduce(
+  const creditsByType = credits.reduce(
     (acc, credit) => {
-      const artistKey = credit.producer_key;
-      if (!acc[artistKey]) {
-        acc[artistKey] = {
-          artist: credit,
-          creditTypes: new Set<string>(),
-        };
-      }
-      acc[artistKey].creditTypes.add(credit.credit_type);
+      acc[credit.credit_type] = [...(acc[credit.credit_type] ?? []), credit];
       return acc;
     },
-    {} as Record<string, { artist: Credit; creditTypes: Set<string> }>,
+    {} as Record<string, Credit[]>,
   );
 
-  // Sort artists by name
-  const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
-    const nameA = a.artist.producer_name;
-    const nameB = b.artist.producer_name;
-    return nameA.localeCompare(nameB);
-  });
+  const creditTypeOrder = [
+    "producer",
+    "songwriter",
+    "lyricist",
+    "arranger",
+    "sound",
+    "mastering",
+    "audio director",
+    "video director",
+    "publishing",
+  ];
+  const sortedCreditTypes = Object.entries(creditsByType).sort(
+    ([typeA], [typeB]) => {
+      const indexA = creditTypeOrder.indexOf(typeA);
+      const indexB = creditTypeOrder.indexOf(typeB);
+      if (indexA === -1 && indexB === -1) return typeA.localeCompare(typeB);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    },
+  );
 
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
@@ -172,7 +180,7 @@ function Credits({ credits }: { credits: Credit[] }) {
                 color: "var(--mantine-color-dimmed)",
               }}
             >
-              Artist
+              Credit
             </th>
             <th
               style={{
@@ -182,37 +190,39 @@ function Credits({ credits }: { credits: Credit[] }) {
                 color: "var(--mantine-color-dimmed)",
               }}
             >
-              Credits
+              People
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedArtists.map(({ artist, creditTypes }) => (
+          {sortedCreditTypes.map(([creditType, creditedPeople]) => (
             <tr
-              key={artist.producer_key}
+              key={creditType}
               style={{
                 borderBottom: "1px solid var(--mantine-color-default-border)",
               }}
             >
-              <td style={{ padding: "12px 8px" }}>
-                <CreditArtist credit={artist} />
+              <td
+                style={{
+                  padding: "12px 8px",
+                  textTransform: "capitalize",
+                  verticalAlign: "top",
+                }}
+              >
+                {creditType}
               </td>
               <td style={{ padding: "12px 8px" }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {Array.from(creditTypes).map((creditType) => (
-                    <div
-                      key={creditType}
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: "16px",
-                        backgroundColor: "var(--mantine-color-default-hover)",
-                        fontSize: "0.875rem",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {creditType}
-                    </div>
-                  ))}
+                  {creditedPeople
+                    .sort((a, b) =>
+                      a.producer_name.localeCompare(b.producer_name),
+                    )
+                    .map((credit) => (
+                      <CreditArtist
+                        key={credit.producer_key}
+                        credit={credit}
+                      />
+                    ))}
                 </div>
               </td>
             </tr>
