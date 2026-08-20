@@ -1,4 +1,9 @@
-import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { Anchor, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  IconBrandYoutube,
+  IconHeart,
+  IconHeartFilled,
+} from "@tabler/icons-react";
 import clsx from "clsx";
 
 import type { Credit } from "../api";
@@ -10,7 +15,7 @@ import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
-import { useTrackCredits, useTracks } from "../useApi";
+import { useTrackCredits, useTracks, useTrackVideos } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
@@ -18,6 +23,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { items: tracks } = useTracks({ filters: { tracks: [trackURI] } });
   const track = tracks?.[0];
   const { data: credits } = useTrackCredits(trackURI);
+  const { data: videos } = useTrackVideos(trackURI);
 
   if (!track)
     return (
@@ -74,11 +80,49 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
           ]}
         />
       </div>
+      {videos && videos.length > 0 && <TrackVideos videos={videos} />}
       {credits && credits.length > 0 && <Credits credits={credits} />}
       <TracksStreamingHistoryStack />
       <TrackStreamsLineChart height={300} />
     </>
   );
+}
+
+function TrackVideos({
+  videos,
+}: {
+  videos: {
+    uri: string;
+    title: string | null;
+    duration_seconds: number | null;
+  }[];
+}) {
+  return (
+    <Paper withBorder p="lg" radius="md" mt="xl">
+      <Stack gap="sm">
+        <Title order={3}>Videos</Title>
+        {videos.map((video) => (
+          <Group key={video.uri} gap="sm">
+            <IconBrandYoutube color="var(--mantine-color-red-6)" />
+            <Anchor href={video.uri} target="_blank" rel="noreferrer">
+              {video.title || "Watch on YouTube"}
+            </Anchor>
+            {video.duration_seconds && (
+              <Text c="dimmed" size="sm">
+                {formatDuration(video.duration_seconds)}
+              </Text>
+            )}
+          </Group>
+        ))}
+      </Stack>
+    </Paper>
+  );
+}
+
+function formatDuration(durationSeconds: number) {
+  const minutes = Math.floor(durationSeconds / 60);
+  const seconds = durationSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function Credits({ credits }: { credits: Credit[] }) {

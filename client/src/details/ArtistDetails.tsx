@@ -7,6 +7,10 @@ import { PillWithAvatar } from "../design/PillDesign";
 import { ArtistPill } from "../list-items/ArtistPill";
 import { useAlbums, useArtistCredits, useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import {
+  DiscogsArtistCard,
+  MusicBrainzArtistCard,
+} from "./ArtistMetadataCards";
 import styles from "./Details.module.css";
 
 interface ArtistDetailsProps {
@@ -200,6 +204,18 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           </div>
         </div>
       )}
+
+      {artistCredits?.musicbrainz_artists?.map((entry) => (
+        <div key={entry.artist_mbid} style={{ marginTop: 24 }}>
+          <MusicBrainzArtistCard artist={entry} />
+        </div>
+      ))}
+
+      {artistCredits?.discogs_artists?.map((entry) => (
+        <div key={entry.discogs_artist_id} style={{ marginTop: 24 }}>
+          <DiscogsArtistCard artist={entry} />
+        </div>
+      ))}
 
       {artistCredits?.credits && artistCredits.credits.length > 0 && (
         <div style={{ marginTop: 24 }}>

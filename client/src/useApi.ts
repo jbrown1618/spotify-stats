@@ -2,11 +2,13 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import {
   ActiveFilters,
+  AlbumMetadata,
   AlbumRank,
   ArtistCreditsData,
   ArtistRank,
   Credit,
   FilterOptions,
+  getAlbumMetadata,
   getAlbums,
   getAlbumsStreamingHistory,
   getAlbumsStreamsByMonth,
@@ -21,6 +23,7 @@ import {
   getInsights,
   getLabels,
   getPlaylists,
+  getProducerProfile,
   getProducers,
   getRecommendationsInRange,
   getReleaseYears,
@@ -29,15 +32,18 @@ import {
   getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  getTrackVideos,
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
+  ProducerProfile,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
   toFiltersQuery,
   Track,
   TrackRank,
+  TrackVideo,
 } from "./api";
 import { useFilters } from "./useFilters";
 import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
@@ -163,11 +169,35 @@ export function useTrackCredits(uri: string) {
   });
 }
 
+export function useTrackVideos(uri: string) {
+  return useQuery<TrackVideo[]>({
+    ...defaultQueryOptions,
+    queryKey: ["track-videos", uri],
+    queryFn: async () => getTrackVideos(uri),
+  });
+}
+
+export function useAlbumMetadata(albumUri: string) {
+  return useQuery<AlbumMetadata>({
+    ...defaultQueryOptions,
+    queryKey: ["album-metadata", albumUri],
+    queryFn: async () => getAlbumMetadata(albumUri),
+  });
+}
+
 export function useArtistCredits(artistUri: string) {
   return useQuery<ArtistCreditsData>({
     ...defaultQueryOptions,
     queryKey: ["artist-credits", artistUri],
     queryFn: async () => getArtistCredits(artistUri),
+  });
+}
+
+export function useProducerProfile(producerKey: string) {
+  return useQuery<ProducerProfile>({
+    ...defaultQueryOptions,
+    queryKey: ["producer-profile", producerKey],
+    queryFn: async () => getProducerProfile(producerKey),
   });
 }
 

@@ -78,6 +78,8 @@ export interface ArtistCreditsData {
   members?: Partial<ArtistWithMBData>[];
   groups?: ArtistRelationship[];
   subgroups?: ArtistRelationship[];
+  musicbrainz_artists?: MusicBrainzArtistMetadata[];
+  discogs_artists?: DiscogsArtistMetadata[];
 }
 
 export interface ArtistWithMBData extends Artist {
@@ -110,6 +112,32 @@ export interface AlbumRank {
   album_image_url: string;
 }
 
+export interface DiscogsMasterMetadata {
+  discogs_master_id: number;
+  title: string;
+  year: number | null;
+  genres: string[];
+  styles: string[];
+  countries: string[];
+  labels: string[];
+  formats: string[];
+}
+
+export interface AlbumTrackMetadata {
+  track_uri: string;
+  track_name: string;
+  source: "musicbrainz" | "discogs";
+  source_id: string;
+  source_title: string;
+  language: string | null;
+  position: string | null;
+}
+
+export interface AlbumMetadata {
+  discogs_masters: DiscogsMasterMetadata[];
+  tracks: AlbumTrackMetadata[];
+}
+
 export interface Label {
   label: string;
   track_count: number;
@@ -134,6 +162,44 @@ export interface Producer {
   liked_track_count: number;
   track_count: number;
   credit_types: string[];
+}
+
+export interface MusicBrainzArtistMetadata {
+  artist_mbid: string;
+  name: string;
+  sort_name: string | null;
+  disambiguation: string | null;
+  type: string | null;
+  area: string | null;
+  birthplace: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  gender: string | null;
+  aliases: string[];
+}
+
+export interface DiscogsArtistMetadata {
+  discogs_artist_id: number;
+  name: string;
+  realname: string | null;
+  profile: string | null;
+  primary_image_url: string | null;
+  namevariations: string[];
+}
+
+export interface ProducerProfile extends Producer {
+  sources: string[];
+  musicbrainz_artists: MusicBrainzArtistMetadata[];
+  discogs_artists: DiscogsArtistMetadata[];
+}
+
+export interface TrackVideo {
+  uri: string;
+  title: string | null;
+  description: string | null;
+  duration_seconds: number | null;
+  embed: boolean | null;
+  discogs_master_id: number;
 }
 
 export interface Credit {
@@ -315,6 +381,10 @@ export async function getTrackCredits(uri: string): Promise<Credit[]> {
   return sendRequest(`/api/tracks/${uri}/credits`, `track credits for ${uri}`);
 }
 
+export async function getTrackVideos(uri: string): Promise<TrackVideo[]> {
+  return sendRequest(`/api/tracks/${uri}/videos`, `track videos for ${uri}`);
+}
+
 export async function getPlaylists(
   filters: ActiveFilters & Partial<PaginationParams>
 ): Promise<PaginatedResponse<Playlist>> {
@@ -333,6 +403,15 @@ export async function getAlbums(
   return sendRequest(`/api/albums`, "albums", filters);
 }
 
+export async function getAlbumMetadata(
+  albumUri: string
+): Promise<AlbumMetadata> {
+  return sendRequest(
+    `/api/albums/${albumUri}/metadata`,
+    `album metadata for ${albumUri}`
+  );
+}
+
 export async function getLabels(
   filters: ActiveFilters & Partial<PaginationParams>
 ): Promise<PaginatedResponse<Label>> {
@@ -349,6 +428,15 @@ export async function getProducers(
   filters: ActiveFilters & Partial<PaginationParams>
 ): Promise<PaginatedResponse<Producer>> {
   return sendRequest(`/api/producers`, "producers", filters);
+}
+
+export async function getProducerProfile(
+  producerKey: string
+): Promise<ProducerProfile> {
+  return sendRequest(
+    `/api/producers/${encodeURIComponent(producerKey)}`,
+    `producer profile for ${producerKey}`
+  );
 }
 
 export async function getReleaseYears(
