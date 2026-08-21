@@ -21,6 +21,8 @@ from data.sql.migrations.v020_refactor_musicbrainz_ingestion import RefactorMusi
 from data.sql.migrations.v021_add_unified_track_credits import AddUnifiedTrackCredits
 from data.sql.migrations.v022_resolve_unified_credit_aliases import ResolveUnifiedCreditAliases
 from data.sql.migrations.v023_add_job_summary import AddJobSummary
+from data.sql.migrations.v024_retry_ambiguous_discogs_artists import RetryAmbiguousDiscogsArtists
+from data.sql.migrations.v025_retry_loona_musicbrainz_match import RetryLoonaMusicBrainzMatch
 
 migrations = [
     AddTrackRanks(),
@@ -45,6 +47,8 @@ migrations = [
     AddUnifiedTrackCredits(),
     ResolveUnifiedCreditAliases(),
     AddJobSummary(),
+    RetryAmbiguousDiscogsArtists(),
+    RetryLoonaMusicBrainzMatch(),
 ]
 
 def perform_all_migrations():

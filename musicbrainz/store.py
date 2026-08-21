@@ -103,6 +103,53 @@ class MusicBrainzStore:
             for row in self.cursor.fetchall()
         ]
 
+    def fetch_artist_track_evidence(
+        self,
+        artist_uri: str,
+        limit: int,
+    ) -> list[dict[str, str]]:
+        self.cursor.execute(
+            """
+            SELECT
+                t.uri,
+                t.name,
+                t.isrc
+            FROM track_artist ta
+                INNER JOIN track t ON t.uri = ta.track_uri
+                LEFT JOIN liked_track lt ON lt.track_uri = t.uri
+                LEFT JOIN (
+                    SELECT track_uri, COUNT(*) AS stream_count
+                    FROM track_stream
+                    GROUP BY track_uri
+                ) stream_counts ON stream_counts.track_uri = t.uri
+            WHERE ta.artist_uri = %(artist_uri)s
+                AND t.isrc IS NOT NULL
+                AND (
+                    lt.track_uri IS NOT NULL
+                    OR EXISTS (
+                        SELECT 1 FROM playlist_track pt WHERE pt.track_uri = t.uri
+                    )
+                )
+            ORDER BY
+                COALESCE(stream_counts.stream_count, 0) DESC,
+                (lt.track_uri IS NOT NULL) DESC,
+                t.name
+            LIMIT %(limit)s;
+            """,
+            {
+                "artist_uri": artist_uri,
+                "limit": limit,
+            },
+        )
+        return [
+            {
+                "track_uri": row[0],
+                "track_name": row[1],
+                "isrc": row[2],
+            }
+            for row in self.cursor.fetchall()
+        ]
+
     def save_recording(self, recording: dict[str, Any], language: str | None):
         self.cursor.execute(
             """
