@@ -1,11 +1,7 @@
-import { Pill } from "@mantine/core";
-
-import { Producer } from "../api";
 import { ProducersBarChart } from "../charts/ProducersBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
+import { ProducerPill } from "../list-items/ProducerPill";
 import { PAGE_SIZE, useProducers } from "../useApi";
-import { useSetFilters } from "../useFilters";
-import styles from "./Sections.module.css";
 
 export function ProducersSection() {
   return (
@@ -32,19 +28,5 @@ function ProducersDisplayGrid() {
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
     />
-  );
-}
-
-function ProducerPill({ producer }: { producer: Producer }) {
-  const setFilters = useSetFilters();
-  return (
-    <Pill
-      bg="gray"
-      size="lg"
-      className={styles.clickable}
-      onClick={() => setFilters({ producers: [producer.producer_key] })}
-    >
-      {producer.producer_name}
-    </Pill>
   );
 }

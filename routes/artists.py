@@ -36,6 +36,12 @@ def artist_credits_payload(artist_uri: str):
     result = {}
     if not credits.empty:
         result["credits"] = to_json(credits)
+    if not artist_credits.musicbrainz_artists.empty:
+        result["musicbrainz_artists"] = to_json(
+            artist_credits.musicbrainz_artists
+        )
+    if not artist_credits.discogs_artists.empty:
+        result["discogs_artists"] = to_json(artist_credits.discogs_artists)
 
     aliases = _related_artists(
         relationships,

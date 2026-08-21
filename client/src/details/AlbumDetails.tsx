@@ -1,9 +1,12 @@
+import { Anchor, Badge, Group, Paper, Stack, Text } from "@mantine/core";
+
+import { DiscogsMasterMetadata } from "../api";
 import { AlbumStreamsLineChart } from "../charts/AlbumsLineChart";
 import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistoryStack";
 import { ArtistPills } from "../design/ArtistPills";
 import { KPIsList } from "../design/KPI";
 import { TextSkeleton } from "../design/TextSkeleton";
-import { useAlbums } from "../useApi";
+import { useAlbumMetadata, useAlbums } from "../useApi";
 import styles from "./Details.module.css";
 
 interface AlbumDetailsProps {
@@ -12,6 +15,7 @@ interface AlbumDetailsProps {
 
 export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
   const { items: albums } = useAlbums({ filters: { albums: [albumURI] } });
+  const { data: metadata } = useAlbumMetadata(albumURI);
 
   const album = albums?.find((a) => a.album_uri === albumURI);
 
@@ -51,8 +55,59 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
           ]}
         />
       </div>
+      {metadata && (
+        <AlbumSourceMetadata masters={metadata.discogs_masters} />
+      )}
       <AlbumsStreamingHistoryStack />
       <AlbumStreamsLineChart height={300} />
     </>
+  );
+}
+
+function AlbumSourceMetadata({
+  masters,
+}: {
+  masters: DiscogsMasterMetadata[];
+}) {
+  if (masters.length === 0) return null;
+
+  return (
+    <Stack gap="lg" mt="xl">
+      {masters.map((master) => (
+        <Paper key={master.discogs_master_id} withBorder p="lg" radius="md">
+          <Group justify="space-between">
+            <Text fw={600} size="lg">
+              {master.title}
+              {master.year ? ` (${master.year})` : ""}
+            </Text>
+            <Anchor
+              href={`https://www.discogs.com/master/${master.discogs_master_id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Discogs
+            </Anchor>
+          </Group>
+          <Group gap="xs" mt="sm">
+            {[
+              ...master.genres,
+              ...master.styles,
+              ...master.formats,
+              ...master.countries,
+            ].map((value) => (
+              <Badge key={value} variant="light">
+                {value}
+              </Badge>
+            ))}
+          </Group>
+          {master.labels.length > 0 && (
+            <Text mt="sm">
+              <strong>Labels:</strong> {master.labels.join(", ")}
+            </Text>
+          )}
+        </Paper>
+      ))}
+
+    </Stack>
   );
 }

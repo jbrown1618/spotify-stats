@@ -15,6 +15,13 @@ from data.query import query_text
 class ArtistCredits:
     credits: pd.DataFrame
     relationships: pd.DataFrame
+    musicbrainz_artists: pd.DataFrame
+    discogs_artists: pd.DataFrame
+
+
+@dataclass(frozen=True)
+class AlbumMetadata:
+    discogs_masters: pd.DataFrame
 
 
 @dataclass(frozen=True)
@@ -87,6 +94,12 @@ class DataRepository:
 
     def producers_for_filters(self, filters: Mapping[str, Any]) -> pd.DataFrame:
         return self._filtered_dataframe(filters, "select_producers")
+
+    def producer_profile(self, producer_key: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_producer_profile",
+            {"producer_key": producer_key},
+        )
 
     def genre_track_counts_for_filters(
         self, filters: Mapping[str, Any]
@@ -171,12 +184,41 @@ class DataRepository:
                 "select_artist_relationships",
                 {"artist_uri": artist_uri},
             )
-        return ArtistCredits(credits=credits, relationships=relationships)
+            musicbrainz_artists = self._read_dataframe_on(
+                connection,
+                "select_artist_musicbrainz_metadata",
+                {"artist_uri": artist_uri},
+            )
+            discogs_artists = self._read_dataframe_on(
+                connection,
+                "select_artist_discogs_metadata",
+                {"artist_uri": artist_uri},
+            )
+        return ArtistCredits(
+            credits=credits,
+            relationships=relationships,
+            musicbrainz_artists=musicbrainz_artists,
+            discogs_artists=discogs_artists,
+        )
 
     def track_credits(self, track_uri: str) -> pd.DataFrame:
         return self._read_dataframe(
             "select_track_credits",
             {"track_uri": track_uri},
+        )
+
+    def track_videos(self, track_uri: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_track_videos",
+            {"track_uri": track_uri},
+        )
+
+    def album_metadata(self, album_uri: str) -> AlbumMetadata:
+        return AlbumMetadata(
+            discogs_masters=self._read_dataframe(
+                "select_album_discogs_metadata",
+                {"album_uri": album_uri},
+            )
         )
 
     def insight_frames(
