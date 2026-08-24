@@ -1,4 +1,4 @@
-WITH period_counts AS (
+WITH yearly_counts AS (
     SELECT
         EXTRACT(YEAR FROM s.played_at)::INTEGER AS year,
         t.album_uri,
@@ -6,14 +6,17 @@ WITH period_counts AS (
     FROM track_stream s
     INNER JOIN track t ON t.uri = s.track_uri
     GROUP BY year, t.album_uri
+),
+period_counts AS (
+    SELECT year, album_uri, stream_count
+    FROM yearly_counts
     UNION ALL
     SELECT
         NULL AS year,
-        t.album_uri,
-        COUNT(*) AS stream_count
-    FROM track_stream s
-    INNER JOIN track t ON t.uri = s.track_uri
-    GROUP BY t.album_uri
+        album_uri,
+        SUM(stream_count) AS stream_count
+    FROM yearly_counts
+    GROUP BY album_uri
 ),
 ranked AS (
     SELECT
