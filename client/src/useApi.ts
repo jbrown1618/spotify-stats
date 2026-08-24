@@ -25,11 +25,11 @@ import {
   getRecommendationsInRange,
   getReleaseYears,
   getSpotifyAuthStatus,
+  getTopRankings,
   getTrackCredits,
   getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
-  getYearlyRankings,
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
@@ -165,14 +165,11 @@ export function useTrackCredits(uri: string) {
   });
 }
 
-export function useYearlyRankings(
-  entityType: RankingEntityType,
-  uri: string
-) {
+export function useTopRankings(entityType: RankingEntityType, uri: string) {
   return useQuery({
     ...defaultQueryOptions,
-    queryKey: ["yearly-rankings", entityType, uri],
-    queryFn: async () => getYearlyRankings(entityType, uri),
+    queryKey: ["top-rankings", entityType, uri],
+    queryFn: async () => getTopRankings(entityType, uri),
   });
 }
 

@@ -3,7 +3,7 @@ import { AlbumsStreamingHistoryStack } from "../charts/AlbumsStreamingHistorySta
 import { ArtistPills } from "../design/ArtistPills";
 import { KPIsList } from "../design/KPI";
 import { TextSkeleton } from "../design/TextSkeleton";
-import { YearlyTopRankings } from "../design/YearlyTopRankings";
+import { TopRankings } from "../design/TopRankings";
 import { useAlbums } from "../useApi";
 import styles from "./Details.module.css";
 
@@ -52,7 +52,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
           ]}
         />
       </div>
-      <YearlyTopRankings entityType="album" uri={albumURI} />
+      <TopRankings entityType="album" uri={albumURI} />
       <AlbumsStreamingHistoryStack />
       <AlbumStreamsLineChart height={300} />
     </>

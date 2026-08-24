@@ -178,14 +178,14 @@ class DataRepository:
             {"track_uri": track_uri},
         )
 
-    def track_yearly_rankings(self, track_uri: str) -> pd.DataFrame:
-        return self._yearly_rankings("track", track_uri)
+    def track_rankings(self, track_uri: str) -> pd.DataFrame:
+        return self._rankings("track", track_uri)
 
-    def artist_yearly_rankings(self, artist_uri: str) -> pd.DataFrame:
-        return self._yearly_rankings("artist", artist_uri)
+    def artist_rankings(self, artist_uri: str) -> pd.DataFrame:
+        return self._rankings("artist", artist_uri)
 
-    def album_yearly_rankings(self, album_uri: str) -> pd.DataFrame:
-        return self._yearly_rankings("album", album_uri)
+    def album_rankings(self, album_uri: str) -> pd.DataFrame:
+        return self._rankings("album", album_uri)
 
     def insight_frames(
         self, filters: Mapping[str, Any]
@@ -568,11 +568,9 @@ class DataRepository:
         with get_engine().begin() as connection:
             return self._read_dataframe_on(connection, query_name, params)
 
-    def _yearly_rankings(
-        self, entity_type: str, entity_uri: str
-    ) -> pd.DataFrame:
+    def _rankings(self, entity_type: str, entity_uri: str) -> pd.DataFrame:
         return self._read_dataframe(
-            f"select_{entity_type}_yearly_rankings",
+            f"select_{entity_type}_rankings",
             {"entity_uri": entity_uri},
         )
 

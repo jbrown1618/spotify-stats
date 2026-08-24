@@ -162,8 +162,8 @@ export interface YearCounts {
   year: number;
 }
 
-export interface YearlyRanking {
-  year: number;
+export interface TopRanking {
+  year: number | null;
   rank: number;
   stream_count: number;
 }
@@ -322,13 +322,13 @@ export async function getTrackCredits(uri: string): Promise<Credit[]> {
   return sendRequest(`/api/tracks/${uri}/credits`, `track credits for ${uri}`);
 }
 
-export async function getYearlyRankings(
+export async function getTopRankings(
   entityType: RankingEntityType,
   uri: string
-): Promise<YearlyRanking[]> {
+): Promise<TopRanking[]> {
   return sendRequest(
-    `/api/${entityType}s/${encodeURIComponent(uri)}/yearly-rankings`,
-    `${entityType} yearly rankings for ${uri}`
+    `/api/${entityType}s/${encodeURIComponent(uri)}/rankings`,
+    `${entityType} rankings for ${uri}`
   );
 }
 
