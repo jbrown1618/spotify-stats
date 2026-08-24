@@ -127,18 +127,34 @@ export const useReleaseYears = (opts?: EntityQueryOptions) =>
 export const useProducers = (opts?: EntityQueryOptions) =>
   useEntityQuery("producers", getProducers, opts);
 
-// --- Tracks count ---
+// --- Entity counts ---
 
-export function useTracksCount(filters?: ActiveFilters) {
+function useEntityCount(
+  key: string,
+  fetcher: (params: ActiveFilters) => Promise<PaginatedResponse<unknown>>,
+  filters?: ActiveFilters,
+) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
   return useQuery({
     ...defaultQueryOptions,
-    queryKey: ["tracks-count", query],
-    queryFn: async () => getTracks(activeFilters),
+    queryKey: [`${key}-count`, query],
+    queryFn: async () => fetcher(activeFilters),
     select: (data) => data.total,
   });
+}
+
+export function useTracksCount(filters?: ActiveFilters) {
+  return useEntityCount("tracks", getTracks, filters);
+}
+
+export function useArtistsCount(filters?: ActiveFilters) {
+  return useEntityCount("artists", getArtists, filters);
+}
+
+export function useAlbumsCount(filters?: ActiveFilters) {
+  return useEntityCount("albums", getAlbums, filters);
 }
 
 // --- Specialized hooks ---
