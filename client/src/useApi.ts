@@ -29,9 +29,11 @@ import {
   getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  getYearlyRankings,
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
+  RankingEntityType,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
@@ -160,6 +162,17 @@ export function useTrackCredits(uri: string) {
     ...defaultQueryOptions,
     queryKey: ["track-credits", uri],
     queryFn: async () => getTrackCredits(uri),
+  });
+}
+
+export function useYearlyRankings(
+  entityType: RankingEntityType,
+  uri: string
+) {
+  return useQuery({
+    ...defaultQueryOptions,
+    queryKey: ["yearly-rankings", entityType, uri],
+    queryFn: async () => getYearlyRankings(entityType, uri),
   });
 }
 

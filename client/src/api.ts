@@ -162,6 +162,14 @@ export interface YearCounts {
   year: number;
 }
 
+export interface YearlyRanking {
+  year: number;
+  rank: number;
+  stream_count: number;
+}
+
+export type RankingEntityType = "track" | "artist" | "album";
+
 export interface ActiveFilters {
   liked?: boolean;
   tracks?: string[];
@@ -312,6 +320,16 @@ export async function getTracks(
 
 export async function getTrackCredits(uri: string): Promise<Credit[]> {
   return sendRequest(`/api/tracks/${uri}/credits`, `track credits for ${uri}`);
+}
+
+export async function getYearlyRankings(
+  entityType: RankingEntityType,
+  uri: string
+): Promise<YearlyRanking[]> {
+  return sendRequest(
+    `/api/${entityType}s/${encodeURIComponent(uri)}/yearly-rankings`,
+    `${entityType} yearly rankings for ${uri}`
+  );
 }
 
 export async function getPlaylists(

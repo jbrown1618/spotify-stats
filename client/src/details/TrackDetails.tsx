@@ -7,10 +7,11 @@ import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistorySta
 import { ArtistPills } from "../design/ArtistPills";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
+import { YearlyTopRankings } from "../design/YearlyTopRankings";
 import { AlbumPill } from "../list-items/AlbumPill";
 import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
-import { useTracks, useTrackCredits } from "../useApi";
+import { useTrackCredits, useTracks } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
@@ -74,6 +75,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
           ]}
         />
       </div>
+      <YearlyTopRankings entityType="track" uri={trackURI} />
       {credits && credits.length > 0 && <Credits credits={credits} />}
       <TracksStreamingHistoryStack />
       <TrackStreamsLineChart height={300} />
