@@ -4,8 +4,16 @@ from flask import Flask, request, send_file
 from data.filters import parse_request_args
 from data.repository import DataRepository
 from data.sql.migrations.migrations import perform_all_migrations
-from routes.albums import album_metadata_payload, albums_payload
-from routes.artists import artists_payload, artist_credits_payload
+from routes.albums import (
+    album_metadata_payload,
+    album_yearly_rankings_payload,
+    albums_payload,
+)
+from routes.artists import (
+    artist_yearly_rankings_payload,
+    artists_payload,
+    artist_credits_payload,
+)
 from routes.filters import filter_options_payload
 from routes.genres import genres_payload
 from routes.insights import insights_payload
@@ -18,6 +26,7 @@ from routes.stream_shares import artist_stream_share_by_month_payload, genre_str
 from routes.tracks import (
     track_credits_payload,
     track_videos_payload,
+    track_yearly_rankings_payload,
     tracks_search_payload,
 )
 from routes.utils import to_date_range, to_json
@@ -61,6 +70,11 @@ def get_track_videos(track_uri):
     return track_videos_payload(track_uri)
 
 
+@app.route("/api/tracks/<track_uri>/yearly-rankings")
+def get_track_yearly_rankings(track_uri):
+    return track_yearly_rankings_payload(track_uri)
+
+
 @app.route("/api/playlists")
 def list_playlists():
     return playlists_payload(parse_request_args(request.args))
@@ -76,6 +90,11 @@ def get_artist_credits(artist_uri):
     return artist_credits_payload(artist_uri)
 
 
+@app.route("/api/artists/<artist_uri>/yearly-rankings")
+def get_artist_yearly_rankings(artist_uri):
+    return artist_yearly_rankings_payload(artist_uri)
+
+
 @app.route("/api/albums")
 def list_albums():
     return albums_payload(parse_request_args(request.args))
@@ -84,6 +103,11 @@ def list_albums():
 @app.route("/api/albums/<album_uri>/metadata")
 def get_album_metadata(album_uri):
     return album_metadata_payload(album_uri)
+
+
+@app.route("/api/albums/<album_uri>/yearly-rankings")
+def get_album_yearly_rankings(album_uri):
+    return album_yearly_rankings_payload(album_uri)
 
 
 @app.route("/api/labels")

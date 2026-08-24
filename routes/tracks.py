@@ -19,3 +19,7 @@ def track_credits_payload(track_uri):
 
 def track_videos_payload(track_uri):
     return to_json(repository.track_videos(track_uri))
+
+
+def track_yearly_rankings_payload(track_uri):
+    return to_json(repository.track_yearly_rankings(track_uri))

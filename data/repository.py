@@ -89,6 +89,24 @@ class DataRepository:
             },
         )
 
+    def track_yearly_rankings(self, track_uri: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_track_yearly_rankings",
+            {"track_uri": track_uri},
+        )
+
+    def artist_yearly_rankings(self, artist_uri: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_artist_yearly_rankings",
+            {"artist_uri": artist_uri},
+        )
+
+    def album_yearly_rankings(self, album_uri: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_album_yearly_rankings",
+            {"album_uri": album_uri},
+        )
+
     def playlists_for_filters(self, filters: Mapping[str, Any]) -> pd.DataFrame:
         return self._filtered_dataframe(filters, "select_playlists")
 

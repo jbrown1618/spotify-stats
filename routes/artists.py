@@ -16,6 +16,10 @@ def artists_payload(filters: dict):
     return paginate_df(artists, filters, ARTIST_SORT_COLUMNS, "Most streams")
 
 
+def artist_yearly_rankings_payload(artist_uri: str):
+    return to_json(repository.artist_yearly_rankings(artist_uri))
+
+
 RELATIONSHIP_COLUMNS = [
     "artist_mbid",
     "artist_mb_name",
