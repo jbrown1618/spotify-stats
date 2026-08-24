@@ -10,10 +10,7 @@ def filter_options_payload():
     playlists = options.playlists
     artists = options.artists
     albums = options.albums
-    producers = options.producers.drop_duplicates(
-        subset=["producer_mbid"],
-        keep="first",
-    )
+    producers = options.producers
     labels = options.labels["standardized_label"].to_list()
     genres = options.genres["genre"].to_list()
 
@@ -28,8 +25,8 @@ def filter_options_payload():
             "playlist_uri",
         ),
         "producers": to_json(
-            producers[["producer_name", "producer_mbid"]],
-            "producer_mbid",
+            producers[["producer_name", "producer_key"]],
+            "producer_key",
         ),
         "labels": labels,
         "genres": genres,

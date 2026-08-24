@@ -15,6 +15,13 @@ from data.query import query_text
 class ArtistCredits:
     credits: pd.DataFrame
     relationships: pd.DataFrame
+    musicbrainz_artists: pd.DataFrame
+    discogs_artists: pd.DataFrame
+
+
+@dataclass(frozen=True)
+class AlbumMetadata:
+    discogs_masters: pd.DataFrame
 
 
 @dataclass(frozen=True)
@@ -44,11 +51,12 @@ class StreamWriter:
     def __init__(self, cursor):
         self._cursor = cursor
 
-    def add(self, track_uri: str, played_at: float) -> None:
+    def add(self, track_uri: str, played_at: float) -> int:
         self._cursor.execute(
             query_text("insert_stream"),
             {"track_uri": track_uri, "played_at": played_at},
         )
+        return self._cursor.rowcount
 
 
 class DataRepository:
@@ -86,6 +94,12 @@ class DataRepository:
 
     def producers_for_filters(self, filters: Mapping[str, Any]) -> pd.DataFrame:
         return self._filtered_dataframe(filters, "select_producers")
+
+    def producer_profile(self, producer_key: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_producer_profile",
+            {"producer_key": producer_key},
+        )
 
     def genre_track_counts_for_filters(
         self, filters: Mapping[str, Any]
@@ -170,7 +184,22 @@ class DataRepository:
                 "select_artist_relationships",
                 {"artist_uri": artist_uri},
             )
-        return ArtistCredits(credits=credits, relationships=relationships)
+            musicbrainz_artists = self._read_dataframe_on(
+                connection,
+                "select_artist_musicbrainz_metadata",
+                {"artist_uri": artist_uri},
+            )
+            discogs_artists = self._read_dataframe_on(
+                connection,
+                "select_artist_discogs_metadata",
+                {"artist_uri": artist_uri},
+            )
+        return ArtistCredits(
+            credits=credits,
+            relationships=relationships,
+            musicbrainz_artists=musicbrainz_artists,
+            discogs_artists=discogs_artists,
+        )
 
     def track_credits(self, track_uri: str) -> pd.DataFrame:
         return self._read_dataframe(
@@ -186,6 +215,20 @@ class DataRepository:
 
     def album_rankings(self, album_uri: str) -> pd.DataFrame:
         return self._rankings("album", album_uri)
+
+    def track_videos(self, track_uri: str) -> pd.DataFrame:
+        return self._read_dataframe(
+            "select_track_videos",
+            {"track_uri": track_uri},
+        )
+
+    def album_metadata(self, album_uri: str) -> AlbumMetadata:
+        return AlbumMetadata(
+            discogs_masters=self._read_dataframe(
+                "select_album_discogs_metadata",
+                {"album_uri": album_uri},
+            )
+        )
 
     def insight_frames(
         self, filters: Mapping[str, Any]
@@ -440,17 +483,17 @@ class DataRepository:
             {"orphan_uri": track_uri},
         )
 
-    def repair_orphan_track(self, orphan_uri: str, replacement_uri: str) -> None:
-        self._execute_write(
+    def repair_orphan_track(self, orphan_uri: str, replacement_uri: str) -> int:
+        return self._execute_write(
             "repair_orphan_track",
             {"orphan_uri": orphan_uri, "replacement_uri": replacement_uri},
         )
 
-    def delete_orphan_albums(self) -> None:
-        self._execute_write("delete_orphan_albums")
+    def delete_orphan_albums(self) -> int:
+        return self._execute_write("delete_orphan_albums")
 
-    def delete_orphan_artists(self) -> None:
-        self._execute_write("delete_orphan_artists")
+    def delete_orphan_artists(self) -> int:
+        return self._execute_write("delete_orphan_artists")
 
     def track_uris_without_metadata(self) -> list[str]:
         return [
@@ -465,10 +508,15 @@ class DataRepository:
             yield writer
             connection.commit()
 
-    def save_streams(self, streams: Iterable[Mapping[str, Any]]) -> None:
+    def save_streams(self, streams: Iterable[Mapping[str, Any]]) -> int:
+        inserted_count = 0
         with self.stream_writer() as writer:
             for stream in streams:
-                writer.add(stream["track_uri"], stream["played_at"])
+                inserted_count += writer.add(
+                    stream["track_uri"],
+                    stream["played_at"],
+                )
+        return inserted_count
 
     def album_labels(self) -> pd.DataFrame:
         return self._read_dataframe("select_album_labels")
@@ -539,10 +587,15 @@ class DataRepository:
             {"id": job_id, "status": status},
         )
 
-    def mark_job_succeeded(self, job_id: int, status: str) -> None:
+    def mark_job_succeeded(
+        self,
+        job_id: int,
+        status: str,
+        summary: str,
+    ) -> None:
         self._execute_write(
             "update_job_succeeded",
-            {"id": job_id, "status": status},
+            {"id": job_id, "status": status, "summary": summary},
         )
 
     def mark_job_failed(self, job_id: int, status: str, error: str) -> None:

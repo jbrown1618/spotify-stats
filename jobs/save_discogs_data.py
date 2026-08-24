@@ -8,7 +8,7 @@ from discogs.store import DiscogsStore
 from utils.name import short_name
 
 
-MAX_TRACKS_PER_RUN = 100
+DEFAULT_MAX_TRACKS_PER_RUN = 100
 ARTIST_RELEASE_PAGES = 2
 CANDIDATE_MASTERS = 3
 EDITION_MARKERS = {
@@ -23,19 +23,25 @@ EDITION_MARKERS = {
 class DeferredArtistMatch(Exception):
     pass
 
-def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = None):
+
+def save_discogs_data(max_tracks: int | None = None):
     client = DiscogsClient()
-    requested_batch_size = batch_size if batch_size is not None else max_tracks
     limit = (
-        MAX_TRACKS_PER_RUN
-        if requested_batch_size is None
-        else min(requested_batch_size, MAX_TRACKS_PER_RUN)
+        DEFAULT_MAX_TRACKS_PER_RUN
+        if max_tracks is None
+        else max_tracks
     )
 
     if limit <= 0:
-        print(f"Skipping Discogs data fetch because batch size is {limit}")
-        return
+        print(f"Skipping Discogs data fetch because track limit is {limit}")
+        return {
+            "tracks_selected": 0,
+            "tracks_completed": 0,
+            "api_failures": 0,
+        }
 
+    tracks_completed = 0
+    api_failures = 0
     with get_connection() as conn:
         cursor = conn.cursor()
         store = DiscogsStore(cursor)
@@ -49,6 +55,7 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
                 flush=True,
             )
             if not process_track_safely(store, client, track):
+                api_failures += 1
                 conn.rollback()
                 continue
             print(
@@ -57,6 +64,13 @@ def save_discogs_data(batch_size: int | None = None, max_tracks: int | None = No
                 flush=True,
             )
             conn.commit()
+            tracks_completed += 1
+
+    return {
+        "tracks_selected": len(tracks),
+        "tracks_completed": tracks_completed,
+        "api_failures": api_failures,
+    }
 
 
 def process_track_safely(
@@ -231,10 +245,19 @@ def match_primary_artist(store: DiscogsStore, client: DiscogsClient, track: dict
 
     unique_matches = {int(match["id"]): match for match in matches}
     if len(unique_matches) > 1:
-        evidence = {
-            artist_id: artist_release_evidence(client, artist_id, track)
-            for artist_id in unique_matches
-        }
+        evidence = targeted_artist_release_evidence(
+            client,
+            set(unique_matches),
+            track,
+        )
+        if len(positive_evidence_matches(evidence)) != 1:
+            evidence = {
+                artist_id: max(
+                    evidence[artist_id],
+                    artist_release_evidence(client, artist_id, track),
+                )
+                for artist_id in unique_matches
+            }
         best_score = max(evidence.values())
         evidence_matches = [
             artist_id
@@ -300,6 +323,66 @@ def exact_artist_variation_matches(
         matches.append({**result, "artist_profile": artist})
 
     return matches
+
+
+def targeted_artist_release_evidence(
+    client: DiscogsClient,
+    discogs_artist_ids: set[int],
+    track: dict[str, Any],
+) -> dict[int, int]:
+    evidence = dict.fromkeys(discogs_artist_ids, 0)
+    queries = dict.fromkeys(
+        [
+            short_name(track["album_name"]),
+            short_name(track["track_name"]),
+        ]
+    )
+
+    for query in queries:
+        results = client.search(
+            release_title=query,
+            artist=track["artist_names"][0],
+            type="master",
+            limit=10,
+        )
+        ranked_results = sorted(
+            results,
+            key=lambda result: candidate_release_match_score(track, result),
+            reverse=True,
+        )
+        for result in ranked_results[:CANDIDATE_MASTERS]:
+            release_score = candidate_release_match_score(track, result)
+            master_id = parse_int(result.get("master_id") or result.get("id"))
+            if release_score <= 0 or master_id is None:
+                continue
+
+            master = client.master(master_id)
+            track_match = best_track_match(track, master)
+            if track_match is None or track_match["score"] <= 0:
+                continue
+
+            master_artist_ids = {
+                artist_id
+                for artist in master.get("artists", []) or []
+                if (artist_id := parse_int(artist.get("id"))) is not None
+            }
+            score = release_score * 100 + track_match["score"]
+            for artist_id in discogs_artist_ids.intersection(master_artist_ids):
+                evidence[artist_id] = max(evidence[artist_id], score)
+
+        if len(positive_evidence_matches(evidence)) == 1:
+            break
+
+    return evidence
+
+
+def positive_evidence_matches(evidence: dict[int, int]) -> list[int]:
+    best_score = max(evidence.values(), default=0)
+    return [
+        artist_id
+        for artist_id, score in evidence.items()
+        if score == best_score and score > 0
+    ]
 
 
 def artist_release_evidence(
@@ -648,4 +731,4 @@ def parse_int(value: Any) -> int | None:
 
 
 if __name__ == '__main__':
-    save_discogs_data(MAX_TRACKS_PER_RUN, MAX_TRACKS_PER_RUN)
+    save_discogs_data()

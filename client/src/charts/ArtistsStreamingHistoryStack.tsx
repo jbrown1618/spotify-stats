@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useArtistsStreamsByMonth } from "../useApi";
+import { useArtistsCount, useArtistsStreamsByMonth } from "../useApi";
 import styles from "./StreamingHistoryItem.module.css";
 import { StreamingHistoryStack, StreamingHistoryStackSkeleton } from "./StreamingHistoryStack";
 import { totalStreams } from "./utils";
@@ -11,6 +11,7 @@ export function ArtistsStreamingHistoryStack({
   onlyArtist?: string;
 }) {
   const [n, setN] = useState(5);
+  const { data: artistCount } = useArtistsCount();
   const { data: response, shouldRender } = useArtistsStreamsByMonth(n);
 
   if (!response?.streams || !response?.metadata) return <StreamingHistoryStackSkeleton />;
@@ -25,8 +26,6 @@ export function ArtistsStreamingHistoryStack({
       )
     : response.streams;
 
-  const metadataCount = Object.keys(response.metadata).length;
-
   return (
     <>
       <h3>Artist streams by month</h3>
@@ -39,7 +38,7 @@ export function ArtistsStreamingHistoryStack({
         })}
         sortItems={(a, b) => b.stream_count - a.stream_count}
         onMore={
-          n < metadataCount
+          n < (artistCount ?? 0)
             ? () => setN((prev) => prev + 5)
             : undefined
         }

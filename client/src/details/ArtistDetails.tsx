@@ -8,6 +8,10 @@ import { TopRankings } from "../design/TopRankings";
 import { ArtistPill } from "../list-items/ArtistPill";
 import { useAlbums, useArtistCredits, useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import {
+  DiscogsArtistCard,
+  MusicBrainzArtistCard,
+} from "./ArtistMetadataCards";
 import styles from "./Details.module.css";
 
 interface ArtistDetailsProps {
@@ -204,6 +208,18 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
         </div>
       )}
 
+      {artistCredits?.musicbrainz_artists?.map((entry) => (
+        <div key={entry.artist_mbid} style={{ marginTop: 24 }}>
+          <MusicBrainzArtistCard artist={entry} />
+        </div>
+      ))}
+
+      {artistCredits?.discogs_artists?.map((entry) => (
+        <div key={entry.discogs_artist_id} style={{ marginTop: 24 }}>
+          <DiscogsArtistCard artist={entry} />
+        </div>
+      ))}
+
       {artistCredits?.credits && artistCredits.credits.length > 0 && (
         <div style={{ marginTop: 24 }}>
           <h3>Songwriting & Production Credits</h3>
@@ -217,13 +233,13 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
                 </tr>
               </thead>
               <tbody>
-                {artistCredits.credits.map((credit, idx) => (
+                {artistCredits.credits.map((credit) => (
                   <tr
-                    key={`${credit.recording_mbid}-${idx}`}
+                    key={`${credit.track_uri}-${credit.producer_key}-${credit.credit_type}`}
                     style={{ borderBottom: "1px solid #eee" }}
                   >
                     <td style={{ padding: 8 }}>
-                      {credit.track_name || credit.recording_title}
+                      {credit.track_name || "Unknown track"}
                     </td>
                     <td style={{ padding: 8 }}>{credit.credit_type}</td>
                     <td style={{ padding: 8 }}>

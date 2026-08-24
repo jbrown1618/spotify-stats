@@ -4,19 +4,23 @@ from flask import Flask, request, send_file
 from data.filters import parse_request_args
 from data.repository import DataRepository
 from data.sql.migrations.migrations import perform_all_migrations
-from routes.albums import albums_payload
+from routes.albums import album_metadata_payload, albums_payload
 from routes.artists import artists_payload, artist_credits_payload
 from routes.filters import filter_options_payload
 from routes.genres import genres_payload
 from routes.insights import insights_payload
 from routes.labels import labels_payload
 from routes.playlists import playlists_payload
+from routes.producers import producer_profile_payload, producers_payload
 from routes.recommendations import percentile_range_recommendations_payload
 from routes.release_years import release_years_payload
 from routes.stream_shares import artist_stream_share_by_month_payload, genre_stream_share_by_month_payload
-from routes.tracks import tracks_search_payload, track_credits_payload
+from routes.tracks import (
+    track_credits_payload,
+    track_videos_payload,
+    tracks_search_payload,
+)
 from routes.utils import to_date_range, to_json
-from routes.producers import producers_payload
 from spotify.spotify_client import spotify_auth_status
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -57,6 +61,11 @@ def get_track_rankings(track_uri):
     return to_json(repository.track_rankings(track_uri))
 
 
+@app.route("/api/tracks/<track_uri>/videos")
+def get_track_videos(track_uri):
+    return track_videos_payload(track_uri)
+
+
 @app.route("/api/playlists")
 def list_playlists():
     return playlists_payload(parse_request_args(request.args))
@@ -87,6 +96,11 @@ def get_album_rankings(album_uri):
     return to_json(repository.album_rankings(album_uri))
 
 
+@app.route("/api/albums/<album_uri>/metadata")
+def get_album_metadata(album_uri):
+    return album_metadata_payload(album_uri)
+
+
 @app.route("/api/labels")
 def list_labels():
     return labels_payload(parse_request_args(request.args))
@@ -100,6 +114,11 @@ def list_genres():
 @app.route("/api/producers")
 def list_producers():
     return producers_payload(parse_request_args(request.args))
+
+
+@app.route("/api/producers/<producer_key>")
+def get_producer_profile(producer_key):
+    return producer_profile_payload(producer_key)
 
 
 @app.route("/api/release-years")

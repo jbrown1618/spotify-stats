@@ -49,7 +49,12 @@ argument:
 ```bash
 python -m script.queue save_spotify_data
 python -m script.queue save_listening_data
+python -m script.queue save_musicbrainz_data '{"max_tracks": 1000}'
+python -m script.queue save_discogs_data '{"max_tracks": 1000}'
 ```
+
+MusicBrainz and Discogs use their default track limits when `max_tracks` is
+omitted. An explicit `max_tracks` value overrides the default.
 
 Spotify imports automatically queue record-label standardization and orphan-track
 repair jobs.

@@ -15,3 +15,7 @@ def tracks_search_payload(filters: typing.Mapping[str, str]):
 
 def track_credits_payload(track_uri):
     return to_json(repository.track_credits(track_uri))
+
+
+def track_videos_payload(track_uri):
+    return to_json(repository.track_videos(track_uri))

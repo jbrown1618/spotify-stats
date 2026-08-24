@@ -100,6 +100,11 @@ def standardize_record_labels():
             })
         
     repository.replace_standardized_labels(standardized_labels_data)
+    return {
+        "albums_examined": len(albums),
+        "standardized_label_rows": len(standardized_labels_data),
+        "unique_standardized_labels": len(labels_by_standardized),
+    }
 
 
 def split(record_labels_str: str):

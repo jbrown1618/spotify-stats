@@ -11,6 +11,7 @@ def expire_stale_jobs():
         JobStatus.IN_PROGRESS.value,
     )
     print(f"Expired {expired_count} stale jobs", flush=True)
+    return {"expired_jobs": expired_count}
 
 
 if __name__ == '__main__':

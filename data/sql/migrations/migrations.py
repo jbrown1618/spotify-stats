@@ -18,6 +18,11 @@ from data.sql.migrations.v017_remove_uncorrelated_discogs_videos import RemoveUn
 from data.sql.migrations.v018_remove_unmapped_discogs_tracks import RemoveUnmappedDiscogsTracks
 from data.sql.migrations.v019_retry_discogs_artist_variation_matches import RetryDiscogsArtistVariationMatches
 from data.sql.migrations.v020_refactor_musicbrainz_ingestion import RefactorMusicBrainzIngestion
+from data.sql.migrations.v021_add_unified_track_credits import AddUnifiedTrackCredits
+from data.sql.migrations.v022_resolve_unified_credit_aliases import ResolveUnifiedCreditAliases
+from data.sql.migrations.v023_add_job_summary import AddJobSummary
+from data.sql.migrations.v024_retry_ambiguous_discogs_artists import RetryAmbiguousDiscogsArtists
+from data.sql.migrations.v025_retry_loona_musicbrainz_match import RetryLoonaMusicBrainzMatch
 
 migrations = [
     AddTrackRanks(),
@@ -39,6 +44,11 @@ migrations = [
     RemoveUnmappedDiscogsTracks(),
     RetryDiscogsArtistVariationMatches(),
     RefactorMusicBrainzIngestion(),
+    AddUnifiedTrackCredits(),
+    ResolveUnifiedCreditAliases(),
+    AddJobSummary(),
+    RetryAmbiguousDiscogsArtists(),
+    RetryLoonaMusicBrainzMatch(),
 ]
 
 def perform_all_migrations():

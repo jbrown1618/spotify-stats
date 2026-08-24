@@ -290,10 +290,10 @@ function ProducersFilter({ filters, options, onFilterChange }: FilterProps) {
     <MultiSelect
       label="Producers"
       data={Object.values(options.producers).map(
-        ({ producer_mbid, producer_name }) => {
+        ({ producer_key, producer_name }) => {
           return {
             label: producer_name,
-            value: producer_mbid,
+            value: producer_key,
           };
         }
       )}

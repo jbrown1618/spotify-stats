@@ -19,3 +19,19 @@
   border-radius: 100px;
   margin: 16px;
 }
+
+.producerOverview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.sourceContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.sourceProfile {
+  white-space: pre-line;
+}

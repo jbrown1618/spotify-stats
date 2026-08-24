@@ -34,14 +34,32 @@ def save_listening_data():
 
     if len(plays) == 0:
         print("No non-blacklisted tracks to save")
-        return
+        return {
+            "recent_plays_fetched": len(recents["items"]),
+            "streams_inserted": 0,
+            "tracks_skipped": len(recents["items"]),
+            "track_metadata_saved": 0,
+            "repair_jobs_queued": 0,
+        }
 
-    save_streams(plays)
+    inserted_streams = save_streams(plays)
 
     unsaved_uris = repository.track_uris_without_metadata()
+    track_metadata_saved = 0
+    repair_jobs_queued = 0
     if len(unsaved_uris) > 0:
-        save_tracks_by_uri(unsaved_uris)
+        metadata_summary = save_tracks_by_uri(unsaved_uris)
+        track_metadata_saved = metadata_summary["tracks"]
         queue_job("repair_orphan_tracks")
+        repair_jobs_queued = 1
+
+    return {
+        "recent_plays_fetched": len(recents["items"]),
+        "streams_inserted": inserted_streams,
+        "tracks_skipped": len(recents["items"]) - len(plays),
+        "track_metadata_saved": track_metadata_saved,
+        "repair_jobs_queued": repair_jobs_queued,
+    }
 
 
 def to_timestamp(date_str: str) -> float:
@@ -54,7 +72,7 @@ def to_timestamp(date_str: str) -> float:
 def save_streams(plays: pd.DataFrame):
     """Save individual streams to the track_stream table."""
     print(f'Saving {len(plays)} streams to track_stream table...')
-    repository.save_streams(
+    return repository.save_streams(
         {
             "track_uri": row["track_uri"],
             "played_at": row["time"],

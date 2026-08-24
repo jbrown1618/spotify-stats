@@ -1,21 +1,20 @@
-SELECT
-    rc.recording_mbid,
-    rc.credit_type,
-    rc.credit_details,
-    mr.recording_title,
-    stmr.spotify_track_uri,
-    t.name as track_name,
-    t.uri as track_uri
-FROM mb_recording_credit rc
-    INNER JOIN mb_recording mr ON rc.recording_mbid = mr.recording_mbid
-    INNER JOIN sp_track_mb_recording stmr ON rc.recording_mbid = stmr.recording_mbid
-    LEFT JOIN track t ON stmr.spotify_track_uri = t.uri
-WHERE rc.artist_mbid IN (
-    SELECT artist_mbid 
-    FROM sp_artist_mb_artist 
-    WHERE spotify_artist_uri = :artist_uri
+WITH artist_credit_keys AS (
+    SELECT DISTINCT producer_key
+    FROM unified_track_credit
+    WHERE artist_uri = :artist_uri
 )
-AND rc.credit_type IN (
+SELECT
+    utc.producer_key,
+    utc.credit_type,
+    utc.credit_details,
+    utc.raw_roles,
+    utc.track_uri,
+    t.name AS track_name,
+    utc.sources
+FROM unified_track_credit utc
+    INNER JOIN artist_credit_keys ack ON ack.producer_key = utc.producer_key
+    LEFT JOIN track t ON t.uri = utc.track_uri
+WHERE utc.credit_type IN (
     'songwriter',
     'lyricist',
     'producer',
@@ -26,4 +25,4 @@ AND rc.credit_type IN (
     'video director',
     'publishing'
 )
-ORDER BY rc.credit_type, mr.recording_title;
+ORDER BY utc.credit_type, t.name;

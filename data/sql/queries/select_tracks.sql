@@ -51,8 +51,6 @@ FROM track t
     INNER JOIN artist a ON a.uri = ta.artist_uri
     LEFT JOIN artist_genre ag ON ag.artist_uri = a.uri
     LEFT JOIN record_label rl ON rl.album_uri = t.album_uri
-    LEFT JOIN sp_track_mb_recording stmr ON stmr.spotify_track_uri = t.uri
-    LEFT JOIN mb_recording_credit rc ON rc.recording_mbid = stmr.recording_mbid
     LEFT JOIN tmp_stream_counts sc ON sc.track_uri = t.uri
 
 WHERE
@@ -70,7 +68,23 @@ WHERE
     AND
     (:filter_genres = FALSE OR ag.genre IN (:genres))
     AND
-    (:filter_producers = FALSE OR rc.artist_mbid IN (:producers))
+    (:filter_producers = FALSE OR EXISTS (
+        SELECT 1
+        FROM unified_track_credit utc
+        WHERE utc.track_uri = t.uri
+            AND utc.producer_key IN (:producers)
+            AND utc.credit_type IN (
+                'songwriter',
+                'lyricist',
+                'producer',
+                'arranger',
+                'sound',
+                'mastering',
+                'audio director',
+                'video director',
+                'publishing'
+            )
+    ))
     AND
     ((:wrapped_start_date IS NULL AND :wrapped_end_date IS NULL) OR sc.stream_count IS NOT NULL)
     AND

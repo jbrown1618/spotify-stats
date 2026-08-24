@@ -1,4 +1,9 @@
-import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { Anchor, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  IconBrandYoutube,
+  IconHeart,
+  IconHeartFilled,
+} from "@tabler/icons-react";
 import clsx from "clsx";
 
 import type { Credit } from "../api";
@@ -9,9 +14,9 @@ import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { TopRankings } from "../design/TopRankings";
 import { AlbumPill } from "../list-items/AlbumPill";
-import { ArtistPill } from "../list-items/ArtistPill";
 import sharedStyles from "../list-items/ListItems.module.css";
-import { useTrackCredits, useTracks } from "../useApi";
+import { ProducerPill } from "../list-items/ProducerPill";
+import { useTrackCredits, useTracks, useTrackVideos } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
 
@@ -19,6 +24,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { items: tracks } = useTracks({ filters: { tracks: [trackURI] } });
   const track = tracks?.[0];
   const { data: credits } = useTrackCredits(trackURI);
+  const { data: videos } = useTrackVideos(trackURI);
 
   if (!track)
     return (
@@ -76,6 +82,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
         />
       </div>
       <TopRankings entityType="track" uri={trackURI} />
+      {videos && videos.length > 0 && <TrackVideos videos={videos} />}
       {credits && credits.length > 0 && <Credits credits={credits} />}
       <TracksStreamingHistoryStack />
       <TrackStreamsLineChart height={300} />
@@ -83,30 +90,73 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
   );
 }
 
+function TrackVideos({
+  videos,
+}: {
+  videos: {
+    uri: string;
+    title: string | null;
+    duration_seconds: number | null;
+  }[];
+}) {
+  return (
+    <Paper withBorder p="lg" radius="md" mt="xl">
+      <Stack gap="sm">
+        <Title order={3}>Videos</Title>
+        {videos.map((video) => (
+          <Group key={video.uri} gap="sm">
+            <IconBrandYoutube color="var(--mantine-color-red-6)" />
+            <Anchor href={video.uri} target="_blank" rel="noreferrer">
+              {video.title || "Watch on YouTube"}
+            </Anchor>
+            {video.duration_seconds && (
+              <Text c="dimmed" size="sm">
+                {formatDuration(video.duration_seconds)}
+              </Text>
+            )}
+          </Group>
+        ))}
+      </Stack>
+    </Paper>
+  );
+}
+
+function formatDuration(durationSeconds: number) {
+  const minutes = Math.floor(durationSeconds / 60);
+  const seconds = durationSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 function Credits({ credits }: { credits: Credit[] }) {
-  // Group credits by artist (using artist_mbid as the key)
-  const creditsByArtist = credits.reduce(
+  const creditsByType = credits.reduce(
     (acc, credit) => {
-      const artistKey = credit.artist_mbid;
-      if (!acc[artistKey]) {
-        acc[artistKey] = {
-          artist: credit,
-          creditTypes: new Set<string>(),
-        };
-      }
-      // Add credit type to the set (automatically handles duplicates)
-      acc[artistKey].creditTypes.add(credit.credit_type);
+      acc[credit.credit_type] = [...(acc[credit.credit_type] ?? []), credit];
       return acc;
     },
-    {} as Record<string, { artist: Credit; creditTypes: Set<string> }>,
+    {} as Record<string, Credit[]>,
   );
 
-  // Sort artists by name
-  const sortedArtists = Object.values(creditsByArtist).sort((a, b) => {
-    const nameA = a.artist.artist_name || a.artist.artist_mb_name || "";
-    const nameB = b.artist.artist_name || b.artist.artist_mb_name || "";
-    return nameA.localeCompare(nameB);
-  });
+  const creditTypeOrder = [
+    "producer",
+    "songwriter",
+    "lyricist",
+    "arranger",
+    "sound",
+    "mastering",
+    "audio director",
+    "video director",
+    "publishing",
+  ];
+  const sortedCreditTypes = Object.entries(creditsByType).sort(
+    ([typeA], [typeB]) => {
+      const indexA = creditTypeOrder.indexOf(typeA);
+      const indexB = creditTypeOrder.indexOf(typeB);
+      if (indexA === -1 && indexB === -1) return typeA.localeCompare(typeB);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    },
+  );
 
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
@@ -132,7 +182,7 @@ function Credits({ credits }: { credits: Credit[] }) {
                 color: "var(--mantine-color-dimmed)",
               }}
             >
-              Artist
+              Credit
             </th>
             <th
               style={{
@@ -142,37 +192,39 @@ function Credits({ credits }: { credits: Credit[] }) {
                 color: "var(--mantine-color-dimmed)",
               }}
             >
-              Credits
+              People
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedArtists.map(({ artist, creditTypes }) => (
+          {sortedCreditTypes.map(([creditType, creditedPeople]) => (
             <tr
-              key={artist.artist_mbid}
+              key={creditType}
               style={{
                 borderBottom: "1px solid var(--mantine-color-default-border)",
               }}
             >
-              <td style={{ padding: "12px 8px" }}>
-                <CreditArtist credit={artist} />
+              <td
+                style={{
+                  padding: "12px 8px",
+                  textTransform: "capitalize",
+                  verticalAlign: "top",
+                }}
+              >
+                {creditType}
               </td>
               <td style={{ padding: "12px 8px" }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {Array.from(creditTypes).map((creditType) => (
-                    <div
-                      key={creditType}
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: "16px",
-                        backgroundColor: "var(--mantine-color-default-hover)",
-                        fontSize: "0.875rem",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {creditType}
-                    </div>
-                  ))}
+                  {creditedPeople
+                    .sort((a, b) =>
+                      a.producer_name.localeCompare(b.producer_name),
+                    )
+                    .map((credit) => (
+                      <CreditArtist
+                        key={credit.producer_key}
+                        credit={credit}
+                      />
+                    ))}
                 </div>
               </td>
             </tr>
@@ -184,32 +236,5 @@ function Credits({ credits }: { credits: Credit[] }) {
 }
 
 function CreditArtist({ credit }: { credit: Credit }) {
-  // If we have a Spotify artist URI, show it as an ArtistPill
-  if (credit.artist_uri && credit.artist_name) {
-    const artist = {
-      artist_uri: credit.artist_uri,
-      artist_name: credit.artist_name,
-      artist_image_url: credit.artist_image_url || "",
-      artist_followers: 0,
-      artist_liked_track_count: 0,
-      artist_popularity: 0,
-      artist_track_count: 0,
-      artist_stream_count: 0,
-    };
-    return <ArtistPill artist={artist} />;
-  }
-
-  // Otherwise, show as plain text
-  return (
-    <div
-      style={{
-        padding: "4px 12px",
-        borderRadius: "16px",
-        backgroundColor: "var(--mantine-color-default-hover)",
-        fontSize: "0.875rem",
-      }}
-    >
-      {credit.artist_name || credit.artist_mb_name || "Unknown Artist"}
-    </div>
-  );
+  return <ProducerPill producer={credit} />;
 }

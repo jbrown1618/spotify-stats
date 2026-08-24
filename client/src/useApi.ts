@@ -2,11 +2,13 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import {
   ActiveFilters,
+  AlbumMetadata,
   AlbumRank,
   ArtistCreditsData,
   ArtistRank,
   Credit,
   FilterOptions,
+  getAlbumMetadata,
   getAlbums,
   getAlbumsStreamingHistory,
   getAlbumsStreamsByMonth,
@@ -21,6 +23,7 @@ import {
   getInsights,
   getLabels,
   getPlaylists,
+  getProducerProfile,
   getProducers,
   getRecommendationsInRange,
   getReleaseYears,
@@ -30,9 +33,11 @@ import {
   getTracks,
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
+  getTrackVideos,
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
+  ProducerProfile,
   RankingEntityType,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
@@ -40,6 +45,7 @@ import {
   toFiltersQuery,
   Track,
   TrackRank,
+  TrackVideo,
 } from "./api";
 import { useFilters } from "./useFilters";
 import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
@@ -123,18 +129,34 @@ export const useReleaseYears = (opts?: EntityQueryOptions) =>
 export const useProducers = (opts?: EntityQueryOptions) =>
   useEntityQuery("producers", getProducers, opts);
 
-// --- Tracks count ---
+// --- Entity counts ---
 
-export function useTracksCount(filters?: ActiveFilters) {
+function useEntityCount(
+  key: string,
+  fetcher: (params: ActiveFilters) => Promise<PaginatedResponse<unknown>>,
+  filters?: ActiveFilters,
+) {
   const globalFilters = useFilters();
   const activeFilters = filters ?? globalFilters;
   const query = toFiltersQuery(activeFilters) || DEFAULT_QUERY_KEY;
   return useQuery({
     ...defaultQueryOptions,
-    queryKey: ["tracks-count", query],
-    queryFn: async () => getTracks(activeFilters),
+    queryKey: [`${key}-count`, query],
+    queryFn: async () => fetcher(activeFilters),
     select: (data) => data.total,
   });
+}
+
+export function useTracksCount(filters?: ActiveFilters) {
+  return useEntityCount("tracks", getTracks, filters);
+}
+
+export function useArtistsCount(filters?: ActiveFilters) {
+  return useEntityCount("artists", getArtists, filters);
+}
+
+export function useAlbumsCount(filters?: ActiveFilters) {
+  return useEntityCount("albums", getAlbums, filters);
 }
 
 // --- Specialized hooks ---
@@ -173,11 +195,35 @@ export function useTopRankings(entityType: RankingEntityType, uri: string) {
   });
 }
 
+export function useTrackVideos(uri: string) {
+  return useQuery<TrackVideo[]>({
+    ...defaultQueryOptions,
+    queryKey: ["track-videos", uri],
+    queryFn: async () => getTrackVideos(uri),
+  });
+}
+
+export function useAlbumMetadata(albumUri: string) {
+  return useQuery<AlbumMetadata>({
+    ...defaultQueryOptions,
+    queryKey: ["album-metadata", albumUri],
+    queryFn: async () => getAlbumMetadata(albumUri),
+  });
+}
+
 export function useArtistCredits(artistUri: string) {
   return useQuery<ArtistCreditsData>({
     ...defaultQueryOptions,
     queryKey: ["artist-credits", artistUri],
     queryFn: async () => getArtistCredits(artistUri),
+  });
+}
+
+export function useProducerProfile(producerKey: string) {
+  return useQuery<ProducerProfile>({
+    ...defaultQueryOptions,
+    queryKey: ["producer-profile", producerKey],
+    queryFn: async () => getProducerProfile(producerKey),
   });
 }
 

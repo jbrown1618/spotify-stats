@@ -19,7 +19,7 @@ export function PillWithAvatar({
       className={clsx(styles.pill, onClick && styles.clickable)}
       onClick={onClick}
     >
-      <img className={styles.avatar} src={imageHref} />
+      {imageHref && <img className={styles.avatar} src={imageHref} />}
       <span className={styles.label}>{children}</span>
     </Pill>
   );
