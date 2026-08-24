@@ -1,0 +1,33 @@
+.section {
+  width: 100%;
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 20px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--mantine-color-yellow-5) 16%, transparent),
+      transparent 60%
+    ),
+    var(--mantine-color-body);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rankings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ranking {
+  padding: 8px 14px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-default-hover);
+  font-weight: 600;
+}

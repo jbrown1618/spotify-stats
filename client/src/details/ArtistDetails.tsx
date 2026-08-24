@@ -4,6 +4,7 @@ import { ArtistStreamsLineChart } from "../charts/ArtistsLineChart";
 import { ArtistsStreamingHistoryStack } from "../charts/ArtistsStreamingHistoryStack";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
 import { PillWithAvatar } from "../design/PillDesign";
+import { TopRankings } from "../design/TopRankings";
 import { ArtistPill } from "../list-items/ArtistPill";
 import { useAlbums, useArtistCredits, useArtists } from "../useApi";
 import { useSetFilters } from "../useFilters";
@@ -80,6 +81,8 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           ]}
         />
       </div>
+
+      <TopRankings entityType="artist" uri={artistURI} />
 
       {artistCredits?.aliases && artistCredits.aliases.length > 0 && (
         <div style={{ marginTop: 24 }}>

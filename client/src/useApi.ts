@@ -28,6 +28,7 @@ import {
   getRecommendationsInRange,
   getReleaseYears,
   getSpotifyAuthStatus,
+  getTopRankings,
   getTrackCredits,
   getTracks,
   getTracksStreamingHistory,
@@ -37,6 +38,7 @@ import {
   PaginatedResponse,
   PaginationParams,
   ProducerProfile,
+  RankingEntityType,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
@@ -182,6 +184,14 @@ export function useTrackCredits(uri: string) {
     ...defaultQueryOptions,
     queryKey: ["track-credits", uri],
     queryFn: async () => getTrackCredits(uri),
+  });
+}
+
+export function useTopRankings(entityType: RankingEntityType, uri: string) {
+  return useQuery({
+    ...defaultQueryOptions,
+    queryKey: ["top-rankings", entityType, uri],
+    queryFn: async () => getTopRankings(entityType, uri),
   });
 }
 

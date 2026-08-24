@@ -12,6 +12,7 @@ import { TracksStreamingHistoryStack } from "../charts/TracksStreamingHistorySta
 import { ArtistPills } from "../design/ArtistPills";
 import { ChartSkeleton } from "../design/ChartSkeleton";
 import { KPIsList, KPIsListSkeleton } from "../design/KPI";
+import { TopRankings } from "../design/TopRankings";
 import { AlbumPill } from "../list-items/AlbumPill";
 import sharedStyles from "../list-items/ListItems.module.css";
 import { ProducerPill } from "../list-items/ProducerPill";
@@ -80,6 +81,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
           ]}
         />
       </div>
+      <TopRankings entityType="track" uri={trackURI} />
       {videos && videos.length > 0 && <TrackVideos videos={videos} />}
       {credits && credits.length > 0 && <Credits credits={credits} />}
       <TracksStreamingHistoryStack />

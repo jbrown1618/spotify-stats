@@ -56,6 +56,11 @@ def get_track_credits(track_uri):
     return track_credits_payload(track_uri)
 
 
+@app.route("/api/tracks/<track_uri>/rankings")
+def get_track_rankings(track_uri):
+    return to_json(repository.track_rankings(track_uri))
+
+
 @app.route("/api/tracks/<track_uri>/videos")
 def get_track_videos(track_uri):
     return track_videos_payload(track_uri)
@@ -76,9 +81,19 @@ def get_artist_credits(artist_uri):
     return artist_credits_payload(artist_uri)
 
 
+@app.route("/api/artists/<artist_uri>/rankings")
+def get_artist_rankings(artist_uri):
+    return to_json(repository.artist_rankings(artist_uri))
+
+
 @app.route("/api/albums")
 def list_albums():
     return albums_payload(parse_request_args(request.args))
+
+
+@app.route("/api/albums/<album_uri>/rankings")
+def get_album_rankings(album_uri):
+    return to_json(repository.album_rankings(album_uri))
 
 
 @app.route("/api/albums/<album_uri>/metadata")
