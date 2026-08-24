@@ -112,6 +112,14 @@ export interface AlbumRank {
   album_image_url: string;
 }
 
+export type RankingEntityType = "track" | "artist" | "album";
+
+export interface YearlyRanking {
+  year: number;
+  yearly_rank: number;
+  stream_count: number;
+}
+
 export interface DiscogsMasterMetadata {
   discogs_master_id: number;
   title: string;
@@ -398,6 +406,16 @@ export async function getAlbumMetadata(
   return sendRequest(
     `/api/albums/${albumUri}/metadata`,
     `album metadata for ${albumUri}`
+  );
+}
+
+export async function getYearlyRankings(
+  entityType: RankingEntityType,
+  entityURI: string
+): Promise<YearlyRanking[]> {
+  return sendRequest(
+    `/api/${entityType}s/${entityURI}/yearly-rankings`,
+    `yearly rankings for ${entityURI}`
   );
 }
 

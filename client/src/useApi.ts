@@ -33,10 +33,12 @@ import {
   getTracksStreamingHistory,
   getTracksStreamsByMonth,
   getTrackVideos,
+  getYearlyRankings,
   InsightsResponse,
   PaginatedResponse,
   PaginationParams,
   ProducerProfile,
+  RankingEntityType,
   SpotifyAuthStatus,
   StreamsByMonthResponse,
   StreamShareMonth,
@@ -44,6 +46,7 @@ import {
   Track,
   TrackRank,
   TrackVideo,
+  YearlyRanking,
 } from "./api";
 import { useFilters } from "./useFilters";
 import { countUniqueAsOfDates, countUniqueMonths } from "./utils";
@@ -190,6 +193,17 @@ export function useArtistCredits(artistUri: string) {
     ...defaultQueryOptions,
     queryKey: ["artist-credits", artistUri],
     queryFn: async () => getArtistCredits(artistUri),
+  });
+}
+
+export function useYearlyRankings(
+  entityType: RankingEntityType,
+  entityURI: string
+) {
+  return useQuery<YearlyRanking[]>({
+    ...defaultQueryOptions,
+    queryKey: ["yearly-rankings", entityType, entityURI],
+    queryFn: async () => getYearlyRankings(entityType, entityURI),
   });
 }
 

@@ -18,6 +18,7 @@ import { ProducerPill } from "../list-items/ProducerPill";
 import { useTrackCredits, useTracks, useTrackVideos } from "../useApi";
 import { formatDate } from "../utils";
 import styles from "./Details.module.css";
+import { YearlyRankingHighlights } from "./YearlyRankingHighlights";
 
 export function TrackDetails({ trackURI }: { trackURI: string }) {
   const { items: tracks } = useTracks({ filters: { tracks: [trackURI] } });
@@ -80,6 +81,7 @@ export function TrackDetails({ trackURI }: { trackURI: string }) {
           ]}
         />
       </div>
+      <YearlyRankingHighlights entityType="track" entityURI={trackURI} />
       {videos && videos.length > 0 && <TrackVideos videos={videos} />}
       {credits && credits.length > 0 && <Credits credits={credits} />}
       <TracksStreamingHistoryStack />

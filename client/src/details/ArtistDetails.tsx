@@ -12,6 +12,7 @@ import {
   MusicBrainzArtistCard,
 } from "./ArtistMetadataCards";
 import styles from "./Details.module.css";
+import { YearlyRankingHighlights } from "./YearlyRankingHighlights";
 
 interface ArtistDetailsProps {
   artistURI: string;
@@ -80,6 +81,8 @@ export function ArtistDetails({ artistURI }: ArtistDetailsProps) {
           ]}
         />
       </div>
+
+      <YearlyRankingHighlights entityType="artist" entityURI={artistURI} />
 
       {artistCredits?.aliases && artistCredits.aliases.length > 0 && (
         <div style={{ marginTop: 24 }}>

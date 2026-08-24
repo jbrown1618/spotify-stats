@@ -8,6 +8,7 @@ import { KPIsList } from "../design/KPI";
 import { TextSkeleton } from "../design/TextSkeleton";
 import { useAlbumMetadata, useAlbums } from "../useApi";
 import styles from "./Details.module.css";
+import { YearlyRankingHighlights } from "./YearlyRankingHighlights";
 
 interface AlbumDetailsProps {
   albumURI: string;
@@ -55,6 +56,7 @@ export function AlbumDetails({ albumURI }: AlbumDetailsProps) {
           ]}
         />
       </div>
+      <YearlyRankingHighlights entityType="album" entityURI={albumURI} />
       {metadata && (
         <AlbumSourceMetadata masters={metadata.discogs_masters} />
       )}
