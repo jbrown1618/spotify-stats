@@ -11,6 +11,7 @@ import {
   useTracksStreamingHistory,
   useTracksStreamsByMonth,
 } from "../useApi";
+import { SectionHeading } from "./SectionHeading";
 
 const trackSortOptions = [
   "Most streams",
@@ -30,6 +31,10 @@ export function TracksSection({ overview }: TracksSectionProps) {
   const { shouldRender: shouldRenderMonths } = useTracksStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useTracksStreamingHistory();
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [sort, setSort] = useState("Most streams");
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
+    useTracks({ sort, limit: PAGE_SIZE });
+
   useEffect(() => {
     setActiveTab(shouldRenderMonths ? "months" : "streams");
   }, [shouldRenderMonths, shouldRenderStreams]);
@@ -37,7 +42,7 @@ export function TracksSection({ overview }: TracksSectionProps) {
   return (
     <div>
       {overview}
-      <h2>Tracks</h2>
+      <SectionHeading title="Tracks" total={total} />
 
       <Tabs
         value={activeTab}
@@ -77,29 +82,18 @@ export function TracksSection({ overview }: TracksSectionProps) {
         </Tabs.Panel>
       </Tabs>
 
-      <TracksDisplayGrid />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        sortOptions={trackSortOptions}
+        sort={sort}
+        onSortChange={setSort}
+        getKey={(track) => track.track_uri}
+        renderRow={(track) => <TrackRow track={track} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
     </div>
-  );
-}
-
-function TracksDisplayGrid() {
-  const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
-    useTracks({ sort, limit: PAGE_SIZE });
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      sortOptions={trackSortOptions}
-      sort={sort}
-      onSortChange={setSort}
-      getKey={(track) => track.track_uri}
-      renderRow={(track) => <TrackRow track={track} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
   );
 }

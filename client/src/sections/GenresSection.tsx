@@ -5,14 +5,17 @@ import { StreamShareAreaChart } from "../charts/StreamShareAreaChart";
 import { DisplayGrid } from "../design/DisplayGrid";
 import { PAGE_SIZE, useGenres, useGenresStreamShareByMonth } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import { SectionHeading } from "./SectionHeading";
 import styles from "./Sections.module.css";
 
 export function GenresSection() {
   const { data: shareRows, shouldRender } = useGenresStreamShareByMonth();
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
+    useGenres({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
     <div>
-      <h2>Genres</h2>
+      <SectionHeading title="Genres" total={total} />
       {shouldRender ? (
         <Tabs defaultValue="count">
           <Tabs.List>
@@ -35,26 +38,16 @@ export function GenresSection() {
       ) : (
         <GenresBarChart />
       )}
-      <GenresDisplayGrid />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        getKey={(gtc) => gtc.genre}
+        renderPill={(gtc) => <GenrePill genre={gtc.genre} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
     </div>
-  );
-}
-
-function GenresDisplayGrid() {
-  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
-    useGenres({ sort: "Most liked tracks", limit: PAGE_SIZE });
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      getKey={(gtc) => gtc.genre}
-      renderPill={(gtc) => <GenrePill genre={gtc.genre} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
   );
 }
 

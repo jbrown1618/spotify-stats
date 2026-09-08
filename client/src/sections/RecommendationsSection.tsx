@@ -5,6 +5,7 @@ import { DisplayGrid } from "../design/DisplayGrid";
 import { TrackRow } from "../list-items/TrackRow";
 import { useRecommendationsInRange } from "../useApi";
 import { formatDate } from "../utils";
+import { SectionHeading } from "./SectionHeading";
 import styles from "./Sections.module.css";
 
 export function RecommendationsSection() {
@@ -20,7 +21,7 @@ export function RecommendationsSection() {
 
   return (
     <div>
-      <h2>Recommendations</h2>
+      <SectionHeading title="Recommendations" total={total} />
       <RangeSlider
         label={(value) => `${value}th percentile`}
         labelAlwaysOn
@@ -41,6 +42,10 @@ export function RecommendationsSection() {
           <TrackRow
             track={track}
             kpis={(t) => [
+              {
+                label: "Streams",
+                value: t.track_stream_count ?? 0,
+              },
               {
                 label: "Last Played",
                 value: t.track_last_played_at

@@ -2,35 +2,29 @@ import { Pill } from "@mantine/core";
 
 import { LabelsBarChart } from "../charts/LabelsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useLabels, PAGE_SIZE } from "../useApi";
+import { PAGE_SIZE, useLabels } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import { SectionHeading } from "./SectionHeading";
 import styles from "./Sections.module.css";
 
 export function LabelsSection() {
-  return (
-    <div>
-      <h2>Record Labels</h2>
-      <LabelsBarChart />
-      <LabelsDisplayGrid />
-    </div>
-  );
-}
-
-function LabelsDisplayGrid() {
   const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useLabels({ sort: "Most liked tracks", limit: PAGE_SIZE });
 
   return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      getKey={(ltc) => ltc.label}
-      renderPill={(ltc) => <RecordLabelPill label={ltc.label} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
+    <div>
+      <SectionHeading title="Record Labels" total={total} />
+      <LabelsBarChart />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        getKey={(ltc) => ltc.label}
+        renderPill={(ltc) => <RecordLabelPill label={ltc.label} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
+    </div>
   );
 }
 

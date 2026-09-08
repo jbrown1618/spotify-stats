@@ -70,3 +70,23 @@
   left: 7px;
   bottom: 3px;
 }
+
+@media (max-width: 48em) {
+  .row {
+    gap: 8px;
+  }
+
+  .rowContent {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .rowImage {
+    height: 56px;
+  }
+
+  .rowStats {
+    gap: 8px;
+    padding-right: 4px;
+  }
+}
