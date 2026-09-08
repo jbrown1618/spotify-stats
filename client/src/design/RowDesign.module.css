@@ -73,20 +73,21 @@
 
 @media (max-width: 48em) {
   .row {
-    gap: 8px;
+    gap: 4px;
+    padding: 2px;
   }
 
   .rowContent {
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
   }
 
   .rowImage {
-    height: 56px;
+    height: 52px;
   }
 
   .rowStats {
-    gap: 8px;
-    padding-right: 4px;
+    gap: 4px;
+    padding-right: 2px;
   }
 }

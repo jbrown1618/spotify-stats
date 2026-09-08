@@ -14,3 +14,13 @@
 .noWrap {
   text-wrap: nowrap;
 }
+
+@media (max-width: 48em) {
+  .compactOnMobile .label {
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  .compactOnMobile .value {
+    font-size: var(--mantine-font-size-md);
+  }
+}

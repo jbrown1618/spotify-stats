@@ -6,11 +6,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 0.25em;
+  margin: 0.83em 0 0.25em;
 }
 
 .sectionHeading h2 {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .recommendationCard {

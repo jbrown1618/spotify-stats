@@ -45,12 +45,14 @@ export function RecommendationsSection() {
               {
                 label: "Streams",
                 value: t.track_stream_count ?? 0,
+                compactOnMobile: true,
               },
               {
                 label: "Last Played",
                 value: t.track_last_played_at
                   ? formatDate(new Date(t.track_last_played_at))
                   : "Never",
+                compactOnMobile: true,
               },
             ]}
           />
