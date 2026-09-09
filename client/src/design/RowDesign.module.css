@@ -82,6 +82,14 @@
     min-width: 0;
   }
 
+  .rowText {
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  .rowTextPrimary {
+    font-size: var(--mantine-font-size-sm);
+  }
+
   .rowImage {
     height: 52px;
   }
