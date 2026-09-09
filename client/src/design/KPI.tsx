@@ -6,7 +6,7 @@ import styles from "./KPI.module.css";
 export interface KPIProps {
   label: string;
   value: number | string | JSX.Element;
-  compactOnMobile?: boolean;
+  compact?: boolean;
 }
 
 export function KPIsList({ items }: { items: KPIProps[] }) {
@@ -32,9 +32,9 @@ export function KPIsListSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
-export function KPI({ label, value, compactOnMobile }: KPIProps) {
+export function KPI({ label, value, compact }: KPIProps) {
   return (
-    <div className={clsx(styles.kpi, compactOnMobile && styles.compactOnMobile)}>
+    <div className={clsx(styles.kpi, compact && styles.compact)}>
       <Text c="dimmed" className={clsx(styles.noWrap, styles.label)}>
         {label}
       </Text>
