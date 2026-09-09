@@ -15,12 +15,16 @@ import {
   useArtistsStreamsByMonth,
   useArtistsStreamShareByMonth,
 } from "../useApi";
+import { SectionHeading } from "./SectionHeading";
 
 const artistSortOptions = ["Most streams", "Least streams", "Alphabetical"];
 
 export function ArtistsSection() {
   const { shouldRender: shouldRenderMonths } = useArtistsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useArtistsStreamingHistory();
+  const [sort, setSort] = useState("Most streams");
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
+    useArtists({ sort, limit: PAGE_SIZE });
   const {
     data: shareRows,
     shouldRender: shouldRenderShare,
@@ -37,7 +41,7 @@ export function ArtistsSection() {
 
   return (
     <div>
-      <h2>Artists</h2>
+      <SectionHeading title="Artists" total={total} />
 
       <Tabs
         value={activeTab}
@@ -102,31 +106,20 @@ export function ArtistsSection() {
         </Tabs.Panel>
       </Tabs>
 
-      <ArtistsDisplayGrid />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        sortOptions={artistSortOptions}
+        sort={sort}
+        onSortChange={setSort}
+        getKey={(artist) => artist.artist_uri}
+        renderTile={(artist) => <ArtistTile artist={artist} />}
+        renderLargeTile={(artist) => <ArtistTile large artist={artist} />}
+        renderRow={(artist) => <ArtistRow artist={artist} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
     </div>
-  );
-}
-
-function ArtistsDisplayGrid() {
-  const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
-    useArtists({ sort, limit: PAGE_SIZE });
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      sortOptions={artistSortOptions}
-      sort={sort}
-      onSortChange={setSort}
-      getKey={(artist) => artist.artist_uri}
-      renderTile={(artist) => <ArtistTile artist={artist} />}
-      renderLargeTile={(artist) => <ArtistTile large artist={artist} />}
-      renderRow={(artist) => <ArtistRow artist={artist} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
   );
 }

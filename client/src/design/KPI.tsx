@@ -1,10 +1,12 @@
 import { Skeleton, Text } from "@mantine/core";
+import clsx from "clsx";
 
 import styles from "./KPI.module.css";
 
 export interface KPIProps {
   label: string;
   value: number | string | JSX.Element;
+  compact?: boolean;
 }
 
 export function KPIsList({ items }: { items: KPIProps[] }) {
@@ -30,14 +32,14 @@ export function KPIsListSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
-export function KPI({ label, value }: KPIProps) {
+export function KPI({ label, value, compact }: KPIProps) {
   return (
-    <div className={styles.kpi}>
-      <Text c="dimmed" className={styles.noWrap}>
+    <div className={clsx(styles.kpi, compact && styles.compact)}>
+      <Text c="dimmed" className={clsx(styles.noWrap, styles.label)}>
         {label}
       </Text>
       {typeof value === "string" || typeof value === "number" ? (
-        <Text size={"xl"} className={styles.noWrap}>
+        <Text size="xl" className={clsx(styles.noWrap, styles.value)}>
           {value}
         </Text>
       ) : (

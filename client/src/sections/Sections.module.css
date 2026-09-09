@@ -2,6 +2,17 @@
   cursor: pointer;
 }
 
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0.83em 0 0.25em;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+}
+
 .recommendationCard {
   max-width: 300px;
   margin-top: 24px;

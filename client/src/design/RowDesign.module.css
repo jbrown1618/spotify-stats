@@ -70,3 +70,34 @@
   left: 7px;
   bottom: 3px;
 }
+
+@media (max-width: 48em) {
+  .row {
+    gap: 4px;
+    padding: 2px;
+  }
+
+  .rowContent {
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .rowText,
+  .rowText :global(.mantine-Text-root) {
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  .rowTextPrimary,
+  .rowTextPrimary :global(.mantine-Text-root) {
+    font-size: var(--mantine-font-size-sm);
+  }
+
+  .rowImage {
+    height: 52px;
+  }
+
+  .rowStats {
+    gap: 4px;
+    padding-right: 2px;
+  }
+}

@@ -3,42 +3,36 @@ import { useState } from "react";
 
 import { YearsBarChart } from "../charts/YearsBarChart";
 import { DisplayGrid } from "../design/DisplayGrid";
-import { useReleaseYears, PAGE_SIZE } from "../useApi";
+import { PAGE_SIZE, useReleaseYears } from "../useApi";
 import { useSetFilters } from "../useFilters";
+import { SectionHeading } from "./SectionHeading";
 import styles from "./Sections.module.css";
 
 const yearSortOptions = ["Newest", "Oldest", "Most liked tracks"];
 
 export function ReleaseYearsSection() {
-  return (
-    <div>
-      <h2>Release date</h2>
-
-      <YearsBarChart />
-      <YearsDisplayGrid />
-    </div>
-  );
-}
-
-function YearsDisplayGrid() {
   const [sort, setSort] = useState("Newest");
   const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
     useReleaseYears({ sort, limit: PAGE_SIZE });
 
   return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      sortOptions={yearSortOptions}
-      sort={sort}
-      onSortChange={setSort}
-      getKey={(yc) => "" + yc.release_year}
-      renderPill={(yc) => <ReleaseYearPill year={yc.release_year} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
+    <div>
+      <SectionHeading title="Release date" total={total} />
+
+      <YearsBarChart />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        sortOptions={yearSortOptions}
+        sort={sort}
+        onSortChange={setSort}
+        getKey={(yc) => "" + yc.release_year}
+        renderPill={(yc) => <ReleaseYearPill year={yc.release_year} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
+    </div>
   );
 }
 

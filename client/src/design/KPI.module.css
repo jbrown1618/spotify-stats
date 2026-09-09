@@ -14,3 +14,11 @@
 .noWrap {
   text-wrap: nowrap;
 }
+
+.compact .label {
+  font-size: var(--mantine-font-size-xs);
+}
+
+.compact .value {
+  font-size: var(--mantine-font-size-md);
+}

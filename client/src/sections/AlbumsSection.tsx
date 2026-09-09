@@ -8,11 +8,12 @@ import { DisplayGrid } from "../design/DisplayGrid";
 import { AlbumRow } from "../list-items/AlbumRow";
 import { AlbumTile } from "../list-items/AlbumTile";
 import {
+  PAGE_SIZE,
   useAlbums,
   useAlbumsStreamingHistory,
   useAlbumsStreamsByMonth,
-  PAGE_SIZE,
 } from "../useApi";
+import { SectionHeading } from "./SectionHeading";
 
 const albumSortOptions = [
   "Most streams",
@@ -25,6 +26,9 @@ const albumSortOptions = [
 export function AlbumsSection() {
   const { shouldRender: shouldRenderMonths } = useAlbumsStreamsByMonth();
   const { shouldRender: shouldRenderStreams } = useAlbumsStreamingHistory();
+  const [sort, setSort] = useState("Most streams");
+  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
+    useAlbums({ sort, limit: PAGE_SIZE });
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   useEffect(() => {
@@ -35,7 +39,7 @@ export function AlbumsSection() {
 
   return (
     <div>
-      <h2>Albums</h2>
+      <SectionHeading title="Albums" total={total} />
 
       <Tabs
         value={activeTab}
@@ -82,31 +86,20 @@ export function AlbumsSection() {
         </Tabs.Panel>
       </Tabs>
 
-      <AlbumsDisplayGrid />
+      <DisplayGrid
+        loading={isLoading}
+        items={items}
+        total={total}
+        sortOptions={albumSortOptions}
+        sort={sort}
+        onSortChange={setSort}
+        getKey={(album) => album.album_uri}
+        renderTile={(album) => <AlbumTile album={album} />}
+        renderLargeTile={(album) => <AlbumTile large album={album} />}
+        renderRow={(album) => <AlbumRow album={album} />}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+      />
     </div>
-  );
-}
-
-function AlbumsDisplayGrid() {
-  const [sort, setSort] = useState("Most streams");
-  const { items, total, isLoading, fetchNextPage, isFetchingNextPage } =
-    useAlbums({ sort, limit: PAGE_SIZE });
-
-  return (
-    <DisplayGrid
-      loading={isLoading}
-      items={items}
-      total={total}
-      sortOptions={albumSortOptions}
-      sort={sort}
-      onSortChange={setSort}
-      getKey={(album) => album.album_uri}
-      renderTile={(album) => <AlbumTile album={album} />}
-      renderLargeTile={(album) => <AlbumTile large album={album} />}
-      renderRow={(album) => <AlbumRow album={album} />}
-      
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => fetchNextPage()}
-    />
   );
 }
