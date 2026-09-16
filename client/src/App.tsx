@@ -1,6 +1,7 @@
 import "./global.css";
 
 import { Container } from "@mantine/core";
+import { useEffect } from "react";
 
 import { Backdrop } from "./Backdrop";
 import { TextSkeleton } from "./design/TextSkeleton";
@@ -121,6 +122,10 @@ function DetailsTitle() {
     (filters.labels?.length === 1 ? filters.labels[0] : null) ??
     (filters.genres?.length === 1 ? filters.genres[0] : null) ??
     (filters.years?.length === 1 ? `Tracks released in ${filters.years[0]}` : null);
+
+  useEffect(() => {
+    document.title = title ? `${title} | Spotify Stats` : "Spotify Stats";
+  }, [title]);
 
   const hasDetailFilter = !!(
     filters.wrapped ||
