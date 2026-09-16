@@ -30,6 +30,12 @@ interface SectionTabsProps {
   sections: SectionDef[];
 }
 
+const SECTION_QUERY_PARAM = "section";
+
+function sectionFromLocation() {
+  return new URLSearchParams(window.location.search).get(SECTION_QUERY_PARAM);
+}
+
 function hasDetails(f: ActiveFilters): boolean {
   return !!(
     f.tracks?.length === 1 ||
@@ -127,11 +133,13 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
 export function SectionTabs({ sections }: SectionTabsProps) {
   const filters = useFilters();
   const visibleSections = sections.filter((s) => !s.hidden(filters));
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(
+    sectionFromLocation,
+  );
 
-  // Navigate to the first available tab when filters change
+  // Restore the tab represented by browser history when filters change.
   useEffect(() => {
-    setActiveId(null);
+    setActiveId(sectionFromLocation());
   }, [filters]);
 
   // Auto-select the Details tab when it appears
@@ -164,6 +172,10 @@ export function SectionTabs({ sections }: SectionTabsProps) {
             onClick={() => {
               window.scrollTo({ top: 0 });
               setActiveId(section.id);
+
+              const url = new URL(window.location.href);
+              url.searchParams.set(SECTION_QUERY_PARAM, section.id);
+              history.pushState(history.state, "", url);
             }}
           >
             {section.icon}
