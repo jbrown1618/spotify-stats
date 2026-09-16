@@ -17,9 +17,9 @@ export function FiltersProvider({
       const query = toFiltersQuery(newFilters);
 
       window.scrollTo(0, 0);
-      const url = query
-        ? `${window.location.origin}?${toFiltersQuery(newFilters)}`
-        : window.location.origin;
+      const url = new URL(window.location.href);
+      url.search = query;
+      url.hash = "";
       history.pushState(newFilters, "", url);
 
       return newFilters;

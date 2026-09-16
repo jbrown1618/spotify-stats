@@ -1,6 +1,7 @@
 import "./global.css";
 
 import { Container } from "@mantine/core";
+import { useEffect } from "react";
 
 import { Backdrop } from "./Backdrop";
 import { TextSkeleton } from "./design/TextSkeleton";
@@ -31,6 +32,8 @@ import {
 } from "./useApi";
 import { useFilters } from "./useFilters";
 import { namedWrappedOptions } from "./utils";
+
+const SITE_TITLE = "Spotify Stats";
 
 function DetailsContent() {
   const filters = useFilters();
@@ -133,6 +136,10 @@ function DetailsTitle() {
     filters.genres?.length === 1 ||
     filters.years?.length === 1
   );
+
+  useEffect(() => {
+    document.title = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
+  }, [title]);
 
   if (!hasDetailFilter) return null;
   if (!title) return <TextSkeleton style="h2" />;

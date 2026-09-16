@@ -18,6 +18,8 @@ import styles from "./SectionTabs.module.css";
 import { useAlbums, useArtists, useReleaseYears } from "./useApi";
 import { useFilters } from "./useFilters";
 
+const SECTION_QUERY_PARAM = "section";
+
 interface SectionDef {
   id: string;
   label: string;
@@ -127,22 +129,28 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
 export function SectionTabs({ sections }: SectionTabsProps) {
   const filters = useFilters();
   const visibleSections = sections.filter((s) => !s.hidden(filters));
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get(SECTION_QUERY_PARAM)
+  );
 
-  // Navigate to the first available tab when filters change
   useEffect(() => {
-    setActiveId(null);
+    const onBackOrForward = () => {
+      setActiveId(
+        new URLSearchParams(window.location.search).get(SECTION_QUERY_PARAM)
+      );
+    };
+
+    window.addEventListener("popstate", onBackOrForward);
+    return () => window.removeEventListener("popstate", onBackOrForward);
+  }, []);
+
+  // Filter navigation removes the section parameter and selects the first
+  // available section, which is Details when a detail view is present.
+  useEffect(() => {
+    setActiveId(
+      new URLSearchParams(window.location.search).get(SECTION_QUERY_PARAM)
+    );
   }, [filters]);
-
-  // Auto-select the Details tab when it appears
-  const detailsVisible = visibleSections.some((s) => s.id === "details");
-  useEffect(() => {
-    if (detailsVisible) {
-      setActiveId("details");
-    } else if (activeId === "details") {
-      setActiveId(null);
-    }
-  }, [detailsVisible]);
 
   const resolvedActiveId =
     activeId && visibleSections.some((s) => s.id === activeId)
@@ -163,6 +171,11 @@ export function SectionTabs({ sections }: SectionTabsProps) {
             className={`${styles.tab} ${section.id === resolvedActiveId ? styles.tabActive : ""}`}
             onClick={() => {
               window.scrollTo({ top: 0 });
+              if (section.id === resolvedActiveId) return;
+
+              const url = new URL(window.location.href);
+              url.searchParams.set(SECTION_QUERY_PARAM, section.id);
+              history.pushState(history.state, "", url);
               setActiveId(section.id);
             }}
           >
