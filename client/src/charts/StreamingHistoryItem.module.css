@@ -1,14 +1,23 @@
 .itemHeading {
+  margin: 0;
+  max-width: 100%;
+}
+
+.itemLink {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   max-width: 100%;
 }
 
 .itemImage {
   height: 20px;
+  flex-shrink: 0;
+}
+
+.itemName {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
