@@ -36,7 +36,8 @@ function hasDetails(f: ActiveFilters): boolean {
   return !!(
     f.tracks?.length === 1 ||
     f.artists?.length === 1 ||
-    f.producers?.length === 1
+    f.producers?.length === 1 ||
+    f.wrapped
   );
 }
 

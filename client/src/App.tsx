@@ -10,6 +10,7 @@ import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
+import { WrappedDetails } from "./details/WrappedDetails";
 import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -48,6 +49,7 @@ function DetailsContent() {
       {filters.producers?.length === 1 && (
         <ProducerDetails producerKey={filters.producers[0]} />
       )}
+      {filters.wrapped && <WrappedDetails wrapped={filters.wrapped} />}
     </>
   );
 }

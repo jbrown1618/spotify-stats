@@ -1,0 +1,27 @@
+.track {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--mantine-radius-sm);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+  padding: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.track:hover {
+  background: var(--mantine-color-dark-6);
+}
+
+.rank {
+  flex: 0 0 20px;
+  text-align: center;
+}
+
+.trackDetails {
+  flex: 1;
+  min-width: 0;
+}
