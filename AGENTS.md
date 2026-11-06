@@ -105,6 +105,12 @@ backend, start the servers in separate attached sessions:
 ./script/dev-client
 ```
 
+Vite's first load can take longer while optimizing the large icon dependency;
+the harness allows two minutes for navigation. If Vite reports `EMFILE` or
+intermittent missing-package/CSS errors, inspect its log and the shell's
+`ulimit -n`. Stop Vite and restart it from a shell with `ulimit -n 8192` (within
+the system's hard limit). Do not repeatedly capture a blank/error page.
+
 Verify both are responsive, not merely that the processes started:
 
 ```bash
@@ -123,7 +129,7 @@ node "$ARTIFACTS/capture-screenshot.mjs" \
 
 It uses **390 x 844 CSS pixels**, a fresh context without persisted React Query
 data, a browser-only auth-status mock, loaded fonts/images, a visible-text
-readiness check, and disabled screenshot animations. It fails on HTTP API errors,
+readiness check, and disabled screenshot animations. It fails on HTTP resource errors,
 uncaught page errors, missing/broken images, or a visible auth banner. The browser
 is closed after capture. Use `--full-page` only when needed.
 
@@ -182,6 +188,8 @@ does not require GitHub's user-attachments upload API:
    directory into a **new uniquely named** directory, such as
    `docs/screenshots/<task-name>/`. Never overwrite screenshots inherited from main.
 2. Commit those files, record the **full screenshot commit SHA**, and push it.
+   Also retain that commit on a dedicated `screenshots/<task-name>` branch so
+   deleting or squash-merging the PR branch cannot orphan the image host.
 3. Remove only those new files with `git rm`, commit the removal, and push again.
    Keep both commits in branch history; do not amend, squash, or force-push them
    away while the PR relies on their URLs.
@@ -196,6 +204,7 @@ git add docs/screenshots/my-ui-task/before.png docs/screenshots/my-ui-task/after
 git commit -m "Capture before and after UI screenshots"
 SCREENSHOT_SHA=$(git rev-parse HEAD)
 git push -u origin HEAD
+git push origin "$SCREENSHOT_SHA:refs/heads/screenshots/my-ui-task"
 git rm docs/screenshots/my-ui-task/before.png docs/screenshots/my-ui-task/after.png
 git commit -m "Keep screenshot assets out of the final PR diff"
 git push
@@ -234,9 +243,9 @@ exists because a local file does. Fall back to the Git-history method above.
 - Check `git diff --name-status origin/main...HEAD -- docs/screenshots screenshots`
   is empty for your new assets, and check `gh pr diff <number> --name-only` too.
   The files must also be absent from the branch tip, not just ignored by Git.
-- Preserve the screenshot-host commit in remote history. Do not delete the host
-  branch before merge; if history will be rewritten or squash-merged, publish the
-  assets to a retained non-main screenshot branch first and recheck the URLs.
+- Preserve the screenshot-host commit on its retained non-main screenshot
+  branch, including after merge. Do not delete that branch while descriptions
+  rely on its assets; recheck URLs after any history rewrite.
 
 Documentation-only PRs do not normally need screenshots. A workflow-rehearsal PR
 may include an unchanged before/after pair explicitly labeled as such; do not

@@ -38,13 +38,18 @@ try {
     serviceWorkers: "block",
   });
   const page = await context.newPage();
+  page.setDefaultNavigationTimeout(120_000);
+  page.setDefaultTimeout(60_000);
   const failures = [];
   let mockedAuth = false;
   page.on("pageerror", (error) => failures.push(error.message));
   page.on("response", (response) => {
-    if (new URL(response.url()).pathname.startsWith("/api/") && !response.ok()) {
+    if (response.status() >= 400) {
       failures.push(`${response.status()} ${response.url()}`);
     }
+  });
+  page.on("requestfailed", (request) => {
+    failures.push(`${request.failure()?.errorText} ${request.url()}`);
   });
   await page.route(new URL("/api/spotify-auth/status", url).href, async (route) => {
     mockedAuth = true;
