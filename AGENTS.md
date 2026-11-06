@@ -92,7 +92,9 @@ git switch --detach "$BEFORE_SHA"
 ```
 
 Do not reset a dirty worktree or substitute the PR version, production site, or
-a browser mock for the before capture. A separate worktree is also acceptable,
+mocked UI/listening-data responses for the before capture. The auth-status-only
+mock described below is intentional and must be applied equally to both captures.
+A separate worktree is also acceptable,
 but both servers must run from that worktree, not the PR checkout. If introducing
 the fixture in this PR, seed the database before switching to main; the fixture
 need not already be present on main to run the unchanged baseline application.
@@ -129,9 +131,9 @@ node "$ARTIFACTS/capture-screenshot.mjs" \
 
 It uses **390 x 844 CSS pixels**, a fresh context without persisted React Query
 data, a browser-only auth-status mock, loaded fonts/images, a visible-text
-readiness check, and disabled screenshot animations. It fails on HTTP resource errors,
-uncaught page errors, missing/broken images, or a visible auth banner. The browser
-is closed after capture. Use `--full-page` only when needed.
+readiness check, and disabled screenshot animations. It fails on HTTP resource
+errors, uncaught page errors, missing/broken images, or a visible auth banner.
+The browser is closed after capture. Use `--full-page` only when needed.
 
 Playwright MCP (`.vscode/mcp.json`) is useful for exploring the UI and choosing a
 view, but its available tools do not expose request routing for the auth mock.
