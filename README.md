@@ -35,6 +35,21 @@ script/dev-client
 
 Open `http://localhost:5173`. Vite proxies API requests to Flask on port 5000.
 
+## Demo data
+
+Seed the local database with repeatable sample artists, albums, playlists, and
+listening history for screenshots:
+
+```bash
+python -m script.seed_demo_data
+```
+
+By default, the script seeds 2025 and prints a URL for its Wrapped view. It only
+adds or updates its own demo records; it does not clear existing listening data.
+Use `--year` to choose another year. If `DATABASE_URL` is set, the script stops
+unless `--allow-database-url` is passed; only use that option with a disposable
+database.
+
 ## Jobs
 
 Run the database-backed worker in one shell:
