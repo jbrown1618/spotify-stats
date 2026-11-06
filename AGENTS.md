@@ -19,16 +19,14 @@ Use Node 20 as specified in `README.md`; newer Node versions can break
 `cd client && npm ci` for the frontend. Install the screenshot browser with
 `npx playwright install chromium` (add `--with-deps` if system libraries are missing).
 
-The fixture at `data/sql/fixtures/screenshots.sql` creates the current schema
-and seeds 6 fictional artists, 12 albums, 48 tracks, 3 playlists, producer credits,
-genres, labels, likes, and 7,488 streams across 2024-2025. It includes inline SVG
-artwork, so screenshots do not depend on remote image services. Re-running it
-does not duplicate the fixture rows.
+Create synthetic data tailored to the affected UI in each session. Do not retain
+seed scripts in the repository or final PR diff; keep any temporary SQL in the
+session artifact directory.
 
-Use a **dedicated local** database named `spotifystats_screenshots`. The fixture
-refuses any other database name before making changes. Never point it at a remote
-host, mirror production, truncate an existing database, or change another user's
-PostgreSQL role/password.
+Use a **dedicated local** database named `spotifystats_screenshots`. Verify the
+connection targets that database on localhost before any schema or seed changes.
+Never point it at a remote host, mirror production, truncate an existing database,
+or change another user's PostgreSQL role/password.
 
 For a fresh local PostgreSQL installation, this is a working setup (the password
 is deliberately public, throwaway, and local-only):
@@ -42,13 +40,42 @@ sudo -u postgres createdb -O screenshot_demo spotifystats_screenshots
 
 export DATABASE_URL='postgresql://screenshot_demo:screenshot_demo@127.0.0.1:5432/spotifystats_screenshots'
 psql -X "$DATABASE_URL" -v ON_ERROR_STOP=1 \
-  -f data/sql/fixtures/screenshots.sql
+  -f data/sql/schema.sql
 ```
 
 If that role/database already exists, inspect ownership and contents before
-reusing it; do not drop or overwrite it. The fixture bootstraps the current schema
-and records version `v025`, rather than replaying obsolete migrations. Keep that
-marker synchronized with schema/migration changes.
+reusing it; do not drop or overwrite it.
+
+Prepare the data before starting the app:
+
+1. Read `data/sql/schema.sql`, the migration list in
+   `data/sql/migrations/migrations.py`, and the queries behind the affected view.
+   Bootstrap a fresh database from the current schema rather than replaying
+   historical migrations. Record the corresponding latest migration version in
+   the empty `version` table (currently `v025`) so startup does not replay obsolete
+   migrations. Do not advance the version of an existing database without applying
+   its required schema changes.
+2. Write temporary SQL for the particular use case. Start a transaction with a
+   guard that raises an exception unless `current_database()` equals
+   `spotifystats_screenshots`, and execute with `psql -X "$DATABASE_URL"
+   -v ON_ERROR_STOP=1 -f /absolute/session/path/seed.sql`.
+3. Use fictional names and unique synthetic URIs. Populate the join tables as
+   well as entities: `album_artist`, `track_artist` (with `artist_index`),
+   `artist_genre`, `playlist_track`, and any likes, labels, or provider metadata
+   needed for the view. Set both `name` and `short_name` on albums and tracks.
+   Use inline SVG data URLs for artwork to avoid remote image dependencies.
+4. Insert `track_stream` rows with varied counts across fixed dates covering the
+   selected filters and enough months to populate charts. Add producer credits,
+   videos, or other provider-specific records only when the affected UI needs
+   them. Use conflict handling or existence checks so rerunning the seed does
+   not duplicate rows.
+5. Confirm entity, relationship, and stream counts with SQL and inspect the
+   actual API payloads. An empty chart or missing relationship is not a populated
+   screenshot. Keep the same data unchanged for both captures.
+
+The workflow rehearsal used 6 fictional artists, 12 albums, 48 tracks, 3 playlists,
+producer credits, genres, labels, likes, and 7,488 streams across 2024-2025. These
+are examples, not required counts; generate what the current change needs.
 
 Both standard `postgresql://` and legacy `postgres://` URLs are supported.
 When capturing an older main revision that predates the scheme fix, use
@@ -70,8 +97,8 @@ harness below: it mocks only `/api/spotify-auth/status` to return `{"status":"ok
 inside its isolated browser context. This changes neither the app code nor the
 backend's real auth status, and cannot disable production auth checks. Do not
 fabricate an auth cache or hide other application errors to improve a capture.
-Add synthetic fixtures for the particular UI being changed if this dataset does
-not exercise it (for example, provider-specific metadata or videos).
+Generate additional synthetic data when the affected UI needs it; do not commit
+the temporary seed SQL.
 
 ## 2. Capture the real main baseline
 
@@ -95,9 +122,9 @@ Do not reset a dirty worktree or substitute the PR version, production site, or
 mocked UI/listening-data responses for the before capture. The auth-status-only
 mock described below is intentional and must be applied equally to both captures.
 A separate worktree is also acceptable,
-but both servers must run from that worktree, not the PR checkout. If introducing
-the fixture in this PR, seed the database before switching to main; the fixture
-need not already be present on main to run the unchanged baseline application.
+but both servers must run from that worktree, not the PR checkout. Seed the
+database before switching to main; the temporary seed SQL need not be present
+in the main checkout to run the unchanged baseline application.
 
 With the same `DATABASE_URL` and placeholder Spotify variables available to the
 backend, start the servers in separate attached sessions:

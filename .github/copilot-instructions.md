@@ -90,7 +90,8 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 Follow the complete, verified workflow in [`AGENTS.md`](../AGENTS.md).
 Every UI-changing PR must link mobile before/after screenshots in its description:
 before runs from current `origin/main`, after from the PR branch, both against the
-same synthetic screenshot database. Seed it with `data/sql/fixtures/screenshots.sql`.
+same synthetic screenshot database. Generate use-case-specific mock data following
+`AGENTS.md`; keep temporary seed SQL in session artifacts, not in the repository.
 Screenshots may live in intermediate commits, but must be removed from the branch
 tip before review/merge so no new screenshot appears in the final PR diff or main.
 Use HTML `<img>` tags with raw GitHub URLs pinned to the screenshot-host commit,
