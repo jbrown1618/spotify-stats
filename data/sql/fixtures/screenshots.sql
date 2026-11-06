@@ -47,6 +47,9 @@ FROM generate_series(1, 12) AS i
 JOIN artist a ON a.uri = 'spotify:artist:mock' || (1 + (i - 1) / 2)
 ON CONFLICT (uri) DO NOTHING;
 
+UPDATE album SET short_name = name
+WHERE uri LIKE 'spotify:album:mock%' AND short_name = '';
+
 INSERT INTO album_artist (album_uri, artist_uri)
 SELECT 'spotify:album:mock' || i, 'spotify:artist:mock' || (1 + (i - 1) / 2)
 FROM generate_series(1, 12) AS i
@@ -75,6 +78,9 @@ SELECT
 FROM generate_series(1, 48) AS i
 JOIN album a ON a.uri = 'spotify:album:mock' || (1 + (i - 1) / 4)
 ON CONFLICT (uri) DO NOTHING;
+
+UPDATE track SET short_name = name
+WHERE uri LIKE 'spotify:track:mock%' AND short_name = '';
 
 INSERT INTO track_artist (track_uri, artist_uri, artist_index)
 SELECT
