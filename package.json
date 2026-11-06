@@ -6,5 +6,8 @@
   "engines": {
     "npm": "10.7.x",
     "node": "20.14.x"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0"
   }
 }

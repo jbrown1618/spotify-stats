@@ -87,13 +87,17 @@ Migrations run automatically at app startup via `perform_all_migrations()`.
 
 ### Pull requests with UI changes
 
-When a PR includes visual changes, capture before/after screenshots using Playwright (configured as an MCP server in `.vscode/mcp.json`). Commit screenshots to `docs/screenshots/` on the PR branch.
-
-In the PR body, reference images using **HTML `<img>` tags** with `raw.githubusercontent.com` URLs and the commit SHA — not markdown `![]()`  syntax, which GitHub strips for these URLs:
-
-```html
-<img src="https://raw.githubusercontent.com/jbrown1618/spotify-stats/COMMIT_SHA/docs/screenshots/example.png" width="400">
-```
+Follow the complete, verified workflow in [`AGENTS.md`](../AGENTS.md).
+Every UI-changing PR must link mobile before/after screenshots in its description:
+before runs from current `origin/main`, after from the PR branch, both against the
+same synthetic screenshot database. Generate use-case-specific mock data following
+`AGENTS.md`; keep temporary seed SQL in session artifacts, not in the repository.
+Screenshots may live in intermediate commits, but must be removed from the branch
+tip before review/merge so no new screenshot appears in the final PR diff or main.
+Use HTML `<img>` tags with raw GitHub URLs pinned to the screenshot-host commit,
+and verify both published URLs and the final diff. Do not use production data.
+Use `script/capture-screenshot.mjs` for a fresh mobile browser context and an
+isolated auth-status mock; the Spotify authorization banner must not be visible.
 
 ### Deployment
 
@@ -101,4 +105,5 @@ In the PR body, reference images using **HTML `<img>` tags** with `raw.githubuse
 - Production server: `gunicorn --chdir app app:app` (see `Procfile`)
 - Client build output goes to `app/static/` (Vite's `outDir`)
 - CI runs on PRs to `main`: installs Node deps and builds the client
-- Playwright (configured as an MCP server in `.vscode/mcp.json`) can be pointed at the prod URL to verify bugs in production
+- Playwright MCP in this environment can reach only `localhost` and `127.0.0.1`;
+  use the local seeded app for screenshots, not the production URL.
