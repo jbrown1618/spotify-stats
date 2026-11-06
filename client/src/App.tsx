@@ -49,9 +49,13 @@ function DetailsContent() {
       {filters.producers?.length === 1 && (
         <ProducerDetails producerKey={filters.producers[0]} />
       )}
-      {filters.wrapped && <WrappedDetails wrapped={filters.wrapped} />}
     </>
   );
+}
+
+function WrappedMonthsContent() {
+  const { wrapped } = useFilters();
+  return wrapped ? <WrappedDetails wrapped={wrapped} /> : null;
 }
 
 function TracksOverviewContent() {
@@ -152,6 +156,7 @@ export function App() {
   const sections = useSectionDefs({
     details: <DetailsContent />,
     insights: <InsightsSection />,
+    months: <WrappedMonthsContent />,
     tracks: <TracksSection overview={<TracksOverviewContent />} />,
     artists: <ArtistsSection />,
     albums: <AlbumsSection />,
