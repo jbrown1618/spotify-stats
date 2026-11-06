@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS job (
     summary JSONB NOT NULL DEFAULT '{}'::JSONB,
     queue_time timestamp DEFAULT current_timestamp,
     start_time timestamp,
-    end_time timestamp,
+    end_time timestamp
 );
 CREATE INDEX IF NOT EXISTS i_job_status_queue_time ON job (status, queue_time);
 
