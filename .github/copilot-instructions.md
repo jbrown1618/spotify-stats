@@ -25,9 +25,11 @@ cd client && npx eslint .
 cd client && npx eslint src/path/to/File.tsx
 ```
 
-### No test suite
+### Tests
 
-There is no automated test suite. Verify changes manually against the running dev servers.
+Run database URL regression checks with `venv/bin/python -m unittest data.test_database`.
+There is no frontend automated test suite. Verify UI changes manually against the
+running dev servers.
 
 ## Architecture
 
@@ -95,6 +97,8 @@ Screenshots may live in intermediate commits, but must be removed from the branc
 tip before review/merge so no new screenshot appears in the final PR diff or main.
 Use HTML `<img>` tags with raw GitHub URLs pinned to the screenshot-host commit,
 and verify both published URLs and the final diff. Do not use production data.
+Use `script/capture-screenshot.mjs` for a fresh mobile browser context and an
+isolated auth-status mock; the Spotify authorization banner must not be visible.
 
 ### Deployment
 

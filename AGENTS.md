@@ -15,7 +15,9 @@ Use the repository's Python requirements, client dependencies, and PostgreSQL.
 Run from the repository root. Check for installed prerequisites first; install
 missing dependencies rather than assuming a previous agent's environment exists.
 Use Node 20 as specified in `README.md`; newer Node versions can break
-`typed-css-modules`.
+`typed-css-modules`. Run `npm ci` at the root for the screenshot harness and
+`cd client && npm ci` for the frontend. Install the screenshot browser with
+`npx playwright install chromium` (add `--with-deps` if system libraries are missing).
 
 The fixture at `data/sql/fixtures/screenshots.sql` creates the current schema
 and seeds 6 fictional artists, 12 albums, 48 tracks, 3 playlists, producer credits,
@@ -38,7 +40,7 @@ sudo -u postgres psql -v ON_ERROR_STOP=1 \
   -c "CREATE ROLE screenshot_demo LOGIN PASSWORD 'screenshot_demo';"
 sudo -u postgres createdb -O screenshot_demo spotifystats_screenshots
 
-export DATABASE_URL='postgres://screenshot_demo:screenshot_demo@127.0.0.1:5432/spotifystats_screenshots'
+export DATABASE_URL='postgresql://screenshot_demo:screenshot_demo@127.0.0.1:5432/spotifystats_screenshots'
 psql -X "$DATABASE_URL" -v ON_ERROR_STOP=1 \
   -f data/sql/fixtures/screenshots.sql
 ```
@@ -48,11 +50,12 @@ reusing it; do not drop or overwrite it. The fixture bootstraps the current sche
 and records version `v025`, rather than replaying obsolete migrations. Keep that
 marker synchronized with schema/migration changes.
 
-**Connection traps:** use `postgres://`, not `postgresql://`: the current
-`get_engine()` scheme rewrite mishandles the latter. Python's direct connection
-requires SSL, so the local PostgreSQL server must support SSL (the Debian cluster
-does by default). Prefer `DATABASE_URL` over `POSTGRES_PORT`, because the
-SQLAlchemy fallback currently ignores that port.
+Both standard `postgresql://` and legacy `postgres://` URLs are supported.
+When capturing an older main revision that predates the scheme fix, use
+`postgres://` for the baseline backend. Python's direct connection requires SSL,
+so the local PostgreSQL server must support SSL (the Debian cluster does by
+default). Prefer `DATABASE_URL` over `POSTGRES_PORT`, because the SQLAlchemy
+fallback currently ignores that port.
 
 Export harmless placeholder Spotify configuration in each backend shell:
 
@@ -62,8 +65,11 @@ export SPOTIFY_CLIENT_SECRET=00000000000000000000000000000000
 ```
 
 No Spotify authorization or sync worker is needed for local database reads.
-The missing-authorization banner is expected; leave it visible consistently.
-Do not fabricate an auth cache or hide application errors to improve a capture.
+**The Spotify auth banner must not appear in screenshots.** Use the capture
+harness below: it mocks only `/api/spotify-auth/status` to return `{"status":"ok"}`
+inside its isolated browser context. This changes neither the app code nor the
+backend's real auth status, and cannot disable production auth checks. Do not
+fabricate an auth cache or hide other application errors to improve a capture.
 Add synthetic fixtures for the particular UI being changed if this dataset does
 not exercise it (for example, provider-specific metadata or videos).
 
@@ -74,6 +80,11 @@ Fetch `origin/main`, record its SHA, and run that exact revision. For example,
 from a clean working tree:
 
 ```bash
+# Use the actual absolute session artifact directory supplied by the environment.
+ARTIFACTS=/absolute/session/files/pr-screenshots
+mkdir -p "$ARTIFACTS"
+# Preserve the browser-only harness if the baseline predates this file.
+cp script/capture-screenshot.mjs "$ARTIFACTS/capture-screenshot.mjs"
 PR_BRANCH=$(git branch --show-current)
 git fetch origin main
 BEFORE_SHA=$(git rev-parse origin/main)
@@ -101,10 +112,27 @@ curl --fail --silent --show-error 'http://127.0.0.1:5000/api/tracks?limit=1'
 curl --fail --silent --show-error http://127.0.0.1:5173/ >/dev/null
 ```
 
-Use Playwright MCP (`.vscode/mcp.json`); it can reach only `localhost` and
-`127.0.0.1` in this environment. Resize to **390 x 844 CSS pixels** for mobile
-captures. Navigate to the actual affected view; `/?section=tracks` is a populated
-smoke-test page, not a substitute for the changed UI.
+Use the Playwright capture harness from the repository root:
+
+```bash
+node "$ARTIFACTS/capture-screenshot.mjs" \
+  --url 'http://127.0.0.1:5173/?section=tracks' \
+  --wait-for 'Track streams by month' \
+  --output "$ARTIFACTS/before.png"
+```
+
+It uses **390 x 844 CSS pixels**, a fresh context without persisted React Query
+data, a browser-only auth-status mock, loaded fonts/images, a visible-text
+readiness check, and disabled screenshot animations. It fails on HTTP API errors,
+uncaught page errors, missing/broken images, or a visible auth banner. The browser
+is closed after capture. Use `--full-page` only when needed.
+
+Playwright MCP (`.vscode/mcp.json`) is useful for exploring the UI and choosing a
+view, but its available tools do not expose request routing for the auth mock.
+Both the harness and MCP should use only `localhost` or `127.0.0.1`. Capture the
+actual affected view; `/?section=tracks` is a populated smoke-test page, not a
+substitute for the changed UI. For interaction-specific states, extend the
+harness with the required Playwright actions; do not hide the banner with CSS.
 
 Before **each** capture:
 
@@ -117,10 +145,11 @@ Before **each** capture:
 3. Wait for the expected entity names/counts, loaded charts, fonts, and images;
    wait for animation/layout to settle. Check API responses and browser errors.
    An empty page, loading skeleton, failed request, or broken image is not evidence.
-4. Save using `browser_take_screenshot` with an **absolute** filename in the
-   session artifact directory, `scale: "css"`, and the same `fullPage` setting for
-   both images. Inspect the returned image. A mobile viewport capture is usually
-   clearer than an excessively tall full-page capture.
+4. Save with an **absolute** filename in the session artifact directory and the
+   same `fullPage` setting for both images. Inspect each image using the image
+   viewing tool. A mobile viewport capture is usually clearer than an excessively
+   tall full-page capture. The harness covers cache isolation and image loading;
+   verify that the final chart and intended UI state are actually visible.
 
 Record the before SHA, URL, viewport, and fixture details for the PR body.
 
@@ -131,6 +160,13 @@ back to `"$PR_BRANCH"`. Restart both from the PR branch with the same database a
 environment; Python modules are not refreshed just because Git switched files.
 Confirm the branch/SHA and server responses, then repeat the cache reset and
 capture steps above for the after image.
+
+```bash
+node "$ARTIFACTS/capture-screenshot.mjs" \
+  --url 'http://127.0.0.1:5173/?section=tracks' \
+  --wait-for 'Track streams by month' \
+  --output "$ARTIFACTS/after.png"
+```
 
 Keep the database unchanged between captures. If incompatible migrations require
 separate databases, initialize equivalent fixtures for each revision and describe

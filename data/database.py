@@ -19,8 +19,8 @@ def get_engine():
         url = postgres_url()
         if url is not None:
             print("Connecting to Postgres via DATABASE_URL")
-            if url.startswith("postgres") and not url.startswith("postgresql+psycopg2"):
-                url = "postgresql+psycopg2" + url[len("postgres") :]
+            if url.startswith("postgres://"):
+                url = "postgresql+psycopg2://" + url[len("postgres://") :]
             _engine = sqlalchemy.create_engine(url)
         else:
             print("Connecting to local Postgres instance: " + postgres_host())
