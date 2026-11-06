@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useAlbumsCount, useAlbumsStreamsByMonth } from "../useApi";
-import styles from "./StreamingHistoryItem.module.css";
+import { StreamingHistoryItem } from "./StreamingHistoryItem";
 import { StreamingHistoryStack, StreamingHistoryStackSkeleton } from "./StreamingHistoryStack";
 import { totalStreams } from "./utils";
 
@@ -20,6 +20,7 @@ export function AlbumsStreamingHistoryStack() {
       <StreamingHistoryStack
         data={response.streams}
         getItem={(key) => ({
+          uri: key,
           name: response.metadata[key]?.album_short_name ?? key,
           image_url: response.metadata[key]?.album_image_url ?? "",
           stream_count: totalStreams(response.streams[key]),
@@ -31,11 +32,12 @@ export function AlbumsStreamingHistoryStack() {
             : undefined
         }
         onLess={n > 5 ? () => setN(5) : undefined}
-        renderItem={(item: { name: string; image_url: string }) => (
-          <h4 className={styles.itemHeading}>
-            <img className={styles.itemImage} src={item.image_url} />
-            {item.name}
-          </h4>
+        renderItem={(item: { uri: string; name: string; image_url: string }) => (
+          <StreamingHistoryItem
+            filters={{ albums: [item.uri] }}
+            imageUrl={item.image_url}
+            name={item.name}
+          />
         )}
       />
     </>
