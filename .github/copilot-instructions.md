@@ -25,11 +25,9 @@ cd client && npx eslint .
 cd client && npx eslint src/path/to/File.tsx
 ```
 
-### Tests
+### No test suite
 
-Run database URL regression checks with `venv/bin/python -m unittest data.test_database`.
-There is no frontend automated test suite. Verify UI changes manually against the
-running dev servers.
+There is no automated test suite. Verify changes manually against the running dev servers.
 
 ## Architecture
 
