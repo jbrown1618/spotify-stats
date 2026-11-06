@@ -35,6 +35,10 @@ script/dev-client
 
 Open `http://localhost:5173`. Vite proxies API requests to Flask on port 5000.
 
+For populated UI screenshots without Spotify credentials or production data, use
+the disposable mock database fixture and before/after PR workflow in
+[`AGENTS.md`](AGENTS.md).
+
 ## Jobs
 
 Run the database-backed worker in one shell:
