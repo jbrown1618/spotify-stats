@@ -13,6 +13,7 @@ interface RankingItem {
   uri: string;
   name: string;
   subtitle?: string;
+  imageUrl?: string;
   streams: number;
   filters: { tracks?: string[]; artists?: string[]; albums?: string[] };
 }
@@ -30,6 +31,7 @@ function rankingItems(
         uri: track.track_uri,
         name: track.track_short_name,
         subtitle: track.artist_names.join(", "),
+        imageUrl: track.album_image_url,
         streams: track.track_stream_count,
         filters: { tracks: [track.track_uri] },
       };
@@ -101,9 +103,13 @@ function RankingList({
           onClick={() => setFilters(item.filters)}
           type="button"
         >
-          <Text c="dimmed" className={styles.rank} size="sm">
-            {index + 1}
-          </Text>
+          {item.imageUrl ? (
+            <img alt="" className={styles.albumImage} src={item.imageUrl} />
+          ) : (
+            <Text c="dimmed" className={styles.rank} size="sm">
+              {index + 1}
+            </Text>
+          )}
           <div className={styles.trackDetails}>
             <Text fw={500} lineClamp={1}>
               {item.name}

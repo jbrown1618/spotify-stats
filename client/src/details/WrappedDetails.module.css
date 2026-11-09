@@ -44,6 +44,14 @@
   text-align: center;
 }
 
+.albumImage {
+  border-radius: var(--mantine-radius-sm);
+  flex: 0 0 32px;
+  height: 32px;
+  object-fit: cover;
+  width: 32px;
+}
+
 .trackDetails {
   flex: 1;
   min-width: 0;
