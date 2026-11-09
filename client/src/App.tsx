@@ -10,6 +10,7 @@ import { ArtistDetails } from "./details/ArtistDetails";
 import { PlaylistDetails } from "./details/PlaylistDetails";
 import { ProducerDetails } from "./details/ProducerDetails";
 import { TrackDetails } from "./details/TrackDetails";
+import { WrappedDetails } from "./details/WrappedDetails";
 import { Header } from "./Header";
 import { AlbumsSection } from "./sections/AlbumsSection";
 import { ArtistsSection } from "./sections/ArtistsSection";
@@ -50,6 +51,11 @@ function DetailsContent() {
       )}
     </>
   );
+}
+
+function WrappedMonthsContent() {
+  const { wrapped } = useFilters();
+  return wrapped ? <WrappedDetails wrapped={wrapped} /> : null;
 }
 
 function TracksOverviewContent() {
@@ -150,6 +156,7 @@ export function App() {
   const sections = useSectionDefs({
     details: <DetailsContent />,
     insights: <InsightsSection />,
+    months: <WrappedMonthsContent />,
     tracks: <TracksSection overview={<TracksOverviewContent />} />,
     artists: <ArtistsSection />,
     albums: <AlbumsSection />,

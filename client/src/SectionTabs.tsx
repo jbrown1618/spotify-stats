@@ -17,6 +17,7 @@ import { ActiveFilters } from "./api";
 import styles from "./SectionTabs.module.css";
 import { useAlbums, useArtists, useReleaseYears } from "./useApi";
 import { useFilters } from "./useFilters";
+import { isMultiMonthWrapped } from "./wrapped";
 
 const SECTION_QUERY_PARAM = "section";
 
@@ -59,6 +60,13 @@ export function useSectionDefs(sectionContent: Record<string, ReactNode>): Secti
       icon: <IconMusic size={20} />,
       hidden: (f) => f.tracks?.length === 1,
       content: sectionContent.tracks,
+    },
+    {
+      id: "months",
+      label: "Months",
+      icon: <IconCalendar size={20} />,
+      hidden: (f) => !isMultiMonthWrapped(f.wrapped),
+      content: sectionContent.months,
     },
     {
       id: "artists",

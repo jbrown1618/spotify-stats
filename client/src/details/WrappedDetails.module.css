@@ -1,0 +1,58 @@
+.track {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--mantine-radius-sm);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+  padding: 8px 4px;
+  text-align: left;
+  width: 100%;
+}
+
+.track:hover {
+  background: var(--mantine-color-dark-6);
+}
+
+.rankingTypes {
+  margin-bottom: var(--mantine-spacing-md);
+  max-width: 100%;
+}
+
+.carousel {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 0 0 var(--mantine-spacing-sm);
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.monthCard {
+  flex: 0 0 min(88%, 520px);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.rank {
+  flex: 0 0 20px;
+  text-align: center;
+}
+
+.albumImage {
+  border-radius: var(--mantine-radius-sm);
+  flex: 0 0 32px;
+  height: 32px;
+  object-fit: cover;
+  width: 32px;
+}
+
+.trackDetails {
+  flex: 1;
+  min-width: 0;
+}
