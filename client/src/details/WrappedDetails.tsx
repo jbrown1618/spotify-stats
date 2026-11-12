@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { Album, Artist, Track } from "../api";
 import { useAlbums, useArtists, useTracks } from "../useApi";
-import { useSetFilters } from "../useFilters";
+import { useFilters, useSetFilters } from "../useFilters";
 import { getWrappedMonthRanges, MonthRange } from "../wrapped";
 import styles from "./WrappedDetails.module.css";
 
@@ -130,8 +130,9 @@ function RankingList({
 }
 
 function MonthTracks({ month }: { month: MonthRange }) {
+  const filters = useFilters();
   const { items, isLoading, isError } = useTracks({
-    filters: { wrapped: `${month.start}..${month.end}` },
+    filters: { ...filters, wrapped: `${month.start}..${month.end}` },
     limit: 10,
     sort: "Most streams",
   });
@@ -146,8 +147,9 @@ function MonthTracks({ month }: { month: MonthRange }) {
 }
 
 function MonthArtists({ month }: { month: MonthRange }) {
+  const filters = useFilters();
   const { items, isLoading, isError } = useArtists({
-    filters: { wrapped: `${month.start}..${month.end}` },
+    filters: { ...filters, wrapped: `${month.start}..${month.end}` },
     limit: 10,
     sort: "Most streams",
   });
@@ -162,8 +164,9 @@ function MonthArtists({ month }: { month: MonthRange }) {
 }
 
 function MonthAlbums({ month }: { month: MonthRange }) {
+  const filters = useFilters();
   const { items, isLoading, isError } = useAlbums({
-    filters: { wrapped: `${month.start}..${month.end}` },
+    filters: { ...filters, wrapped: `${month.start}..${month.end}` },
     limit: 10,
     sort: "Most streams",
   });
