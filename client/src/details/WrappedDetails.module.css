@@ -6,8 +6,8 @@
   color: inherit;
   cursor: pointer;
   display: flex;
-  gap: var(--mantine-spacing-sm);
-  padding: 8px 4px;
+  gap: var(--mantine-spacing-xs);
+  padding: 6px 4px;
   text-align: left;
   width: 100%;
 }

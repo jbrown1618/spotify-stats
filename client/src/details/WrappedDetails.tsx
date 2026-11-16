@@ -1,5 +1,5 @@
 import { Card, SegmentedControl, Skeleton, Stack, Text } from "@mantine/core";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { Album, Artist, Track } from "../api";
 import { useAlbums, useArtists, useTracks } from "../useApi";
@@ -12,7 +12,7 @@ type RankingType = "tracks" | "artists" | "albums";
 interface RankingItem {
   uri: string;
   name: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   imageUrl?: string;
   streams: number;
   filters: { tracks?: string[]; artists?: string[]; albums?: string[] };
@@ -42,6 +42,7 @@ function rankingItems(
       return {
         uri: artist.artist_uri,
         name: artist.artist_name,
+        imageUrl: artist.artist_image_url,
         streams: artist.artist_stream_count,
         filters: { artists: [artist.artist_uri] },
       };
@@ -51,10 +52,23 @@ function rankingItems(
     return {
       uri: album.album_uri,
       name: album.album_short_name,
+      subtitle: <AlbumArtistNames albumURI={album.album_uri} />,
+      imageUrl: album.album_image_url,
       streams: album.album_stream_count,
       filters: { albums: [album.album_uri] },
     };
   });
+}
+
+function AlbumArtistNames({ albumURI }: { albumURI: string }) {
+  const { items, isLoading, isError } = useArtists({
+    filters: { albums: [albumURI] },
+  });
+
+  if (isLoading) return "Loading artists...";
+  if (isError) return "Could not load artists";
+
+  return items?.map((artist) => artist.artist_name).join(", ");
 }
 
 function RankingList({
