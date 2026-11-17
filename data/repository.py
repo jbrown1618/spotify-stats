@@ -41,12 +41,6 @@ class QueuedJob:
     arguments: str
 
 
-@dataclass(frozen=True)
-class TrackRecommendations:
-    matching_track_count: int | None
-    tracks: pd.DataFrame | None
-
-
 class StreamWriter:
     def __init__(self, cursor):
         self._cursor = cursor
@@ -282,26 +276,12 @@ class DataRepository:
         filters: Mapping[str, Any],
         low_percentile: float,
         high_percentile: float,
-        minimum_track_count: int,
-    ) -> TrackRecommendations:
+    ) -> pd.DataFrame:
         params = parse_filters(dict(filters))
         has_filters = self._has_recommendation_filters(params)
 
         with filtered_connection(filters) as (connection, _):
-            matching_track_count = None
-            if has_filters:
-                counts = self._read_dataframe_on(
-                    connection,
-                    "select_matching_track_count",
-                )
-                matching_track_count = int(counts.iloc[0]["cnt"])
-                if matching_track_count < minimum_track_count:
-                    return TrackRecommendations(
-                        matching_track_count=matching_track_count,
-                        tracks=None,
-                    )
-
-            tracks = self._read_dataframe_on(
+            return self._read_dataframe_on(
                 connection,
                 "select_track_recommendations_percentile_range",
                 {
@@ -310,10 +290,6 @@ class DataRepository:
                     "filter_tracks": has_filters,
                 },
             )
-        return TrackRecommendations(
-            matching_track_count=matching_track_count,
-            tracks=tracks,
-        )
 
     def artist_stream_share_by_month(
         self, filters: Mapping[str, Any], n: int

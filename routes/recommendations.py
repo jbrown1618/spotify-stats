@@ -14,20 +14,16 @@ def percentile_range_recommendations_payload(filters: dict, low_percentile: floa
 
     Always returns a dict with 'items' (a page of full track records) and 'total'.
     If 'limit' is present in filters, slices to the requested page; otherwise returns all items.
+    Recommendations are available for any number of matching tracks.
     """
     if low_percentile > high_percentile:
         low_percentile, high_percentile = high_percentile, low_percentile
 
-    recommendations = repository.track_recommendations(
+    track_recs = repository.track_recommendations(
         filters,
         low_percentile,
         high_percentile,
-        minimum_track_count=60,
     )
-    if recommendations.tracks is None:
-        return {"items": [], "total": 0}
-
-    track_recs = recommendations.tracks
 
     total = len(track_recs)
 
